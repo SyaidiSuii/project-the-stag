@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Models\User;
+use App\Models\Role;
 
 class UserController extends Controller
 {
@@ -15,11 +16,11 @@ class UserController extends Controller
     public function index()
     {
         if (request('cancel')) {
-            return redirect()->route('user.index');
+            return redirect()->route('admin.user.index');
         }
 
-        $users = User::paginate(10);
-        return view('user.index', compact('users'));
+        $users = User::with('roles')->latest()->paginate(10);
+        return view('admin.user.index', compact('users'));
     }
 
     /**
@@ -28,7 +29,9 @@ class UserController extends Controller
     public function create()
     {
         $user = new User;
-        return view('user.form', compact('user'));
+        $roles = Role::all();
+        $user->load('roles');
+        return view('admin.user.form', compact('user', 'roles'));
     }
 
     /**
@@ -41,6 +44,8 @@ class UserController extends Controller
             'email'=>'required|email|unique:users,email',
             'phone_number' => 'required|string|max:20',
             'is_active' => 'boolean',
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['exists:roles,id'], // semak ID role wujud dalam table roles
         ],[
             'name.required' => 'Username is required.',
             'name.min' => 'Username must be at least 5 char.',
@@ -50,9 +55,15 @@ class UserController extends Controller
         $request ['password'] = bcrypt("12345678");
         $user->fill($request->all()); 
         //$user = User::create($request->all()); 
+
+        // hanya laksanakan operasi sekira ada input
+        if ($request->has('roles')) {
+            $user->roles()->attach($request->roles);
+        }
+
         $user->save();
 
-        return redirect()->route('user.index')->with('message', 'User record has been saved!');
+        return redirect()->route('admin.user.index')->with('message', 'User record has been saved!');
     }
 
     /**
@@ -60,7 +71,8 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        //
+        $user->load('roles');
+        return view('admin.user.show', compact('user'));
     }
 
     /**
@@ -68,7 +80,9 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return view('user.form', compact('user'));
+        $roles = Role::all();
+        $user->load('roles');
+        return view('admin.user.form', compact('user', 'roles'));
     }
 
     /**
@@ -81,15 +95,21 @@ class UserController extends Controller
             'email'=>'required|email|unique:users,email,'.$user->id,
             'phone_number' => 'required|string|max:20',
             'is_active' => 'boolean',
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['exists:roles,id'], // pastikan ID ada dalam table roles
         ],[
             'name.required' => 'Username is required.',
             'name.min' => 'Username must be at least 5 char.',
         ]);
 
-        $user->fill($request->all()); 
+        $user->fill($request->all());
+        
+        // laksanakan operasi atau kosongkan 
+        $user->roles()->sync($request->roles ?? []);
+
         $user->save();
 
-        return redirect()->route('user.index')->with('message', 'User record has been update!');
+        return redirect()->route('admin.user.index')->with('message', 'User record has been update!');
     }
 
     /**
@@ -97,7 +117,9 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        // hapuskan rekod roles
+        $user->roles()->detach();
         $user->delete();
-        return redirect()->route('user.index')->with('message', 'User record has been delete!');
+        return redirect()->route('admin.user.index')->with('message', 'User record has been delete!');
     }
 }

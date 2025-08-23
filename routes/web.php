@@ -32,15 +32,20 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', function () {return view('dashboard');})->name('dashboard');
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
     Route::patch('/profile/customer-profile', [ProfileController::class, 'updateCustomerProfile'])->name('profile.customer.update');
     Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto'])->name('profile.photo.delete');
-    
+});
+
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+ 
     Route::resource('user', UserController::class);
     Route::resource('role', RoleController::class);
     Route::resource('table', TableController::class);
@@ -125,5 +130,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('sale-analytics', SaleAnalyticsController::class);
 
 });
+
+
 
 require __DIR__.'/auth.php';

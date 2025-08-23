@@ -14,11 +14,11 @@ class RoleController extends Controller
     public function index()
     {
         if (request('cancel')) {
-            return redirect()->route('role.index');
+            return redirect()->route('admin.role.index');
         }
 
         $roles = Role::paginate(10);
-        return view('role.index', compact('roles'));
+        return view('admin.role.index', compact('roles'));
     }
 
     /**
@@ -27,7 +27,7 @@ class RoleController extends Controller
     public function create()
     {
         $role = new Role;
-        return view('role.form', compact('role'));
+        return view('admin.role.create', compact('role'));
     }
 
     /**
@@ -38,24 +38,16 @@ class RoleController extends Controller
         $this->validate($request, [
             'name' => 'required|string|max:255|unique:roles,name',
             'description' => 'nullable|string',
-            'permissions' => 'nullable|array',
-            'is_active' => 'boolean',
         ], [
             'name.required' => 'Role name is required.',
             'name.unique' => 'Role name already exists.',
         ]);
 
         $role = new Role;
-        $role->fill($request->all());
-        
-        // Handle permissions as JSON
-        if ($request->has('permissions')) {
-            $role->permissions = json_encode($request->permissions);
-        }
-        
+        $role->fill($request->all());     
         $role->save();
 
-        return redirect()->route('role.index')->with('message', 'Role record has been saved!');
+        return redirect()->route('admin.role.index')->with('message', 'Role record has been saved!');
     }
 
     /**
@@ -63,7 +55,7 @@ class RoleController extends Controller
      */
     public function show(Role $role)
     {
-        return view('role.show', compact('role'));
+        return view('admin.role.show', compact('role'));
     }
 
     /**
@@ -71,7 +63,7 @@ class RoleController extends Controller
      */
     public function edit(Role $role)
     {
-        return view('role.form', compact('role'));
+        return view('admin.role.create', compact('role'));
     }
 
     /**
@@ -89,16 +81,10 @@ class RoleController extends Controller
             'name.unique' => 'Role name already exists.',
         ]);
 
-        $role->fill($request->all());
-        
-        // Handle permissions as JSON
-        if ($request->has('permissions')) {
-            $role->permissions = json_encode($request->permissions);
-        }
-        
+        $role->fill($request->all());        
         $role->save();
 
-        return redirect()->route('role.index')->with('message', 'Role record has been updated!');
+        return redirect()->route('admin.role.index')->with('message', 'Role record has been updated!');
     }
 
     /**
@@ -107,6 +93,6 @@ class RoleController extends Controller
     public function destroy(Role $role)
     {
         $role->delete();
-        return redirect()->route('role.index')->with('message', 'Role record has been deleted!');
+        return redirect()->route('admin.role.index')->with('message', 'Role record has been deleted!');
     }
 }

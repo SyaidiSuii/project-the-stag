@@ -19,10 +19,10 @@
                 </header>
 
                 @if($user->id)
-                    @php($route = route('user.update', $user->id))
+                    @php($route = route('admin.user.update', $user->id))
                     @php($method = 'PUT')
                 @else
-                    @php($route = route('user.store'))
+                    @php($route = route('admin.user.store'))
                     @php($method = 'POST')
                 @endif
 
@@ -48,10 +48,28 @@
                         <x-input-error class="mt-2" :messages="$errors->get('phone_number')" />
                     </div>
 
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Roles') }}</label>
+                        <div class="mt-2 space-y-2">
+                            @foreach($roles as $role)
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="roles[]"
+                                        value="{{ $role->id }}" id="role_{{ $role->id }}"
+                                        @checked(in_array($role->id, old('roles', $user->roles->pluck('id')->toArray())))
+                                        class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:bg-gray-700">
+                                    <label for="role_{{ $role->id }}"
+                                        class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ $role->name }}</label>
+                                </div>
+                            @endforeach
+                        </div>
+                        <x-input-error :messages="$errors->get('roles')" class="mt-2" />
+                    </div>
+
+
                     <div class="flex items-center gap-4">
                         <x-primary-button>{{ __('Save') }}</x-primary-button>
 
-                        <a href="{{ route('user.index', ['cancel' => 'true']) }}"
+                        <a href="{{ route('admin.user.index', ['cancel' => 'true']) }}"
                         class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600 focus:outline-none focus:border-gray-600 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
                             Cancel
                         </a>

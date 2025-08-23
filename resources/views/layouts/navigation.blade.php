@@ -37,20 +37,20 @@
                                  x-transition:leave-end="transform opacity-0 scale-95"
                                  class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 z-50">
                                 <div class="py-1">
-                                    <a href="{{ route('user.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('user.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                    <a href="{{ route('admin.user.index') }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.user.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Users') }}
                                     </a>
-                                     <a href="{{ route('role.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('role.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                     <a href="{{ route('admin.role.index') }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.role.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Roles') }}
                                     </a>
-                                    <a href="{{ route('menu-items.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('menu-items.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                    <a href="{{ route('admin.menu-items.index') }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.menu-items.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Menu Items') }}
                                     </a>
-                                    <a href="{{ route('sale-analytics.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('sale-analytics.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                    <a href="{{ route('admin.sale-analytics.index') }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.sale-analytics.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Sale Analytics') }}
                                     </a>
                                 </div>
@@ -77,16 +77,16 @@
                                  x-transition:leave-end="transform opacity-0 scale-95"
                                  class="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 z-50">
                                 <div class="py-1">
-                                    <a href="{{ route('table.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('table.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                    <a href="{{ route('admin.table.index') }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.table.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Tables') }}
                                     </a>
-                                    <a href="{{ route('table-reservation.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('table-reservation.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                    <a href="{{ route('admin.table-reservation.index') }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.table-reservation.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Table Reservations') }}
                                     </a>
-                                    <a href="{{ route('table-layout-config.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('table-layout-config.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                    <a href="{{ route('admin.table-layout-config.index') }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.table-layout-config.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Table Layout Configs') }}
                                     </a>
                                 </div>
@@ -113,20 +113,20 @@
                                  x-transition:leave-end="transform opacity-0 scale-95"
                                  class="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 z-50">
                                 <div class="py-1">
-                                    <a href="{{ route('order.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('order.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                    <a href="{{ route('admin.order.index') }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.order.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Orders') }}
                                     </a>
-                                    <a href="{{ route('order-item.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('order-item.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                    <a href="{{ route('admin.order-item.index') }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.order-item.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Order Items') }}
                                     </a>
-                                    <a href="{{ route('order-etas.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('order-etas.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                    <a href="{{ route('admin.order-etas.index') }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.order-etas.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Order ETAS') }}
                                     </a>
-                                    <a href="{{ route('order-trackings.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('order-trackings.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                    <a href="{{ route('admin.order-trackings.index') }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.order-trackings.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Order Trackings') }}
                                     </a>
                                 </div>
@@ -194,31 +194,31 @@
             </x-responsive-nav-link>
 
                 <!-- Mobile Links -->
-                <x-responsive-nav-link :href="route('user.index')" :active="request()->routeIs('user.index')">
+                <x-responsive-nav-link :href="route('admin.user.index')" :active="request()->routeIs('admin.user.index')">
                     {{ __('Users') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('role.index')" :active="request()->routeIs('role.index')">
+                <x-responsive-nav-link :href="route('admin.role.index')" :active="request()->routeIs('admin.role.index')">
                     {{ __('Roles') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('table.index')" :active="request()->routeIs('table.index')">
+                <x-responsive-nav-link :href="route('admin.table.index')" :active="request()->routeIs('admin.table.index')">
                     {{ __('Tables') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('table-reservation.index')" :active="request()->routeIs('table-reservation.index')">
+                <x-responsive-nav-link :href="route('admin.table-reservation.index')" :active="request()->routeIs('admin.table-reservation.index')">
                     {{ __('Table Reservations') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('table-layout-config.index')" :active="request()->routeIs('table-layout-config.index')">
+                <x-responsive-nav-link :href="route('admin.table-layout-config.index')" :active="request()->routeIs('admin.table-layout-config.index')">
                     {{ __('Table Layout Configs') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('menu-items.index')" :active="request()->routeIs('menu-items.index')">
+                <x-responsive-nav-link :href="route('admin.menu-items.index')" :active="request()->routeIs('admin.menu-items.index')">
                     {{ __('Menu Items') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('order.index')" :active="request()->routeIs('order.index')">
+                <x-responsive-nav-link :href="route('admin.order.index')" :active="request()->routeIs('admin.order.index')">
                     {{ __('Orders') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('order-item.index')" :active="request()->routeIs('order-item.index')">
+                <x-responsive-nav-link :href="route('admin.order-item.index')" :active="request()->routeIs('admin.order-item.index')">
                     {{ __('Order Items') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('order-etas.index')" :active="request()->routeIs('order-etas.index')">
+                <x-responsive-nav-link :href="route('admin.order-etas.index')" :active="request()->routeIs('admin.order-etas.index')">
                     {{ __('Order ETAs') }}
                 </x-responsive-nav-link>
                 

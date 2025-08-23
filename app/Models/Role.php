@@ -13,17 +13,15 @@ class Role extends Model
     protected $fillable = [
         'name',
         'description',
-        'permissions',
-        'is_active',
-    ];
-
-    protected $casts = [
-        'permissions' => 'array',
-        'is_active' => 'boolean',
     ];
     
     public function staffProfiles()
     {
         return $this->hasMany(StaffProfile::class, 'roles_id');
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Role;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -49,6 +50,15 @@ class User extends Authenticatable implements MustVerifyEmail
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new CustomPasswordResetNotification($token));
+    }
+
+    public function roles() {
+        return $this->belongsToMany(Role::class);
+    }
+ 
+ 
+    public function hasRole($role) {
+        return $this->roles()->where('name', $role)->exists();
     }
 
     // Relationships
