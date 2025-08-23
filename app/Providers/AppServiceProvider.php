@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -28,6 +30,10 @@ class AppServiceProvider extends ServiceProvider
                 ->line('Terima kasih kerana mendaftar ke KelasProgramming.com. Sila sahkan email anda. Klik butang di bawah untuk pengesahan.')
                 ->action('Sahkan Email Anda', $url)
                 ->salutation('Terima kasih.');
+        });
+
+        Gate::define('access-roles', function (User $user) {
+            return $user->hasRole('Admin');
         });
     }
 }

@@ -1,21 +1,34 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
-
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Role;
+
+// use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class RoleController extends Controller
 {
+    use AuthorizesRequests;
+ 
+ 
+    public function __construct()
+    {
+        $this->authorizeResource(Role::class, 'role');
+    }
+
     /**
      * Display a listing of the resource.
      */
+    
     public function index()
     {
         if (request('cancel')) {
             return redirect()->route('admin.role.index');
         }
+        // Gate::authorize('access-roles');
 
         $roles = Role::paginate(10);
         return view('admin.role.index', compact('roles'));
@@ -71,6 +84,10 @@ class RoleController extends Controller
      */
     public function update(Request $request, Role $role)
     {
+        if ($request->user()->cannot('update', Role::class)) {
+            abort(403);
+        }
+
         $this->validate($request, [
             'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
             'description' => 'nullable|string',

@@ -41,10 +41,12 @@
                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.user.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Users') }}
                                     </a>
+                                    @can('viewAny',App\Models\Role::Class)                                
                                      <a href="{{ route('admin.role.index') }}" 
                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.role.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Roles') }}
                                     </a>
+                                     @endcan
                                     <a href="{{ route('admin.menu-items.index') }}" 
                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.menu-items.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Menu Items') }}
