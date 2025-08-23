@@ -14,6 +14,9 @@ use App\Http\Controllers\Admin\OrderTrackingController;
 use App\Http\Controllers\Admin\SaleAnalyticsController;
 use App\Http\Controllers\Admin\PushNotificationController;
 
+use Illuminate\Support\Facades\Mail;
+use App\Mail\HappyBirthday;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +30,16 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+Route::get('/send-birthday-email/{user}', function (User $user) {
+    // Trigger the birthday email
+    Mail::to($user->email)->send(new HappyBirthday($user));
+ 
+ 
+    return response()->json([
+        'message' => "Happy Birthday email sent to {$user->name}!",
+        'email' => $user->email,
+    ]);
+});
 
 Route::get('/', function () {
     return view('welcome');
