@@ -18,7 +18,7 @@
                     </p>
                 </header>
 
-                <form method="post" action="{{ route('sale-analytics.update', $saleAnalytics->id) }}" class="mt-6 space-y-6">
+                <form method="post" action="{{ route('admin.sale-analytics.update', $saleAnalytics->id) }}" class="mt-6 space-y-6">
                     @csrf
                     @method('PUT')
 
@@ -315,12 +315,12 @@
                     <div class="flex items-center gap-4">
                         <x-primary-button>{{ __('Update Analytics') }}</x-primary-button>
 
-                        <a href="{{ route('sale-analytics.show', $saleAnalytics->id) }}"
+                        <a href="{{ route('admin.sale-analytics.show', $saleAnalytics->id) }}"
                         class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600 focus:outline-none focus:border-gray-600 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
                             View Details
                         </a>
 
-                        <a href="{{ route('sale-analytics.index') }}"
+                        <a href="{{ route('admin.sale-analytics.index') }}"
                         class="inline-flex items-center px-4 py-2 bg-gray-400 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-500 focus:outline-none focus:border-gray-500 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
                             Back to List
                         </a>
@@ -377,7 +377,7 @@
 
             const date = dateInput.value;
             
-            fetch(`{{ route('sale-analytics.generate', '') }}/${date}`, {
+            fetch(`{{ route('admin.sale-analytics.generate', '') }}/${date}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

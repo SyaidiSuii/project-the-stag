@@ -10,7 +10,7 @@
 
             <!-- Action Buttons -->
             <div class="pb-3 flex justify-between items-center">
-                <a href="{{ route('sale-analytics.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
+                <a href="{{ route('admin.sale-analytics.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
                     Create New Analytics Record
                 </a>
                 <div class="flex space-x-2">
@@ -104,7 +104,7 @@
             <!-- Filters -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-4">
                 <div class="p-4 bg-gray-50">
-                    <form method="GET" action="{{ route('sale-analytics.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <form method="GET" action="{{ route('admin.sale-analytics.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
                             <input type="date" name="start_date" id="start_date" value="{{ request('start_date') }}" 
@@ -141,7 +141,7 @@
 
                     @if(request()->hasAny(['start_date', 'end_date']))
                         <div class="mt-3">
-                            <a href="{{ route('sale-analytics.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
+                            <a href="{{ route('admin.sale-analytics.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
                                 Clear all filters
                             </a>
                         </div>
@@ -250,16 +250,16 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex space-x-2">
-                                            <a href="{{ route('sale-analytics.show', $analytic->id) }}" 
+                                            <a href="{{ route('admin.sale-analytics.show', $analytic->id) }}" 
                                                class="inline-flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 
                                                 border border-transparent rounded text-xs text-white shadow">
                                                 View
                                             </a>
-                                            <a href="{{ route('sale-analytics.edit', $analytic->id) }}" 
+                                            <a href="{{ route('admin.sale-analytics.edit', $analytic->id) }}" 
                                                class="inline-flex items-center px-2 py-1 bg-gray-800 border border-transparent rounded text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                                                 Edit
                                             </a>
-                                            <form method="POST" action="{{ route('sale-analytics.destroy', $analytic->id) }}" 
+                                            <form method="POST" action="{{ route('admin.sale-analytics.destroy', $analytic->id) }}" 
                                                   onsubmit="return confirm('Are you sure to delete this analytics record?');" class="inline">
                                                 <input type="hidden" name="_method" value="DELETE">
                                                 @csrf
@@ -333,7 +333,7 @@
         });
 
         function loadDashboardStats() {
-            fetch('{{ route("sale-analytics.dashboard-stats") }}?period=month')
+            fetch('{{ route("admin.sale-analytics.dashboard-stats") }}?period=month')
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('total-sales').textContent = 'RM ' + (data.total_sales ? parseFloat(data.total_sales).toLocaleString('en-MY', {minimumFractionDigits: 2}) : '0.00');
@@ -357,7 +357,7 @@
 
             const today = new Date().toISOString().split('T')[0];
             
-            fetch(`{{ route('sale-analytics.generate', '') }}/${today}`, {
+            fetch(`{{ route('admin.sale-analytics.generate', '') }}/${today}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -438,7 +438,7 @@
             
             content.innerHTML = '<p class="text-gray-500">Loading trends data...</p>';
             
-            fetch(`{{ route('sale-analytics.trends') }}?period=${period}&compare=true`)
+            fetch(`{{ route('admin.sale-analytics.trends') }}?period=${period}&compare=true`)
                 .then(response => response.json())
                 .then(data => {
                     let html = '<div class="grid grid-cols-2 gap-4">';
@@ -488,7 +488,7 @@
             const startDate = document.getElementById('start_date').value;
             const endDate = document.getElementById('end_date').value;
             
-            let url = '{{ route("sale-analytics.index") }}?export=csv';
+            let url = '{{ route("admin.sale-analytics.index") }}?export=csv';
             if (startDate) url += `&start_date=${startDate}`;
             if (endDate) url += `&end_date=${endDate}`;
             

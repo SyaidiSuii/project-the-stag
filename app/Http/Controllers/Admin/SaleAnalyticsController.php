@@ -79,7 +79,7 @@ class SaleAnalyticsController extends Controller
 
         $analytics = SaleAnalytics::create($request->all());
 
-        return redirect()->route('sale-analytics.index')
+        return redirect()->route('admin.sale-analytics.index')
                         ->with('success', 'Analytics record created successfully.');
     }
 
@@ -132,7 +132,7 @@ class SaleAnalyticsController extends Controller
 
         $saleAnalytics->update($request->all());
 
-        return redirect()->route('sale-analytics.index')
+        return redirect()->route('admin.sale-analytics.index')
                         ->with('success', 'Analytics record updated successfully.');
     }
 
@@ -143,7 +143,7 @@ class SaleAnalyticsController extends Controller
     {
         $saleAnalytics->delete();
 
-        return redirect()->route('sale-analytics.index')
+        return redirect()->route('admin.sale-analytics.index')
                         ->with('success', 'Analytics record deleted successfully.');
     }
 
