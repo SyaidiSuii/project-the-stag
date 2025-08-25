@@ -18,7 +18,7 @@ class TableReservationController extends Controller
     public function index(Request $request)
     {
         if (request('cancel')) {
-            return redirect()->route('table-reservation.index');
+            return redirect()->route('admin.table-reservation.index');
         }
 
         $query = TableReservation::with(['user', 'table']);
@@ -56,7 +56,7 @@ class TableReservationController extends Controller
         $tables = Table::where('is_active', true)->get();
         $statuses = ['pending', 'confirmed', 'seated', 'completed', 'cancelled', 'no_show'];
 
-        return view('table-reservation.index', compact('reservations', 'tables', 'statuses'));
+        return view('admin.table-reservation.index', compact('reservations', 'tables', 'statuses'));
     }
 
     /**
@@ -68,7 +68,7 @@ class TableReservationController extends Controller
         $tables = Table::where('is_active', true)->get();
         $users = User::where('is_active', true)->get();
         
-        return view('table-reservation.form', compact('reservation', 'tables', 'users'));
+        return view('admin.table-reservation.form', compact('reservation', 'tables', 'users'));
     }
 
     /**
@@ -123,7 +123,7 @@ class TableReservationController extends Controller
 
         $reservation->save();
 
-        return redirect()->route('table-reservation.index')->with('message', 'Reservation has been created successfully!');
+        return redirect()->route('admin.table-reservation.index')->with('message', 'Reservation has been created successfully!');
     }
 
     /**
@@ -132,7 +132,7 @@ class TableReservationController extends Controller
     public function show(TableReservation $tableReservation)
     {
         $tableReservation->load(['user', 'table']);
-        return view('table-reservation.show', compact('tableReservation'));
+        return view('admin.table-reservation.show', compact('tableReservation'));
     }
 
     /**
@@ -144,7 +144,7 @@ class TableReservationController extends Controller
         $tables = Table::where('is_active', true)->get();
         $users = User::where('is_active', true)->get();
         
-        return view('table-reservation.form', compact('reservation', 'tables', 'users'));
+        return view('admin.table-reservation.form', compact('reservation', 'tables', 'users'));
     }
 
     /**
@@ -198,7 +198,7 @@ class TableReservationController extends Controller
         
         $tableReservation->save();
 
-        return redirect()->route('table-reservation.index')->with('message', 'Reservation has been updated successfully!');
+        return redirect()->route('admin.table-reservation.index')->with('message', 'Reservation has been updated successfully!');
     }
 
     /**
@@ -207,7 +207,7 @@ class TableReservationController extends Controller
     public function destroy(TableReservation $tableReservation)
     {
         $tableReservation->delete();
-        return redirect()->route('table-reservation.index')->with('message', 'Reservation has been deleted successfully!');
+        return redirect()->route('admin.table-reservation.index')->with('message', 'Reservation has been deleted successfully!');
     }
 
     /**
@@ -269,6 +269,6 @@ class TableReservationController extends Controller
             ->get()
             ->groupBy('status');
 
-        return view('table-reservation.today', compact('reservations'));
+        return view('admin.table-reservation.today', compact('reservations'));
     }
 }

@@ -27,10 +27,10 @@
                 </header>
 
                 @if($reservation->id)
-                    <form method="post" action="{{ route('table-reservation.update', $reservation->id) }}" class="mt-6 space-y-6">
+                    <form method="post" action="{{ route('admin.table-reservation.update', $reservation->id) }}" class="mt-6 space-y-6">
                         <input type="hidden" name="_method" value="PUT">
                 @else
-                    <form method="post" action="{{ route('table-reservation.store') }}" class="mt-6 space-y-6">
+                    <form method="post" action="{{ route('admin.table-reservation.store') }}" class="mt-6 space-y-6">
                         <input type="hidden" name="_method" value="POST">
                 @endif
                     @csrf
@@ -183,7 +183,7 @@
                     <div class="flex items-center gap-4">
                         <x-primary-button>{{ __('Save Reservation') }}</x-primary-button>
 
-                        <a href="{{ route('table-reservation.index', ['cancel' => 'true']) }}"
+                        <a href="{{ route('admin.table-reservation.index', ['cancel' => 'true']) }}"
                         class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600 focus:outline-none focus:border-gray-600 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
                             Cancel
                         </a>

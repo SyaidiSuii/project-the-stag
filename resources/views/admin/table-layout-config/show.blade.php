@@ -22,11 +22,11 @@
                     </p>
                 </div>
                 <div class="flex gap-2">
-                    <a href="{{ route('table-layout-config.edit', $layout->id) }}" 
+                    <a href="{{ route('admin.table-layout-config.edit', $layout->id) }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                         Edit Layout
                     </a>
-                    <a href="{{ route('table-layout-config.index') }}" 
+                    <a href="{{ route('admin.table-layout-config.index') }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600">
                         Back to List
                     </a>
@@ -137,7 +137,7 @@
                         </div>
                         <div class="p-4 space-y-3">
                             <!-- Toggle Status -->
-                            <form method="POST" action="{{ route('table-layout-config.toggle-status', $layout->id) }}" class="inline">
+                            <form method="POST" action="{{ route('admin.table-layout-config.toggle-status', $layout->id) }}" class="inline">
                                 @csrf
                                 <button type="submit" 
                                         onclick="return confirm('Are you sure you want to {{ $layout->is_active ? 'deactivate' : 'activate' }} this layout?')"
@@ -150,7 +150,7 @@
                             </form>
 
                             <!-- Duplicate Layout -->
-                            <form method="POST" action="{{ route('table-layout-config.duplicate', $layout->id) }}" class="inline">
+                            <form method="POST" action="{{ route('admin.table-layout-config.duplicate', $layout->id) }}" class="inline">
                                 @csrf
                                 <button type="submit" 
                                         onclick="return confirm('This will create a copy of this layout configuration. Continue?')"
@@ -160,7 +160,7 @@
                             </form>
 
                             <!-- Delete Layout -->
-                            <form method="POST" action="{{ route('table-layout-config.destroy', $layout->id) }}" class="inline">
+                            <form method="POST" action="{{ route('admin.table-layout-config.destroy', $layout->id) }}" class="inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" 

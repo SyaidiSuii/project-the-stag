@@ -15,11 +15,11 @@
                     <p class="text-sm text-gray-600">{{ $tableReservation->guest_name }} - {{ $tableReservation->reservation_date->format('M d, Y') }}</p>
                 </div>
                 <div class="flex gap-2">
-                    <a href="{{ route('table-reservation.edit', $tableReservation->id) }}" 
+                    <a href="{{ route('admin.table-reservation.edit', $tableReservation->id) }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                         Edit Reservation
                     </a>
-                    <a href="{{ route('table-reservation.index') }}" 
+                    <a href="{{ route('admin.table-reservation.index') }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600">
                         Back to List
                     </a>
@@ -33,7 +33,7 @@
                     <h4 class="font-semibold text-gray-800">Quick Status Update</h4>
                 </div>
                 <div class="p-4">
-                    <form method="POST" action="{{ route('table-reservation.update-status', $tableReservation->id) }}" class="flex items-end gap-4">
+                    <form method="POST" action="{{ route('admin.table-reservation.update-status', $tableReservation->id) }}" class="flex items-end gap-4">
                         @csrf
                         <div>
                             <label for="status" class="block text-sm font-medium text-gray-700">New Status</label>

@@ -16,7 +16,7 @@ class TableLayoutConfigController extends Controller
     public function index(Request $request)
     {
         if (request('cancel')) {
-            return redirect()->route('table-layout-config.index');
+            return redirect()->route('admin.table-layout-config.index');
         }
 
         $query = TableLayoutConfig::query();
@@ -46,7 +46,7 @@ class TableLayoutConfigController extends Controller
                         ->orderBy('created_at', 'desc')
                         ->paginate(12);
 
-        return view('table-layout-config.index', compact('layouts'));
+        return view('admin.table-layout-config.index', compact('layouts'));
     }
 
     /**
@@ -56,7 +56,7 @@ class TableLayoutConfigController extends Controller
     {
         $layout = new TableLayoutConfig;
         
-        return view('table-layout-config.form', compact('layout'));
+        return view('admin.table-layout-config.form', compact('layout'));
     }
 
     /**
@@ -94,7 +94,7 @@ class TableLayoutConfigController extends Controller
 
         $layout->save();
 
-        return redirect()->route('table-layout-config.index')
+        return redirect()->route('admin.table-layout-config.index')
                         ->with('message', 'Layout configuration has been created successfully!');
     }
 
@@ -104,7 +104,7 @@ class TableLayoutConfigController extends Controller
     public function show(TableLayoutConfig $tableLayoutConfig)
     {
         $layout = $tableLayoutConfig;
-        return view('table-layout-config.show', compact('layout'));
+        return view('admin.table-layout-config.show', compact('layout'));
     }
 
     /**
@@ -114,7 +114,7 @@ class TableLayoutConfigController extends Controller
     {
         $layout = $tableLayoutConfig;
         
-        return view('table-layout-config.form', compact('layout'));
+        return view('admin.table-layout-config.form', compact('layout'));
     }
 
     /**
@@ -158,7 +158,7 @@ class TableLayoutConfigController extends Controller
 
         $tableLayoutConfig->save();
 
-        return redirect()->route('table-layout-config.index')
+        return redirect()->route('admin.table-layout-config.index')
                         ->with('message', 'Layout configuration has been updated successfully!');
     }
 
@@ -174,7 +174,7 @@ class TableLayoutConfigController extends Controller
 
         $tableLayoutConfig->delete();
         
-        return redirect()->route('table-layout-config.index')
+        return redirect()->route('admin.table-layout-config.index')
                         ->with('message', 'Layout configuration has been deleted successfully!');
     }
 
@@ -225,7 +225,7 @@ class TableLayoutConfigController extends Controller
         
         $newLayout->save();
 
-        return redirect()->route('table-layout-config.edit', $newLayout->id)
+        return redirect()->route('admin.table-layout-config.edit', $newLayout->id)
                         ->with('message', 'Layout configuration has been duplicated successfully! You can now modify the copy.');
     }
 
@@ -300,7 +300,7 @@ class TableLayoutConfigController extends Controller
                 break;
         }
 
-        return redirect()->route('table-layout-config.index')->with('message', $message);
+        return redirect()->route('admin.table-layout-config.index')->with('message', $message);
     }
 
     /**

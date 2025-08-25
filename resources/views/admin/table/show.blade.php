@@ -16,10 +16,10 @@
                             <p class="text-sm text-gray-600">{{ $table->location_description ?: 'No location specified' }}</p>
                         </div>
                         <div class="flex gap-2">
-                            <a href="{{ route('table.edit', $table->id) }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            <a href="{{ route('admin.table.edit', $table->id) }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                                 Edit Table
                             </a>
-                            <a href="{{ route('table.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600">
+                            <a href="{{ route('admin.table.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600">
                                 Back to List
                             </a>
                         </div>

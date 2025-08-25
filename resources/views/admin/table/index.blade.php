@@ -9,7 +9,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
             <div class="pb-3">
-               <a href="{{ route('table.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white">Add New Table</a> 
+               <a href="{{ route('admin.table.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white">Add New Table</a> 
             </div>
             
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-3">
@@ -65,14 +65,14 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <form method="POST" action="{{ route('table.destroy', $table->id) }}" onsubmit="return confirm('Are you sure to delete this table?');" class="inline">
+                                    <form method="POST" action="{{ route('admin.table.destroy', $table->id) }}" onsubmit="return confirm('Are you sure to delete this table?');" class="inline">
                                         <input type="hidden" name="_method" value="DELETE">
                                         @csrf
-                                        <a href="{{ route('table.show', $table->id) }}" class="relative z-10 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 
+                                        <a href="{{ route('admin.table.show', $table->id) }}" class="relative z-10 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 
                                                 border border-transparent rounded-lg font-medium text-sm text-black shadow">
                                             View
                                         </a>
-                                        <a href="{{ route('table.edit', $table->id) }}" class="inline-flex items-center px-3 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 mr-2">
+                                        <a href="{{ route('admin.table.edit', $table->id) }}" class="inline-flex items-center px-3 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 mr-2">
                                             Edit
                                         </a> 
                                         <x-danger-button class="text-xs">

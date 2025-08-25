@@ -10,10 +10,10 @@
 
             <!-- Action Buttons -->
             <div class="pb-3 flex justify-between items-center">
-                <a href="{{ route('table-reservation.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
+                <a href="{{ route('admin.table-reservation.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
                     Add New Reservation
                 </a>
-                <a href="{{ route('table-reservation.today') }}" class="items-center px-4 py-2 bg-blue-600 rounded font-semibold text-white hover:bg-blue-700">
+                <a href="{{ route('admin.table-reservation.today') }}" class="items-center px-4 py-2 bg-blue-600 rounded font-semibold text-white hover:bg-blue-700">
                     Today's Reservations
                 </a>
             </div>
@@ -21,7 +21,7 @@
             <!-- Filters -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-4">
                 <div class="p-4 bg-gray-50">
-                    <form method="GET" action="{{ route('table-reservation.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <form method="GET" action="{{ route('admin.table-reservation.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div>
                             <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
                             <input type="text" name="search" id="search" value="{{ request('search') }}" 
@@ -71,7 +71,7 @@
 
                     @if(request()->hasAny(['search', 'status', 'date', 'table_id']))
                         <div class="mt-3">
-                            <a href="{{ route('table-reservation.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
+                            <a href="{{ route('admin.table-reservation.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
                                 Clear all filters
                             </a>
                         </div>
@@ -154,17 +154,17 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex space-x-2">
-                                            <a href="{{ route('table-reservation.show', $reservation->id) }}" 
+                                            <a href="{{ route('admin.table-reservation.show', $reservation->id) }}" 
                                                class="relative z-10 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 
                                                 border border-transparent rounded-lg font-medium text-sm text-black shadow">
                                                 View
                                             </a>
-                                            <a href="{{ route('table-reservation.edit', $reservation->id) }}" 
+                                            <a href="{{ route('admin.table-reservation.edit', $reservation->id) }}" 
                                                class="inline-flex items-center px-2 py-1 bg-gray-800 border border-transparent rounded text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                                                 Edit
                                             </a>
                                             @if(in_array($reservation->status, ['pending', 'confirmed']))
-                                                <form method="POST" action="{{ route('table-reservation.destroy', $reservation->id) }}" 
+                                                <form method="POST" action="{{ route('admin.table-reservation.destroy', $reservation->id) }}" 
                                                       onsubmit="return confirm('Are you sure to delete this reservation?');" class="inline">
                                                     <input type="hidden" name="_method" value="DELETE">
                                                     @csrf

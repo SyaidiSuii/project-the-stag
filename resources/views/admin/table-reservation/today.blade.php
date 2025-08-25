@@ -113,10 +113,10 @@
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-lg font-medium text-gray-900">Reservations by Status</h3>
                 <div class="flex gap-2">
-                    <a href="{{ route('table-reservation.create') }}" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700">
+                    <a href="{{ route('admin.table-reservation.create') }}" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700">
                         New Reservation
                     </a>
-                    <a href="{{ route('table-reservation.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
+                    <a href="{{ route('admin.table-reservation.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
                         All Reservations
                     </a>
                 </div>
@@ -183,7 +183,7 @@
                                     <div class="flex justify-between items-center">
                                         <div class="flex space-x-1">
                                             @if($status == 'pending')
-                                                <form method="POST" action="{{ route('table-reservation.update-status', $reservation->id) }}" class="inline" data-guest-name="{{ $reservation->guest_name }}">
+                                                <form method="POST" action="{{ route('admin.table-reservation.update-status', $reservation->id) }}" class="inline" data-guest-name="{{ $reservation->guest_name }}">
                                                     @csrf
                                                     <input type="hidden" name="status" value="confirmed">
                                                     <button type="submit" class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
@@ -191,7 +191,7 @@
                                                     </button>
                                                 </form>
                                             @elseif($status == 'confirmed')
-                                                <form method="POST" action="{{ route('table-reservation.update-status', $reservation->id) }}" class="inline" data-guest-name="{{ $reservation->guest_name }}">
+                                                <form method="POST" action="{{ route('admin.table-reservation.update-status', $reservation->id) }}" class="inline" data-guest-name="{{ $reservation->guest_name }}">
                                                     @csrf
                                                     <input type="hidden" name="status" value="seated">
                                                     <button type="submit" class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
@@ -199,7 +199,7 @@
                                                     </button>
                                                 </form>
                                             @elseif($status == 'seated')
-                                                <form method="POST" action="{{ route('table-reservation.update-status', $reservation->id) }}" class="inline" data-guest-name="{{ $reservation->guest_name }}">
+                                                <form method="POST" action="{{ route('admin.table-reservation.update-status', $reservation->id) }}" class="inline" data-guest-name="{{ $reservation->guest_name }}">
                                                     @csrf
                                                     <input type="hidden" name="status" value="completed">
                                                     <button type="submit" class="px-2 py-1 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700">
@@ -210,11 +210,11 @@
                                         </div>
                                         
                                         <div class="flex space-x-1">
-                                            <a href="{{ route('table-reservation.show', $reservation->id) }}" 
+                                            <a href="{{ route('admin.table-reservation.show', $reservation->id) }}" 
                                                class="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700">
                                                 View
                                             </a>
-                                            <a href="{{ route('table-reservation.edit', $reservation->id) }}" 
+                                            <a href="{{ route('admin.table-reservation.edit', $reservation->id) }}" 
                                                class="px-2 py-1 bg-gray-800 text-white text-xs rounded hover:bg-gray-900">
                                                 Edit
                                             </a>
@@ -268,7 +268,7 @@
                                     </div>
                                 </div>
                                 <div class="flex space-x-2">
-                                    <a href="{{ route('table-reservation.show', $reservation->id) }}" 
+                                    <a href="{{ route('admin.table-reservation.show', $reservation->id) }}" 
                                        class="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700">
                                         View
                                     </a>
@@ -290,7 +290,7 @@
                         <h3 class="mt-2 text-sm font-medium text-gray-900">No reservations today</h3>
                         <p class="mt-1 text-sm text-gray-500">Get started by creating a new reservation.</p>
                         <div class="mt-6">
-                            <a href="{{ route('table-reservation.create') }}" 
+                            <a href="{{ route('admin.table-reservation.create') }}" 
                                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                                 New Reservation
                             </a>

@@ -11,7 +11,7 @@
 
             <!-- Action Buttons -->
             <div class="pb-3 flex justify-between items-center">
-                <a href="{{ route('table-layout-config.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
+                <a href="{{ route('admin.table-layout-config.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
                     Add New Layout
                 </a>
                 <div class="text-sm text-gray-600">
@@ -22,7 +22,7 @@
             <!-- Filters -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-4">
                 <div class="p-4 bg-gray-50">
-                    <form method="GET" action="{{ route('table-layout-config.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <form method="GET" action="{{ route('admin.table-layout-config.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
                             <input type="text" name="search" id="search" value="{{ request('search') }}" 
@@ -61,7 +61,7 @@
 
                     @if(request()->hasAny(['search', 'status', 'canvas_size']))
                         <div class="mt-3">
-                            <a href="{{ route('table-layout-config.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
+                            <a href="{{ route('admin.table-layout-config.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
                                 Clear all filters
                             </a>
                         </div>
@@ -136,16 +136,16 @@
 
                                 <!-- Action Buttons -->
                                 <div class="flex space-x-2">
-                                    <a href="{{ route('table-layout-config.show', $layout->id) }}" 
+                                    <a href="{{ route('admin.table-layout-config.show', $layout->id) }}" 
                                        class="relative z-10 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 
                                                 border border-transparent rounded-lg font-medium text-sm text-black shadow">
                                         View
                                     </a>
-                                    <a href="{{ route('table-layout-config.edit', $layout->id) }}" 
+                                    <a href="{{ route('admin.table-layout-config.edit', $layout->id) }}" 
                                        class="flex-1 text-center px-3 py-2 bg-gray-800 text-white text-sm rounded hover:bg-gray-700">
                                         Edit
                                     </a>
-                                    <form method="POST" action="{{ route('table-layout-config.destroy', $layout->id) }}" 
+                                    <form method="POST" action="{{ route('admin.table-layout-config.destroy', $layout->id) }}" 
                                           onsubmit="return confirm('Are you sure to delete this layout configuration?');" class="inline">
                                         <input type="hidden" name="_method" value="DELETE">
                                         @csrf
@@ -164,7 +164,7 @@
                                 </svg>
                                 <h3 class="text-lg font-medium text-gray-900 mb-2">No layout configurations found</h3>
                                 <p class="text-gray-500 mb-6">Create your first table layout configuration to get started.</p>
-                                <a href="{{ route('table-layout-config.create') }}" 
+                                <a href="{{ route('admin.table-layout-config.create') }}" 
                                    class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
                                     Create Layout
                                 </a>

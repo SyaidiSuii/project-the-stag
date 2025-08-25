@@ -16,11 +16,11 @@ class TableController extends Controller
     public function index()
     {
         if (request('cancel')) {
-            return redirect()->route('table.index');
+            return redirect()->route('admin.table.index');
         }
 
         $tables = Table::paginate(10);
-        return view('table.index', compact('tables'));
+        return view('admin.table.index', compact('tables'));
     }
 
     /**
@@ -29,7 +29,7 @@ class TableController extends Controller
     public function create()
     {
         $table = new Table;
-        return view('table.form', compact('table'));
+        return view('admin.table.form', compact('table'));
     }
 
     /**
@@ -77,7 +77,7 @@ class TableController extends Controller
 
         $table->save();
 
-        return redirect()->route('table.index')->with('message', 'Table record has been saved!');
+        return redirect()->route('admin.table.index')->with('message', 'Table record has been saved!');
     }
 
     /**
@@ -85,7 +85,7 @@ class TableController extends Controller
      */
     public function show(Table $table)
     {
-        return view('table.show', compact('table'));
+        return view('admin.table.show', compact('table'));
     }
 
     /**
@@ -93,7 +93,7 @@ class TableController extends Controller
      */
     public function edit(Table $table)
     {
-        return view('table.form', compact('table'));
+        return view('admin.table.form', compact('table'));
     }
 
     /**
@@ -147,7 +147,7 @@ class TableController extends Controller
         
         $table->save();
 
-        return redirect()->route('table.index')->with('message', 'Table record has been updated!');
+        return redirect()->route('admin.table.index')->with('message', 'Table record has been updated!');
     }
 
     /**
@@ -156,6 +156,6 @@ class TableController extends Controller
     public function destroy(Table $table)
     {
         $table->delete();
-        return redirect()->route('table.index')->with('message', 'Table record has been deleted!');
+        return redirect()->route('admin.table.index')->with('message', 'Table record has been deleted!');
     }
 }
