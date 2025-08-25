@@ -10,14 +10,14 @@
 
             <!-- Action Buttons -->
             <div class="pb-3 flex justify-between items-center">
-                <a href="{{ route('menu-items.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
+                <a href="{{ route('admin.menu-items.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
                     Add New Menu Item
                 </a>
                 <div class="flex gap-2">
-                    <a href="{{ route('menu-items.featured') }}" class="items-center px-4 py-2 bg-yellow-600 rounded font-semibold text-white hover:bg-yellow-700">
+                    <a href="{{ route('admin.menu-items.featured') }}" class="items-center px-4 py-2 bg-yellow-600 rounded font-semibold text-white hover:bg-yellow-700">
                         Featured Items
                     </a>
-                    <a href="{{ route('menu-items.stats') }}" class="items-center px-4 py-2 bg-blue-600 rounded font-semibold text-white hover:bg-blue-700">
+                    <a href="{{ route('admin.menu-items.stats') }}" class="items-center px-4 py-2 bg-blue-600 rounded font-semibold text-white hover:bg-blue-700">
                         Statistics
                     </a>
                 </div>
@@ -26,7 +26,7 @@
             <!-- Filters -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-4">
                 <div class="p-4 bg-gray-50">
-                    <form method="GET" action="{{ route('menu-items.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                    <form method="GET" action="{{ route('admin.menu-items.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-4">
                         <div>
                             <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
                             <input type="text" name="search" id="search" value="{{ request('search') }}" 
@@ -87,7 +87,7 @@
 
                     @if(request()->hasAny(['search', 'category', 'availability', 'featured', 'sort_by']))
                         <div class="mt-3">
-                            <a href="{{ route('menu-items.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
+                            <a href="{{ route('admin.menu-items.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
                                 Clear all filters
                             </a>
                         </div>
@@ -202,18 +202,18 @@
                                     <td class="px-6 py-4">
                                         <div class="flex flex-col space-y-1">
                                             <div class="flex space-x-1">
-                                                <a href="{{ route('menu-items.show', $menuItem->id) }}"
+                                                <a href="{{ route('admin.menu-items.show', $menuItem->id) }}"
                                                     class="inline-flex items-center px-4 py-2 bg-blue-600 text-black rounded-lg shadow hover:bg-blue-700">
                                                 View
                                                 </a>
 
-                                                <a href="{{ route('menu-items.edit', $menuItem->id) }}" 
+                                                <a href="{{ route('admin.menu-items.edit', $menuItem->id) }}" 
                                                    class="inline-flex items-center px-2 py-1 bg-gray-800 border border-transparent rounded text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                                                     Edit
                                                 </a>
                                             </div>
                                             <div class="flex space-x-1">
-                                                <form method="POST" action="{{ route('menu-items.toggle-availability', $menuItem->id) }}" class="inline">
+                                                <form method="POST" action="{{ route('admin.menu-items.toggle-availability', $menuItem->id) }}" class="inline">
                                                     @csrf
                                                     @method('PATCH')
                                                     <button type="submit" class="inline-flex items-center px-2 py-1 border border-transparent rounded text-xs uppercase tracking-widest
@@ -222,7 +222,7 @@
                                                         {{ $menuItem->availability ? 'Hide' : 'Show' }}
                                                     </button>
                                                 </form>
-                                                <form method="POST" action="{{ route('menu-items.toggle-featured', $menuItem->id) }}" class="inline">
+                                                <form method="POST" action="{{ route('admin.menu-items.toggle-featured', $menuItem->id) }}" class="inline">
                                                     @csrf
                                                     @method('PATCH')
                                                     <button type="submit" class="inline-flex items-center px-2 py-1 border border-transparent rounded text-xs uppercase tracking-widest
@@ -232,7 +232,7 @@
                                                     </button>
                                                 </form>
                                             </div>
-                                            <form method="POST" action="{{ route('menu-items.destroy', $menuItem->id) }}" 
+                                            <form method="POST" action="{{ route('admin.menu-items.destroy', $menuItem->id) }}" 
                                                   onsubmit="return confirm('Are you sure to delete this menu item?');" class="inline">
                                                 @csrf
                                                 @method('DELETE')

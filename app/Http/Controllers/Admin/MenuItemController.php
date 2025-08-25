@@ -54,7 +54,7 @@ class MenuItemController extends Controller
             $request->get('per_page', 15)
         );
 
-        return view('menu-items.index', compact('menuItems'));
+        return view('admin.menu-items.index', compact('menuItems'));
     }
 
     /**
@@ -63,7 +63,7 @@ class MenuItemController extends Controller
     public function create()
     {
         $menuItem = new MenuItem();
-        return view('menu-items.form', compact('menuItem'));
+        return view('admin.menu-items.form', compact('menuItem'));
     }
 
     /**
@@ -91,7 +91,7 @@ class MenuItemController extends Controller
 
         $menuItem = MenuItem::create($validated);
 
-        return redirect()->route('menu-items.index')
+        return redirect()->route('admin.menu-items.index')
                         ->with('message', 'Menu item created successfully');
     }
 
@@ -100,7 +100,7 @@ class MenuItemController extends Controller
      */
     public function show(MenuItem $menuItem)
     {
-        return view('menu-items.show', compact('menuItem'));
+        return view('admin.menu-items.show', compact('menuItem'));
     }
 
     /**
@@ -108,7 +108,7 @@ class MenuItemController extends Controller
      */
     public function edit(MenuItem $menuItem)
     {
-        return view('menu-items.form', compact('menuItem'));
+        return view('admin.menu-items.form', compact('menuItem'));
     }
 
     /**
@@ -135,7 +135,7 @@ class MenuItemController extends Controller
 
         $menuItem->update($validated);
 
-        return redirect()->route('menu-items.index')
+        return redirect()->route('admin.menu-items.index')
                         ->with('message', 'Menu item updated successfully');
     }
 
@@ -146,7 +146,7 @@ class MenuItemController extends Controller
     {
         $menuItem->delete();
 
-        return redirect()->route('menu-items.index')
+        return redirect()->route('admin.menu-items.index')
                         ->with('message', 'Menu item deleted successfully');
     }
 
@@ -159,7 +159,7 @@ class MenuItemController extends Controller
                                 ->orderBy('rating_average', 'desc')
                                 ->get();
 
-        return view('menu-items.featured', compact('featuredItems'));
+        return view('admin.menu-items.featured', compact('featuredItems'));
     }
 
     /**
@@ -186,7 +186,7 @@ class MenuItemController extends Controller
             ]
         ];
 
-        return view('menu-items.statistic', compact('stats'));
+        return view('admin.menu-items.statistic', compact('stats'));
     }
 
     /**

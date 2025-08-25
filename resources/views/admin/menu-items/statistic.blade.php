@@ -15,10 +15,10 @@
                     <p class="text-sm text-gray-600">Overview of your menu items</p>
                 </div>
                 <div class="flex gap-2">
-                    <a href="{{ route('menu-items.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
+                    <a href="{{ route('admin.menu-items.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
                         Add New Item
                     </a>
-                    <a href="{{ route('menu-items.index') }}" class="items-center px-4 py-2 bg-gray-500 rounded font-semibold text-white hover:bg-gray-600">
+                    <a href="{{ route('admin.menu-items.index') }}" class="items-center px-4 py-2 bg-gray-500 rounded font-semibold text-white hover:bg-gray-600">
                         All Items
                     </a>
                 </div>
@@ -223,7 +223,7 @@
                     </div>
                     <div class="p-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <a href="{{ route('menu-items.index', ['availability' => '0']) }}" 
+                            <a href="{{ route('admin.menu-items.index', ['availability' => '0']) }}" 
                                class="block p-4 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors">
                                 <div class="flex items-center">
                                     <svg class="w-6 h-6 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -236,7 +236,7 @@
                                 </div>
                             </a>
 
-                            <a href="{{ route('menu-items.featured') }}" 
+                            <a href="{{ route('admin.menu-items.featured') }}" 
                                class="block p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg border border-yellow-200 transition-colors">
                                 <div class="flex items-center">
                                     <svg class="w-6 h-6 text-yellow-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
@@ -249,7 +249,7 @@
                                 </div>
                             </a>
 
-                            <a href="{{ route('menu-items.index', ['sort_by' => 'rating_average', 'sort_order' => 'desc']) }}" 
+                            <a href="{{ route('admin.menu-items.index', ['sort_by' => 'rating_average', 'sort_order' => 'desc']) }}" 
                                class="block p-4 bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition-colors">
                                 <div class="flex items-center">
                                     <svg class="w-6 h-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,7 +262,7 @@
                                 </div>
                             </a>
 
-                            <a href="{{ route('menu-items.index', ['sort_by' => 'price', 'sort_order' => 'desc']) }}" 
+                            <a href="{{ route('admin.menu-items.index', ['sort_by' => 'price', 'sort_order' => 'desc']) }}" 
                                class="block p-4 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors">
                                 <div class="flex items-center">
                                     <svg class="w-6 h-6 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -311,7 +311,7 @@
                                 </div>
                                 <div class="text-lg font-bold text-gray-900">{{ $count }}</div>
                                 <div class="text-sm text-gray-600 capitalize">{{ $category }}</div>
-                                <a href="{{ route('menu-items.index', ['category' => $category]) }}" 
+                                <a href="{{ route('admin.menu-items.index', ['category' => $category]) }}" 
                                    class="text-xs text-indigo-600 hover:text-indigo-800 mt-1 inline-block">
                                     View Items
                                 </a>

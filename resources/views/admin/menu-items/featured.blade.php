@@ -15,10 +15,10 @@
                     <p class="text-sm text-gray-600">Items highlighted on your menu</p>
                 </div>
                 <div class="flex gap-2">
-                    <a href="{{ route('menu-items.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
+                    <a href="{{ route('admin.menu-items.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
                         Add New Item
                     </a>
-                    <a href="{{ route('menu-items.index') }}" class="items-center px-4 py-2 bg-gray-500 rounded font-semibold text-white hover:bg-gray-600">
+                    <a href="{{ route('admin.menu-items.index') }}" class="items-center px-4 py-2 bg-gray-500 rounded font-semibold text-white hover:bg-gray-600">
                         All Items
                     </a>
                 </div>
@@ -135,18 +135,18 @@
                             <!-- Actions -->
                             <div class="flex flex-col space-y-2">
                                 <div class="flex space-x-2">
-                                    <a href="{{ route('menu-items.show', $item->id) }}" 
+                                    <a href="{{ route('admin.menu-items.show', $item->id) }}" 
                                        class="flex-1 text-center px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
                                         View Details
                                     </a>
-                                    <a href="{{ route('menu-items.edit', $item->id) }}" 
+                                    <a href="{{ route('admin.menu-items.edit', $item->id) }}" 
                                        class="flex-1 text-center px-3 py-2 bg-gray-800 text-white text-sm rounded hover:bg-gray-700">
                                         Edit
                                     </a>
                                 </div>
                                 
                                 <div class="flex space-x-2">
-                                    <form method="POST" action="{{ route('menu-items.toggle-availability', $item->id) }}" class="flex-1">
+                                    <form method="POST" action="{{ route('admin.menu-items.toggle-availability', $item->id) }}" class="flex-1">
                                         @csrf
                                         @method('PATCH')
                                         <button type="submit" class="w-full px-3 py-2 text-sm rounded
@@ -156,7 +156,7 @@
                                         </button>
                                     </form>
                                     
-                                    <form method="POST" action="{{ route('menu-items.toggle-featured', $item->id) }}" class="flex-1">
+                                    <form method="POST" action="{{ route('admin.menu-items.toggle-featured', $item->id) }}" class="flex-1">
                                         @csrf
                                         @method('PATCH')
                                         <button type="submit" class="w-full px-3 py-2 bg-gray-500 text-white text-sm rounded hover:bg-gray-600">
@@ -179,7 +179,7 @@
                         <h3 class="mt-2 text-sm font-medium text-gray-900">No featured items</h3>
                         <p class="mt-1 text-sm text-gray-500">Get started by featuring some menu items to highlight them.</p>
                         <div class="mt-6">
-                            <a href="{{ route('menu-items.index') }}" 
+                            <a href="{{ route('admin.menu-items.index') }}" 
                                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                                 View All Menu Items
                             </a>

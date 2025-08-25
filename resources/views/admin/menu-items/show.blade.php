@@ -15,11 +15,11 @@
                     <p class="text-sm text-gray-600">{{ ucfirst($menuItem->category) }} - RM {{ number_format($menuItem->price, 2) }}</p>
                 </div>
                 <div class="flex gap-2">
-                    <a href="{{ route('menu-items.edit', $menuItem->id) }}" 
+                    <a href="{{ route('admin.menu-items.edit', $menuItem->id) }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                         Edit Menu Item
                     </a>
-                    <a href="{{ route('menu-items.index') }}" 
+                    <a href="{{ route('admin.menu-items.index') }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600">
                         Back to List
                     </a>
@@ -33,7 +33,7 @@
                 </div>
                 <div class="p-4">
                     <div class="flex flex-wrap gap-2">
-                        <form method="POST" action="{{ route('menu-items.toggle-availability', $menuItem->id) }}" class="inline">
+                        <form method="POST" action="{{ route('admin.menu-items.toggle-availability', $menuItem->id) }}" class="inline">
                             @csrf
                             @method('PATCH')
                             <button type="submit" class="px-4 py-2 rounded-md text-sm font-medium
@@ -43,7 +43,7 @@
                             </button>
                         </form>
 
-                        <form method="POST" action="{{ route('menu-items.toggle-featured', $menuItem->id) }}" class="inline">
+                        <form method="POST" action="{{ route('admin.menu-items.toggle-featured', $menuItem->id) }}" class="inline">
                             @csrf
                             @method('PATCH')
                             <button type="submit" class="px-4 py-2 rounded-md text-sm font-medium
@@ -248,7 +248,7 @@
         <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <h3 class="text-lg font-semibold mb-4">Add Rating for {{ $menuItem->name }}</h3>
             
-            <form method="POST" action="{{ route('menu-items.rating', $menuItem->id) }}">
+            <form method="POST" action="{{ route('admin.menu-items.rating', $menuItem->id) }}">
                 @csrf
                 @method('PATCH')
                 
