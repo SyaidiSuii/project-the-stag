@@ -27,10 +27,10 @@
                 </header>
 
                 @if($order->id)
-                    <form method="post" action="{{ route('order.update', $order->id) }}" class="mt-6 space-y-6">
+                    <form method="post" action="{{ route('admin.order.update', $order->id) }}" class="mt-6 space-y-6">
                         <input type="hidden" name="_method" value="PUT">
                 @else
-                    <form method="post" action="{{ route('order.store') }}" class="mt-6 space-y-6">
+                    <form method="post" action="{{ route('admin.order.store') }}" class="mt-6 space-y-6">
                         <input type="hidden" name="_method" value="POST">
                 @endif
                     @csrf
@@ -276,13 +276,13 @@
                     <div class="flex items-center gap-4">
                         <x-primary-button>{{ __('Save Order') }}</x-primary-button>
 
-                        <a href="{{ route('order.index', ['cancel' => 'true']) }}"
+                        <a href="{{ route('admin.order.index', ['cancel' => 'true']) }}"
                         class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600 focus:outline-none focus:border-gray-600 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
                             Cancel
                         </a>
 
                         @if($order->id)
-                            <a href="{{ route('order.duplicate', $order->id) }}"
+                            <a href="{{ route('admin.order.duplicate', $order->id) }}"
                             class="inline-flex items-center px-4 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-600 focus:outline-none focus:border-blue-600 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                                 Duplicate Order
                             </a>

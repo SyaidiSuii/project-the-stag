@@ -20,11 +20,11 @@
                     </p>
                 </div>
                 <div class="flex gap-2">
-                    <a href="{{ route('order-trackings.create') }}" 
+                    <a href="{{ route('admin.order-trackings.create') }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                         Add New Tracking
                     </a>
-                    <a href="{{ route('order-trackings.index') }}" 
+                    <a href="{{ route('admin.order-trackings.index') }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600">
                         All Trackings
                     </a>
@@ -173,11 +173,11 @@
                                                 @endif
 
                                                 <div class="mt-2 flex gap-2">
-                                                    <a href="{{ route('order-trackings.show', $tracking->id) }}" 
+                                                    <a href="{{ route('admin.order-trackings.show', $tracking->id) }}" 
                                                        class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700">
                                                         View Details
                                                     </a>
-                                                    <a href="{{ route('order-trackings.edit', $tracking->id) }}" 
+                                                    <a href="{{ route('admin.order-trackings.edit', $tracking->id) }}" 
                                                        class="text-xs bg-gray-600 text-white px-2 py-1 rounded hover:bg-gray-700">
                                                         Edit
                                                     </a>
@@ -197,7 +197,7 @@
                             <h3 class="mt-2 text-sm font-medium text-gray-900">No tracking history</h3>
                             <p class="mt-1 text-sm text-gray-500">This order has no tracking records yet.</p>
                             <div class="mt-6">
-                                <a href="{{ route('order-trackings.create', ['order_id' => $order->id]) }}" 
+                                <a href="{{ route('admin.order-trackings.create', ['order_id' => $order->id]) }}" 
                                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                                     Create First Tracking
                                 </a>

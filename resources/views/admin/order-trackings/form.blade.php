@@ -27,10 +27,10 @@
                 </header>
 
                 @if(isset($orderTracking) && $orderTracking->id)
-                    <form method="post" action="{{ route('order-trackings.update', $orderTracking->id) }}" class="mt-6 space-y-6">
+                    <form method="post" action="{{ route('admin.order-trackings.update', $orderTracking->id) }}" class="mt-6 space-y-6">
                         <input type="hidden" name="_method" value="PUT">
                 @else
-                    <form method="post" action="{{ route('order-trackings.store') }}" class="mt-6 space-y-6">
+                    <form method="post" action="{{ route('admin.order-trackings.store') }}" class="mt-6 space-y-6">
                         <input type="hidden" name="_method" value="POST">
                 @endif
                     @csrf
@@ -195,7 +195,7 @@
                     <div class="flex items-center gap-4">
                         <x-primary-button>{{ __('Save Tracking') }}</x-primary-button>
 
-                        <a href="{{ route('order-trackings.index') }}"
+                        <a href="{{ route('admin.order-trackings.index') }}"
                         class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600 focus:outline-none focus:border-gray-600 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
                             Cancel
                         </a>

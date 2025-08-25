@@ -10,11 +10,11 @@
 
             <!-- Action Buttons -->
             <div class="pb-3 flex justify-between items-center">
-                <a href="{{ route('order-item.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
+                <a href="{{ route('admin.order-item.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
                     Add New Order Item
                 </a>
                 <div class="flex space-x-2">
-                    <a href="{{ route('order-item.kitchen') }}" class="px-4 py-2 bg-orange-600 text-white rounded font-semibold hover:bg-orange-700">
+                    <a href="{{ route('admin.order-item.kitchen') }}" class="px-4 py-2 bg-orange-600 text-white rounded font-semibold hover:bg-orange-700">
                         Kitchen View
                     </a>
                     <button onclick="filterByStatus('pending')" class="px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600">
@@ -32,7 +32,7 @@
             <!-- Filters -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-4">
                 <div class="p-4 bg-gray-50">
-                    <form method="GET" action="{{ route('order-item.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                    <form method="GET" action="{{ route('admin.order-item.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-4">
                         <div>
                             <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
                             <input type="text" name="search" id="search" value="{{ request('search') }}" 
@@ -83,7 +83,7 @@
 
                     @if(request()->hasAny(['search', 'order_id', 'item_status', 'menu_item', 'date']))
                         <div class="mt-3">
-                            <a href="{{ route('order-item.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
+                            <a href="{{ route('admin.order-item.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
                                 Clear all filters
                             </a>
                         </div>
@@ -130,7 +130,7 @@
                                     <td class="px-6 py-4">
                                         <div>
                                             <div class="font-medium">
-                                                <a href="{{ route('order.show', $item->order_id) }}" class="text-blue-600 hover:text-blue-800">
+                                                <a href="{{ route('admin.order.show', $item->order_id) }}" class="text-blue-600 hover:text-blue-800">
                                                     #{{ $item->order_id }}
                                                 </a>
                                             </div>
@@ -182,17 +182,17 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex space-x-2">
-                                            <a href="{{ route('order-item.show', $item->id) }}" 
+                                            <a href="{{ route('admin.order-item.show', $item->id) }}" 
                                                class="relative z-10 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 
                                                 border border-transparent rounded-lg font-medium text-sm text-white shadow">
                                                 View
                                             </a>
-                                            <a href="{{ route('order-item.edit', $item->id) }}" 
+                                            <a href="{{ route('admin.order-item.edit', $item->id) }}" 
                                                class="inline-flex items-center px-2 py-1 bg-gray-800 border border-transparent rounded text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                                                 Edit
                                             </a>
                                             @if($item->item_status != 'served')
-                                                <form method="POST" action="{{ route('order-item.destroy', $item->id) }}" 
+                                                <form method="POST" action="{{ route('admin.order-item.destroy', $item->id) }}" 
                                                       onsubmit="return confirm('Are you sure to delete this order item?');" class="inline">
                                                     <input type="hidden" name="_method" value="DELETE">
                                                     @csrf

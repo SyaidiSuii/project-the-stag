@@ -16,14 +16,14 @@ class OrderItemController extends Controller
     public function index()
     {
         if (request('cancel')) {
-            return redirect()->route('order-item.index');
+            return redirect()->route('admin.order-item.index');
         }
 
         $orderItems = OrderItem::with(['order', 'menuItem'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
         
-        return view('order-item.index', compact('orderItems'));
+        return view('admin.order-item.index', compact('orderItems'));
     }
 
     /**
@@ -35,7 +35,7 @@ class OrderItemController extends Controller
         $orders = Order::with('user')->select('id', 'confirmation_code', 'user_id', 'total_amount')->get();
         $menuItems = MenuItem::where('availability', true)->select('id', 'name', 'price')->get();
         
-        return view('order-item.form', compact('orderItem', 'orders', 'menuItems'));
+        return view('admin.order-item.form', compact('orderItem', 'orders', 'menuItems'));
     }
 
     /**
@@ -80,7 +80,7 @@ class OrderItemController extends Controller
         // Update order total amount
         $this->updateOrderTotal($orderItem->order_id);
 
-        return redirect()->route('order-item.index')->with('message', 'Order item has been created successfully!');
+        return redirect()->route('admin.order-item.index')->with('message', 'Order item has been created successfully!');
     }
 
     /**
@@ -89,7 +89,7 @@ class OrderItemController extends Controller
     public function show(OrderItem $orderItem)
     {
         $orderItem->load(['order.user', 'menuItem']);
-        return view('order-item.show', compact('orderItem'));
+        return view('admin.order-item.show', compact('orderItem'));
     }
 
     /**
@@ -100,7 +100,7 @@ class OrderItemController extends Controller
         $orders = Order::with('user')->select('id', 'confirmation_code', 'user_id', 'total_amount')->get();
         $menuItems = MenuItem::where('availability', true)->select('id', 'name', 'price')->get();
         
-        return view('order-item.form', compact('orderItem', 'orders', 'menuItems'));
+        return view('admin.order-item.form', compact('orderItem', 'orders', 'menuItems'));
     }
 
     /**
@@ -149,7 +149,7 @@ class OrderItemController extends Controller
         }
         $this->updateOrderTotal($orderItem->order_id);
 
-        return redirect()->route('order-item.index')->with('message', 'Order item has been updated successfully!');
+        return redirect()->route('admin.order-item.index')->with('message', 'Order item has been updated successfully!');
     }
 
     /**
@@ -164,7 +164,7 @@ class OrderItemController extends Controller
         // Update order total amount
         $this->updateOrderTotal($orderId);
 
-        return redirect()->route('order-item.index')->with('message', 'Order item has been deleted successfully!');
+        return redirect()->route('admin.order-item.index')->with('message', 'Order item has been deleted successfully!');
     }
 
     /**
@@ -316,7 +316,7 @@ class OrderItemController extends Controller
         // Update order total amount
         $this->updateOrderTotal($newOrderItem->order_id);
 
-        return redirect()->route('order-item.edit', $newOrderItem)->with('message', 'Order item has been duplicated successfully!');
+        return redirect()->route('admin.order-item.edit', $newOrderItem)->with('message', 'Order item has been duplicated successfully!');
     }
 
     /**
@@ -330,6 +330,6 @@ class OrderItemController extends Controller
             ->get()
             ->groupBy('item_status');
 
-        return view('order-item.kitchen', compact('orderItems'));
+        return view('admin.order-item.kitchen', compact('orderItems'));
     }
 }

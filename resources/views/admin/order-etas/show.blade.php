@@ -20,15 +20,15 @@
                     </p>
                 </div>
                 <div class="flex gap-2">
-                    <a href="{{ route('order-etas.edit', $orderEta->id) }}" 
+                    <a href="{{ route('admin.order-etas.edit', $orderEta->id) }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                         Edit ETA
                     </a>
-                    <a href="{{ route('order.show', $orderEta->order->id) }}" 
+                    <a href="{{ route('admin.order.show', $orderEta->order->id) }}" 
                        class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
                         View Order
                     </a>
-                    <a href="{{ route('order-etas.index') }}" 
+                    <a href="{{ route('admin.order-etas.index') }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600">
                         Back to List
                     </a>
@@ -122,7 +122,7 @@
                             <div>
                                 <span class="text-sm text-gray-600">Order ID:</span>
                                 <p class="font-bold text-lg">
-                                    <a href="{{ route('order.show', $orderEta->order->id) }}" class="text-blue-600 hover:text-blue-800">
+                                    <a href="{{ route('admin.order.show', $orderEta->order->id) }}" class="text-blue-600 hover:text-blue-800">
                                         #{{ $orderEta->order->id }}
                                     </a>
                                 </p>
@@ -472,7 +472,7 @@
                 return;
             }
 
-            fetch('{{ route("order-etas.notifyCustomer", $orderEta->id) }}', {
+            fetch('{{ route("admin.order-etas.notifyCustomer", $orderEta->id) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -499,7 +499,7 @@
                 return;
             }
 
-            fetch('{{ route("order-etas.markCompleted", $orderEta->id) }}', {
+            fetch('{{ route("admin.order-etas.markCompleted", $orderEta->id) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -529,7 +529,7 @@
                 return;
             }
 
-            fetch('{{ route("order-etas.updateEstimate", $orderEta->id) }}', {
+            fetch('{{ route("admin.order-etas.updateEstimate", $orderEta->id) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

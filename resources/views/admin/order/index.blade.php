@@ -10,11 +10,11 @@
 
             <!-- Action Buttons -->
             <div class="pb-3 flex justify-between items-center">
-                <a href="{{ route('order.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
+                <a href="{{ route('admin.order.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
                     Create New Order
                 </a>
                 <div class="flex space-x-2">
-                    <a href="{{ route('order.today') }}" class="px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700">
+                    <a href="{{ route('admin.order.today') }}" class="px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700">
                         Today's Orders
                     </a>
                     <button onclick="filterByStatus('pending')" class="px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600">
@@ -32,7 +32,7 @@
             <!-- Filters -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-4">
                 <div class="p-4 bg-gray-50">
-                    <form method="GET" action="{{ route('order.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                    <form method="GET" action="{{ route('admin.order.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-4">
                         <div>
                             <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
                             <input type="text" name="search" id="search" value="{{ request('search') }}" 
@@ -94,7 +94,7 @@
 
                     @if(request()->hasAny(['search', 'order_status', 'order_type', 'payment_status', 'date']))
                         <div class="mt-3">
-                            <a href="{{ route('order.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
+                            <a href="{{ route('admin.order.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
                                 Clear all filters
                             </a>
                         </div>
@@ -212,17 +212,17 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex space-x-2">
-                                            <a href="{{ route('order.show', $order->id) }}" 
+                                            <a href="{{ route('admin.order.show', $order->id) }}" 
                                                class="relative z-10 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 
                                                 border border-transparent rounded-lg font-medium text-sm text-white shadow">
                                                 View
                                             </a>
-                                            <a href="{{ route('order.edit', $order->id) }}" 
+                                            <a href="{{ route('admin.order.edit', $order->id) }}" 
                                                class="inline-flex items-center px-2 py-1 bg-gray-800 border border-transparent rounded text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                                                 Edit
                                             </a>
                                             @if(!in_array($order->order_status, ['completed', 'cancelled']))
-                                                <form method="POST" action="{{ route('order.destroy', $order->id) }}" 
+                                                <form method="POST" action="{{ route('admin.order.destroy', $order->id) }}" 
                                                       onsubmit="return confirm('Are you sure to delete this order?');" class="inline">
                                                     <input type="hidden" name="_method" value="DELETE">
                                                     @csrf

@@ -111,7 +111,7 @@ class OrderTrackingController extends Controller
         }
 
         return redirect()
-            ->route('order-trackings.index')
+            ->route('admin.order-trackings.index')
             ->with('success', 'Order tracking created successfully');
     }
 
@@ -175,7 +175,7 @@ class OrderTrackingController extends Controller
         }
 
         return redirect()
-            ->route('order-trackings.index')
+            ->route('admin.order-trackings.index')
             ->with('success', 'Order tracking updated successfully');
     }
 
@@ -194,7 +194,7 @@ class OrderTrackingController extends Controller
         }
 
         return redirect()
-            ->route('order-trackings.index')
+            ->route('admin.order-trackings.index')
             ->with('success', 'Order tracking deleted successfully');
     }
 

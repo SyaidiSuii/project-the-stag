@@ -10,7 +10,7 @@
 
             <!-- Action Buttons and Stats -->
             <div class="pb-3 flex justify-between items-center">
-                <a href="{{ route('order-etas.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
+                <a href="{{ route('admin.order-etas.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
                     Add New ETA
                 </a>
                 <div class="flex space-x-2">
@@ -39,7 +39,7 @@
             <!-- Filters -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-4">
                 <div class="p-4 bg-gray-50">
-                    <form method="GET" action="{{ route('order-etas.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <form method="GET" action="{{ route('admin.order-etas.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div>
                             <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
                             <input type="text" name="search" id="search" value="{{ request('search') }}" 
@@ -83,7 +83,7 @@
 
                     @if(request()->hasAny(['search', 'is_delayed', 'customer_notified', 'date']))
                         <div class="mt-3">
-                            <a href="{{ route('order-etas.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
+                            <a href="{{ route('admin.order-etas.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
                                 Clear all filters
                             </a>
                         </div>
@@ -225,12 +225,12 @@
                                     <td class="px-6 py-4">
                                         <div class="flex flex-col space-y-1">
                                             <div class="flex space-x-1">
-                                                <a href="{{ route('order-etas.show', $eta->id) }}" 
+                                                <a href="{{ route('admin.order-etas.show', $eta->id) }}" 
                                                    class="inline-flex items-center px-2 py-1 bg-blue-600 hover:bg-blue-700 
                                                     border border-transparent rounded text-xs text-white shadow">
                                                     View
                                                 </a>
-                                                <a href="{{ route('order-etas.edit', $eta->id) }}" 
+                                                <a href="{{ route('admin.order-etas.edit', $eta->id) }}" 
                                                    class="inline-flex items-center px-2 py-1 bg-gray-800 border border-transparent rounded text-xs text-white hover:bg-gray-700">
                                                     Edit
                                                 </a>
@@ -317,7 +317,7 @@
 
         // Load statistics
         function loadStatistics() {
-            fetch('{{ route("order-etas.getStatistics") }}')
+            fetch('{{ route("admin.order-etas.getStatistics") }}')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -411,7 +411,7 @@
 
         // Load orders needing attention
         function loadNeedingAttention() {
-            fetch('{{ route("order-etas.getNeedingAttention") }}')
+            fetch('{{ route("admin.order-etas.getNeedingAttention") }}')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {

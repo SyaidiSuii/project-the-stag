@@ -23,7 +23,7 @@ class OrderController extends Controller
             ->get()
             ->groupBy('order_status');
 
-        return view('order.today', compact('orders'));
+        return view('admin.order.today', compact('orders'));
     }
 
     /**
@@ -32,14 +32,14 @@ class OrderController extends Controller
     public function index()
     {
         if (request('cancel')) {
-            return redirect()->route('order.index');
+            return redirect()->route('admin.order.index');
         }
 
         $orders = Order::with(['user', 'table', 'reservation', 'items'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
         
-        return view('order.index', compact('orders'));
+        return view('admin.order.index', compact('orders'));
     }
 
     /**
@@ -52,7 +52,7 @@ class OrderController extends Controller
         $tables = Table::where('is_active', true)->select('id', 'table_number', 'status')->get();
         $reservations = TableReservation::with('table')->whereDate('reservation_date', '>=', now())->get();
         
-        return view('order.form', compact('order', 'users', 'tables', 'reservations'));
+        return view('admin.order.form', compact('order', 'users', 'tables', 'reservations'));
     }
 
     /**
@@ -112,7 +112,7 @@ class OrderController extends Controller
 
         $order->save();
 
-        return redirect()->route('order.index')->with('message', 'Order has been created successfully!');
+        return redirect()->route('admin.order.index')->with('message', 'Order has been created successfully!');
     }
 
     /**
@@ -121,7 +121,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $order->load(['user', 'table', 'reservation', 'items']);
-        return view('order.show', compact('order'));
+        return view('admin.order.show', compact('order'));
     }
 
     /**
@@ -133,7 +133,7 @@ class OrderController extends Controller
         $tables = Table::where('is_active', true)->select('id', 'table_number', 'status')->get();
         $reservations = TableReservation::with('table')->whereDate('reservation_date', '>=', now())->get();
         
-        return view('order.form', compact('order', 'users', 'tables', 'reservations'));
+        return view('admin.order.form', compact('order', 'users', 'tables', 'reservations'));
     }
 
     /**
@@ -193,7 +193,7 @@ class OrderController extends Controller
 
         $order->save();
 
-        return redirect()->route('order.index')->with('message', 'Order has been updated successfully!');
+        return redirect()->route('admin.order.index')->with('message', 'Order has been updated successfully!');
     }
 
     /**
@@ -202,7 +202,7 @@ class OrderController extends Controller
     public function destroy(Order $order)
     {
         $order->delete();
-        return redirect()->route('order.index')->with('message', 'Order has been deleted successfully!');
+        return redirect()->route('admin.order.index')->with('message', 'Order has been deleted successfully!');
     }
 
     /**
@@ -319,6 +319,6 @@ class OrderController extends Controller
             $newItem->save();
         }
 
-        return redirect()->route('order.edit', $newOrder)->with('message', 'Order has been duplicated successfully!');
+        return redirect()->route('admin.order.edit', $newOrder)->with('message', 'Order has been duplicated successfully!');
     }
 }

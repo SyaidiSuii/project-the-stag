@@ -19,15 +19,15 @@
                     </p>
                 </div>
                 <div class="flex gap-2">
-                    <a href="{{ route('order-item.edit', $orderItem->id) }}" 
+                    <a href="{{ route('admin.order-item.edit', $orderItem->id) }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                         Edit Item
                     </a>
-                    <a href="{{ route('order-item.duplicate', $orderItem->id) }}" 
+                    <a href="{{ route('admin.order-item.duplicate', $orderItem->id) }}" 
                        class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
                         Duplicate
                     </a>
-                    <a href="{{ route('order-item.index') }}" 
+                    <a href="{{ route('admin.order-item.index') }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600">
                         Back to List
                     </a>
@@ -154,7 +154,7 @@
                             <div>
                                 <span class="text-sm text-gray-600">Order ID:</span>
                                 <p class="font-bold text-lg">
-                                    <a href="{{ route('order.show', $orderItem->order_id) }}" class="text-blue-600 hover:text-blue-800">
+                                    <a href="{{ route('admin.order.show', $orderItem->order_id) }}" class="text-blue-600 hover:text-blue-800">
                                         #{{ $orderItem->order_id }}
                                     </a>
                                 </p>
@@ -314,7 +314,7 @@
                                     </div>
                                     <div class="text-right">
                                         <p class="font-medium">RM {{ number_format($otherItem->total_price, 2) }}</p>
-                                        <a href="{{ route('order-item.show', $otherItem->id) }}" class="text-xs text-blue-600 hover:text-blue-800">View</a>
+                                        <a href="{{ route('admin.order-item.show', $otherItem->id) }}" class="text-xs text-blue-600 hover:text-blue-800">View</a>
                                     </div>
                                 </div>
                                 @endforeach
@@ -344,7 +344,7 @@
                 return;
             }
 
-            fetch(`{{ route('order-item.updateStatus', $orderItem->id) }}`, {
+            fetch(`{{ route('admin.order-item.updateStatus', $orderItem->id) }}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

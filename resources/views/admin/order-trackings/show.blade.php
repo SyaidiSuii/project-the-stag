@@ -18,15 +18,15 @@
                     </p>
                 </div>
                 <div class="flex gap-2">
-                    <a href="{{ route('order-trackings.edit', $orderTracking->id) }}" 
+                    <a href="{{ route('admin.order-trackings.edit', $orderTracking->id) }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                         Edit Tracking
                     </a>
-                    <a href="{{ route('orders.tracking-history', $orderTracking->order->id) }}" 
+                    <a href="{{ route('admin.orders.tracking-history', $orderTracking->order->id) }}" 
                        class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
                         View History
                     </a>
-                    <a href="{{ route('order-trackings.index') }}" 
+                    <a href="{{ route('admin.order-trackings.index') }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600">
                         Back to List
                     </a>
@@ -40,7 +40,7 @@
                     <h4 class="font-semibold text-gray-800">Quick Status Update</h4>
                 </div>
                 <div class="p-4">
-                    <form method="POST" action="{{ route('order-trackings.update-status', $orderTracking->id) }}" class="flex items-end gap-4">
+                    <form method="POST" action="{{ route('admin.order-trackings.update-status', $orderTracking->id) }}" class="flex items-end gap-4">
                         @csrf
                         @method('PATCH')
                         <div>

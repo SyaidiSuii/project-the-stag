@@ -133,10 +133,10 @@
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-lg font-medium text-gray-900">Orders by Status</h3>
                 <div class="flex gap-2">
-                    <a href="{{ route('order.create') }}" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700">
+                    <a href="{{ route('admin.order.create') }}" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700">
                         New Order
                     </a>
-                    <a href="{{ route('order.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
+                    <a href="{{ route('admin.order.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
                         All Orders
                     </a>
                 </div>
@@ -300,11 +300,11 @@
                                         </div>
                                         
                                         <div class="flex space-x-1">
-                                            <a href="{{ route('order.show', $order->id) }}" 
+                                            <a href="{{ route('admin.order.show', $order->id) }}" 
                                                class="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700">
                                                 View
                                             </a>
-                                            <a href="{{ route('order.edit', $order->id) }}" 
+                                            <a href="{{ route('admin.order.edit', $order->id) }}" 
                                                class="px-2 py-1 bg-gray-800 text-white text-xs rounded hover:bg-gray-900">
                                                 Edit
                                             </a>
@@ -360,7 +360,7 @@
                                     </div>
                                 </div>
                                 <div class="flex space-x-2">
-                                    <a href="{{ route('order.show', $order->id) }}" 
+                                    <a href="{{ route('admin.order.show', $order->id) }}" 
                                        class="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700">
                                         View
                                     </a>
@@ -382,7 +382,7 @@
                         <h3 class="mt-2 text-sm font-medium text-gray-900">No orders today</h3>
                         <p class="mt-1 text-sm text-gray-500">Get started by creating a new order.</p>
                         <div class="mt-6">
-                            <a href="{{ route('order.create') }}" 
+                            <a href="{{ route('admin.order.create') }}" 
                                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                                 New Order
                             </a>

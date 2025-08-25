@@ -16,14 +16,14 @@ class OrderEtasController extends Controller
     public function index()
     {
         if (request('cancel')) {
-            return redirect()->route('order-etas.index');
+            return redirect()->route('admin.order-etas.index');
         }
 
         $orderEtas = OrderEtas::with(['order.user', 'order.table'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
         
-        return view('order-etas.index', compact('orderEtas'));
+        return view('admin.order-etas.index', compact('orderEtas'));
     }
 
     /**
@@ -39,7 +39,7 @@ class OrderEtasController extends Controller
             ->select('id', 'user_id', 'table_id', 'order_status', 'total_amount')
             ->get();
         
-        return view('order-etas.form', compact('orderEta', 'orders'));
+        return view('admin.order-etas.form', compact('orderEta', 'orders'));
     }
 
     /**
@@ -88,7 +88,7 @@ class OrderEtasController extends Controller
 
         $orderEta->save();
 
-        return redirect()->route('order-etas.index')->with('message', 'Order ETA has been created successfully!');
+        return redirect()->route('admin.order-etas.index')->with('message', 'Order ETA has been created successfully!');
     }
 
     /**
@@ -97,7 +97,7 @@ class OrderEtasController extends Controller
     public function show(OrderEtas $orderEta)
     {
         $orderEta->load(['order.user', 'order.table', 'order.items']);
-        return view('order-etas.show', compact('orderEta'));
+        return view('admin.order-etas.show', compact('orderEta'));
     }
 
     /**
@@ -111,7 +111,7 @@ class OrderEtasController extends Controller
             ->select('id', 'user_id', 'table_id', 'order_status', 'total_amount')
             ->get();
         
-        return view('order-etas.form', compact('orderEta', 'orders'));
+        return view('admin.order-etas.form', compact('orderEta', 'orders'));
     }
 
     /**
@@ -168,7 +168,7 @@ class OrderEtasController extends Controller
 
         $orderEta->save();
 
-        return redirect()->route('order-etas.index')->with('message', 'Order ETA has been updated successfully!');
+        return redirect()->route('admin.order-etas.index')->with('message', 'Order ETA has been updated successfully!');
     }
 
     /**
@@ -177,7 +177,7 @@ class OrderEtasController extends Controller
     public function destroy(OrderEtas $orderEta)
     {
         $orderEta->delete();
-        return redirect()->route('order-etas.index')->with('message', 'Order ETA has been deleted successfully!');
+        return redirect()->route('admin.order-etas.index')->with('message', 'Order ETA has been deleted successfully!');
     }
 
     /**

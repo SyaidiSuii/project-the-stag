@@ -20,15 +20,15 @@
                     </p>
                 </div>
                 <div class="flex gap-2">
-                    <a href="{{ route('order.edit', $order->id) }}" 
+                    <a href="{{ route('admin.order.edit', $order->id) }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                         Edit Order
                     </a>
-                    <a href="{{ route('order.duplicate', $order->id) }}" 
+                    <a href="{{ route('admin.order.duplicate', $order->id) }}" 
                        class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
                         Duplicate
                     </a>
-                    <a href="{{ route('order.index') }}" 
+                    <a href="{{ route('admin.order.index') }}" 
                        class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600">
                         Back to List
                     </a>
@@ -72,7 +72,7 @@
                             @endif
                             
                             @if(!in_array($order->order_status, ['completed', 'cancelled']))
-                                <a href="{{ route('order.cancel', $order->id) }}" 
+                                <a href="{{ route('admin.order.cancel', $order->id) }}" 
                                    onclick="return confirm('Are you sure you want to cancel this order?')"
                                    class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                                     Cancel Order
@@ -343,7 +343,7 @@
                 return;
             }
 
-            fetch(`{{ route('order.updateStatus', $order->id) }}`, {
+            fetch(`{{ route('admin.order.updateStatus', $order->id) }}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -368,7 +368,7 @@
         }
 
         function updatePaymentStatus(status) {
-            fetch(`{{ route('order.updatePaymentStatus', $order->id) }}`, {
+            fetch(`{{ route('admin.order.updatePaymentStatus', $order->id) }}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

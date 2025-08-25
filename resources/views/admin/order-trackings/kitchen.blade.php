@@ -94,10 +94,10 @@
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-lg font-medium text-gray-900">Active Orders by Station</h3>
                 <div class="flex gap-2">
-                    <a href="{{ route('order-trackings.create') }}" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700">
+                    <a href="{{ route('admin.order-trackings.create') }}" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700">
                         New Tracking
                     </a>
-                    <a href="{{ route('order-trackings.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
+                    <a href="{{ route('admin.order-trackings.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
                         All Trackings
                     </a>
                     <button onclick="window.location.reload()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
@@ -213,7 +213,7 @@
                                 <div class="flex justify-between items-center">
                                     <div class="flex space-x-1">
                                         @if($tracking->status == 'confirmed')
-                                            <form method="POST" action="{{ route('order-trackings.update-status', $tracking->id) }}" class="inline">
+                                            <form method="POST" action="{{ route('admin.order-trackings.update-status', $tracking->id) }}" class="inline">
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="status" value="preparing">
@@ -222,7 +222,7 @@
                                                 </button>
                                             </form>
                                         @elseif($tracking->status == 'preparing')
-                                            <form method="POST" action="{{ route('order-trackings.update-status', $tracking->id) }}" class="inline">
+                                            <form method="POST" action="{{ route('admin.order-trackings.update-status', $tracking->id) }}" class="inline">
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="status" value="cooking">
@@ -231,7 +231,7 @@
                                                 </button>
                                             </form>
                                         @elseif($tracking->status == 'cooking')
-                                            <form method="POST" action="{{ route('order-trackings.update-status', $tracking->id) }}" class="inline">
+                                            <form method="POST" action="{{ route('admin.order-trackings.update-status', $tracking->id) }}" class="inline">
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="status" value="plating">
@@ -240,7 +240,7 @@
                                                 </button>
                                             </form>
                                         @elseif($tracking->status == 'plating')
-                                            <form method="POST" action="{{ route('order-trackings.update-status', $tracking->id) }}" class="inline">
+                                            <form method="POST" action="{{ route('admin.order-trackings.update-status', $tracking->id) }}" class="inline">
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="status" value="ready">
@@ -252,11 +252,11 @@
                                     </div>
                                     
                                     <div class="flex space-x-1">
-                                        <a href="{{ route('order-trackings.show', $tracking->id) }}" 
+                                        <a href="{{ route('admin.order-trackings.show', $tracking->id) }}" 
                                            class="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700">
                                             View
                                         </a>
-                                        <a href="{{ route('order-trackings.edit', $tracking->id) }}" 
+                                        <a href="{{ route('admin.order-trackings.edit', $tracking->id) }}" 
                                            class="px-2 py-1 bg-gray-800 text-white text-xs rounded hover:bg-gray-900">
                                             Edit
                                         </a>
@@ -277,7 +277,7 @@
                         <h3 class="mt-2 text-sm font-medium text-gray-900">No active orders</h3>
                         <p class="mt-1 text-sm text-gray-500">All orders have been completed. Great job!</p>
                         <div class="mt-6">
-                            <a href="{{ route('order-trackings.index') }}" 
+                            <a href="{{ route('admin.order-trackings.index') }}" 
                                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                                 View All Trackings
                             </a>
@@ -296,28 +296,28 @@
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <form method="GET" action="{{ route('order-trackings.stations.active-orders') }}" class="inline">
+                        <form method="GET" action="{{ route('admin.order-trackings.stations.active-orders') }}" class="inline">
                             <input type="hidden" name="station_name" value="Kitchen">
                             <button type="submit" class="w-full px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">
                                 Kitchen Only
                             </button>
                         </form>
                         
-                        <form method="GET" action="{{ route('order-trackings.stations.active-orders') }}" class="inline">
+                        <form method="GET" action="{{ route('admin.order-trackings.stations.active-orders') }}" class="inline">
                             <input type="hidden" name="station_name" value="Bar">
                             <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                                 Bar Only
                             </button>
                         </form>
                         
-                        <form method="GET" action="{{ route('order-trackings.stations.active-orders') }}" class="inline">
+                        <form method="GET" action="{{ route('admin.order-trackings.stations.active-orders') }}" class="inline">
                             <input type="hidden" name="station_name" value="Grill">
                             <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                                 Grill Only
                             </button>
                         </form>
                         
-                        <a href="{{ route('order-trackings.stats.performance') }}" 
+                        <a href="{{ route('admin.order-trackings.stats.performance') }}" 
                            class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-center">
                             Performance Stats
                         </a>

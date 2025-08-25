@@ -27,10 +27,10 @@
                 </header>
 
                 @if($orderEta->id)
-                    <form method="post" action="{{ route('order-etas.update', $orderEta->id) }}" class="mt-6 space-y-6">
+                    <form method="post" action="{{ route('admin.order-etas.update', $orderEta->id) }}" class="mt-6 space-y-6">
                         <input type="hidden" name="_method" value="PUT">
                 @else
-                    <form method="post" action="{{ route('order-etas.store') }}" class="mt-6 space-y-6">
+                    <form method="post" action="{{ route('admin.order-etas.store') }}" class="mt-6 space-y-6">
                         <input type="hidden" name="_method" value="POST">
                 @endif
                     @csrf
@@ -243,13 +243,13 @@
                     <div class="flex items-center gap-4">
                         <x-primary-button>{{ __('Save ETA') }}</x-primary-button>
 
-                        <a href="{{ route('order-etas.index', ['cancel' => 'true']) }}"
+                        <a href="{{ route('admin.order-etas.index', ['cancel' => 'true']) }}"
                         class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600 focus:outline-none focus:border-gray-600 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
                             Cancel
                         </a>
 
                         @if($orderEta->id)
-                            <a href="{{ route('order-etas.show', $orderEta->id) }}"
+                            <a href="{{ route('admin.order-etas.show', $orderEta->id) }}"
                             class="inline-flex items-center px-4 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-600 focus:outline-none focus:border-blue-600 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                                 View Details
                             </a>
@@ -336,7 +336,7 @@
                 return;
             }
 
-            fetch('{{ route("order-etas.notifyCustomer", $orderEta->id) }}', {
+            fetch('{{ route("admin.order-etas.notifyCustomer", $orderEta->id) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -363,7 +363,7 @@
                 return;
             }
 
-            fetch('{{ route("order-etas.markCompleted", $orderEta->id) }}', {
+            fetch('{{ route("admin.order-etas.markCompleted", $orderEta->id) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

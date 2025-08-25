@@ -12,10 +12,10 @@
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-lg font-medium text-gray-900">Performance Analytics</h3>
                 <div class="flex gap-2">
-                    <a href="{{ route('order-trackings.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
+                    <a href="{{ route('admin.order-trackings.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
                         All Trackings
                     </a>
-                    <a href="{{ route('order-trackings.stations.active-orders', ['station_name' => 'Kitchen']) }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                    <a href="{{ route('admin.order-trackings.stations.active-orders', ['station_name' => 'Kitchen']) }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
                         Kitchen Dashboard
                     </a>
                 </div>
@@ -24,7 +24,7 @@
             <!-- Filters -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-4 bg-gray-50">
-                    <form method="GET" action="{{ route('order-trackings.stats.performance') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <form method="GET" action="{{ route('admin.order-trackings.stats.performance') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label for="date_from" class="block text-sm font-medium text-gray-700">Date From</label>
                             <input type="date" name="date_from" id="date_from" value="{{ request('date_from') }}" 
@@ -61,7 +61,7 @@
 
                     @if(request()->hasAny(['date_from', 'date_to', 'station_name']))
                         <div class="mt-3">
-                            <a href="{{ route('order-trackings.stats.performance') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
+                            <a href="{{ route('admin.order-trackings.stats.performance') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
                                 Clear all filters
                             </a>
                         </div>
@@ -401,7 +401,7 @@
                     <h3 class="mt-2 text-sm font-medium text-gray-900">No performance data available</h3>
                     <p class="mt-1 text-sm text-gray-500">No completed order trackings found for the selected criteria.</p>
                     <div class="mt-6">
-                        <a href="{{ route('order-trackings.index') }}" 
+                        <a href="{{ route('admin.order-trackings.index') }}" 
                            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                             View All Trackings
                         </a>

@@ -97,7 +97,7 @@
                     <button onclick="refreshKitchen()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
                         🔄 Refresh
                     </button>
-                    <a href="{{ route('order-item.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                    <a href="{{ route('admin.order-item.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
                         All Items
                     </a>
                     <button onclick="toggleAutoRefresh()" id="autoRefreshBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">

@@ -10,14 +10,14 @@
 
             <!-- Action Buttons -->
             <div class="pb-3 flex justify-between items-center">
-                <a href="{{ route('order-trackings.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
+                <a href="{{ route('admin.order-trackings.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
                     Add New Tracking
                 </a>
                 <div class="flex gap-2">
-                    <a href="{{ route('order-trackings.stats.performance') }}" class="items-center px-4 py-2 bg-blue-600 rounded font-semibold text-white hover:bg-blue-700">
+                    <a href="{{ route('admin.order-trackings.stats.performance') }}" class="items-center px-4 py-2 bg-blue-600 rounded font-semibold text-white hover:bg-blue-700">
                         Performance Stats
                     </a>
-                    <a href="{{ route('order-trackings.stations.active-orders', ['station_name' => 'Kitchen']) }}" class="items-center px-4 py-2 bg-green-600 rounded font-semibold text-white hover:bg-green-700">
+                    <a href="{{ route('admin.order-trackings.stations.active-orders', ['station_name' => 'Kitchen']) }}" class="items-center px-4 py-2 bg-green-600 rounded font-semibold text-white hover:bg-green-700">
                         Kitchen View
                     </a>
                 </div>
@@ -26,7 +26,7 @@
             <!-- Filters -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-4">
                 <div class="p-4 bg-gray-50">
-                    <form method="GET" action="{{ route('order-trackings.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                    <form method="GET" action="{{ route('admin.order-trackings.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-4">
                         <div>
                             <label for="order_id" class="block text-sm font-medium text-gray-700">Order ID</label>
                             <input type="number" name="order_id" id="order_id" value="{{ request('order_id') }}" 
@@ -85,7 +85,7 @@
 
                     @if(request()->hasAny(['order_id', 'status', 'station_name', 'date_from', 'date_to']))
                         <div class="mt-3">
-                            <a href="{{ route('order-trackings.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
+                            <a href="{{ route('admin.order-trackings.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
                                 Clear all filters
                             </a>
                         </div>
@@ -185,17 +185,17 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex space-x-2">
-                                            <a href="{{ route('order-trackings.show', $tracking->id) }}" 
+                                            <a href="{{ route('admin.order-trackings.show', $tracking->id) }}" 
                                                class="inline-flex items-center px-2 py-1 bg-blue-600 hover:bg-blue-700 
                                                 border border-transparent rounded text-xs text-white uppercase tracking-widest">
                                                 View
                                             </a>
-                                            <a href="{{ route('order-trackings.edit', $tracking->id) }}" 
+                                            <a href="{{ route('admin.order-trackings.edit', $tracking->id) }}" 
                                                class="inline-flex items-center px-2 py-1 bg-gray-800 border border-transparent rounded text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                                                 Edit
                                             </a>
                                             @if(!in_array($tracking->status, ['completed', 'served']))
-                                                <form method="POST" action="{{ route('order-trackings.destroy', $tracking->id) }}" 
+                                                <form method="POST" action="{{ route('admin.order-trackings.destroy', $tracking->id) }}" 
                                                       onsubmit="return confirm('Are you sure to delete this tracking?');" class="inline">
                                                     <input type="hidden" name="_method" value="DELETE">
                                                     @csrf
