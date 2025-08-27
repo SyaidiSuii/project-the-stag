@@ -41,12 +41,18 @@
                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.user.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Users') }}
                                     </a>
-                                    @can('viewAny',App\Models\Role::Class)                                
-                                     <a href="{{ route('admin.role.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.role.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
-                                        {{ __('Roles') }}
-                                    </a>
-                                     @endcan
+                                    @can('view-roles')
+                                        <a href="{{ route('admin.roles.index') }}" 
+                                           class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.roles.*') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                            {{ __('Role Management') }}
+                                        </a>
+                                    @endcan
+                                    @can('view-permissions')
+                                        <a href="{{ route('admin.permissions.index') }}" 
+                                           class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.permissions.*') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                            {{ __('Permissions') }}
+                                        </a>
+                                    @endcan
                                     <a href="{{ route('admin.menu-items.index') }}" 
                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.menu-items.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Menu Items') }}
@@ -198,9 +204,6 @@
                 <!-- Mobile Links -->
                 <x-responsive-nav-link :href="route('admin.user.index')" :active="request()->routeIs('admin.user.index')">
                     {{ __('Users') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.role.index')" :active="request()->routeIs('admin.role.index')">
-                    {{ __('Roles') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.table.index')" :active="request()->routeIs('admin.table.index')">
                     {{ __('Tables') }}

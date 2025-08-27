@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Role;
+use Spatie\Permission\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -11,7 +11,8 @@ class RolePolicy
 
     public function before(User $user, string $ability): bool|null
     {
-        if ($user->hasRole('Admin')) {
+        // Use Spatie permission system - lowercase role names
+        if ($user->hasRole('admin')) {
             return true;
         }
      
@@ -24,7 +25,8 @@ class RolePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole('Manager');
+        // Use Spatie permission system - lowercase role names
+        return $user->hasRole('manager') || $user->can('view-roles');
     }
 
     /**
@@ -32,7 +34,7 @@ class RolePolicy
      */
     public function view(User $user, Role $role): bool
     {
-        return false;
+        return $user->can('view-roles');
     }
 
     /**
@@ -40,7 +42,7 @@ class RolePolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->can('create-roles');
     }
 
     /**
@@ -48,7 +50,12 @@ class RolePolicy
      */
     public function update(User $user, Role $role): bool
     {
-        return false;
+        // Prevent editing core system roles unless admin
+        if (in_array($role->name, ['admin', 'manager', 'user']) && !$user->hasRole('admin')) {
+            return false;
+        }
+        
+        return $user->can('edit-roles');
     }
 
     /**
@@ -56,7 +63,12 @@ class RolePolicy
      */
     public function delete(User $user, Role $role): bool
     {
-        return false;
+        // Prevent deleting core system roles
+        if (in_array($role->name, ['admin', 'manager', 'user'])) {
+            return false;
+        }
+        
+        return $user->can('delete-roles');
     }
 
     /**
@@ -64,7 +76,7 @@ class RolePolicy
      */
     public function restore(User $user, Role $role): bool
     {
-        return false;
+        return $user->can('edit-roles');
     }
 
     /**
@@ -72,6 +84,6 @@ class RolePolicy
      */
     public function forceDelete(User $user, Role $role): bool
     {
-        return false;
+        return $user->can('delete-roles') && $user->hasRole('admin');
     }
 }

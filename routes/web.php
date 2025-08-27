@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\TableController;
 use App\Http\Controllers\Admin\TableReservationController;
 use App\Http\Controllers\Admin\TableLayoutConfigController;
@@ -13,6 +12,8 @@ use App\Http\Controllers\Admin\OrderEtasController;
 use App\Http\Controllers\Admin\OrderTrackingController;
 use App\Http\Controllers\Admin\SaleAnalyticsController;
 use App\Http\Controllers\Admin\PushNotificationController;
+use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\RoleManagementController;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\HappyBirthday;
@@ -60,7 +61,18 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
  
     Route::resource('user', UserController::class);
-    Route::resource('role', RoleController::class);
+    
+    // Permission Management Routes
+    Route::get('permissions/{permission}/assign', [PermissionController::class, 'assignForm'])->name('permissions.assign.form');
+    Route::post('permissions/{permission}/assign', [PermissionController::class, 'assignToRoles'])->name('permissions.assign');
+    Route::get('permissions/api/list', [PermissionController::class, 'getPermissions'])->name('permissions.api.list');
+    Route::resource('permissions', PermissionController::class);
+    
+    // Role Management Routes
+    Route::get('roles/assign', [RoleManagementController::class, 'assignForm'])->name('roles.assign.form');
+    Route::post('roles/assign', [RoleManagementController::class, 'assignToUser'])->name('roles.assign');
+    Route::get('roles/{role}/permissions', [RoleManagementController::class, 'getRolePermissions'])->name('roles.permissions');
+    Route::resource('roles', RoleManagementController::class);
     Route::resource('table', TableController::class);
 
     Route::get('table-reservation/today', [TableReservationController::class, 'todayReservations'])->name('table-reservation.today');
