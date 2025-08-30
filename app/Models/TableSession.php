@@ -1,0 +1,200 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
+
+class TableSession extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'table_id',
+        'reservation_id', 
+        'session_code',
+        'qr_code_url',
+        'qr_code_data',
+        'guest_name',
+        'guest_phone',
+        'guest_count',
+        'started_at',
+        'expires_at',
+        'completed_at',
+        'status',
+        'notes',
+    ];
+
+    protected $casts = [
+        'qr_code_data' => 'array',
+        'started_at' => 'datetime',
+        'expires_at' => 'datetime', 
+        'completed_at' => 'datetime',
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Auto-generate session code when creating new session
+        static::creating(function ($session) {
+            if (empty($session->session_code)) {
+                // Load table if needed
+                if (!$session->relationLoaded('table') && $session->table_id) {
+                    $session->load('table');
+                }
+                $session->session_code = $session->generateSessionCode();
+            }
+            
+            // Set default expiry time (4 hours from now)
+            if (empty($session->expires_at)) {
+                $session->expires_at = now()->addHours(4);
+            }
+            
+            // Set started_at if not set
+            if (empty($session->started_at)) {
+                $session->started_at = now();
+            }
+        });
+
+        // Generate QR code after session is created
+        static::created(function ($session) {
+            // Ensure table relationship is loaded
+            if (!$session->relationLoaded('table')) {
+                $session->load('table');
+            }
+            $session->generateQRCode();
+        });
+    }
+
+    // Relationships
+    public function table()
+    {
+        return $this->belongsTo(Table::class);
+    }
+
+    public function reservation()
+    {
+        return $this->belongsTo(TableReservation::class, 'reservation_id');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'table_session_id');
+    }
+
+    // Helper Methods
+    public function generateSessionCode()
+    {
+        do {
+            // Safely get table number
+            $tableNumber = 'T' . $this->table_id; // Default fallback
+            if ($this->table && is_object($this->table)) {
+                $tableNumber = $this->table->table_number;
+            } elseif ($this->table_id) {
+                // Load table if we have table_id but no relationship
+                $table = Table::find($this->table_id);
+                if ($table) {
+                    $tableNumber = $table->table_number;
+                }
+            }
+            
+            $code = 'SES_' . $tableNumber . '_' . now()->format('Ymd_His') . '_' . strtoupper(Str::random(3));
+        } while (static::where('session_code', $code)->exists());
+
+        return $code;
+    }
+
+    public function generateQRCode()
+    {
+        try {
+            // Install QR code package: composer require endroid/qr-code
+            // For now, we'll store the URL and generate QR code later
+            $menuUrl = config('app.url') . '/qr/menu?session=' . $this->session_code;
+            
+            $qrData = [
+                'url' => $menuUrl,
+                'table_number' => $this->table->table_number ?? 'Unknown',
+                'session_code' => $this->session_code,
+                'expires_at' => $this->expires_at->toISOString(),
+            ];
+            
+            $this->update([
+                'qr_code_url' => $menuUrl,
+                'qr_code_data' => $qrData,
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('QR Code generation failed: ' . $e->getMessage());
+        }
+    }
+
+    public function isActive()
+    {
+        return $this->status === 'active' && $this->expires_at > now();
+    }
+
+    public function isExpired()
+    {
+        return $this->expires_at <= now() || $this->status === 'expired';
+    }
+
+    public function complete()
+    {
+        $this->update([
+            'status' => 'completed',
+            'completed_at' => now(),
+        ]);
+    }
+
+    public function expire()
+    {
+        $this->update([
+            'status' => 'expired',
+        ]);
+    }
+
+    public function extend($hours = 2)
+    {
+        $this->update([
+            'expires_at' => $this->expires_at->addHours($hours),
+        ]);
+    }
+
+    // Scopes
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active')
+                    ->where('expires_at', '>', now());
+    }
+
+    public function scopeForTable($query, $tableId)
+    {
+        return $query->where('table_id', $tableId);
+    }
+
+    public function scopeExpired($query)
+    {
+        return $query->where('expires_at', '<=', now())
+                    ->orWhere('status', 'expired');
+    }
+
+    // Accessors
+    public function getTimeRemainingAttribute()
+    {
+        if ($this->isExpired()) {
+            return null;
+        }
+        
+        return $this->expires_at->diffInMinutes(now());
+    }
+
+    public function getDurationAttribute()
+    {
+        $endTime = $this->completed_at ?? now();
+        return $this->started_at->diffInMinutes($endTime);
+    }
+}

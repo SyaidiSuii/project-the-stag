@@ -131,7 +131,7 @@ class TableReservationController extends Controller
      */
     public function show(TableReservation $tableReservation)
     {
-        $tableReservation->load(['user', 'table']);
+        $tableReservation->load(['user', 'table', 'tableSession']);
         return view('admin.table-reservation.show', compact('tableReservation'));
     }
 
@@ -220,6 +220,9 @@ class TableReservationController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        // Load relationships to prevent errors
+        $tableReservation->load(['table', 'tableSession']);
+        
         $tableReservation->status = $request->status;
         
         if ($request->filled('notes')) {

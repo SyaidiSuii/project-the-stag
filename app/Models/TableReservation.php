@@ -75,6 +75,45 @@ class TableReservation extends Model
                 }
             }
         });
+        
+        // Handle session creation/completion on status changes
+        static::saved(function ($reservation) {
+            if ($reservation->wasChanged('status') && $reservation->table_id) {
+                $table = Table::find($reservation->table_id);
+                if (!$table) return; // Safety check
+                
+                switch ($reservation->status) {
+                    case 'seated':
+                        // Create table session when customer is seated
+                        if (!$table->hasActiveSession()) {
+                            $table->createSession([
+                                'reservation_id' => $reservation->id,
+                                'guest_name' => $reservation->guest_name,
+                                'guest_phone' => $reservation->guest_phone,
+                                'guest_count' => $reservation->number_of_guests,
+                                'notes' => 'Auto-created from reservation: ' . $reservation->confirmation_code,
+                            ]);
+                            
+                            // Update table status
+                            $table->update(['status' => 'occupied']);
+                        }
+                        break;
+                        
+                    case 'completed':
+                        // Complete table session when reservation is completed
+                        $activeSession = $table->currentSession;
+                        if ($activeSession && $activeSession->reservation_id == $reservation->id) {
+                            $activeSession->complete();
+                            
+                            // Set table back to available if no other active sessions
+                            if (!$table->hasActiveSession()) {
+                                $table->update(['status' => 'available']);
+                            }
+                        }
+                        break;
+                }
+            }
+        });
     }
 
     // Relationships
@@ -86,5 +125,24 @@ class TableReservation extends Model
     public function table()
     {
         return $this->belongsTo(Table::class);
+    }
+    
+    public function tableSession()
+    {
+        return $this->hasOne(TableSession::class, 'reservation_id');
+    }
+    
+    // Helper methods
+    public function hasActiveSession()
+    {
+        return $this->tableSession && $this->tableSession->isActive();
+    }
+    
+    public function getQRCodeUrl()
+    {
+        if ($this->hasActiveSession()) {
+            return $this->tableSession->qr_code_url;
+        }
+        return null;
     }
 }

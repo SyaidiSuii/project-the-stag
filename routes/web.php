@@ -14,6 +14,8 @@ use App\Http\Controllers\Admin\SaleAnalyticsController;
 use App\Http\Controllers\Admin\PushNotificationController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleManagementController;
+use App\Http\Controllers\Admin\TableSessionController;
+use App\Http\Controllers\QR\MenuController as QRMenuController;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\HappyBirthday;
@@ -154,6 +156,32 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // Basic CRUD routes for sale analytics - MUST come AFTER specific routes
     Route::resource('sale-analytics', SaleAnalyticsController::class);
 
+    // Table Session Management Routes
+    Route::get('table-sessions/active', [TableSessionController::class, 'active'])->name('table-sessions.active');
+    Route::post('table-sessions/{tableSession}/complete', [TableSessionController::class, 'complete'])->name('table-sessions.complete');
+    Route::post('table-sessions/{tableSession}/extend', [TableSessionController::class, 'extend'])->name('table-sessions.extend');
+    Route::post('table-sessions/{tableSession}/regenerate-qr', [TableSessionController::class, 'regenerateQR'])->name('table-sessions.regenerate-qr');
+    Route::get('table-sessions/{tableSession}/qr-code', [TableSessionController::class, 'qrCode'])->name('table-sessions.qr-code');
+    Route::post('table-sessions/expire-old', [TableSessionController::class, 'expireOldSessions'])->name('table-sessions.expire-old');
+    Route::resource('table-sessions', TableSessionController::class);
+
+});
+
+// QR Code Routes (Public - No Auth Required)
+Route::prefix('qr')->name('qr.')->group(function () {
+    Route::get('/menu', [QRMenuController::class, 'index'])->name('menu');
+    Route::get('/cart', [QRMenuController::class, 'viewCart'])->name('cart');
+    Route::get('/error', [QRMenuController::class, 'error'])->name('error');
+    Route::get('/track', [QRMenuController::class, 'trackOrder'])->name('track');
+    
+    // AJAX Routes for cart management
+    Route::post('/cart/add', [QRMenuController::class, 'addToCart'])->name('cart.add');
+    Route::post('/cart/update', [QRMenuController::class, 'updateCart'])->name('cart.update');
+    Route::post('/order/place', [QRMenuController::class, 'placeOrder'])->name('order.place');
+    Route::post('/waiter/call', [QRMenuController::class, 'callWaiter'])->name('waiter.call');
+    
+    // API for order tracking
+    Route::post('/api/track-order', [QRMenuController::class, 'trackOrder'])->name('api.track-order');
 });
 
 

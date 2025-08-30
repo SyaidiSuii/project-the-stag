@@ -207,6 +207,28 @@
                             <p class="font-medium">{{ $tableReservation->completed_at->format('M d, Y h:i A') }}</p>
                         </div>
                         @endif
+                        
+                        @if($tableReservation->status === 'seated' && $tableReservation->hasActiveSession())
+                        <div>
+                            <span class="text-sm text-gray-600">QR Code URL:</span>
+                            <div class="mt-2">
+                                <div class="bg-green-50 border border-green-200 rounded-md p-3">
+                                    <p class="text-sm font-medium text-green-800 mb-2">Customer QR Code Active!</p>
+                                    <p class="text-xs text-green-700 break-all">{{ $tableReservation->getQRCodeUrl() }}</p>
+                                    <div class="mt-2 flex gap-2">
+                                        <button onclick="copyToClipboard('{{ $tableReservation->getQRCodeUrl() }}')"
+                                                class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
+                                            Copy URL
+                                        </button>
+                                        <a href="{{ $tableReservation->getQRCodeUrl() }}" target="_blank"
+                                           class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
+                                            Test QR
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
 
                         <div>
                             <span class="text-sm text-gray-600">Reminder Sent:</span>
@@ -341,4 +363,26 @@
 
         </div>
     </div>
+    
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                // Show success message
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.remove('bg-green-600', 'hover:bg-green-700');
+                button.classList.add('bg-green-800');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('bg-green-800');
+                    button.classList.add('bg-green-600', 'hover:bg-green-700');
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+                alert('Failed to copy URL to clipboard');
+            });
+        }
+    </script>
 </x-app-layout>

@@ -13,6 +13,7 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'table_id',
+        'table_session_id',
         'reservation_id',
         'order_type',
         'order_source',
@@ -26,6 +27,10 @@ class Order extends Model
         'actual_completion_time',
         'is_rush_order',
         'confirmation_code',
+        // QR Order specific fields
+        'guest_name',
+        'guest_phone',
+        'session_token',
     ];
 
     protected $casts = [
@@ -68,5 +73,39 @@ class Order extends Model
     public function trackings()
     {
         return $this->hasMany(OrderTracking::class);
+    }
+
+    public function tableSession()
+    {
+        return $this->belongsTo(TableSession::class, 'table_session_id');
+    }
+
+    // Helper methods
+    public function isQROrder()
+    {
+        return $this->order_type === 'qr_table' && !empty($this->table_session_id);
+    }
+
+    public function isWebsiteOrder()
+    {
+        return $this->order_type === 'website' && !empty($this->user_id);
+    }
+
+    public function getCustomerNameAttribute()
+    {
+        if ($this->isQROrder()) {
+            return $this->guest_name;
+        }
+        
+        return $this->user ? $this->user->name : 'Unknown';
+    }
+
+    public function getCustomerPhoneAttribute()
+    {
+        if ($this->isQROrder()) {
+            return $this->guest_phone;
+        }
+        
+        return $this->user ? $this->user->phone : null;
     }
 }
