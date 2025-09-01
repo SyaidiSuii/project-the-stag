@@ -133,6 +133,10 @@
                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.order-item.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Order Items') }}
                                     </a>
+                                    <a href="{{ route('admin.quick-reorder.index') }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.quick-reorder.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                        {{ __('Quick Reorders') }}
+                                    </a>
                                     <a href="{{ route('admin.order-etas.index') }}" 
                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.order-etas.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Order ETAS') }}

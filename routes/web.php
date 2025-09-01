@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\RoleManagementController;
 use App\Http\Controllers\Admin\TableSessionController;
 use App\Http\Controllers\QR\MenuController as QRMenuController;
 use App\Http\Controllers\Admin\MenuCustomizationController;
+use App\Http\Controllers\Admin\QuickReorderController;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\HappyBirthday;
@@ -112,6 +113,19 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     
     // Basic CRUD routes for orders - MUST come AFTER specific routes
     Route::resource('order', OrderController::class);
+
+    // Quick Reorder routes - IMPORTANT: Specific routes MUST come BEFORE resource routes
+    Route::get('quick-reorder/popular', [QuickReorderController::class, 'getPopular'])->name('quick-reorder.getPopular');
+    Route::get('quick-reorder/recent', [QuickReorderController::class, 'getRecent'])->name('quick-reorder.getRecent');
+    Route::get('quick-reorder/by-customer', [QuickReorderController::class, 'getByCustomer'])->name('quick-reorder.getByCustomer');
+    Route::get('quick-reorder/search', [QuickReorderController::class, 'search'])->name('quick-reorder.search');
+    Route::post('quick-reorder/{quickReorder}/convert-to-order', [QuickReorderController::class, 'convertToOrder'])->name('quick-reorder.convertToOrder');
+    Route::get('quick-reorder/{quickReorder}/duplicate', [QuickReorderController::class, 'duplicate'])->name('quick-reorder.duplicate');
+    Route::post('quick-reorder/{quickReorder}/update-frequency', [QuickReorderController::class, 'updateFrequency'])->name('quick-reorder.updateFrequency');
+    Route::post('quick-reorder/bulk-delete', [QuickReorderController::class, 'bulkDelete'])->name('quick-reorder.bulkDelete');
+    
+    // Basic CRUD routes for quick reorders - MUST come AFTER specific routes
+    Route::resource('quick-reorder', QuickReorderController::class);
 
     // Order Item routes - IMPORTANT: Specific routes MUST come BEFORE resource routes
     Route::get('order-item/kitchen', [OrderItemController::class, 'kitchen'])->name('order-item.kitchen');

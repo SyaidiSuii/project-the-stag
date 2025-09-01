@@ -13,7 +13,16 @@ return new class extends Migration
     {
         Schema::create('quick_reorders', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('customer_profile_id')
+                  ->constrained('customer_profiles')
+                  ->onDelete('cascade');
+            $table->string('name');
+            $table->json('order_items');
+            $table->decimal('total_amount', 10, 2);
+            $table->integer('order_frequency')->default(1);
+            $table->timestamp('last_ordered_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
