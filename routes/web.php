@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleManagementController;
 use App\Http\Controllers\Admin\TableSessionController;
 use App\Http\Controllers\QR\MenuController as QRMenuController;
+use App\Http\Controllers\Admin\MenuCustomizationController;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\HappyBirthday;
@@ -164,6 +165,16 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('table-sessions/{tableSession}/qr-code', [TableSessionController::class, 'qrCode'])->name('table-sessions.qr-code');
     Route::post('table-sessions/expire-old', [TableSessionController::class, 'expireOldSessions'])->name('table-sessions.expire-old');
     Route::resource('table-sessions', TableSessionController::class);
+
+    // Menu Customization routes - IMPORTANT: Specific routes MUST come BEFORE resource routes
+    Route::get('menu-customizations/statistics', [MenuCustomizationController::class, 'getStatistics'])->name('menu-customizations.getStatistics');
+    Route::get('menu-customizations/export', [MenuCustomizationController::class, 'export'])->name('menu-customizations.export');
+    Route::get('menu-customizations/by-order-item/{orderItem}', [MenuCustomizationController::class, 'getByOrderItem'])->name('menu-customizations.by-order-item');
+    Route::post('menu-customizations/bulk-delete', [MenuCustomizationController::class, 'bulkDelete'])->name('menu-customizations.bulkDelete');
+    Route::get('menu-customizations/get-customizations', [MenuCustomizationController::class, 'getCustomizationsByOrderItem'])->name('menu-customizations.get-customizations');
+
+    // Basic CRUD routes for menu customizations - MUST come AFTER specific routes
+    Route::resource('menu-customizations', MenuCustomizationController::class);
 
 });
 

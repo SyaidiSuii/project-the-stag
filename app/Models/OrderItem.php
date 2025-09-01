@@ -35,4 +35,10 @@ class OrderItem extends Model
     {
         return $this->belongsTo(MenuItem::class);
     }
+
+    public function customizations()
+{
+    return $this->hasMany(MenuCustomization::class);
+}
+
 }

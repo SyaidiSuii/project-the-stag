@@ -57,6 +57,10 @@
                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.menu-items.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Menu Items') }}
                                     </a>
+                                    <a href="{{ route('admin.menu-customizations.index') }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.menu-customizations.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
+                                        {{ __('Menu Customizations') }}
+                                    </a>
                                     <a href="{{ route('admin.sale-analytics.index') }}" 
                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.sale-analytics.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Sale Analytics') }}
