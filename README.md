@@ -1,9 +1,9 @@
-
-````markdown
 # Laravel Project Setup
 
 ## Requirements
 Make sure you have the following installed on your machine:
+
+````markdown
 
 - [PHP >= 8.1](https://www.php.net/)
 - [Composer](https://getcomposer.org/)
@@ -11,7 +11,6 @@ Make sure you have the following installed on your machine:
 - [Node.js & NPM](https://nodejs.org/) (for frontend assets)
 - [Git](https://git-scm.com/)
 
----
 ````
 
 ## Installation
@@ -126,6 +125,3 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 This project is licensed under the [MIT License](LICENSE).
 
-```
----
-```
