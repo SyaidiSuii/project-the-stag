@@ -2,124 +2,131 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+  use App\Http\Controllers\Controller;
+  use Illuminate\Http\Request;
+  use App\Models\User;
+  use Spatie\Permission\Models\Role;
+  use Spatie\Permission\Models\Permission;
 
-use App\Models\User;
-use App\Models\Role;
+  class UserController extends Controller
+  {
+      public function __construct()
+      {
+          $this->middleware('permission:view-users', ['only' => ['index', 'show']]);
+          $this->middleware('permission:create-users', ['only' => ['create', 'store']]);
+          $this->middleware('permission:edit-users', ['only' => ['edit', 'update']]);
+          $this->middleware('permission:delete-users', ['only' => ['destroy']]);
+      }
 
-class UserController extends Controller
-{
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        if (request('cancel')) {
-            return redirect()->route('admin.user.index');
-        }
+      /**
+       * Display a listing of the resource.
+       */
+      public function index()
+      {
+          if (request('cancel')) {
+              return redirect()->route('admin.user.index');
+          }
 
-        $users = User::with('roles')->latest()->paginate(10);
-        return view('admin.user.index', compact('users'));
-    }
+          $users = User::with('roles')->latest()->paginate(10);
+          return view('admin.user.index', compact('users'));
+      }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $user = new User;
-        $roles = Role::all();
-        $user->load('roles');
-        return view('admin.user.form', compact('user', 'roles'));
-    }
+      /**
+       * Show the form for creating a new resource.
+       */
+      public function create()
+      {
+          $user = new User;
+          $roles = Role::all();
+          return view('admin.user.form', compact('user', 'roles'));
+      }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $this->validate($request,[
-            'name'=> 'required|min:5',
-            'email'=>'required|email|unique:users,email',
-            'phone_number' => 'required|string|max:20',
-            'is_active' => 'boolean',
-            'roles' => ['nullable', 'array'],
-            'roles.*' => ['exists:roles,id'], // semak ID role wujud dalam table roles
-        ],[
-            'name.required' => 'Username is required.',
-            'name.min' => 'Username must be at least 5 char.',
-        ]);
+      /**
+       * Store a newly created resource in storage.
+       */
+      public function store(Request $request)
+      {
+          $this->validate($request,[
+              'name'=> 'required|min:5',
+              'email'=>'required|email|unique:users,email',
+              'phone_number' => 'required|string|max:20',
+              'is_active' => 'boolean',
+              'roles' => ['nullable', 'array'],
+              'roles.*' => ['exists:roles,id'],
+          ],[
+              'name.required' => 'Username is required.',
+              'name.min' => 'Username must be at least 5 char.',
+          ]);
 
-        $user = new User;
-        $request ['password'] = bcrypt("12345678");
-        $user->fill($request->all()); 
-        //$user = User::create($request->all()); 
+          $user = User::create([
+              'name' => $request->name,
+              'email' => $request->email,
+              'phone_number' => $request->phone_number,
+              'is_active' => $request->is_active ?? true,
+              'password' => bcrypt("12345678"),
+          ]);
 
-        // hanya laksanakan operasi sekira ada input
-        if ($request->has('roles')) {
-            $user->roles()->attach($request->roles);
-        }
+          if ($request->has('roles')) {
+              $user->assignRole($request->roles);
+          }
 
-        $user->save();
+          return redirect()->route('admin.user.index')->with('message', 'User record has been saved!');
+      }
 
-        return redirect()->route('admin.user.index')->with('message', 'User record has been saved!');
-    }
+      /**
+       * Display the specified resource.
+       */
+      public function show(User $user)
+      {
+          $user->load('roles');
+          return view('admin.user.show', compact('user'));
+      }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(User $user)
-    {
-        $user->load('roles');
-        return view('admin.user.show', compact('user'));
-    }
+      /**
+       * Show the form for editing the specified resource.
+       */
+      public function edit(User $user)
+      {
+          $roles = Role::all();
+          $user->load('roles');
+          return view('admin.user.form', compact('user', 'roles'));
+      }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(User $user)
-    {
-        $roles = Role::all();
-        $user->load('roles');
-        return view('admin.user.form', compact('user', 'roles'));
-    }
+      /**
+       * Update the specified resource in storage.
+       */
+      public function update(Request $request, User $user)
+      {
+          $this->validate($request,[
+              'name'=> 'required|min:5',
+              'email'=>'required|email|unique:users,email,'.$user->id,
+              'phone_number' => 'required|string|max:20',
+              'is_active' => 'boolean',
+              'roles' => ['nullable', 'array'],
+              'roles.*' => ['exists:roles,id'],
+          ],[
+              'name.required' => 'Username is required.',
+              'name.min' => 'Username must be at least 5 char.',
+          ]);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, User $user)
-    {
-        $this->validate($request,[
-            'name'=> 'required|min:5',
-            'email'=>'required|email|unique:users,email,'.$user->id,
-            'phone_number' => 'required|string|max:20',
-            'is_active' => 'boolean',
-            'roles' => ['nullable', 'array'],
-            'roles.*' => ['exists:roles,id'], // pastikan ID ada dalam table roles
-        ],[
-            'name.required' => 'Username is required.',
-            'name.min' => 'Username must be at least 5 char.',
-        ]);
+          $user->update([
+              'name' => $request->name,
+              'email' => $request->email,
+              'phone_number' => $request->phone_number,
+              'is_active' => $request->is_active ?? true,
+          ]);
 
-        $user->fill($request->all());
-        
-        // laksanakan operasi atau kosongkan 
-        $user->roles()->sync($request->roles ?? []);
+          $user->syncRoles($request->roles ?? []);
 
-        $user->save();
+          return redirect()->route('admin.user.index')->with('message', 'User record has been updated!');
+      }
 
-        return redirect()->route('admin.user.index')->with('message', 'User record has been update!');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(User $user)
-    {
-        // hapuskan rekod roles
-        $user->roles()->detach();
-        $user->delete();
-        return redirect()->route('admin.user.index')->with('message', 'User record has been delete!');
-    }
-}
+      /**
+       * Remove the specified resource from storage.
+       */
+      public function destroy(User $user)
+      {
+          $user->delete(); // soft delete akan auto detach roles
+          return redirect()->route('admin.user.index')->with('message', 'User record has been deleted!');
+      }
+  }
