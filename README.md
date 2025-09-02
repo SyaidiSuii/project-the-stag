@@ -12,14 +12,15 @@ Make sure you have the following installed on your machine:
 - [Git](https://git-scm.com/)
 
 ---
+````
 
 ## Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/your-project.git
-   cd your-project
-````
+   git clone https://github.com/SyaidiSuii/project-the-stag.git
+   cd project-the-stag
+
 
 2. **Install PHP dependencies**
 
@@ -49,11 +50,12 @@ Make sure you have the following installed on your machine:
    Open `.env` and update your database & app configurations. Example:
 
    ```
-   APP_NAME="LaravelApp"
+   APP_NAME="The Stag SmartDine"
    APP_ENV=local
    APP_KEY=base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=
    APP_DEBUG=true
-   APP_URL=http://127.0.0.1:8000
+   APP_URL=https://the_stag.test
+  
 
    DB_CONNECTION=mysql
    DB_HOST=127.0.0.1
@@ -125,8 +127,5 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 This project is licensed under the [MIT License](LICENSE).
 
 ```
-
 ---
-
-Mau saya **customize README ini khusus untuk project restoran The Stag** (siap mention modul takeaway, booking meja, AI recommendation, dsb.), atau biar **general Laravel project** saja?
 ```
