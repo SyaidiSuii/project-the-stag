@@ -35,180 +35,246 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+// =============================================
+// PUBLIC ROUTES (No Authentication Required)
+// =============================================
+Route::get('/', function () {
+    return view('welcome');
+});
+
+// Testing route for birthday email
 Route::get('/send-birthday-email/{user}', function (User $user) {
-    // Trigger the birthday email
     Mail::to($user->email)->send(new HappyBirthday($user));
- 
- 
     return response()->json([
         'message' => "Happy Birthday email sent to {$user->name}!",
         'email' => $user->email,
     ]);
 });
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// =============================================
+// AUTHENTICATED ROUTES
+// =============================================
+Route::middleware(['auth', 'verified'])->group(function () {
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+    // ---------------------------------------------
+    // DASHBOARD & PROFILE MANAGEMENT
+    // ---------------------------------------------
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::patch('/profile/customer-profile', [ProfileController::class, 'updateCustomerProfile'])->name('profile.customer.update');
-    Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto'])->name('profile.photo.delete');
-});
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', [ProfileController::class, 'edit'])->name('edit');
+        Route::patch('/', [ProfileController::class, 'update'])->name('update');
+        Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
+        Route::patch('customer-profile', [ProfileController::class, 'updateCustomerProfile'])->name('customer.update');
+        Route::delete('photo', [ProfileController::class, 'deletePhoto'])->name('photo.delete');
+    });
 
-Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
- 
-    Route::resource('user', UserController::class);
+    // =============================================
+    // USER MANAGEMENT SECTION (Non-Admin)
+    // =============================================
     
-    // Permission Management Routes
-    Route::get('permissions/{permission}/assign', [PermissionController::class, 'assignForm'])->name('permissions.assign.form');
-    Route::post('permissions/{permission}/assign', [PermissionController::class, 'assignToRoles'])->name('permissions.assign');
-    Route::get('permissions/api/list', [PermissionController::class, 'getPermissions'])->name('permissions.api.list');
-    Route::resource('permissions', PermissionController::class);
-    
-    // Role Management Routes
-    Route::get('roles/assign', [RoleManagementController::class, 'assignForm'])->name('roles.assign.form');
-    Route::post('roles/assign', [RoleManagementController::class, 'assignToUser'])->name('roles.assign');
-    Route::get('roles/{role}/permissions', [RoleManagementController::class, 'getRolePermissions'])->name('roles.permissions');
-    Route::resource('roles', RoleManagementController::class);
-    Route::resource('table', TableController::class);
+    // Users Management (for managers/supervisors)
+    Route::middleware(['permission:user.menu'])->group(function () {
+        Route::resource('users', UserController::class)->except(['show']);
+    });
 
-    Route::get('table-reservation/today', [TableReservationController::class, 'todayReservations'])->name('table-reservation.today');
-    Route::post('table-reservation/{tableReservation}/update-status', [TableReservationController::class, 'updateStatus'])->name('table-reservation.update-status');
-    Route::resource('table-reservation', TableReservationController::class);
-    Route::resource('table-layout-config', TableLayoutConfigController::class);
+    // =============================================
+    // ADMIN PANEL SECTION (Admin & Manager Only)
+    // =============================================
+    Route::prefix('admin')->name('admin.')->middleware(['role:admin|manager'])->group(function () {
 
-    Route::post('table-layout-config/{tableLayoutConfig}/toggle-status', [TableLayoutConfigController::class, 'toggleStatus'])->name('table-layout-config.toggle-status');
-    Route::post('table-layout-config/{tableLayoutConfig}/duplicate', [TableLayoutConfigController::class, 'duplicate'])->name('table-layout-config.duplicate');
-    Route::get('api/table-layouts/active', [TableLayoutConfigController::class, 'getActiveLayouts'])->name('api.table-layouts.active');
-    Route::get('api/table-layouts/{tableLayoutConfig}', [TableLayoutConfigController::class, 'getLayoutDetails'])->name('api.table-layouts.details');
-    Route::get('api/table-layouts/statistics', [TableLayoutConfigController::class, 'getStatistics'])->name('api.table-layouts.statistics');
-    Route::resource('table-layout-config', TableLayoutConfigController::class);
+        // Admin User Management (Full Access)
+        Route::resource('user', \App\Http\Controllers\Admin\UserController::class);
+        
+        // ---------------------------------------------
+        // PERMISSIONS & ROLES MANAGEMENT
+        // ---------------------------------------------
+        Route::prefix('permissions')->name('permissions.')->group(function () {
+            Route::get('{permission}/assign', [PermissionController::class, 'assignForm'])->name('assign.form');
+            Route::post('{permission}/assign', [PermissionController::class, 'assignToRoles'])->name('assign');
+            Route::get('api/list', [PermissionController::class, 'getPermissions'])->name('api.list');
+        });
+        Route::resource('permissions', PermissionController::class);
+        
+        Route::prefix('roles')->name('roles.')->group(function () {
+            Route::get('assign', [RoleManagementController::class, 'assignForm'])->name('assign.form');
+            Route::post('assign', [RoleManagementController::class, 'assignToUser'])->name('assign');
+            Route::get('{role}/permissions', [RoleManagementController::class, 'getRolePermissions'])->name('permissions');
+        });
+        Route::resource('roles', RoleManagementController::class);
 
-    // Menu Items routes - IMPORTANT: Specific routes MUST come BEFORE apiResource
+        // ---------------------------------------------
+        // TABLE MANAGEMENT
+        // ---------------------------------------------
+        Route::resource('table', TableController::class);
 
-    // Route to display the menu items page (view)
-    Route::get('menu-items/featured', [MenuItemController::class, 'getFeatured'])->name('menu-items.featured');
-    Route::get('menu-items/stats', [MenuItemController::class, 'getStatistics'])->name('menu-items.stats');
-    Route::patch('menu-items/{menuItem}/toggle-availability', [MenuItemController::class, 'toggleAvailability'])->name('menu-items.toggle-availability');
-    Route::patch('menu-items/{menuItem}/toggle-featured', [MenuItemController::class, 'toggleFeatured'])->name('menu-items.toggle-featured');
-    Route::patch('menu-items/{menuItem}/rating', [MenuItemController::class, 'updateRating'])->name('menu-items.rating');
-    
-    // Basic CRUD routes - MUST come AFTER specific routes
-    Route::resource('menu-items', MenuItemController::class);
+        // Table Reservations
+        Route::prefix('table-reservation')->name('table-reservation.')->group(function () {
+            Route::get('today', [TableReservationController::class, 'todayReservations'])->name('today');
+            Route::post('{tableReservation}/update-status', [TableReservationController::class, 'updateStatus'])->name('update-status');
+        });
+        Route::resource('table-reservation', TableReservationController::class);
 
-    // Order routes - IMPORTANT: Specific routes MUST come BEFORE resource routes
-    Route::get('order/today', [OrderController::class, 'today'])->name('order.today');
-    Route::post('order/{order}/update-status', [OrderController::class, 'updateStatus'])->name('order.updateStatus');
-    Route::post('order/{order}/update-payment-status', [OrderController::class, 'updatePaymentStatus'])->name('order.updatePaymentStatus');
-    Route::get('order/by-status', [OrderController::class, 'getByStatus'])->name('order.getByStatus');
-    Route::post('order/{order}/cancel', [OrderController::class, 'cancel'])->name('order.cancel');
-    Route::get('order/{order}/duplicate', [OrderController::class, 'duplicate'])->name('order.duplicate');
-    
-    // Basic CRUD routes for orders - MUST come AFTER specific routes
-    Route::resource('order', OrderController::class);
+        // Table Layout Configuration
+        Route::prefix('table-layout-config')->name('table-layout-config.')->group(function () {
+            Route::post('{tableLayoutConfig}/toggle-status', [TableLayoutConfigController::class, 'toggleStatus'])->name('toggle-status');
+            Route::post('{tableLayoutConfig}/duplicate', [TableLayoutConfigController::class, 'duplicate'])->name('duplicate');
+        });
+        
+        Route::prefix('api/table-layouts')->name('api.table-layouts.')->group(function () {
+            Route::get('active', [TableLayoutConfigController::class, 'getActiveLayouts'])->name('active');
+            Route::get('{tableLayoutConfig}', [TableLayoutConfigController::class, 'getLayoutDetails'])->name('details');
+            Route::get('statistics', [TableLayoutConfigController::class, 'getStatistics'])->name('statistics');
+        });
+        Route::resource('table-layout-config', TableLayoutConfigController::class);
 
-    // Quick Reorder routes - IMPORTANT: Specific routes MUST come BEFORE resource routes
-    Route::get('quick-reorder/popular', [QuickReorderController::class, 'getPopular'])->name('quick-reorder.getPopular');
-    Route::get('quick-reorder/recent', [QuickReorderController::class, 'getRecent'])->name('quick-reorder.getRecent');
-    Route::get('quick-reorder/by-customer', [QuickReorderController::class, 'getByCustomer'])->name('quick-reorder.getByCustomer');
-    Route::get('quick-reorder/search', [QuickReorderController::class, 'search'])->name('quick-reorder.search');
-    Route::post('quick-reorder/{quickReorder}/convert-to-order', [QuickReorderController::class, 'convertToOrder'])->name('quick-reorder.convertToOrder');
-    Route::get('quick-reorder/{quickReorder}/duplicate', [QuickReorderController::class, 'duplicate'])->name('quick-reorder.duplicate');
-    Route::post('quick-reorder/{quickReorder}/update-frequency', [QuickReorderController::class, 'updateFrequency'])->name('quick-reorder.updateFrequency');
-    Route::post('quick-reorder/bulk-delete', [QuickReorderController::class, 'bulkDelete'])->name('quick-reorder.bulkDelete');
-    
-    // Basic CRUD routes for quick reorders - MUST come AFTER specific routes
-    Route::resource('quick-reorder', QuickReorderController::class);
+        // Table Sessions
+        Route::prefix('table-sessions')->name('table-sessions.')->group(function () {
+            Route::get('active', [TableSessionController::class, 'active'])->name('active');
+            Route::post('{tableSession}/complete', [TableSessionController::class, 'complete'])->name('complete');
+            Route::post('{tableSession}/extend', [TableSessionController::class, 'extend'])->name('extend');
+            Route::post('{tableSession}/regenerate-qr', [TableSessionController::class, 'regenerateQR'])->name('regenerate-qr');
+            Route::get('{tableSession}/qr-code', [TableSessionController::class, 'qrCode'])->name('qr-code');
+            Route::post('expire-old', [TableSessionController::class, 'expireOldSessions'])->name('expire-old');
+        });
+        Route::resource('table-sessions', TableSessionController::class);
 
-    // Order Item routes - IMPORTANT: Specific routes MUST come BEFORE resource routes
-    Route::get('order-item/kitchen', [OrderItemController::class, 'kitchen'])->name('order-item.kitchen');
-    Route::post('order-item/{orderItem}/update-status', [OrderItemController::class, 'updateStatus'])->name('order-item.updateStatus');
-    Route::get('order-item/by-order', [OrderItemController::class, 'getByOrder'])->name('order-item.getByOrder');
-    Route::get('order-item/by-status', [OrderItemController::class, 'getByStatus'])->name('order-item.getByStatus');
-    Route::post('order-item/bulk-update-status', [OrderItemController::class, 'bulkUpdateStatus'])->name('order-item.bulkUpdateStatus');
-    Route::get('order-item/calculate-total', [OrderItemController::class, 'calculateTotal'])->name('order-item.calculateTotal');
-    Route::get('order-item/get-menu-item-price', [OrderItemController::class, 'getMenuItemPrice'])->name('order-item.getMenuItemPrice');
-    Route::get('order-item/{orderItem}/duplicate', [OrderItemController::class, 'duplicate'])->name('order-item.duplicate');
-    
-    // Basic CRUD routes for order items - MUST come AFTER specific routes
-    Route::resource('order-item', OrderItemController::class);
+        // ---------------------------------------------
+        // MENU MANAGEMENT
+        // ---------------------------------------------
+        Route::prefix('menu-items')->name('menu-items.')->group(function () {
+            Route::get('featured', [MenuItemController::class, 'getFeatured'])->name('featured');
+            Route::get('stats', [MenuItemController::class, 'getStatistics'])->name('stats');
+            Route::patch('{menuItem}/toggle-availability', [MenuItemController::class, 'toggleAvailability'])->name('toggle-availability');
+            Route::patch('{menuItem}/toggle-featured', [MenuItemController::class, 'toggleFeatured'])->name('toggle-featured');
+            Route::patch('{menuItem}/rating', [MenuItemController::class, 'updateRating'])->name('rating');
+        });
+        Route::resource('menu-items', MenuItemController::class);
 
-    // Order ETA routes - IMPORTANT: Specific routes MUST come BEFORE resource routes
-    Route::post('order-etas/{orderEta}/update-estimate', [OrderEtasController::class, 'updateEstimate'])->name('order-etas.updateEstimate');
-    Route::post('order-etas/{orderEta}/mark-completed', [OrderEtasController::class, 'markCompleted'])->name('order-etas.markCompleted');
-    Route::post('order-etas/{orderEta}/notify-customer', [OrderEtasController::class, 'notifyCustomer'])->name('order-etas.notifyCustomer');
-    Route::get('order-etas/delayed-orders', [OrderEtasController::class, 'getDelayedOrders'])->name('order-etas.getDelayedOrders');
-    Route::get('order-etas/statistics', [OrderEtasController::class, 'getStatistics'])->name('order-etas.getStatistics');
-    Route::get('order-etas/needing-attention', [OrderEtasController::class, 'getNeedingAttention'])->name('order-etas.getNeedingAttention');
-    
-    // Basic CRUD routes for order ETAs - MUST come AFTER specific routes
-    Route::resource('order-etas', OrderEtasController::class);
-    // Di routes/api.php
-    Route::get('order-trackings/stats/performance', [OrderTrackingController::class, 'getPerformanceStats'])->name('order-trackings.stats.performance');
-    Route::get('order-trackings/stations/active-orders', [OrderTrackingController::class, 'getActiveOrdersByStation'])->name('order-trackings.stations.active-orders');
-    Route::get('orders/{id}/tracking-history', [OrderTrackingController::class, 'getOrderHistory'])->name('orders.tracking-history');
-    Route::patch('order-trackings/{orderTracking}/status', [OrderTrackingController::class, 'updateStatus'])->name('order-trackings.update-status');
-    
-    // Basic CRUD routes for order trackings - MUST come AFTER specific routes
-    Route::resource('order-trackings', OrderTrackingController::class);
+        // Menu Customizations
+        Route::prefix('menu-customizations')->name('menu-customizations.')->group(function () {
+            Route::get('statistics', [MenuCustomizationController::class, 'getStatistics'])->name('getStatistics');
+            Route::get('export', [MenuCustomizationController::class, 'export'])->name('export');
+            Route::get('by-order-item/{orderItem}', [MenuCustomizationController::class, 'getByOrderItem'])->name('by-order-item');
+            Route::post('bulk-delete', [MenuCustomizationController::class, 'bulkDelete'])->name('bulkDelete');
+            Route::get('get-customizations', [MenuCustomizationController::class, 'getCustomizationsByOrderItem'])->name('get-customizations');
+        });
+        Route::resource('menu-customizations', MenuCustomizationController::class);
 
-    // Sale Analytics routes - IMPORTANT: Specific routes MUST come BEFORE resource routes
-    Route::get('sale-analytics/dashboard-stats', [SaleAnalyticsController::class, 'getDashboardStats'])->name('sale-analytics.dashboard-stats');
-    Route::get('sale-analytics/date-range', [SaleAnalyticsController::class, 'getDateRangeAnalytics'])->name('sale-analytics.date-range');
-    Route::post('sale-analytics/generate/{date?}', [SaleAnalyticsController::class, 'generateDailyAnalytics'])->name('sale-analytics.generate');
-    Route::get('sale-analytics/popular-items', [SaleAnalyticsController::class, 'getPopularItems'])->name('sale-analytics.popular-items');
-    Route::get('sale-analytics/peak-hours', [SaleAnalyticsController::class, 'getPeakHours'])->name('sale-analytics.peak-hours');
-    Route::get('sale-analytics/customer-analytics', [SaleAnalyticsController::class, 'getCustomerAnalytics'])->name('sale-analytics.customer-analytics');
-    Route::get('sale-analytics/trends', [SaleAnalyticsController::class, 'getTrends'])->name('sale-analytics.trends');
+        // ---------------------------------------------
+        // ORDER MANAGEMENT
+        // ---------------------------------------------
+        Route::prefix('order')->name('order.')->group(function () {
+            Route::get('today', [OrderController::class, 'today'])->name('today');
+            Route::post('{order}/update-status', [OrderController::class, 'updateStatus'])->name('updateStatus');
+            Route::post('{order}/update-payment-status', [OrderController::class, 'updatePaymentStatus'])->name('updatePaymentStatus');
+            Route::get('by-status', [OrderController::class, 'getByStatus'])->name('getByStatus');
+            Route::post('{order}/cancel', [OrderController::class, 'cancel'])->name('cancel');
+            Route::get('{order}/duplicate', [OrderController::class, 'duplicate'])->name('duplicate');
+        });
+        Route::resource('order', OrderController::class);
 
-    // Basic CRUD routes for sale analytics - MUST come AFTER specific routes
-    Route::resource('sale-analytics', SaleAnalyticsController::class);
+        // Order Items
+        Route::prefix('order-item')->name('order-item.')->group(function () {
+            Route::get('kitchen', [OrderItemController::class, 'kitchen'])->name('kitchen');
+            Route::post('{orderItem}/update-status', [OrderItemController::class, 'updateStatus'])->name('updateStatus');
+            Route::get('by-order', [OrderItemController::class, 'getByOrder'])->name('getByOrder');
+            Route::get('by-status', [OrderItemController::class, 'getByStatus'])->name('getByStatus');
+            Route::post('bulk-update-status', [OrderItemController::class, 'bulkUpdateStatus'])->name('bulkUpdateStatus');
+            Route::get('calculate-total', [OrderItemController::class, 'calculateTotal'])->name('calculateTotal');
+            Route::get('get-menu-item-price', [OrderItemController::class, 'getMenuItemPrice'])->name('getMenuItemPrice');
+            Route::get('{orderItem}/duplicate', [OrderItemController::class, 'duplicate'])->name('duplicate');
+        });
+        Route::resource('order-item', OrderItemController::class);
 
-    // Table Session Management Routes
-    Route::get('table-sessions/active', [TableSessionController::class, 'active'])->name('table-sessions.active');
-    Route::post('table-sessions/{tableSession}/complete', [TableSessionController::class, 'complete'])->name('table-sessions.complete');
-    Route::post('table-sessions/{tableSession}/extend', [TableSessionController::class, 'extend'])->name('table-sessions.extend');
-    Route::post('table-sessions/{tableSession}/regenerate-qr', [TableSessionController::class, 'regenerateQR'])->name('table-sessions.regenerate-qr');
-    Route::get('table-sessions/{tableSession}/qr-code', [TableSessionController::class, 'qrCode'])->name('table-sessions.qr-code');
-    Route::post('table-sessions/expire-old', [TableSessionController::class, 'expireOldSessions'])->name('table-sessions.expire-old');
-    Route::resource('table-sessions', TableSessionController::class);
+        // Order ETAs
+        Route::prefix('order-etas')->name('order-etas.')->group(function () {
+            Route::post('{orderEta}/update-estimate', [OrderEtasController::class, 'updateEstimate'])->name('updateEstimate');
+            Route::post('{orderEta}/mark-completed', [OrderEtasController::class, 'markCompleted'])->name('markCompleted');
+            Route::post('{orderEta}/notify-customer', [OrderEtasController::class, 'notifyCustomer'])->name('notifyCustomer');
+            Route::get('delayed-orders', [OrderEtasController::class, 'getDelayedOrders'])->name('getDelayedOrders');
+            Route::get('statistics', [OrderEtasController::class, 'getStatistics'])->name('getStatistics');
+            Route::get('needing-attention', [OrderEtasController::class, 'getNeedingAttention'])->name('getNeedingAttention');
+        });
+        Route::resource('order-etas', OrderEtasController::class);
 
-    // Menu Customization routes - IMPORTANT: Specific routes MUST come BEFORE resource routes
-    Route::get('menu-customizations/statistics', [MenuCustomizationController::class, 'getStatistics'])->name('menu-customizations.getStatistics');
-    Route::get('menu-customizations/export', [MenuCustomizationController::class, 'export'])->name('menu-customizations.export');
-    Route::get('menu-customizations/by-order-item/{orderItem}', [MenuCustomizationController::class, 'getByOrderItem'])->name('menu-customizations.by-order-item');
-    Route::post('menu-customizations/bulk-delete', [MenuCustomizationController::class, 'bulkDelete'])->name('menu-customizations.bulkDelete');
-    Route::get('menu-customizations/get-customizations', [MenuCustomizationController::class, 'getCustomizationsByOrderItem'])->name('menu-customizations.get-customizations');
+        // Order Tracking
+        Route::prefix('order-trackings')->name('order-trackings.')->group(function () {
+            Route::get('stats/performance', [OrderTrackingController::class, 'getPerformanceStats'])->name('stats.performance');
+            Route::get('stations/active-orders', [OrderTrackingController::class, 'getActiveOrdersByStation'])->name('stations.active-orders');
+            Route::patch('{orderTracking}/status', [OrderTrackingController::class, 'updateStatus'])->name('update-status');
+        });
+        Route::get('orders/{id}/tracking-history', [OrderTrackingController::class, 'getOrderHistory'])->name('orders.tracking-history');
+        Route::resource('order-trackings', OrderTrackingController::class);
 
-    // Basic CRUD routes for menu customizations - MUST come AFTER specific routes
-    Route::resource('menu-customizations', MenuCustomizationController::class);
+        // Quick Reorder
+        Route::prefix('quick-reorder')->name('quick-reorder.')->group(function () {
+            Route::get('popular', [QuickReorderController::class, 'getPopular'])->name('getPopular');
+            Route::get('recent', [QuickReorderController::class, 'getRecent'])->name('getRecent');
+            Route::get('by-customer', [QuickReorderController::class, 'getByCustomer'])->name('getByCustomer');
+            Route::get('search', [QuickReorderController::class, 'search'])->name('search');
+            Route::post('{quickReorder}/convert-to-order', [QuickReorderController::class, 'convertToOrder'])->name('convertToOrder');
+            Route::get('{quickReorder}/duplicate', [QuickReorderController::class, 'duplicate'])->name('duplicate');
+            Route::post('{quickReorder}/update-frequency', [QuickReorderController::class, 'updateFrequency'])->name('updateFrequency');
+            Route::post('bulk-delete', [QuickReorderController::class, 'bulkDelete'])->name('bulkDelete');
+        });
+        Route::resource('quick-reorder', QuickReorderController::class);
 
-});
+        // ---------------------------------------------
+        // ANALYTICS & REPORTING
+        // ---------------------------------------------
+        Route::prefix('sale-analytics')->name('sale-analytics.')->group(function () {
+            Route::get('dashboard-stats', [SaleAnalyticsController::class, 'getDashboardStats'])->name('dashboard-stats');
+            Route::get('date-range', [SaleAnalyticsController::class, 'getDateRangeAnalytics'])->name('date-range');
+            Route::post('generate/{date?}', [SaleAnalyticsController::class, 'generateDailyAnalytics'])->name('generate');
+            Route::get('popular-items', [SaleAnalyticsController::class, 'getPopularItems'])->name('popular-items');
+            Route::get('peak-hours', [SaleAnalyticsController::class, 'getPeakHours'])->name('peak-hours');
+            Route::get('customer-analytics', [SaleAnalyticsController::class, 'getCustomerAnalytics'])->name('customer-analytics');
+            Route::get('trends', [SaleAnalyticsController::class, 'getTrends'])->name('trends');
+        });
+        Route::resource('sale-analytics', SaleAnalyticsController::class);
 
-// QR Code Routes (Public - No Auth Required)
+    }); // End of admin routes
+
+}); // End of authenticated routes
+
+// =============================================
+// QR CODE PUBLIC ROUTES (No Authentication)
+// =============================================
 Route::prefix('qr')->name('qr.')->group(function () {
-    Route::get('/menu', [QRMenuController::class, 'index'])->name('menu');
-    Route::get('/cart', [QRMenuController::class, 'viewCart'])->name('cart');
-    Route::get('/error', [QRMenuController::class, 'error'])->name('error');
-    Route::get('/track', [QRMenuController::class, 'trackOrder'])->name('track');
     
-    // AJAX Routes for cart management
-    Route::post('/cart/add', [QRMenuController::class, 'addToCart'])->name('cart.add');
-    Route::post('/cart/update', [QRMenuController::class, 'updateCart'])->name('cart.update');
-    Route::post('/order/place', [QRMenuController::class, 'placeOrder'])->name('order.place');
-    Route::post('/waiter/call', [QRMenuController::class, 'callWaiter'])->name('waiter.call');
+    // Main QR Pages
+    Route::get('menu', [QRMenuController::class, 'index'])->name('menu');
+    Route::get('cart', [QRMenuController::class, 'viewCart'])->name('cart');
+    Route::get('error', [QRMenuController::class, 'error'])->name('error');
+    Route::get('track', [QRMenuController::class, 'trackOrder'])->name('track');
     
-    // API for order tracking
-    Route::post('/api/track-order', [QRMenuController::class, 'trackOrder'])->name('api.track-order');
+    // Cart Management
+    Route::prefix('cart')->name('cart.')->group(function () {
+        Route::post('add', [QRMenuController::class, 'addToCart'])->name('add');
+        Route::post('update', [QRMenuController::class, 'updateCart'])->name('update');
+    });
+    
+    // Order Management
+    Route::prefix('order')->name('order.')->group(function () {
+        Route::post('place', [QRMenuController::class, 'placeOrder'])->name('place');
+    });
+    
+    // Service Requests
+    Route::prefix('waiter')->name('waiter.')->group(function () {
+        Route::post('call', [QRMenuController::class, 'callWaiter'])->name('call');
+    });
+    
+    // API Endpoints
+    Route::prefix('api')->name('api.')->group(function () {
+        Route::post('track-order', [QRMenuController::class, 'trackOrder'])->name('track-order');
+    });
 });
 
-
-
+// =============================================
+// AUTHENTICATION ROUTES
+// =============================================
 require __DIR__.'/auth.php';

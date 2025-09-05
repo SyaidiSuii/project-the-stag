@@ -23,11 +23,6 @@ class UserController extends Controller
      */
     public function index()
     {
-        // Check permission using helper method
-        if (!auth()->user()->can('view-users')) {
-            abort(403, 'Unauthorized action.');
-        }
-
         $users = User::with('roles')->paginate(10);
         return view('users.index', compact('users'));
     }
@@ -123,11 +118,6 @@ class UserController extends Controller
      */
     public function assignRole(Request $request, User $user)
     {
-        // Check if user has permission to assign roles
-        if (!auth()->user()->can('assign-permissions')) {
-            abort(403, 'Unauthorized action.');
-        }
-
         $request->validate([
             'role' => 'required|string|exists:roles,name'
         ]);
@@ -142,10 +132,6 @@ class UserController extends Controller
      */
     public function removeRole(Request $request, User $user)
     {
-        if (!auth()->user()->can('assign-permissions')) {
-            abort(403, 'Unauthorized action.');
-        }
-
         $request->validate([
             'role' => 'required|string|exists:roles,name'
         ]);

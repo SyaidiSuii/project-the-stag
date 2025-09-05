@@ -48,26 +48,29 @@ namespace App\Http\Controllers\Admin;
       {
           $this->validate($request,[
               'name'=> 'required|min:5',
-              'email'=>'required|email|unique:users,email',
+              'email'=>'required|email|unique:users,email,NULL,id,deleted_at,NULL',
               'phone_number' => 'required|string|max:20',
               'is_active' => 'boolean',
               'roles' => ['nullable', 'array'],
               'roles.*' => ['exists:roles,id'],
-          ],[
-              'name.required' => 'Username is required.',
-              'name.min' => 'Username must be at least 5 char.',
           ]);
 
+          // SARAN: Hindari hardcoded password. Pertimbangkan untuk membuat password acak
+          // dan mengirimkannya ke email pengguna atau membuat alur pengaturan password terpisah.
+          // Contoh: 'password' => bcrypt(Str::random(10)),
           $user = User::create([
               'name' => $request->name,
               'email' => $request->email,
               'phone_number' => $request->phone_number,
-              'is_active' => $request->is_active ?? true,
+              'is_active' => $request->boolean('is_active'), // Menggunakan boolean() lebih aman untuk checkbox
               'password' => bcrypt("12345678"),
           ]);
 
-          if ($request->has('roles')) {
-              $user->assignRole($request->roles);
+          // Convert role IDs to role objects with explicit guard checking
+          if ($request->has('roles') && is_array($request->roles)) {
+              $roleIds = array_filter($request->roles); // Remove empty values
+              $validRoles = Role::whereIn('id', $roleIds)->where('guard_name', 'web')->get();
+              $user->syncRoles($validRoles);
           }
 
           return redirect()->route('admin.user.index')->with('message', 'User record has been saved!');
@@ -99,24 +102,29 @@ namespace App\Http\Controllers\Admin;
       {
           $this->validate($request,[
               'name'=> 'required|min:5',
-              'email'=>'required|email|unique:users,email,'.$user->id,
+              'email'=>'required|email|unique:users,email,'.$user->id.',id,deleted_at,NULL',
               'phone_number' => 'required|string|max:20',
-              'is_active' => 'boolean',
+              'is_active' => 'nullable|boolean',
               'roles' => ['nullable', 'array'],
               'roles.*' => ['exists:roles,id'],
-          ],[
-              'name.required' => 'Username is required.',
-              'name.min' => 'Username must be at least 5 char.',
           ]);
 
           $user->update([
               'name' => $request->name,
               'email' => $request->email,
               'phone_number' => $request->phone_number,
-              'is_active' => $request->is_active ?? true,
+              'is_active' => $request->boolean('is_active'), // Menggunakan boolean() lebih aman untuk checkbox
           ]);
 
-          $user->syncRoles($request->roles ?? []);
+          // Convert role IDs to role objects with explicit guard checking
+          if ($request->has('roles') && is_array($request->roles)) {
+              $roleIds = array_filter($request->roles); // Remove empty values
+              $validRoles = Role::whereIn('id', $roleIds)->where('guard_name', 'web')->get();
+              $user->syncRoles($validRoles);
+          } else {
+              // If no roles are selected, remove all roles
+              $user->syncRoles([]);
+          }
 
           return redirect()->route('admin.user.index')->with('message', 'User record has been updated!');
       }
@@ -126,7 +134,11 @@ namespace App\Http\Controllers\Admin;
        */
       public function destroy(User $user)
       {
-          $user->delete(); // soft delete akan auto detach roles
+          // PERHATIAN: Soft delete TIDAK otomatis detach roles. Relasi tetap ada.
+          // Jika Anda ingin menghapus relasi role saat user di-soft delete, lakukan secara eksplisit.
+          // $user->roles()->detach();
+
+          $user->delete();
           return redirect()->route('admin.user.index')->with('message', 'User record has been deleted!');
       }
   }
