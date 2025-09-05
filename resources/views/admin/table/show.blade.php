@@ -140,8 +140,101 @@
                     </div>
                     @endif
 
+                    <!-- Current Active Session QR Code -->
+                    @php
+                        $activeSession = $table->sessions()->where('status', 'active')->where('expires_at', '>', now())->first();
+                    @endphp
+                    
+                    @if($activeSession)
+                    <div class="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-green-800 mb-3">Active Session QR Code</h4>
+                        
+                        @if($activeSession->qr_code_png)
+                            <div class="flex items-start gap-4">
+                                <!-- QR Code Image -->
+                                <div class="flex-shrink-0">
+                                    <img src="{{ asset('storage/' . $activeSession->qr_code_png) }}" 
+                                         alt="QR Code for Table {{ $table->table_number }}"
+                                         class="w-32 h-32 border border-green-300 rounded-md">
+                                </div>
+                                
+                                <!-- Session Info & Actions -->
+                                <div class="flex-1">
+                                    <div class="text-sm text-green-700 mb-3">
+                                        <p><strong>Session:</strong> {{ $activeSession->session_code }}</p>
+                                        <p><strong>Expires:</strong> {{ $activeSession->expires_at->format('M d, Y h:i A') }}</p>
+                                        @if($activeSession->guest_name)
+                                            <p><strong>Guest:</strong> {{ $activeSession->guest_name }}</p>
+                                        @endif
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button onclick="copyToClipboard('{{ $activeSession->qr_code_url }}')"
+                                                class="px-3 py-2 bg-green-600 text-white text-xs rounded hover:bg-green-700">
+                                            Copy URL
+                                        </button>
+                                        <a href="{{ $activeSession->qr_code_url }}" target="_blank"
+                                           class="px-3 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 text-center">
+                                            Test QR
+                                        </a>
+                                        <a href="{{ route('admin.table-sessions.qr-download', [$activeSession, 'png']) }}"
+                                           class="px-3 py-2 bg-purple-600 text-white text-xs rounded hover:bg-purple-700 text-center">
+                                            Download PNG
+                                        </a>
+                                        <a href="{{ route('admin.table-sessions.qr-download', [$activeSession, 'svg']) }}"
+                                           class="px-3 py-2 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 text-center">
+                                            Download SVG
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @else
+                            <!-- Fallback if QR image not generated -->
+                            <div class="text-sm text-green-700 mb-2">
+                                <p><strong>Session:</strong> {{ $activeSession->session_code }}</p>
+                                <p><strong>URL:</strong> <span class="break-all">{{ $activeSession->qr_code_url }}</span></p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="copyToClipboard('{{ $activeSession->qr_code_url }}')"
+                                        class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
+                                    Copy URL
+                                </button>
+                                <a href="{{ $activeSession->qr_code_url }}" target="_blank"
+                                   class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
+                                    Test QR
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                    @else
+                    <div class="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-800 mb-2">QR Code Status</h4>
+                        <p class="text-sm text-gray-600">No active session. QR code will be generated when a new session is created.</p>
+                    </div>
+                    @endif
+
                 </div>
             </div>
         </div>
     </div>
+    
+    <script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            // Show success feedback
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'Copied!';
+            button.classList.add('bg-green-800');
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('bg-green-800');
+            }, 2000);
+        }).catch(function(err) {
+            console.error('Could not copy text: ', err);
+            alert('Could not copy to clipboard');
+        });
+    }
+    </script>
 </x-app-layout>

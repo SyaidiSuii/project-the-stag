@@ -8,6 +8,7 @@ use App\Models\TableSession;
 use App\Models\Table;
 use App\Models\TableReservation;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class TableSessionController extends Controller
 {
@@ -209,10 +210,76 @@ class TableSessionController extends Controller
             'session_code' => $tableSession->session_code,
             'qr_url' => $tableSession->qr_code_url,
             'qr_data' => $tableSession->qr_code_data,
+            'qr_png' => $tableSession->qr_code_png ? asset('storage/' . $tableSession->qr_code_png) : null,
+            'qr_svg' => $tableSession->qr_code_svg ? asset('storage/' . $tableSession->qr_code_svg) : null,
             'table_number' => $tableSession->table->table_number,
             'expires_at' => $tableSession->expires_at,
             'time_remaining' => $tableSession->time_remaining,
         ]);
+    }
+
+    /**
+     * Download QR code image (PNG or SVG) - Protected route for staff/admin only
+     */
+    public function downloadQR(TableSession $tableSession, $format)
+    {
+        // Validate format
+        if (!in_array($format, ['png', 'svg'])) {
+            abort(400, 'Invalid format. Use png or svg.');
+        }
+
+        // Check if session is active
+        if (!$tableSession->isActive()) {
+            abort(404, 'Session not active or expired');
+        }
+
+        // Get the file path based on format
+        $filePath = $format === 'svg' ? $tableSession->qr_code_svg : $tableSession->qr_code_png;
+        
+        if (!$filePath || !\Storage::disk('public')->exists($filePath)) {
+            abort(404, 'QR code file not found');
+        }
+
+        // Get full storage path
+        $fullPath = storage_path('app/public/' . $filePath);
+        
+        // Generate download filename
+        $filename = "table_{$tableSession->table->table_number}_qr.{$format}";
+        
+        return response()->download($fullPath, $filename);
+    }
+
+    /**
+     * Preview QR code image in browser
+     */
+    public function previewQR(TableSession $tableSession, $format = 'png')
+    {
+        // Validate format
+        if (!in_array($format, ['png', 'svg'])) {
+            $format = 'png';
+        }
+
+        // Check if session is active
+        if (!$tableSession->isActive()) {
+            abort(404, 'Session not active or expired');
+        }
+
+        // Get the file path based on format
+        $filePath = $format === 'svg' ? $tableSession->qr_code_svg : $tableSession->qr_code_png;
+        
+        if (!$filePath || !\Storage::disk('public')->exists($filePath)) {
+            abort(404, 'QR code file not found');
+        }
+
+        // Get file content
+        $content = \Storage::disk('public')->get($filePath);
+        
+        // Set appropriate content type
+        $contentType = $format === 'svg' ? 'image/svg+xml' : 'image/png';
+        
+        return response($content, 200)
+            ->header('Content-Type', $contentType)
+            ->header('Cache-Control', 'public, max-age=3600');
     }
 
     /**

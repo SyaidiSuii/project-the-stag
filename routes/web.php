@@ -138,6 +138,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('{tableSession}/extend', [TableSessionController::class, 'extend'])->name('extend');
             Route::post('{tableSession}/regenerate-qr', [TableSessionController::class, 'regenerateQR'])->name('regenerate-qr');
             Route::get('{tableSession}/qr-code', [TableSessionController::class, 'qrCode'])->name('qr-code');
+            Route::get('{tableSession}/qr-download/{format}', [TableSessionController::class, 'downloadQR'])->name('qr-download')->where('format', 'png|svg');
+            Route::get('{tableSession}/qr-preview/{format?}', [TableSessionController::class, 'previewQR'])->name('qr-preview');
             Route::post('expire-old', [TableSessionController::class, 'expireOldSessions'])->name('expire-old');
         });
         Route::resource('table-sessions', TableSessionController::class);

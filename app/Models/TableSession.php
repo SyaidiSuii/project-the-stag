@@ -7,6 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\Writer\SvgWriter;
 
 class TableSession extends Model
 {
@@ -18,6 +24,8 @@ class TableSession extends Model
         'session_code',
         'qr_code_url',
         'qr_code_data',
+        'qr_code_png',
+        'qr_code_svg',
         'guest_name',
         'guest_phone',
         'guest_count',
@@ -111,8 +119,10 @@ class TableSession extends Model
     public function generateQRCode()
     {
         try {
-            // Install QR code package: composer require endroid/qr-code
-            // For now, we'll store the URL and generate QR code later
+            // Delete old QR files first
+            $this->deleteOldQRFiles();
+            
+            // Generate menu URL
             $menuUrl = config('app.url') . '/qr/menu?session=' . $this->session_code;
             
             $qrData = [
@@ -122,14 +132,67 @@ class TableSession extends Model
                 'expires_at' => $this->expires_at->toISOString(),
             ];
             
+            // Generate PNG QR code
+            $pngPath = $this->createQRImage('png', $menuUrl);
+            
+            // Generate SVG QR code  
+            $svgPath = $this->createQRImage('svg', $menuUrl);
+            
             $this->update([
                 'qr_code_url' => $menuUrl,
                 'qr_code_data' => $qrData,
+                'qr_code_png' => $pngPath,
+                'qr_code_svg' => $svgPath,
             ]);
             
         } catch (\Exception $e) {
             \Log::error('QR Code generation failed: ' . $e->getMessage());
         }
+    }
+
+    private function deleteOldQRFiles()
+    {
+        $patterns = [
+            "qr-codes/qr_{$this->session_code}.png",
+            "qr-codes/qr_{$this->session_code}.svg"
+        ];
+        
+        foreach($patterns as $pattern) {
+            if (Storage::disk('public')->exists($pattern)) {
+                Storage::disk('public')->delete($pattern);
+            }
+        }
+    }
+
+    private function createQRImage($format, $url)
+    {
+        $filename = "qr_{$this->session_code}.{$format}";
+        $directory = 'qr-codes';
+        $fullPath = $directory . '/' . $filename;
+        
+        // Ensure directory exists
+        if (!Storage::disk('public')->exists($directory)) {
+            Storage::disk('public')->makeDirectory($directory);
+        }
+        
+        // Create writer based on format
+        $writer = $format === 'png' ? new PngWriter() : new SvgWriter();
+        
+        // Generate QR code using Builder API (v6)
+        $builder = new Builder();
+        $result = $builder->build(
+            writer: $writer,
+            data: $url,
+            encoding: new Encoding('UTF-8'),
+            errorCorrectionLevel: ErrorCorrectionLevel::High,
+            size: 300,
+            margin: 10
+        );
+        
+        // Save to storage
+        Storage::disk('public')->put($fullPath, $result->getString());
+        
+        return $fullPath;
     }
 
     public function isActive()

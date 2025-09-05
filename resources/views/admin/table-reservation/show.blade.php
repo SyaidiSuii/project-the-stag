@@ -210,21 +210,58 @@
                         
                         @if($tableReservation->status === 'seated' && $tableReservation->hasActiveSession())
                         <div>
-                            <span class="text-sm text-gray-600">QR Code URL:</span>
+                            <span class="text-sm text-gray-600">QR Code:</span>
                             <div class="mt-2">
-                                <div class="bg-green-50 border border-green-200 rounded-md p-3">
-                                    <p class="text-sm font-medium text-green-800 mb-2">Customer QR Code Active!</p>
-                                    <p class="text-xs text-green-700 break-all">{{ $tableReservation->getQRCodeUrl() }}</p>
-                                    <div class="mt-2 flex gap-2">
-                                        <button onclick="copyToClipboard('{{ $tableReservation->getQRCodeUrl() }}')"
-                                                class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
-                                            Copy URL
-                                        </button>
-                                        <a href="{{ $tableReservation->getQRCodeUrl() }}" target="_blank"
-                                           class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
-                                            Test QR
-                                        </a>
-                                    </div>
+                                <div class="bg-green-50 border border-green-200 rounded-md p-4">
+                                    <p class="text-sm font-medium text-green-800 mb-3">Customer QR Code Active!</p>
+                                    
+                                    @if($tableReservation->tableSession && $tableReservation->tableSession->qr_code_png)
+                                        <div class="flex items-start gap-4">
+                                            <!-- QR Code Image -->
+                                            <div class="flex-shrink-0">
+                                                <img src="{{ asset('storage/' . $tableReservation->tableSession->qr_code_png) }}" 
+                                                     alt="QR Code for Table {{ $tableReservation->table->table_number }}"
+                                                     class="w-32 h-32 border border-green-300 rounded-md">
+                                            </div>
+                                            
+                                            <!-- Actions -->
+                                            <div class="flex-1">
+                                                <p class="text-xs text-green-700 mb-3 break-all">{{ $tableReservation->getQRCodeUrl() }}</p>
+                                                
+                                                <div class="grid grid-cols-2 gap-2">
+                                                    <button onclick="copyToClipboard('{{ $tableReservation->getQRCodeUrl() }}')"
+                                                            class="px-3 py-2 bg-green-600 text-white text-xs rounded hover:bg-green-700 w-full">
+                                                        Copy URL
+                                                    </button>
+                                                    <a href="{{ $tableReservation->getQRCodeUrl() }}" target="_blank"
+                                                       class="px-3 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 text-center">
+                                                        Test QR
+                                                    </a>
+                                                    <a href="{{ route('admin.table-sessions.qr-download', [$tableReservation->tableSession, 'png']) }}"
+                                                       class="px-3 py-2 bg-purple-600 text-white text-xs rounded hover:bg-purple-700 text-center">
+                                                        Download PNG
+                                                    </a>
+                                                    <a href="{{ route('admin.table-sessions.qr-download', [$tableReservation->tableSession, 'svg']) }}"
+                                                       class="px-3 py-2 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 text-center">
+                                                        Download SVG
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <!-- Fallback if QR image not generated -->
+                                        <p class="text-xs text-green-700 break-all mb-2">{{ $tableReservation->getQRCodeUrl() }}</p>
+                                        <div class="flex gap-2">
+                                            <button onclick="copyToClipboard('{{ $tableReservation->getQRCodeUrl() }}')"
+                                                    class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
+                                                Copy URL
+                                            </button>
+                                            <a href="{{ $tableReservation->getQRCodeUrl() }}" target="_blank"
+                                               class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
+                                                Test QR
+                                            </a>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
