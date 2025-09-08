@@ -14,6 +14,9 @@
                     Add New Menu Item
                 </a>
                 <div class="flex gap-2">
+                    <a href="{{ route('admin.categories.index') }}" class="items-center px-4 py-2 bg-green-600 rounded font-semibold text-white hover:bg-green-700">
+                        Manage Categories
+                    </a>
                     <a href="{{ route('admin.menu-items.featured') }}" class="items-center px-4 py-2 bg-yellow-600 rounded font-semibold text-white hover:bg-yellow-700">
                         Featured Items
                     </a>
@@ -35,14 +38,21 @@
                         </div>
 
                         <div>
-                            <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
-                            <select name="category" id="category" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
+                            <select name="category_id" id="category_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                 <option value="">All Categories</option>
-                                <option value="western" @if(request('category') == 'western') selected @endif>Western</option>
-                                <option value="local" @if(request('category') == 'local') selected @endif>Local</option>
-                                <option value="drink" @if(request('category') == 'drink') selected @endif>Drink</option>
-                                <option value="dessert" @if(request('category') == 'dessert') selected @endif>Dessert</option>
-                                <option value="appetizer" @if(request('category') == 'appetizer') selected @endif>Appetizer</option>
+                                @foreach($categories as $category)
+                                    <optgroup label="{{ $category->name }}">
+                                        <option value="{{ $category->id }}" @if(request('category_id') == $category->id) selected @endif>
+                                            {{ $category->name }} (Main)
+                                        </option>
+                                        @foreach($category->subCategories as $subCategory)
+                                            <option value="{{ $subCategory->id }}" @if(request('category_id') == $subCategory->id) selected @endif>
+                                                {{ $category->name }} > {{ $subCategory->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endforeach
                             </select>
                         </div>
 
@@ -69,7 +79,6 @@
                             <select name="sort_by" id="sort_by" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                 <option value="name" @if(request('sort_by') == 'name') selected @endif>Name</option>
                                 <option value="price" @if(request('sort_by') == 'price') selected @endif>Price</option>
-                                <option value="category" @if(request('sort_by') == 'category') selected @endif>Category</option>
                                 <option value="rating_average" @if(request('sort_by') == 'rating_average') selected @endif>Rating</option>
                                 <option value="created_at" @if(request('sort_by') == 'created_at') selected @endif>Date Added</option>
                             </select>
@@ -85,7 +94,7 @@
                         </div>
                     </form>
 
-                    @if(request()->hasAny(['search', 'category', 'availability', 'featured', 'sort_by']))
+                    @if(request()->hasAny(['search', 'category_id', 'availability', 'featured', 'sort_by']))
                         <div class="mt-3">
                             <a href="{{ route('admin.menu-items.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
                                 Clear all filters
@@ -151,9 +160,22 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <span class="px-2 py-1 text-xs rounded capitalize bg-gray-100 text-gray-800">
-                                            {{ $menuItem->category }}
-                                        </span>
+                                        @if($menuItem->category)
+                                            <div>
+                                                <span class="px-2 py-1 text-xs rounded capitalize bg-blue-100 text-blue-800">
+                                                    {{ $menuItem->category->name }}
+                                                </span>
+                                                @if($menuItem->category->parent)
+                                                    <div class="text-xs text-gray-500 mt-1">
+                                                        {{ $menuItem->category->parent->name }} > {{ $menuItem->category->name }}
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-800">
+                                                Uncategorized
+                                            </span>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4">
                                         <span class="font-medium text-lg">RM {{ number_format($menuItem->price, 2) }}</span>
@@ -203,7 +225,7 @@
                                         <div class="flex flex-col space-y-1">
                                             <div class="flex space-x-1">
                                                 <a href="{{ route('admin.menu-items.show', $menuItem->id) }}"
-                                                    class="inline-flex items-center px-4 py-2 bg-blue-600 text-black rounded-lg shadow hover:bg-blue-700">
+                                                    class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700">
                                                 View
                                                 </a>
 
@@ -226,7 +248,7 @@
                                                     @csrf
                                                     @method('PATCH')
                                                     <button type="submit" class="inline-flex items-center px-2 py-1 border border-transparent rounded text-xs uppercase tracking-widest
-                                                        @if($menuItem->is_featured) bg-gray-500 text-black hover:bg-gray-600
+                                                        @if($menuItem->is_featured) bg-gray-500 text-white hover:bg-gray-600
                                                         @else bg-yellow-500 text-black hover:bg-yellow-600 @endif">
                                                         {{ $menuItem->is_featured ? 'Unfeature' : 'Feature' }}
                                                     </button>

@@ -45,16 +45,26 @@
                         </div>
 
                         <div>
-                            <x-input-label for="category" :value="__('Category')" />
-                            <select id="category" name="category" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                            <x-input-label for="category_id" :value="__('Category')" />
+                            <select id="category_id" name="category_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
                                 <option value="">Select Category</option>
-                                <option value="western" @if(old('category', $menuItem->category) == 'western') selected @endif>Western</option>
-                                <option value="local" @if(old('category', $menuItem->category) == 'local') selected @endif>Local</option>
-                                <option value="drink" @if(old('category', $menuItem->category) == 'drink') selected @endif>Drink</option>
-                                <option value="dessert" @if(old('category', $menuItem->category) == 'dessert') selected @endif>Dessert</option>
-                                <option value="appetizer" @if(old('category', $menuItem->category) == 'appetizer') selected @endif>Appetizer</option>
+                                @foreach($categories as $category)
+                                    <optgroup label="{{ $category->name }}">
+                                        <option value="{{ $category->id }}" 
+                                            @if(old('category_id', $selectedCategoryId ?? $menuItem->category_id) == $category->id) selected @endif>
+                                            {{ $category->name }} (Main)
+                                        </option>
+                                        @foreach($category->subCategories as $subCategory)
+                                            <option value="{{ $subCategory->id }}" 
+                                                @if(old('category_id', $selectedCategoryId ?? $menuItem->category_id) == $subCategory->id) selected @endif>
+                                                {{ $category->name }} > {{ $subCategory->name }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endforeach
                             </select>
-                            <x-input-error class="mt-2" :messages="$errors->get('category')" />
+                            <x-input-error class="mt-2" :messages="$errors->get('category_id')" />
+                            <p class="mt-1 text-sm text-gray-500">Choose the main category or a sub-category</p>
                         </div>
                     </div>
 
@@ -174,6 +184,30 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Current Category Information (for edit) -->
+                    @if($menuItem->id && $menuItem->category)
+                        <div class="border-t pt-6">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="text-sm font-medium text-gray-900 mb-2">Current Category Information</h4>
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-gray-600">Current Category:</span>
+                                        <span class="font-medium">{{ $menuItem->category->name }}</span>
+                                        @if($menuItem->category->parent)
+                                            <span class="text-gray-500">({{ $menuItem->category->parent->name }} > {{ $menuItem->category->name }})</span>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">Category Type:</span>
+                                        <span class="font-medium px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                                            {{ ucfirst($menuItem->category->type) }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
 
                     <!-- Current Rating (for edit) -->
                     @if($menuItem->id && $menuItem->rating_count > 0)

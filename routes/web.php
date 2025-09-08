@@ -18,6 +18,14 @@ use App\Http\Controllers\Admin\TableSessionController;
 use App\Http\Controllers\QR\MenuController as QRMenuController;
 use App\Http\Controllers\Admin\MenuCustomizationController;
 use App\Http\Controllers\Admin\QuickReorderController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
+use App\Http\Controllers\Customer\FoodController as CustomerFoodController;
+use App\Http\Controllers\Customer\DrinksController as CustomerDrinksController;
+use App\Http\Controllers\Customer\OrdersController as CustomerOrdersController;
+use App\Http\Controllers\Customer\RewardsController as CustomerRewardsController;
+use App\Http\Controllers\Customer\BookingController as CustomerBookingController;
+use App\Http\Controllers\Customer\AccountController as CustomerAccountController;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\HappyBirthday;
@@ -39,8 +47,24 @@ use Illuminate\Support\Facades\Route;
 // =============================================
 // PUBLIC ROUTES (No Authentication Required)
 // =============================================
+// =============================================
+// CUSTOMER ROUTES (Public Access)
+// =============================================
+Route::prefix('customer')->name('customer.')->group(function () {
+    Route::get('/', [CustomerHomeController::class, 'index'])->name('index');
+    Route::post('/feedback', [CustomerHomeController::class, 'storeFeedback'])->name('feedback.store');
+    Route::get('/food', [CustomerFoodController::class, 'index'])->name('food.index');
+    Route::get('/food/data', [CustomerFoodController::class, 'getMenuData'])->name('food.data');
+    Route::get('/drinks', [CustomerDrinksController::class, 'index'])->name('drinks.index');
+    Route::get('/orders', [CustomerOrdersController::class, 'index'])->name('orders.index');
+    Route::get('/rewards', [CustomerRewardsController::class, 'index'])->name('rewards.index');
+    Route::get('/booking', [CustomerBookingController::class, 'index'])->name('booking.index');
+    Route::get('/account', [CustomerAccountController::class, 'index'])->name('account.index');
+});
+
+// Default homepage redirect
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('customer.index');
 });
 
 // Testing route for birthday email
@@ -61,8 +85,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // DASHBOARD & PROFILE MANAGEMENT
     // ---------------------------------------------
     Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+        return view('admin.dashboard.index');
+    })->name('dashboard')->middleware(['role:admin|manager']);
 
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('edit');
@@ -85,6 +109,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ADMIN PANEL SECTION (Admin & Manager Only)
     // =============================================
     Route::prefix('admin')->name('admin.')->middleware(['role:admin|manager'])->group(function () {
+
+        Route::get('/dashboard', function () { return view('admin.dashboard.index'); })->name('dashboard');
 
         // Admin User Management (Full Access)
         Route::resource('user', \App\Http\Controllers\Admin\UserController::class);
@@ -147,6 +173,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // ---------------------------------------------
         // MENU MANAGEMENT
         // ---------------------------------------------
+        Route::prefix('categories')->name('categories.')->group(function () {
+            Route::get('{id}/restore', [CategoryController::class, 'restore'])->name('restore')->withTrashed();
+            Route::delete('{id}/force-delete', [CategoryController::class, 'forceDelete'])->name('force-delete')->withTrashed();
+            Route::get('subcategories', [CategoryController::class, 'getSubCategories'])->name('subcategories');
+            Route::post('sort-order', [CategoryController::class, 'updateSortOrder'])->name('sort-order');
+            Route::get('hierarchical', [CategoryController::class, 'getHierarchical'])->name('hierarchical');
+        });
+        Route::resource('categories', CategoryController::class);
+        
         Route::prefix('menu-items')->name('menu-items.')->group(function () {
             Route::get('featured', [MenuItemController::class, 'getFeatured'])->name('featured');
             Route::get('stats', [MenuItemController::class, 'getStatistics'])->name('stats');

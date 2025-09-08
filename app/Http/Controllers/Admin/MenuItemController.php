@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\MenuItem;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
@@ -15,11 +16,11 @@ class MenuItemController extends Controller
      */
     public function index(Request $request)
     {
-        $query = MenuItem::query();
+        $query = MenuItem::with('category');
 
         // Filter by category
-        if ($request->has('category') && $request->category != '') {
-            $query->where('category', $request->category);
+        if ($request->has('category_id') && $request->category_id != '') {
+            $query->where('category_id', $request->category_id);
         }
 
         // Filter by availability
@@ -45,7 +46,7 @@ class MenuItemController extends Controller
         $sortBy = $request->get('sort_by', 'name');
         $sortOrder = $request->get('sort_order', 'asc');
         
-        $allowedSortFields = ['name', 'price', 'category', 'rating_average', 'created_at'];
+        $allowedSortFields = ['name', 'price', 'rating_average', 'created_at'];
         if (in_array($sortBy, $allowedSortFields)) {
             $query->orderBy($sortBy, $sortOrder);
         }
@@ -54,16 +55,34 @@ class MenuItemController extends Controller
             $request->get('per_page', 15)
         );
 
-        return view('admin.menu-items.index', compact('menuItems'));
+        // Get categories for filter dropdown
+        $categories = Category::with('subCategories')
+            ->whereNull('parent_id')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.menu-items.index', compact('menuItems', 'categories'));
     }
 
     /**
      * Show the form for creating a new menu item
      */
-    public function create()
+    public function create(Request $request)
     {
         $menuItem = new MenuItem();
-        return view('admin.menu-items.form', compact('menuItem'));
+        
+        // Get categories for dropdown
+        $categories = Category::with('subCategories')
+            ->whereNull('parent_id')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        // Pre-select category if provided
+        $selectedCategoryId = $request->get('category_id');
+
+        return view('admin.menu-items.form', compact('menuItem', 'categories', 'selectedCategoryId'));
     }
 
     /**
@@ -75,7 +94,7 @@ class MenuItemController extends Controller
             'name' => 'required|string|max:255|unique:menu_items,name',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'category' => ['required', Rule::in(['western', 'local', 'drink', 'dessert', 'appetizer'])],
+            'category_id' => 'required|exists:categories,id',
             'image_url' => 'nullable|url',
             'allergens' => 'nullable|array',
             'allergens.*' => 'string|max:100',
@@ -100,6 +119,7 @@ class MenuItemController extends Controller
      */
     public function show(MenuItem $menuItem)
     {
+        $menuItem->load('category');
         return view('admin.menu-items.show', compact('menuItem'));
     }
 
@@ -108,7 +128,17 @@ class MenuItemController extends Controller
      */
     public function edit(MenuItem $menuItem)
     {
-        return view('admin.menu-items.form', compact('menuItem'));
+        // Get categories for dropdown
+        $categories = Category::with('subCategories')
+            ->whereNull('parent_id')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        $menuItem->load('category');
+        $selectedCategoryId = $menuItem->category_id;
+
+        return view('admin.menu-items.form', compact('menuItem', 'categories', 'selectedCategoryId'));
     }
 
     /**
@@ -120,7 +150,7 @@ class MenuItemController extends Controller
             'name' => 'sometimes|string|max:255|unique:menu_items,name,' . $menuItem->id,
             'description' => 'nullable|string',
             'price' => 'sometimes|numeric|min:0',
-            'category' => ['sometimes', Rule::in(['western', 'local', 'drink', 'dessert', 'appetizer'])],
+            'category_id' => 'sometimes|exists:categories,id',
             'image_url' => 'nullable|url',
             'allergens' => 'nullable|array',
             'allergens.*' => 'string|max:100',
@@ -155,7 +185,8 @@ class MenuItemController extends Controller
      */
     public function getFeatured()
     {
-        $featuredItems = MenuItem::where('is_featured', true)
+        $featuredItems = MenuItem::with('category')
+                                ->where('is_featured', true)
                                 ->orderBy('rating_average', 'desc')
                                 ->get();
 
@@ -171,11 +202,12 @@ class MenuItemController extends Controller
             'total_items' => MenuItem::count(),
             'available_items' => MenuItem::where('availability', true)->count(),
             'featured_items' => MenuItem::where('is_featured', true)->count(),
-            'by_category' => MenuItem::select('category')
+            'by_category' => MenuItem::join('categories', 'menu_items.category_id', '=', 'categories.id')
+                                   ->select('categories.name as category_name')
                                    ->selectRaw('count(*) as count')
-                                   ->groupBy('category')
+                                   ->groupBy('categories.id', 'categories.name')
                                    ->get()
-                                   ->pluck('count', 'category')
+                                   ->pluck('count', 'category_name')
                                    ->toArray(),
             'average_rating' => MenuItem::where('rating_count', '>', 0)
                                       ->avg('rating_average'),
@@ -231,5 +263,20 @@ class MenuItemController extends Controller
         ]);
 
         return back()->with('message', 'Rating updated successfully');
+    }
+
+    /**
+     * Get subcategories for AJAX request
+     */
+    public function getSubCategories(Request $request)
+    {
+        $parentId = $request->get('parent_id');
+        
+        $subCategories = Category::where('parent_id', $parentId)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return response()->json($subCategories);
     }
 }

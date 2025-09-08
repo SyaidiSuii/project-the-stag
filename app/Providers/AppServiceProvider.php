@@ -26,8 +26,8 @@ class AppServiceProvider extends ServiceProvider
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
             return (new MailMessage)
                 ->subject('Sila Sahkan Email Anda')
-                ->greeting("Salam sejahtera {$notifiable->name},")
-                ->line('Terima kasih kerana mendaftar ke KelasProgramming.com. Sila sahkan email anda. Klik butang di bawah untuk pengesahan.')
+                ->greeting("Salam Sejahtera {$notifiable->name},")
+                ->line('Terima kasih kerana mendaftar ke The Stag SmartDine. Sila sahkan email anda. Klik butang di bawah untuk pengesahan.')
                 ->action('Sahkan Email Anda', $url)
                 ->salutation('Terima kasih.');
         });
