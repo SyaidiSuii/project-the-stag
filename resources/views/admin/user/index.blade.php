@@ -1,75 +1,204 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800  dark:text-gray-200 leading-tight">
-            {{ __('User') }}
-        </h2>
-    </x-slot>
+@extends('layouts.admin')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+@section('title', 'User Management')
+@section('page-title', 'User Management')
 
-            <div class="pb-3">
-               <a href="{{ route('admin.user.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white">Add New User</a>
-            </div>
-            
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-3">
-                <div class="p-6 text-gray-900 ">
-                    
-                    <table class="w-full">
-                        <thead>
-                            <tr class="border-b">
-                                <th>#</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone Number</th>
-                                <th>Role</th>
-                                <th>Created</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($users as $user)
-                            <tr class="border-b">
-                                <td class="px-6 py-4">{{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}</td>
-                                <td class="px-6 py-4">{{ $user->name }}</td>
-                                <td class="px-6 py-4">{{ $user->email }}</td>
-                                <td class="px-6 py-4">{{ $user->phone_number }}</td>
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/admin/customer-management.css') }}">
+@endsection
 
-                                <td class="p-4">
-                                @if($user->roles->isNotEmpty())
-                                    <div class="flex flex-wrap gap-1">
-                                        @foreach($user->roles as $role)
-                                            <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded">{{ $role->name }}</span>
-                                        @endforeach
-                                    </div>
-                                        @else
-                                            <span class="text-gray-400 dark:text-gray-500">No roles assigned</span>
-                                @endif
-                                </td>
-                                <td class="p-4">{{ $user->created_at->diffForHumans() }}</td>
-                                <td class="px-6 py-4">
-                                    <form method="POST" action="{{ route('admin.user.destroy', $user->id) }}" onsubmit="return confirm('Are your sure to delete this?');">
-                                        <input type="hidden" name="_method" value="DELETE">
-                                        @csrf
-                                        <a href="{{ route('admin.user.edit', $user->id) }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white">
-                                            Edit
-                                        </a> 
-                                        <x-danger-button class="ms-3">
-                                            Delete
-                                        </x-danger-button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-
-                    <div class="mt-4">
-                        {{ $users->links() }}
-                    </div>
-
-                </div>
-            </div>
+@section('content')
+<!-- Stats Cards -->
+<div class="admin-cards">
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Total Users</div>
+            <div class="admin-card-icon icon-blue"><i class="fas fa-users"></i></div>
         </div>
+        <div class="admin-card-value">{{ $users->total() ?? 0 }}</div>
+        <div class="admin-card-desc">System users</div>
     </div>
-</x-app-layout>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Active Customers</div>
+            <div class="admin-card-icon icon-green"><i class="fas fa-user-shield"></i></div>
+        </div>
+        <div class="admin-card-value"></div>
+        <div class="admin-card-desc"></div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">New Registrations</div>
+            <div class="admin-card-icon icon-orange"><i class="fas fa-user-check"></i></div>
+        </div>
+        <div class="admin-card-value"></div>
+        <div class="admin-card-desc"></div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Avg. Orders per Customer</div>
+            <div class="admin-card-icon icon-red"><i class="fas fa-user-plus"></i></div>
+        </div>
+        <div class="admin-card-value"></div>
+        <div class="admin-card-desc"></div>
+    </div>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="admin-section">
+    <div class="section-header">
+        <h2 class="section-title">User Accounts</h2>
+    </div>
+    <div class="search-filter">
+        <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search users..." id="searchInput">
+        </div>
+        <div class="filter-group">
+            <select class="filter-select" id="roleFilter">
+                <option value="all">All Roles</option>
+                @foreach($roles as $role)
+                    <option value="{{ $role->id }}">{{ $role->name }}</option>
+                @endforeach
+            </select>
+            <select class="filter-select" id="sortBy">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name">By Name</option>
+                <option value="email">By Email</option>
+            </select>
+        </div>
+        <a href="{{ route('admin.user.create') }}" class="admin-btn btn-primary">
+            <div class="admin-nav-icon"><i class="fas fa-plus"></i></div>
+            Add User
+        </a>
+    </div>
+
+    <!-- Users Table -->
+    <div class="table-container">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th class="th-customer">User</th>
+                    <th class="th-contact">Contact</th>
+                    <th class="th-status">Role</th>
+                    <th class="th-account-status">Account Status</th>
+                    <th class="th-total-orders">Total Orders</th>
+                    <th class="th-last-activity">Created</th>
+                    <th class="th-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($users as $user)
+                <tr>
+                    <td>
+                        <div class="customer-info">
+                            <div class="customer-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <div class="customer-name">{{ $user->name }}</div>
+                                <div class="customer-email">{{ $user->email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div>{{ $user->email }}</div>
+                        @if($user->phone_number)
+                            <div style="font-size: 13px; color: var(--text-3);">{{ $user->phone_number }}</div>
+                        @else
+                            <div style="font-size: 13px; color: var(--text-3); font-style: italic;">No phone</div>
+                        @endif
+                    </td>
+                    <td class="cell-center">
+                        @if($user->roles->isNotEmpty())
+                            <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
+                                @foreach($user->roles as $role)
+                                    <span class="status status-active">{{ $role->name }}</span>
+                                @endforeach
+                            </div>
+                        @else
+                            <span class="status" style="background: #fee2e2; color: var(--danger);">No Role</span>
+                        @endif
+                    </td>
+                    <td class="cell-center">
+                        @if($user->is_active)
+                            <span class="status status-active">Active</span>
+                        @else
+                            <span class="status status-inactive">Inactive</span>
+                        @endif
+                    </td>
+                    <td class="cell-center">
+                        <span class="orders-count">{{ $user->orders_count ?? 0 }}</span>
+                    </td>
+                    <td>
+                        <div style="font-size: 13px;">{{ $user->created_at->format('M d, Y') }}</div>
+                        <div style="font-size: 12px; color: var(--text-3);">{{ $user->created_at->diffForHumans() }}</div>
+                    </td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="{{ route('admin.user.edit', $user->id) }}" class="action-btn edit-btn" title="Edit User">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="POST" 
+                                  action="{{ route('admin.user.destroy', $user->id) }}" 
+                                  style="display: inline;"
+                                  onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                <input type="hidden" name="_method" value="DELETE">
+                                @csrf
+                                <button type="submit" class="action-btn delete-btn" title="Delete User">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    @if($users->hasPages())
+    <!-- Pagination -->
+    <div class="pagination">
+        <div style="display: flex; align-items: center; gap: 16px; margin-right: auto;">
+            <span style="font-size: 14px; color: var(--text-2);">
+                Showing {{ $users->firstItem() }} to {{ $users->lastItem() }} of {{ $users->total() }} results
+            </span>
+        </div>
+        
+        @if($users->onFirstPage())
+            <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
+                <i class="fas fa-chevron-left"></i>
+            </span>
+        @else
+            <a href="{{ $users->previousPageUrl() }}" class="pagination-btn">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        @endif
+
+        @foreach($users->getUrlRange(1, $users->lastPage()) as $page => $url)
+            @if($page == $users->currentPage())
+                <span class="pagination-btn active">{{ $page }}</span>
+            @else
+                <a href="{{ $url }}" class="pagination-btn">{{ $page }}</a>
+            @endif
+        @endforeach
+
+        @if($users->hasMorePages())
+            <a href="{{ $users->nextPageUrl() }}" class="pagination-btn">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        @else
+            <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
+                <i class="fas fa-chevron-right"></i>
+            </span>
+        @endif
+    </div>
+    @endif
+</div>
+@endsection
+
+@section('scripts')
+<script src="{{ asset('js/admin/customer-management.js') }}"></script>
+@endsection

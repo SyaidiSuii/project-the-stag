@@ -84,9 +84,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ---------------------------------------------
     // DASHBOARD & PROFILE MANAGEMENT
     // ---------------------------------------------
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard.index');
-    })->name('dashboard')->middleware(['role:admin|manager']);
+    Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])
+        ->name('dashboard')
+        ->middleware(['role:admin|manager']);
+        
+    Route::get('/admin/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])
+        ->name('admin.dashboard')
+        ->middleware(['role:admin|manager']);
 
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('edit');
@@ -110,10 +114,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // =============================================
     Route::prefix('admin')->name('admin.')->middleware(['role:admin|manager'])->group(function () {
 
-        Route::get('/dashboard', function () { return view('admin.dashboard.index'); })->name('dashboard');
-
         // Admin User Management (Full Access)
         Route::resource('user', \App\Http\Controllers\Admin\UserController::class);
+        Route::get('user/{user}/edit-data', [\App\Http\Controllers\Admin\UserController::class, 'getEditData'])->name('user.edit-data');
+        Route::post('user/{user}/update-ajax', [\App\Http\Controllers\Admin\UserController::class, 'updateAjax'])->name('user.update-ajax');
         
         // ---------------------------------------------
         // PERMISSIONS & ROLES MANAGEMENT

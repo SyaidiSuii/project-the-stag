@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin Dashboard - The Stag')</title>
+    @stack('head')
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/admin.css') }}">
+    @yield('styles')
 </head>
 <body>
     <!-- Sidebar -->
@@ -15,7 +18,8 @@
             <div class="admin-logo-text">The Stag</div>
         </div>
         <nav class="admin-nav">
-            <a href="{{ route('admin.dashboard') }}" class="admin-nav-item active">
+            <a href="{{ route('admin.dashboard') }}" 
+                class="admin-nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <div class="admin-nav-icon"><i class="fas fa-chart-line"></i></div>
                 <div class="admin-nav-text">Dashboard</div>
             </a>
@@ -23,9 +27,15 @@
                 <div class="admin-nav-icon"><i class="fas fa-bell"></i></div>
                 <div class="admin-nav-text">Notifications</div>
             </a>
-            <a href="#" class="admin-nav-item">
+            <a href="{{ route('admin.user.index') }}" 
+                class="admin-nav-item {{ request()->routeIs('admin.user.*') ? 'active' : '' }}">
                 <div class="admin-nav-icon"><i class="fas fa-users"></i></div>
-                <div class="admin-nav-text">Customers</div>
+                <div class="admin-nav-text">Users Management</div>
+            </a>
+            <a href="{{ route('admin.menu-items.index') }}" 
+                class="admin-nav-item {{ request()->routeIs('admin.menu-items.*') ? 'active' : '' }}">
+                <div class="admin-nav-icon"><i class="fas fa-bell"></i></div>
+                <div class="admin-nav-text">Menu Management</div>
             </a>
             <a href="#" class="admin-nav-item">
                 <div class="admin-nav-icon"><i class="fas fa-cog"></i></div>
@@ -69,5 +79,6 @@
     </main>
 
     <script src="{{ asset('js/admin/admin.js') }}"></script>
+    @yield('scripts')
 </body>
 </html>

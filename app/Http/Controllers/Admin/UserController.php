@@ -27,8 +27,17 @@ namespace App\Http\Controllers\Admin;
               return redirect()->route('admin.user.index');
           }
 
-          $users = User::with('roles')->latest()->paginate(10);
-          return view('admin.user.index', compact('users'));
+            // 2. Fetch all roles from the database
+            $roles = Role::all();
+
+            // Fetch users with roles and orders count
+            $users = User::with('roles')
+                        ->withCount('orders')
+                        ->latest()
+                        ->paginate(10);
+
+            // 3. Pass both $users and $roles to the view
+            return view('admin.user.index', compact('users', 'roles'));
       }
 
       /**
@@ -140,5 +149,58 @@ namespace App\Http\Controllers\Admin;
 
           $user->delete();
           return redirect()->route('admin.user.index')->with('message', 'User record has been deleted!');
+      }
+
+      /**
+       * Get user data for AJAX modal edit
+       */
+      public function getEditData(User $user)
+      {
+          $user->load(['roles']);
+          $user->loadCount('orders');
+          
+          return response()->json([
+              'success' => true,
+              'user' => $user
+          ]);
+      }
+
+      /**
+       * Update user via AJAX
+       */
+      public function updateAjax(Request $request, User $user)
+      {
+          try {
+              $this->validate($request,[
+                  'name'=> 'required|min:3',
+                  'email'=>'required|email|unique:users,email,'.$user->id.',id,deleted_at,NULL',
+                  'phone_number' => 'nullable|string|max:20',
+                  'is_active' => 'nullable|boolean',
+              ]);
+
+              $user->update([
+                  'name' => $request->name,
+                  'email' => $request->email,
+                  'phone_number' => $request->phone_number,
+                  'is_active' => $request->boolean('is_active'),
+              ]);
+
+              return response()->json([
+                  'success' => true,
+                  'message' => 'User updated successfully',
+                  'user' => $user
+              ]);
+          } catch (\Illuminate\Validation\ValidationException $e) {
+              return response()->json([
+                  'success' => false,
+                  'message' => 'Validation failed',
+                  'errors' => $e->errors()
+              ], 422);
+          } catch (\Exception $e) {
+              return response()->json([
+                  'success' => false,
+                  'message' => 'An error occurred: ' . $e->getMessage()
+              ], 500);
+          }
       }
   }

@@ -10,8 +10,8 @@
             <div class="admin-card-title">Total Orders</div>
             <div class="admin-card-icon icon-blue"><i class="fas fa-shopping-bag"></i></div>
         </div>
-        <div class="admin-card-value">142</div>
-        <div class="admin-card-desc">+12% from last week</div>
+        <div class="admin-card-value">{{ $totalOrders ?? 0 }}</div>
+        <div class="admin-card-desc">{{ $todayOrders ?? 0 }} orders today</div>
     </div>
 
     <div class="admin-card">
@@ -60,18 +60,18 @@
             </tr>
         </thead>
         <tbody>
+            @forelse($recentActivity ?? [] as $user)
             <tr>
-                <td>Sarah Johnson</td>
-                <td>Made a reservation</td>
-                <td>2 hours ago</td>
-                <td>Table for 4, Nov 15, 7:00 PM</td>
+                <td>{{ $user->name }}</td>
+                <td>Profile Update</td>
+                <td>{{ $user->updated_at ? $user->updated_at->diffForHumans() : 'Never' }}</td>
+                <td>{{ $user->email }}</td>
             </tr>
+            @empty
             <tr>
-                <td>Robert Chen</td>
-                <td>Placed an order</td>
-                <td>3 hours ago</td>
-                <td>Order #1245, RM 85.00</td>
+                <td colspan="4" class="text-center">No recent activity</td>
             </tr>
+            @endforelse
         </tbody>
     </table>
 </div>
@@ -96,34 +96,19 @@
           </tr>
         </thead>
         <tbody>
+          @forelse($popularMenuItems ?? [] as $item)
           <tr>
-            <td>Beef Steak (235g++)</td>
-            <td>Steaks</td>
-            <td>42</td>
-            <td>RM 1,890</td>
-            <td>↑ 15%</td>
+            <td>{{ $item->name }}</td>
+            <td>{{ $item->category->name ?? 'N/A' }}</td>
+            <td>{{ $item->order_items_count }}</td>
+            <td>RM {{ number_format($item->price, 2) }}</td>
+            <td>-</td>
           </tr>
+          @empty
           <tr>
-            <td>Tomyam Seafood</td>
-            <td>Tom Yam</td>
-            <td>38</td>
-            <td>RM 608</td>
-            <td>↑ 8%</td>
+            <td colspan="5" class="text-center">No popular items found</td>
           </tr>
-          <tr>
-            <td>Chicken Chop Special</td>
-            <td>Western</td>
-            <td>35</td>
-            <td>RM 525</td>
-            <td>→ Steady</td>
-          </tr>
-          <tr>
-            <td>Nasi Lemak with Chicken Rendang</td>
-            <td>Malaysian</td>
-            <td>31</td>
-            <td>RM 387.50</td>
-            <td>↑ 22%</td>
-          </tr>
+          @endforelse
         </tbody>
       </table>
     </div>
