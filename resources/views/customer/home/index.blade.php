@@ -2,6 +2,10 @@
 
 @section('title', 'Home - The Stag SmartDine')
 
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/customer/home.css') }}">
+@endsection
+
 @section('content')
 <!-- Hero Section -->
 <section class="hero" id="hero">
@@ -226,6 +230,10 @@
                 </nav>
             </div>
         </footer>
+
+        
+    <!-- Back to Top Button -->
+    <button class="to-top" id="toTop" aria-label="Back to top">↑</button>
 @endsection
 
 @section('scripts')
@@ -238,5 +246,57 @@
         // Example: Track page views, analytics, etc.
         console.log('🏠 Homepage loaded successfully');
     });
+
+    // --- Page Functionality ---
+
+function smoothTo(target) {
+  const el = typeof target === 'string' ? document.querySelector(target) : target;
+  if (!el) return;
+  const targetPosition = el.getBoundingClientRect().top + window.scrollY - 80;
+  window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+}
+
+function initializeNavigation() {
+  document.querySelectorAll('[data-scroll]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = btn.getAttribute('data-scroll');
+      smoothTo(target);
+    });
+  });
+}
+
+function initializeScrollFeatures() {
+  const toTopBtn = document.getElementById('toTop');
+  if (toTopBtn) {
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 500) {
+        toTopBtn.style.display = 'block';
+        toTopBtn.style.opacity = '1';
+      } else {
+        toTopBtn.style.opacity = '0';
+        setTimeout(() => { if (window.scrollY <= 500) toTopBtn.style.display = 'none'; }, 300);
+      }
+    });
+    toTopBtn.addEventListener('click', () => { smoothTo('#hero'); });
+  }
+
+  const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animation = 'fadeInUp 0.6s ease forwards';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.card, .stat-card, .about-text, .feedback').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px)';
+    observer.observe(el);
+  });
+}
 </script>
+
 @endsection

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
   use App\Http\Controllers\Controller;
   use Illuminate\Http\Request;
   use App\Models\User;
+  use App\Models\Order;
   use Spatie\Permission\Models\Role;
   use Spatie\Permission\Models\Permission;
 
@@ -36,8 +37,33 @@ namespace App\Http\Controllers\Admin;
                         ->latest()
                         ->paginate(10);
 
-            // 3. Pass both $users and $roles to the view
-            return view('admin.user.index', compact('users', 'roles'));
+            // Get user statistics
+            $totalUsers = User::count();
+            $activeCustomers = User::role('customer')
+                                  ->where('email_verified_at', '!=', null)
+                                  ->count();
+            $newRegistrations = User::where('created_at', '>=', now()->subDays(30))
+                                   ->count();
+            
+            // Calculate average orders per customer
+            $customersWithOrders = User::role('customer')
+                                      ->withCount('orders')
+                                      ->having('orders_count', '>', 0)
+                                      ->get();
+            
+            $avgOrdersPerCustomer = $customersWithOrders->count() > 0 
+                                   ? round($customersWithOrders->sum('orders_count') / $customersWithOrders->count(), 1)
+                                   : 0;
+
+            // Pass data to the view
+            return view('admin.user.index', compact(
+                'users', 
+                'roles', 
+                'totalUsers',
+                'activeCustomers',
+                'newRegistrations',
+                'avgOrdersPerCustomer'
+            ));
       }
 
       /**

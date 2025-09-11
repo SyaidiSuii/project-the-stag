@@ -3,6 +3,10 @@
 @section('title', 'Dashboard Admin')
 @section('page-title', 'Dashboard Overview')
 
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/admin/dashboard.css') }}">
+@endsection
+
 @section('content')
 <div class="admin-cards">
     <div class="admin-card">
@@ -19,8 +23,8 @@
             <div class="admin-card-title">Revenue</div>
             <div class="admin-card-icon icon-green"><i class="fas fa-dollar-sign"></i></div>
         </div>
-        <div class="admin-card-value">RM 8,542</div>
-        <div class="admin-card-desc">+8% from last week</div>
+        <div class="admin-card-value">0</div>
+        <div class="admin-card-desc">0% from last week</div>
     </div>
 
     <div class="admin-card">
@@ -28,8 +32,8 @@
           <div class="admin-card-title">Customer Feedback</div>
           <div class="admin-card-icon icon-orange"><i class="fas fa-comments"></i></div>
         </div>
-        <div class="admin-card-value">24</div>
-        <div class="admin-card-desc">+4 new this week</div>
+        <div class="admin-card-value">0</div>
+        <div class="admin-card-desc">0% new this week</div>
     </div>
 
     <div class="admin-card">
@@ -37,8 +41,8 @@
           <div class="admin-card-title">Avg. Rating</div>
           <div class="admin-card-icon icon-red"><i class="fas fa-star"></i></div>
         </div>
-        <div class="admin-card-value">4.8/5</div>
-        <div class="admin-card-desc">From 128 reviews</div>
+        <div class="admin-card-value">0/5</div>
+        <div class="admin-card-desc">From 0 reviews</div>
     </div>
 </div>
 

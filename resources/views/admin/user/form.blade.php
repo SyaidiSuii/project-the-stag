@@ -4,13 +4,16 @@
 @section('page-title', $user->id ? 'Edit User' : 'Create User')
 
 @section('styles')
-<link rel="stylesheet" href="{{ asset('css/admin/customer-management.css') }}">
+<link rel="stylesheet" href="{{ asset('css/admin/user-account.css') }}">
 @endsection
 
 @section('content')
 <div class="admin-section">
     <div class="section-header">
         <h2 class="section-title">{{ $user->id ? 'Edit User' : 'Create New User' }}</h2>
+        <a href="{{ route('admin.user.index') }}" class="btn-cancel">
+            <i class="fas fa-arrow-left"></i> Back to Users
+        </a>
     </div>
 
     @if($user->id)
@@ -87,160 +90,6 @@
         </div>
     </form>
 </div>
-
-<style>
-/* Form Specific Styles */
-.user-form {
-    background: white;
-    padding: 24px;
-    border-radius: var(--radius);
-    border: 1px solid var(--muted);
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    color: #374151;
-}
-
-.form-control {
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: var(--radius);
-    border: 1px solid #d1d5db;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    box-sizing: border-box;
-    background: white;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--brand);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.form-error {
-    color: #ef4444;
-    font-size: 12px;
-    margin-top: 4px;
-}
-
-.roles-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    padding: 12px;
-    border: 1px solid #d1d5db;
-    border-radius: var(--radius);
-    background: #f9fafb;
-}
-
-.role-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.role-checkbox input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    border: 1px solid #d1d5db;
-    accent-color: var(--brand);
-}
-
-.role-checkbox label {
-    font-size: 14px;
-    color: #374151;
-    cursor: pointer;
-}
-
-.form-actions {
-    display: flex;
-    gap: 12px;
-    padding-top: 20px;
-    border-top: 1px solid #e2e8f0;
-    margin-top: 20px;
-}
-
-.btn-save {
-    padding: 12px 24px;
-    background: linear-gradient(135deg, var(--brand), #5856eb);
-    border: 1px solid var(--brand);
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    color: white;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-save:hover {
-    background: linear-gradient(135deg, #5856eb, #4f46e5);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-}
-
-.btn-cancel {
-    padding: 12px 24px;
-    background: #f3f4f6;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #374151;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-cancel:hover {
-    background: #e5e7eb;
-    border-color: #9ca3af;
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-    .form-row {
-        grid-template-columns: 1fr;
-        gap: 0;
-    }
-    
-    .roles-container {
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .form-actions {
-        flex-direction: column-reverse;
-    }
-    
-    .btn-save, .btn-cancel {
-        width: 100%;
-    }
-}
-</style>
 @endsection
 
 @section('scripts')

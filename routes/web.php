@@ -26,6 +26,8 @@ use App\Http\Controllers\Customer\OrdersController as CustomerOrdersController;
 use App\Http\Controllers\Customer\RewardsController as CustomerRewardsController;
 use App\Http\Controllers\Customer\BookingController as CustomerBookingController;
 use App\Http\Controllers\Customer\AccountController as CustomerAccountController;
+use App\Http\Controllers\Customer\PaymentController as CustomerPaymentController;
+use App\Http\Controllers\Customer\CartController as CustomerCartController;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\HappyBirthday;
@@ -60,6 +62,18 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/rewards', [CustomerRewardsController::class, 'index'])->name('rewards.index');
     Route::get('/booking', [CustomerBookingController::class, 'index'])->name('booking.index');
     Route::get('/account', [CustomerAccountController::class, 'index'])->name('account.index');
+    Route::get('/payment', [CustomerPaymentController::class, 'index'])->name('payment.index');
+    Route::post('/payment/place-order', [CustomerPaymentController::class, 'placeOrder'])->name('payment.placeOrder');
+    
+    // Cart API routes
+    Route::prefix('cart')->name('cart.')->group(function () {
+        Route::get('/', [CustomerCartController::class, 'index'])->name('index');
+        Route::post('/add', [CustomerCartController::class, 'addItem'])->name('add');
+        Route::put('/update/{menuItemId}', [CustomerCartController::class, 'updateItem'])->name('update');
+        Route::delete('/remove/{menuItemId}', [CustomerCartController::class, 'removeItem'])->name('remove');
+        Route::delete('/clear', [CustomerCartController::class, 'clearCart'])->name('clear');
+        Route::post('/merge', [CustomerCartController::class, 'mergeCart'])->name('merge');
+    });
 });
 
 // Default homepage redirect
@@ -115,9 +129,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('admin')->name('admin.')->middleware(['role:admin|manager'])->group(function () {
 
         // Admin User Management (Full Access)
-        Route::resource('user', \App\Http\Controllers\Admin\UserController::class);
-        Route::get('user/{user}/edit-data', [\App\Http\Controllers\Admin\UserController::class, 'getEditData'])->name('user.edit-data');
-        Route::post('user/{user}/update-ajax', [\App\Http\Controllers\Admin\UserController::class, 'updateAjax'])->name('user.update-ajax');
+        Route::resource('user', UserController::class);
         
         // ---------------------------------------------
         // PERMISSIONS & ROLES MANAGEMENT

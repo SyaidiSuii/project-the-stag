@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'The Stag - SmartDine')</title>
     
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
     
     <!-- Custom Design System CSS -->
-    <link rel="stylesheet" href="{{ asset('css/customer-design.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/customer/layout.css') }}">
     
     <!-- Page Specific Styles -->
     @yield('styles')
@@ -54,12 +55,8 @@
         @yield('content')
     </div>
 
-    <!-- Back to Top Button -->
-    <button class="to-top" id="toTop" aria-label="Back to top">↑</button>
-
     <!-- Customer Design System JavaScript -->
-    <script src="{{ asset('js/customer-design.js') }}"></script>
-    
+    <script src="{{ asset('js/customer/layout.js') }}"></script>
     <!-- Page Specific Scripts -->
     @yield('scripts')
 </body>

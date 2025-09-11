@@ -12,6 +12,6 @@ class RewardsController extends Controller
      */
     public function index()
     {
-        return view('customer.rewards');
+        return view('customer.rewards.index');
     }
 }

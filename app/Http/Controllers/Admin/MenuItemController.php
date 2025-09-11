@@ -62,7 +62,20 @@ class MenuItemController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('admin.menu-items.index', compact('menuItems', 'categories'));
+        // Get statistics for dashboard cards
+        $totalItems = MenuItem::count();
+        $availableItems = MenuItem::where('availability', true)->count();
+        $unavailableItems = MenuItem::where('availability', false)->count();
+        $categoriesCount = Category::count();
+
+        return view('admin.menu-items.index', compact(
+            'menuItems', 
+            'categories', 
+            'totalItems', 
+            'availableItems', 
+            'unavailableItems',
+            'categoriesCount'
+        ));
     }
 
     /**

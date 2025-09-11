@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Artisan;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +24,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if ($this->app->environment('production')) {
+        Artisan::command('migrate:fresh', function () {
+            $this->error('❌ migrate:fresh is disabled in production!');
+        });
+
+        Artisan::command('migrate:refresh', function () {
+            $this->error('❌ migrate:refresh is disabled in production!');
+        });
+    }
+
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
             return (new MailMessage)
                 ->subject('Sila Sahkan Email Anda')

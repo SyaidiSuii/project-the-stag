@@ -172,6 +172,7 @@ class RoleAndPermissionSeeder extends Seeder
         // Create roles and assign permissions
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
         $managerRole = Role::firstOrCreate(['name' => 'manager']);
+        $customerRole = Role::firstOrCreate(['name' => 'customer']);
         $userRole = Role::firstOrCreate(['name' => 'user']);
 
         // Admin gets all permissions
@@ -189,6 +190,16 @@ class RoleAndPermissionSeeder extends Seeder
             'view-projects',
             'create-projects',
             'edit-projects'
+        ]);
+
+        // Customer gets ordering permissions
+        $customerRole->syncPermissions([
+            'view-menu-items',
+            'create-orders',
+            'view-orders',
+            'view-table-sessions',
+            'create-table-reservations',
+            'view-table-reservations'
         ]);
 
         // User gets basic permissions

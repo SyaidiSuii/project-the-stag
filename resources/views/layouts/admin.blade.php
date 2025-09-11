@@ -7,7 +7,7 @@
     <title>@yield('title', 'Admin Dashboard - The Stag')</title>
     @stack('head')
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/layout.css') }}">
     @yield('styles')
 </head>
 <body>
@@ -32,10 +32,26 @@
                 <div class="admin-nav-icon"><i class="fas fa-users"></i></div>
                 <div class="admin-nav-text">Users Management</div>
             </a>
+            <a href="#" class="admin-nav-item">
+                <div class="admin-nav-icon"><i class="fas fa-home"></i></div>
+                <div class="admin-nav-text">Menu Contect</div>
+            </a>
             <a href="{{ route('admin.menu-items.index') }}" 
                 class="admin-nav-item {{ request()->routeIs('admin.menu-items.*') ? 'active' : '' }}">
-                <div class="admin-nav-icon"><i class="fas fa-bell"></i></div>
+                <div class="admin-nav-icon"><i class="fas fa-utensils"></i></div>
                 <div class="admin-nav-text">Menu Management</div>
+            </a>
+            <a href="#" class="admin-nav-item">
+                <div class="admin-nav-icon"><i class="fas fa-shopping-bag"></i></div>
+                <div class="admin-nav-text">Orders</div>
+            </a>
+            <a href="#" class="admin-nav-item">
+                <div class="admin-nav-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div class="admin-nav-text">Booking</div>
+            </a>
+            <a href="#" class="admin-nav-item">
+                <div class="admin-nav-icon"><i class="fas fa-gift"></i></div>
+                <div class="admin-nav-text">Rewards</div>
             </a>
             <a href="#" class="admin-nav-item">
                 <div class="admin-nav-icon"><i class="fas fa-cog"></i></div>
@@ -78,7 +94,6 @@
         @yield('content')
     </main>
 
-    <script src="{{ asset('js/admin/admin.js') }}"></script>
-    @yield('scripts')
+    <script src="{{ asset('js/admin/layout-admin.js') }}"></script>
 </body>
 </html>

@@ -1,0 +1,112 @@
+/* ===== The Stag Customer Design System ===== */
+
+/* ===== Reset & Theme Variables ===== */
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+}
+
+:root {
+  --brand: #6366f1;
+  --brand-2: #5856eb;
+  --accent: #ff6b35;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --muted: #e2e8f0;
+  --text: #1e293b;
+  --text-2: #64748b;
+  --text-3: #94a3b8;
+  --radius: 20px;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* ===== Base Styles ===== */
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  min-height: 100vh;
+  padding-left: 80px;
+  line-height: 1.6;
+}
+
+/* ===== Fixed Sidebar Navigation ===== */
+.sidebar {
+  width: 80px;
+  background: white;
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  box-shadow: var(--shadow);
+  border-right: 1px solid var(--muted);
+}
+
+.sidebar a { 
+  text-decoration: none; 
+  color: inherit; 
+}
+
+.logo {
+  width: 50px;
+  height: 50px;
+  background: white;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow);
+  margin-bottom: 30px;
+  font-size: 22px;
+  color: var(--brand);
+}
+
+.nav-item {
+  width: 60px;
+  height: 60px;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+}
+
+.nav-item:hover {
+  background: var(--bg);
+  transform: translateY(-2px);
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 30px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.nav-icon { font-size: 18px; margin-bottom: 5px; }
+.nav-text { font-size: 10px; font-weight: 700; letter-spacing: .3px; }
+.account-spacer { margin-top: auto; }

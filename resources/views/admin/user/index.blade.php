@@ -4,7 +4,7 @@
 @section('page-title', 'User Management')
 
 @section('styles')
-<link rel="stylesheet" href="{{ asset('css/admin/customer-management.css') }}">
+<link rel="stylesheet" href="{{ asset('css/admin/user-account.css') }}">
 @endsection
 
 @section('content')
@@ -15,7 +15,7 @@
             <div class="admin-card-title">Total Users</div>
             <div class="admin-card-icon icon-blue"><i class="fas fa-users"></i></div>
         </div>
-        <div class="admin-card-value">{{ $users->total() ?? 0 }}</div>
+        <div class="admin-card-value">{{ $totalUsers ?? 0 }}</div>
         <div class="admin-card-desc">System users</div>
     </div>
     <div class="admin-card">
@@ -23,24 +23,24 @@
             <div class="admin-card-title">Active Customers</div>
             <div class="admin-card-icon icon-green"><i class="fas fa-user-shield"></i></div>
         </div>
-        <div class="admin-card-value"></div>
-        <div class="admin-card-desc"></div>
+        <div class="admin-card-value">{{ $activeCustomers ?? 0 }}</div>
+        <div class="admin-card-desc">Verified customers</div>
     </div>
     <div class="admin-card">
         <div class="admin-card-header">
             <div class="admin-card-title">New Registrations</div>
-            <div class="admin-card-icon icon-orange"><i class="fas fa-user-check"></i></div>
+            <div class="admin-card-icon icon-orange"><i class="fas fa-user-plus"></i></div>
         </div>
-        <div class="admin-card-value"></div>
-        <div class="admin-card-desc"></div>
+        <div class="admin-card-value">{{ $newRegistrations ?? 0 }}</div>
+        <div class="admin-card-desc">Last 30 days</div>
     </div>
     <div class="admin-card">
         <div class="admin-card-header">
             <div class="admin-card-title">Avg. Orders per Customer</div>
-            <div class="admin-card-icon icon-red"><i class="fas fa-user-plus"></i></div>
+            <div class="admin-card-icon icon-red"><i class="fas fa-shopping-cart"></i></div>
         </div>
-        <div class="admin-card-value"></div>
-        <div class="admin-card-desc"></div>
+        <div class="admin-card-value">{{ $avgOrdersPerCustomer ?? '0.0' }}</div>
+        <div class="admin-card-desc">Order frequency</div>
     </div>
 </div>
 
@@ -200,5 +200,5 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/admin/customer-management.js') }}"></script>
+<script src="{{ asset('js/admin/user-management.js') }}"></script>
 @endsection
