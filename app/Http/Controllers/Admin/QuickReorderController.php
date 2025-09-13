@@ -204,7 +204,7 @@ class QuickReorderController extends Controller
         ]);
 
         // Get customer profile and related user
-        $customerProfile = $quickReorder->customerProfile;
+        $customerProfile = $quickReorder->customerProfile()->with('user')->first();
         if (!$customerProfile || !$customerProfile->user) {
             return response()->json([
                 'success' => false,

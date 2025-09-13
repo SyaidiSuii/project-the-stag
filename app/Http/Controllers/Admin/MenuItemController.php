@@ -18,9 +18,16 @@ class MenuItemController extends Controller
     {
         $query = MenuItem::with('category');
 
-        // Filter by category
+        // Filter by category - prioritize sub category, fallback to main category
         if ($request->has('category_id') && $request->category_id != '') {
+            // Sub category selected
             $query->where('category_id', $request->category_id);
+        } elseif ($request->has('main_category_id') && $request->main_category_id != '') {
+            // Only main category selected - get all menu items from sub categories
+            $subCategoryIds = Category::where('parent_id', $request->main_category_id)->pluck('id');
+            if ($subCategoryIds->isNotEmpty()) {
+                $query->whereIn('category_id', $subCategoryIds);
+            }
         }
 
         // Filter by availability
@@ -29,8 +36,8 @@ class MenuItemController extends Controller
         }
 
         // Filter featured items
-        if ($request->has('featured') && $request->featured != '') {
-            $query->where('is_featured', $request->boolean('featured'));
+        if ($request->has('is_featured') && $request->is_featured != '') {
+            $query->where('is_featured', $request->boolean('is_featured'));
         }
 
         // Search by name or description
@@ -53,7 +60,7 @@ class MenuItemController extends Controller
 
         $menuItems = $query->paginate(
             $request->get('per_page', 15)
-        );
+        )->appends($request->query());
 
         // Get categories for filter dropdown
         $categories = Category::with('subCategories')
@@ -196,43 +203,43 @@ class MenuItemController extends Controller
     /**
      * Get featured menu items
      */
-    public function getFeatured()
-    {
-        $featuredItems = MenuItem::with('category')
-                                ->where('is_featured', true)
-                                ->orderBy('rating_average', 'desc')
-                                ->get();
+    // public function getFeatured()
+    // {
+    //     $featuredItems = MenuItem::with('category')
+    //                             ->where('is_featured', true)
+    //                             ->orderBy('rating_average', 'desc')
+    //                             ->get();
 
-        return view('admin.menu-items.featured', compact('featuredItems'));
-    }
+    //     return view('admin.menu-items.featured', compact('featuredItems'));
+    // }
 
     /**
      * Get menu statistics
      */
-    public function getStatistics()
-    {
-        $stats = [
-            'total_items' => MenuItem::count(),
-            'available_items' => MenuItem::where('availability', true)->count(),
-            'featured_items' => MenuItem::where('is_featured', true)->count(),
-            'by_category' => MenuItem::join('categories', 'menu_items.category_id', '=', 'categories.id')
-                                   ->select('categories.name as category_name')
-                                   ->selectRaw('count(*) as count')
-                                   ->groupBy('categories.id', 'categories.name')
-                                   ->get()
-                                   ->pluck('count', 'category_name')
-                                   ->toArray(),
-            'average_rating' => MenuItem::where('rating_count', '>', 0)
-                                      ->avg('rating_average'),
-            'average_price' => MenuItem::avg('price'),
-            'price_range' => [
-                'min' => MenuItem::min('price') ?? 0,
-                'max' => MenuItem::max('price') ?? 0
-            ]
-        ];
+    // public function getStatistics()
+    // {
+    //     $stats = [
+    //         'total_items' => MenuItem::count(),
+    //         'available_items' => MenuItem::where('availability', true)->count(),
+    //         'featured_items' => MenuItem::where('is_featured', true)->count(),
+    //         'by_category' => MenuItem::join('categories', 'menu_items.category_id', '=', 'categories.id')
+    //                                ->select('categories.name as category_name')
+    //                                ->selectRaw('count(*) as count')
+    //                                ->groupBy('categories.id', 'categories.name')
+    //                                ->get()
+    //                                ->pluck('count', 'category_name')
+    //                                ->toArray(),
+    //         'average_rating' => MenuItem::where('rating_count', '>', 0)
+    //                                   ->avg('rating_average'),
+    //         'average_price' => MenuItem::avg('price'),
+    //         'price_range' => [
+    //             'min' => MenuItem::min('price') ?? 0,
+    //             'max' => MenuItem::max('price') ?? 0
+    //         ]
+    //     ];
 
-        return view('admin.menu-items.statistic', compact('stats'));
-    }
+    //     return view('admin.menu-items.statistic', compact('stats'));
+    // }
 
     /**
      * Toggle menu item availability
@@ -283,9 +290,13 @@ class MenuItemController extends Controller
      */
     public function getSubCategories(Request $request)
     {
-        $parentId = $request->get('parent_id');
+        $mainCategoryId = $request->get('main_category_id');
         
-        $subCategories = Category::where('parent_id', $parentId)
+        if (!$mainCategoryId) {
+            return response()->json([]);
+        }
+        
+        $subCategories = Category::where('parent_id', $mainCategoryId)
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get(['id', 'name']);

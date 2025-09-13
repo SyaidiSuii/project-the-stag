@@ -8,6 +8,9 @@ namespace App\Http\Controllers\Admin;
   use App\Models\Order;
   use Spatie\Permission\Models\Role;
   use Spatie\Permission\Models\Permission;
+  use libphonenumber\PhoneNumberUtil;
+  use libphonenumber\PhoneNumberFormat;
+  use libphonenumber\NumberParseException;
 
   class UserController extends Controller
   {
@@ -22,20 +25,61 @@ namespace App\Http\Controllers\Admin;
       /**
        * Display a listing of the resource.
        */
-      public function index()
+      public function index(Request $request)
       {
           if (request('cancel')) {
               return redirect()->route('admin.user.index');
           }
 
-            // 2. Fetch all roles from the database
+            // Fetch all roles from the database
             $roles = Role::all();
 
-            // Fetch users with roles and orders count
-            $users = User::with('roles')
-                        ->withCount('orders')
-                        ->latest()
-                        ->paginate(10);
+            // Build query with filters
+            $query = User::with('roles')->withCount('orders');
+
+            // Search filter
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+                });
+            }
+
+            // Role filter
+            if ($request->filled('role') && $request->role !== 'all') {
+                $query->whereHas('roles', function($q) use ($request) {
+                    $q->where('id', $request->role);
+                });
+            }
+
+            // Status filter
+            if ($request->filled('status') && $request->status !== 'all') {
+                if ($request->status === 'active') {
+                    $query->where('is_active', true);
+                } elseif ($request->status === 'inactive') {
+                    $query->where('is_active', false);
+                }
+            }
+
+            // Sorting
+            $sortBy = $request->get('sort', 'newest');
+            switch ($sortBy) {
+                case 'oldest':
+                    $query->oldest();
+                    break;
+                case 'name':
+                    $query->orderBy('name');
+                    break;
+                case 'email':
+                    $query->orderBy('email');
+                    break;
+                default: // newest
+                    $query->latest();
+                    break;
+            }
+
+            $users = $query->paginate(10)->appends($request->query());
 
             // Get user statistics
             $totalUsers = User::count();
@@ -84,7 +128,7 @@ namespace App\Http\Controllers\Admin;
           $this->validate($request,[
               'name'=> 'required|min:5',
               'email'=>'required|email|unique:users,email,NULL,id,deleted_at,NULL',
-              'phone_number' => 'required|string|max:20',
+              'phone_number' => 'required|string',
               'is_active' => 'boolean',
               'roles' => ['nullable', 'array'],
               'roles.*' => ['exists:roles,id'],
@@ -93,10 +137,30 @@ namespace App\Http\Controllers\Admin;
           // SARAN: Hindari hardcoded password. Pertimbangkan untuk membuat password acak
           // dan mengirimkannya ke email pengguna atau membuat alur pengaturan password terpisah.
           // Contoh: 'password' => bcrypt(Str::random(10)),
+
+          // Phone number processing
+          $phoneUtil = PhoneNumberUtil::getInstance();
+
+          try {
+              // Parse phone number (default country Malaysia)
+              $numberProto = $phoneUtil->parse($request->phone_number, 'MY');
+
+              // Validate if it's a valid number
+              if (!$phoneUtil->isValidNumber($numberProto)) {
+                  return back()->withErrors(['phone_number' => 'Invalid phone number format']);
+              }
+
+              // Format to E.164 format (+60123456789)
+              $formattedPhone = $phoneUtil->format($numberProto, PhoneNumberFormat::E164);
+
+          } catch (NumberParseException $e) {
+              return back()->withErrors(['phone_number' => 'Invalid phone number: ' . $e->getMessage()]);
+          }
+
           $user = User::create([
               'name' => $request->name,
               'email' => $request->email,
-              'phone_number' => $request->phone_number,
+              'phone_number' => $formattedPhone,
               'is_active' => $request->boolean('is_active'), // Menggunakan boolean() lebih aman untuk checkbox
               'password' => bcrypt("12345678"),
           ]);
@@ -138,16 +202,35 @@ namespace App\Http\Controllers\Admin;
           $this->validate($request,[
               'name'=> 'required|min:5',
               'email'=>'required|email|unique:users,email,'.$user->id.',id,deleted_at,NULL',
-              'phone_number' => 'required|string|max:20',
+              'phone_number' => 'required|string',
               'is_active' => 'nullable|boolean',
               'roles' => ['nullable', 'array'],
               'roles.*' => ['exists:roles,id'],
           ]);
 
+          // Phone number processing
+          $phoneUtil = PhoneNumberUtil::getInstance();
+
+          try {
+              // Parse phone number (default country Malaysia)
+              $numberProto = $phoneUtil->parse($request->phone_number, 'MY');
+
+              // Validate if it's a valid number
+              if (!$phoneUtil->isValidNumber($numberProto)) {
+                  return back()->withErrors(['phone_number' => 'Invalid phone number format']);
+              }
+
+              // Format to E.164 format (+60123456789)
+              $formattedPhone = $phoneUtil->format($numberProto, PhoneNumberFormat::E164);
+
+          } catch (NumberParseException $e) {
+              return back()->withErrors(['phone_number' => 'Invalid phone number: ' . $e->getMessage()]);
+          }
+
           $user->update([
               'name' => $request->name,
               'email' => $request->email,
-              'phone_number' => $request->phone_number,
+              'phone_number' => $formattedPhone,
               'is_active' => $request->boolean('is_active'), // Menggunakan boolean() lebih aman untuk checkbox
           ]);
 
@@ -204,10 +287,31 @@ namespace App\Http\Controllers\Admin;
                   'is_active' => 'nullable|boolean',
               ]);
 
+              // Add phone validation for AJAX updates too
+            $formattedPhone = null;
+            if ($request->phone_number) {
+                $phoneUtil = PhoneNumberUtil::getInstance();
+                try {
+                    $numberProto = $phoneUtil->parse($request->phone_number, 'MY');
+                    if (!$phoneUtil->isValidNumber($numberProto)) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Invalid phone number format'
+                        ], 422);
+                    }
+                    $formattedPhone = $phoneUtil->format($numberProto, PhoneNumberFormat::E164);
+                } catch (NumberParseException $e) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Invalid phone number: ' . $e->getMessage()
+                    ], 422);
+                }
+            }
+
               $user->update([
                   'name' => $request->name,
                   'email' => $request->email,
-                  'phone_number' => $request->phone_number,
+                  'phone_number' => $formattedPhone,
                   'is_active' => $request->boolean('is_active'),
               ]);
 

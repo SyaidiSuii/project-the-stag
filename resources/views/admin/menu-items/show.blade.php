@@ -1,336 +1,332 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Menu Item Details') }} - {{ $menuItem->name }}
-        </h2>
-    </x-slot>
+@extends('layouts.admin')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
-            <!-- Action Buttons -->
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h3 class="text-lg font-semibold">{{ $menuItem->name }}</h3>
-                    <p class="text-sm text-gray-600">{{ ucfirst($menuItem->category) }} - RM {{ number_format($menuItem->price, 2) }}</p>
-                </div>
-                <div class="flex gap-2">
-                    <a href="{{ route('admin.menu-items.edit', $menuItem->id) }}" 
-                       class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                        Edit Menu Item
-                    </a>
-                    <a href="{{ route('admin.menu-items.index') }}" 
-                       class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600">
-                        Back to List
-                    </a>
-                </div>
-            </div>
+@section('title', 'Menu Item Details')
+@section('page-title', 'Menu Item Details')
 
-            <!-- Quick Actions -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-4 bg-gray-50 border-b">
-                    <h4 class="font-semibold text-gray-800">Quick Actions</h4>
-                </div>
-                <div class="p-4">
-                    <div class="flex flex-wrap gap-2">
-                        <form method="POST" action="{{ route('admin.menu-items.toggle-availability', $menuItem->id) }}" class="inline">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="px-4 py-2 rounded-md text-sm font-medium
-                                @if($menuItem->availability) bg-red-500 text-white hover:bg-red-600
-                                @else bg-green-500 text-white hover:bg-green-600 @endif">
-                                {{ $menuItem->availability ? 'Mark Unavailable' : 'Mark Available' }}
-                            </button>
-                        </form>
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/admin/menu-managements.css') }}">
+@endsection
 
-                        <form method="POST" action="{{ route('admin.menu-items.toggle-featured', $menuItem->id) }}" class="inline">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="px-4 py-2 rounded-md text-sm font-medium
-                                @if($menuItem->is_featured) bg-gray-500 text-white hover:bg-gray-600
-                                @else bg-yellow-500 text-white hover:bg-yellow-600 @endif">
-                                {{ $menuItem->is_featured ? 'Remove from Featured' : 'Add to Featured' }}
-                            </button>
-                        </form>
-
-                        <!-- Add Rating Form -->
-                        <button onclick="document.getElementById('rating-modal').classList.remove('hidden')" 
-                                class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm font-medium">
-                            Add Rating
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
-                <!-- Item Image and Basic Info -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-4 bg-gray-50 border-b">
-                        <h4 class="font-semibold text-gray-800">Item Information</h4>
-                    </div>
-                    <div class="p-6">
-                        @if($menuItem->image_url)
-                            <div class="mb-6">
-                                <img src="{{ $menuItem->image_url }}" alt="{{ $menuItem->name }}" 
-                                     class="w-full h-64 object-cover rounded-lg shadow-lg">
-                            </div>
-                        @endif
-
-                        <div class="space-y-4">
-                            <div>
-                                <span class="text-sm text-gray-600">Name:</span>
-                                <p class="font-medium text-xl">{{ $menuItem->name }}</p>
-                            </div>
-
-                            @if($menuItem->description)
-                            <div>
-                                <span class="text-sm text-gray-600">Description:</span>
-                                <p class="text-gray-700 mt-1">{{ $menuItem->description }}</p>
-                            </div>
-                            @endif
-
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <span class="text-sm text-gray-600">Category:</span>
-                                    <p class="font-medium">
-                                        <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800 capitalize">
-                                            {{ $menuItem->category }}
-                                        </span>
-                                    </p>
-                                </div>
-                                <div>
-                                    <span class="text-sm text-gray-600">Price:</span>
-                                    <p class="font-bold text-2xl text-green-600">RM {{ number_format($menuItem->price, 2) }}</p>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <span class="text-sm text-gray-600">Preparation Time:</span>
-                                    <p class="font-medium">{{ $menuItem->preparation_time }} minutes</p>
-                                </div>
-                                <div>
-                                    <span class="text-sm text-gray-600">Status:</span>
-                                    <div class="flex flex-col gap-1">
-                                        <span class="px-2 py-1 text-xs rounded w-fit
-                                            @if($menuItem->availability) bg-green-100 text-green-800
-                                            @else bg-red-100 text-red-800 @endif">
-                                            {{ $menuItem->availability ? 'Available' : 'Unavailable' }}
-                                        </span>
-                                        @if($menuItem->is_featured)
-                                            <span class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800 w-fit">
-                                                Featured Item
-                                            </span>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Rating and Allergens -->
-                <div class="space-y-6">
-                    <!-- Rating Information -->
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-4 bg-gray-50 border-b">
-                            <h4 class="font-semibold text-gray-800">Customer Rating</h4>
-                        </div>
-                        <div class="p-6">
-                            @if($menuItem->rating_count > 0)
-                                <div class="text-center">
-                                    <div class="flex justify-center text-yellow-400 mb-2">
-                                        @for($i = 1; $i <= 5; $i++)
-                                            @if($i <= floor($menuItem->rating_average))
-                                                <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24">
-                                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                                                </svg>
-                                            @elseif($i - 0.5 <= $menuItem->rating_average)
-                                                <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24">
-                                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor" fill-opacity="0.5"/>
-                                                </svg>
-                                            @else
-                                                <svg class="w-8 h-8 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                                                </svg>
-                                            @endif
-                                        @endfor
-                                    </div>
-                                    <p class="text-3xl font-bold text-gray-900">{{ number_format($menuItem->rating_average, 1) }}</p>
-                                    <p class="text-sm text-gray-600">Based on {{ $menuItem->rating_count }} {{ Str::plural('review', $menuItem->rating_count) }}</p>
-                                </div>
-                            @else
-                                <div class="text-center text-gray-500">
-                                    <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                                    </svg>
-                                    <p class="font-medium">No ratings yet</p>
-                                    <p class="text-sm">Be the first to rate this item</p>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-
-                    <!-- Allergen Information -->
-                    @if($menuItem->allergens && count($menuItem->allergens) > 0)
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-4 bg-red-50 border-b">
-                            <h4 class="font-semibold text-red-800">Allergen Information</h4>
-                        </div>
-                        <div class="p-6">
-                            <div class="flex flex-wrap gap-2">
-                                @foreach($menuItem->allergens as $allergen)
-                                    <span class="px-3 py-1 text-sm rounded-full bg-red-100 text-red-800 border border-red-200">
-                                        ⚠️ {{ $allergen }}
-                                    </span>
-                                @endforeach
-                            </div>
-                            <p class="text-sm text-red-700 mt-3">
-                                <strong>Warning:</strong> This item contains the allergens listed above. Please inform staff of any allergies before ordering.
-                            </p>
-                        </div>
-                    </div>
-                    @else
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-4 bg-green-50 border-b">
-                            <h4 class="font-semibold text-green-800">Allergen Information</h4>
-                        </div>
-                        <div class="p-6">
-                            <div class="flex items-center text-green-700">
-                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="font-medium">No specific allergens listed</span>
-                            </div>
-                            <p class="text-sm text-green-600 mt-2">
-                                However, please inform staff of any allergies as ingredients may vary.
-                            </p>
-                        </div>
-                    </div>
-                    @endif
-                </div>
-
-                <!-- System Information -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg lg:col-span-2">
-                    <div class="p-4 bg-gray-50 border-b">
-                        <h4 class="font-semibold text-gray-800">System Information</h4>
-                    </div>
-                    <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <span class="text-sm text-gray-600">Created:</span>
-                                <p class="font-medium">{{ $menuItem->created_at->format('M d, Y h:i A') }}</p>
-                            </div>
-
-                            @if($menuItem->updated_at != $menuItem->created_at)
-                            <div>
-                                <span class="text-sm text-gray-600">Last Updated:</span>
-                                <p class="font-medium">{{ $menuItem->updated_at->format('M d, Y h:i A') }}</p>
-                            </div>
-                            @endif
-
-                            <div>
-                                <span class="text-sm text-gray-600">Item ID:</span>
-                                <p class="font-mono text-sm">{{ $menuItem->id }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
+@section('content')
+<div class="admin-section">
+    <div class="section-header">
+        <h2 class="section-title">{{ $menuItem->name }}</h2>
+        <div class="section-controls">
+            <a href="{{ route('admin.menu-items.edit', $menuItem->id) }}" class="btn-save">
+                <i class="fas fa-edit"></i> Edit Menu Item
+            </a>
+            <a href="{{ route('admin.menu-items.index') }}" class="btn-cancel">
+                <i class="fas fa-arrow-left"></i> Back to Menu Items
+            </a>
         </div>
     </div>
 
-    <!-- Rating Modal -->
-    <div id="rating-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 class="text-lg font-semibold mb-4">Add Rating for {{ $menuItem->name }}</h3>
-            
-            <form method="POST" action="{{ route('admin.menu-items.rating', $menuItem->id) }}">
+    <!-- Quick Actions -->
+    <div class="admin-section" style="margin-bottom: 20px;">
+        <div class="section-header">
+            <h3 class="section-title">Quick Actions</h3>
+        </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <form method="POST" action="{{ route('admin.menu-items.toggle-availability', $menuItem->id) }}" style="display: inline;">
+                @csrf
+                @method('PATCH')
+                <button type="submit" class="btn-save" style="background: {{ $menuItem->availability ? '#ef4444' : '#10b981' }};">
+                    <i class="fas fa-{{ $menuItem->availability ? 'eye-slash' : 'eye' }}"></i>
+                    {{ $menuItem->availability ? 'Mark Unavailable' : 'Mark Available' }}
+                </button>
+            </form>
+
+            <form method="POST" action="{{ route('admin.menu-items.toggle-featured', $menuItem->id) }}" style="display: inline;">
+                @csrf
+                @method('PATCH')
+                <button type="submit" class="btn-save" style="background: {{ $menuItem->is_featured ? '#6b7280' : '#f59e0b' }};">
+                    <i class="fas fa-star"></i>
+                    {{ $menuItem->is_featured ? 'Remove from Featured' : 'Add to Featured' }}
+                </button>
+            </form>
+
+            <button onclick="document.getElementById('rating-modal').classList.remove('hidden')" class="btn-save" style="background: #3b82f6;">
+                <i class="fas fa-star"></i> Add Rating
+            </button>
+        </div>
+    </div>
+
+    <!-- Item Information -->
+    <div class="form-row">
+        <div class="form-group">
+            <label class="form-label">Item Image</label>
+            <div style="border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; background: #f9fafb;">
+                @if($menuItem->image_url)
+                    <img src="{{ $menuItem->image_url }}" alt="{{ $menuItem->name }}" 
+                         style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+                @else
+                    <div style="width: 100%; height: 200px; background: #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6b7280;">
+                        <i class="fas fa-utensils" style="font-size: 48px;"></i>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Basic Information</label>
+            <div style="border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; background: #f9fafb; space-y: 12px;">
+                <div style="margin-bottom: 12px;">
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">NAME</span>
+                    <p style="font-size: 18px; font-weight: 600; margin: 4px 0 0 0;">{{ $menuItem->name }}</p>
+                </div>
+                
+                <div style="margin-bottom: 12px;">
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">CATEGORY</span>
+                    <p style="margin: 4px 0 0 0;">
+                        @if($menuItem->category)
+                            <span class="status status-active">{{ $menuItem->category->name }}</span>
+                            @if($menuItem->category->parent)
+                                <br><small style="color: #6b7280;">Parent: {{ $menuItem->category->parent->name }}</small>
+                            @endif
+                        @else
+                            <span class="status status-inactive">No Category</span>
+                        @endif
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">PRICE</span>
+                    <p style="font-size: 24px; font-weight: 700; color: #10b981; margin: 4px 0 0 0;">RM {{ number_format($menuItem->price, 2) }}</p>
+                </div>
+
+                <div>
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">PREPARATION TIME</span>
+                    <p style="margin: 4px 0 0 0;">{{ $menuItem->preparation_time }} minutes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if($menuItem->description)
+    <div class="form-group">
+        <label class="form-label">Description</label>
+        <div class="form-control" style="background: #f9fafb; cursor: default;">
+            {{ $menuItem->description }}
+        </div>
+    </div>
+    @endif
+
+    <!-- Status and Features -->
+    <div class="form-row">
+        <div class="form-group">
+            <label class="form-label">Availability Status</label>
+            <div class="checkbox-group" style="background: {{ $menuItem->availability ? '#d1fae5' : '#fee2e2' }};">
+                <i class="fas fa-{{ $menuItem->availability ? 'check-circle' : 'times-circle' }}" 
+                   style="color: {{ $menuItem->availability ? '#10b981' : '#ef4444' }};"></i>
+                <span style="color: {{ $menuItem->availability ? '#065f46' : '#991b1b' }}; font-weight: 600;">
+                    {{ $menuItem->availability ? 'Available for Order' : 'Currently Unavailable' }}
+                </span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Featured Status</label>
+            <div class="checkbox-group" style="background: {{ $menuItem->is_featured ? '#fef3c7' : '#f3f4f6' }};">
+                <i class="fas fa-star" style="color: {{ $menuItem->is_featured ? '#d97706' : '#6b7280' }};"></i>
+                <span style="color: {{ $menuItem->is_featured ? '#92400e' : '#374151' }}; font-weight: 600;">
+                    {{ $menuItem->is_featured ? 'Featured Item' : 'Regular Item' }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rating Information -->
+    <div class="form-group">
+        <label class="form-label">Customer Rating</label>
+        <div class="rating-display" style="text-align: center; padding: 24px;">
+            @if($menuItem->rating_count > 0)
+                <div class="rating-stars" style="justify-content: center; margin-bottom: 12px;">
+                    @for($i = 1; $i <= 5; $i++)
+                        @if($i <= floor($menuItem->rating_average))
+                            <i class="fas fa-star active" style="font-size: 24px; color: #fbbf24;"></i>
+                        @elseif($i - 0.5 <= $menuItem->rating_average)
+                            <i class="fas fa-star-half-alt" style="font-size: 24px; color: #fbbf24;"></i>
+                        @else
+                            <i class="far fa-star" style="font-size: 24px; color: #d1d5db;"></i>
+                        @endif
+                    @endfor
+                </div>
+                <p style="font-size: 32px; font-weight: 700; margin: 8px 0;">{{ number_format($menuItem->rating_average, 1) }}</p>
+                <span class="rating-text">
+                    Based on {{ $menuItem->rating_count }} {{ Str::plural('review', $menuItem->rating_count) }}
+                </span>
+            @else
+                <div style="color: #6b7280;">
+                    <i class="fas fa-star" style="font-size: 48px; margin-bottom: 12px; opacity: 0.3;"></i>
+                    <p style="font-weight: 600; margin: 8px 0;">No ratings yet</p>
+                    <span class="no-rating">Be the first to rate this item</span>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <!-- Allergen Information -->
+    <div class="form-group">
+        <label class="form-label">Allergen Information</label>
+        @if($menuItem->allergens && count($menuItem->allergens) > 0)
+            <div style="border: 1px solid #f87171; border-radius: 12px; padding: 16px; background: #fef2f2;">
+                <div class="allergens-container" style="border: none; background: transparent; padding: 0;">
+                    @foreach($menuItem->allergens as $allergen)
+                        <div class="allergen-checkbox" style="pointer-events: none;">
+                            <i class="fas fa-exclamation-triangle" style="color: #dc2626;"></i>
+                            <span style="color: #dc2626; font-weight: 600;">{{ $allergen }}</span>
+                        </div>
+                    @endforeach
+                </div>
+                <div style="margin-top: 12px; padding: 8px; background: #fecaca; border-radius: 6px;">
+                    <small style="color: #991b1b; font-weight: 600;">
+                        <i class="fas fa-info-circle"></i>
+                        Warning: This item contains the allergens listed above. Please inform staff of any allergies before ordering.
+                    </small>
+                </div>
+            </div>
+        @else
+            <div style="border: 1px solid #10b981; border-radius: 12px; padding: 16px; background: #ecfdf5;">
+                <div style="display: flex; align-items: center; color: #065f46;">
+                    <i class="fas fa-check-circle" style="margin-right: 8px; color: #10b981;"></i>
+                    <span style="font-weight: 600;">No specific allergens listed</span>
+                </div>
+                <small style="color: #047857; margin-top: 8px; display: block;">
+                    However, please inform staff of any allergies as ingredients may vary.
+                </small>
+            </div>
+        @endif
+    </div>
+
+    <!-- System Information -->
+    <div class="form-group">
+        <label class="form-label">System Information</label>
+        <div style="border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; background: #f9fafb;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div>
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">CREATED</span>
+                    <p style="margin: 4px 0 0 0;">{{ $menuItem->created_at->format('M d, Y h:i A') }}</p>
+                </div>
+
+                @if($menuItem->updated_at != $menuItem->created_at)
+                <div>
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">LAST UPDATED</span>
+                    <p style="margin: 4px 0 0 0;">{{ $menuItem->updated_at->format('M d, Y h:i A') }}</p>
+                </div>
+                @endif
+
+                <div>
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">ITEM ID</span>
+                    <p style="font-family: monospace; font-size: 12px; margin: 4px 0 0 0;">#{{ $menuItem->id }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="form-actions">
+        <a href="{{ route('admin.menu-items.edit', $menuItem->id) }}" class="btn-save">
+            <i class="fas fa-edit"></i>
+            Edit Menu Item
+        </a>
+        <a href="{{ route('admin.menu-items.index') }}" class="btn-cancel">
+            <i class="fas fa-list"></i>
+            Back to List
+        </a>
+    </div>
+</div>
+
+<!-- Rating Modal -->
+<div id="rating-modal" class="modal-overlay" style="display: none;">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <h3 class="modal-title">Add Rating for {{ $menuItem->name }}</h3>
+            <button type="button" class="modal-close" onclick="document.getElementById('rating-modal').style.display='none'">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form method="POST" action="{{ route('admin.menu-items.rating', $menuItem->id) }}">
+            <div class="modal-body">
                 @csrf
                 @method('PATCH')
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
-                    <div class="flex space-x-1">
+                <div class="form-group">
+                    <label class="form-label">Rating</label>
+                    <div style="display: flex; justify-content: center; gap: 4px; margin: 12px 0;">
                         @for($i = 1; $i <= 5; $i++)
-                            <button type="button" class="rating-star text-gray-300 hover:text-yellow-400 focus:outline-none" data-rating="{{ $i }}">
-                                <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                                </svg>
+                            <button type="button" class="rating-star" data-rating="{{ $i }}" 
+                                    style="background: none; border: none; cursor: pointer; color: #d1d5db; font-size: 24px;">
+                                <i class="fas fa-star"></i>
                             </button>
                         @endfor
                     </div>
                     <input type="hidden" name="rating" id="rating-value" required>
                 </div>
-                
-                <div class="flex justify-end space-x-2">
-                    <button type="button" onclick="document.getElementById('rating-modal').classList.add('hidden')" 
-                            class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
-                        Cancel
-                    </button>
-                    <button type="submit" 
-                            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                        Submit Rating
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        // Rating modal functionality
-        const stars = document.querySelectorAll('.rating-star');
-        const ratingInput = document.getElementById('rating-value');
-        
-        stars.forEach((star, index) => {
-            star.addEventListener('click', function() {
-                const rating = this.dataset.rating;
-                ratingInput.value = rating;
-                
-                // Update star display
-                stars.forEach((s, i) => {
-                    if (i < rating) {
-                        s.classList.remove('text-gray-300');
-                        s.classList.add('text-yellow-400');
-                    } else {
-                        s.classList.remove('text-yellow-400');
-                        s.classList.add('text-gray-300');
-                    }
-                });
-            });
+            </div>
             
-            star.addEventListener('mouseenter', function() {
-                const rating = this.dataset.rating;
-                stars.forEach((s, i) => {
-                    if (i < rating) {
-                        s.classList.add('text-yellow-400');
-                    }
-                });
-            });
-        });
+            <div class="modal-footer">
+                <button type="button" onclick="document.getElementById('rating-modal').style.display='none'" class="btn-cancel">
+                    Cancel
+                </button>
+                <button type="submit" class="btn-save">
+                    Submit Rating
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@endsection
+
+@section('scripts')
+<script>
+// Rating modal functionality
+const stars = document.querySelectorAll('.rating-star');
+const ratingInput = document.getElementById('rating-value');
+
+stars.forEach((star, index) => {
+    star.addEventListener('click', function() {
+        const rating = this.dataset.rating;
+        ratingInput.value = rating;
         
-        // Reset stars on mouse leave
-        document.querySelector('.flex.space-x-1').addEventListener('mouseleave', function() {
-            const currentRating = ratingInput.value;
-            stars.forEach((s, i) => {
-                if (i < currentRating) {
-                    s.classList.remove('text-gray-300');
-                    s.classList.add('text-yellow-400');
-                } else {
-                    s.classList.remove('text-yellow-400');
-                    s.classList.add('text-gray-300');
-                }
-            });
-        });
-        
-        // Close modal when clicking outside
-        document.getElementById('rating-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.add('hidden');
+        // Update star display
+        stars.forEach((s, i) => {
+            if (i < rating) {
+                s.style.color = '#fbbf24';
+            } else {
+                s.style.color = '#d1d5db';
             }
         });
-    </script>
-</x-app-layout>
+    });
+    
+    star.addEventListener('mouseenter', function() {
+        const rating = this.dataset.rating;
+        stars.forEach((s, i) => {
+            if (i < rating) {
+                s.style.color = '#fbbf24';
+            }
+        });
+    });
+});
+
+// Reset stars on mouse leave
+document.querySelector('#rating-modal .modal-body > div > div').addEventListener('mouseleave', function() {
+    const currentRating = ratingInput.value;
+    stars.forEach((s, i) => {
+        if (i < currentRating) {
+            s.style.color = '#fbbf24';
+        } else {
+            s.style.color = '#d1d5db';
+        }
+    });
+});
+
+// Close modal when clicking outside
+document.getElementById('rating-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.style.display = 'none';
+    }
+});
+</script>
+@endsection

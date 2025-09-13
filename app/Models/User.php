@@ -10,6 +10,8 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Notifications\CustomPasswordResetNotification;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Permission\Traits\HasRoles;
+use libphonenumber\PhoneNumberUtil;
+use libphonenumber\PhoneNumberFormat;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -54,6 +56,11 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new CustomPasswordResetNotification($token));
     }
 
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new \App\Notifications\CustomEmailVerificationNotification());
+    }
+
 
     // Relationships
     public function staffProfile()
@@ -70,4 +77,36 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Order::class);
     }
+
+     /**
+       * Get formatted phone number for display
+       */
+      public function getFormattedPhoneAttribute()
+      {
+          if (!$this->phone_number) return null;
+
+          $phoneUtil = PhoneNumberUtil::getInstance();
+          try {
+              $numberProto = $phoneUtil->parse($this->phone_number, null);
+              return $phoneUtil->format($numberProto, PhoneNumberFormat::INTERNATIONAL);
+          } catch (\Exception $e) {
+              return $this->phone_number; // Fallback to original
+          }
+      }
+
+      /**
+       * Get local phone number format
+       */
+      public function getLocalPhoneAttribute()
+      {
+          if (!$this->phone_number) return null;
+
+          $phoneUtil = PhoneNumberUtil::getInstance();
+          try {
+              $numberProto = $phoneUtil->parse($this->phone_number, null);
+              return $phoneUtil->format($numberProto, PhoneNumberFormat::NATIONAL);
+          } catch (\Exception $e) {
+              return $this->phone_number;
+          }
+      }
 }

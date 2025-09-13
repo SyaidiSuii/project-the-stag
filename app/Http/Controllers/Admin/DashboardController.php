@@ -19,7 +19,8 @@ class DashboardController extends Controller
         $todayOrders = Order::whereDate('created_at', today())->count();
         
         // Recent User Activity (last 10 users by updated_at)
-        $recentActivity = User::orderBy('updated_at', 'desc')
+        $recentActivity = User::with('roles')
+            ->orderBy('updated_at', 'desc')
             ->take(10)
             ->get(['id', 'name', 'email', 'updated_at']);
             

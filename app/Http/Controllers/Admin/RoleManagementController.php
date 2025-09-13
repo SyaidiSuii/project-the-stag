@@ -69,6 +69,7 @@ class RoleManagementController extends Controller
      */
     public function show(Role $role)
     {
+        $role->load(['permissions', 'users']);
         $permissions = $role->permissions;
         $users = $role->users;
         return view('admin.roles.show', compact('role', 'permissions', 'users'));
@@ -80,6 +81,7 @@ class RoleManagementController extends Controller
     public function edit(Role $role)
     {
         $permissions = Permission::orderBy('name')->get();
+        $role->load('permissions');
         $rolePermissions = $role->permissions->pluck('id')->toArray();
         return view('admin.roles.edit', compact('role', 'permissions', 'rolePermissions'));
     }
@@ -170,6 +172,7 @@ class RoleManagementController extends Controller
      */
     public function getRolePermissions(Role $role)
     {
+        $role->load('permissions');
         $permissions = $role->permissions->pluck('name');
         return response()->json($permissions);
     }

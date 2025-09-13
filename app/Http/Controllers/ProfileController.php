@@ -19,7 +19,7 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
-        $user = $request->user();
+        $user = $request->user()->load('customerProfile');
         $customerProfile = $user->customerProfile ?? new CustomerProfile();
         
         return view('profile.edit', [
@@ -50,7 +50,7 @@ class ProfileController extends Controller
      */
     public function updateCustomerProfile(CustomerProfileUpdateRequest $request): RedirectResponse
     {
-        $user = $request->user();
+        $user = $request->user()->load('customerProfile');
         $validated = $request->validated();
         
         // Get or create customer profile
@@ -86,7 +86,7 @@ class ProfileController extends Controller
      */
     public function deletePhoto(Request $request): RedirectResponse
     {
-        $user = $request->user();
+        $user = $request->user()->load('customerProfile');
         $customerProfile = $user->customerProfile;
 
         if ($customerProfile && $customerProfile->photo) {
@@ -109,6 +109,9 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        // Load customerProfile to prevent N+1
+        $user->load('customerProfile');
+        
         // Delete customer profile photo if exists
         if ($user->customerProfile && $user->customerProfile->photo) {
             Storage::disk('public')->delete($user->customerProfile->photo);

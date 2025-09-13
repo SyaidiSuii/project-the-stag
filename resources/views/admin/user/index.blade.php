@@ -52,20 +52,25 @@
     <div class="search-filter">
         <div class="search-box">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-input" placeholder="Search users..." id="searchInput">
+            <input type="text" class="search-input" placeholder="Search users..." id="searchInput" value="{{ request('search') }}">
         </div>
         <div class="filter-group">
             <select class="filter-select" id="roleFilter">
                 <option value="all">All Roles</option>
                 @foreach($roles as $role)
-                    <option value="{{ $role->id }}">{{ $role->name }}</option>
+                    <option value="{{ $role->id }}" {{ request('role') == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
                 @endforeach
             </select>
+            <select class="filter-select" id="statusFilter">
+                <option value="all">All Status</option>
+                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+            </select>
             <select class="filter-select" id="sortBy">
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="name">By Name</option>
-                <option value="email">By Email</option>
+                <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Newest First</option>
+                <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Oldest First</option>
+                <option value="name" {{ request('sort') == 'name' ? 'selected' : '' }}>By Name</option>
+                <option value="email" {{ request('sort') == 'email' ? 'selected' : '' }}>By Email</option>
             </select>
         </div>
         <a href="{{ route('admin.user.create') }}" class="admin-btn btn-primary">
@@ -83,7 +88,7 @@
                     <th class="th-contact">Contact</th>
                     <th class="th-status">Role</th>
                     <th class="th-account-status">Account Status</th>
-                    <th class="th-total-orders">Total Orders</th>
+                    {{-- <th class="th-total-orders">Total Orders</th> --}}
                     <th class="th-last-activity">Created</th>
                     <th class="th-actions">Actions</th>
                 </tr>
@@ -104,8 +109,8 @@
                     </td>
                     <td>
                         <div>{{ $user->email }}</div>
-                        @if($user->phone_number)
-                            <div style="font-size: 13px; color: var(--text-3);">{{ $user->phone_number }}</div>
+                        @if($user->formatted_phone)
+                            <div style="font-size: 13px; color: var(--text-3);">{{ $user->formatted_phone }}</div>
                         @else
                             <div style="font-size: 13px; color: var(--text-3); font-style: italic;">No phone</div>
                         @endif
@@ -128,9 +133,9 @@
                             <span class="status status-inactive">Inactive</span>
                         @endif
                     </td>
-                    <td class="cell-center">
+                    {{-- <td class="cell-center">
                         <span class="orders-count">{{ $user->orders_count ?? 0 }}</span>
-                    </td>
+                    </td> --}}
                     <td>
                         <div style="font-size: 13px;">{{ $user->created_at->format('M d, Y') }}</div>
                         <div style="font-size: 12px; color: var(--text-3);">{{ $user->created_at->diffForHumans() }}</div>

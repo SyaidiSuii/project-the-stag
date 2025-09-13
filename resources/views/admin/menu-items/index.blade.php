@@ -65,13 +65,28 @@
             <input type="text" class="search-input" placeholder="Search menu items..." id="searchInput" value="{{ request('search') }}">
         </div>
         <div class="filter-group">
-            <select class="filter-select" id="categoryFilter">
+            <select class="filter-select" id="mainCategoryFilter">
                 <option value="">All Categories</option>
                 @foreach($categories as $category)
-                    <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                    <option value="{{ $category->id }}" {{ request('main_category_id') == $category->id ? 'selected' : '' }}>
                         {{ $category->name }}
                     </option>
                 @endforeach
+            </select>
+            <select class="filter-select" id="subCategoryFilter">
+                <option value="">All Sub Categories</option>
+                @if(request('main_category_id'))
+                    @php
+                        $selectedMainCategory = $categories->find(request('main_category_id'));
+                    @endphp
+                    @if($selectedMainCategory && $selectedMainCategory->subCategories)
+                        @foreach($selectedMainCategory->subCategories as $subCategory)
+                            <option value="{{ $subCategory->id }}" {{ request('category_id') == $subCategory->id ? 'selected' : '' }}>
+                                {{ $subCategory->name }}
+                            </option>
+                        @endforeach
+                    @endif
+                @endif
             </select>
             <select class="filter-select" id="availabilityFilter">
                 <option value="">All Items</option>
@@ -190,8 +205,8 @@
                             @endif
                         </div>
                     </td>
-                    <td class="table-actions">
-                        <div class="action-buttons">
+                    <td class="cell-center">
+                        <div class="table-actions">
                             <a href="{{ route('admin.menu-items.show', $item->id) }}" 
                                class="action-btn view-btn" title="View Details">
                                 <i class="fas fa-eye"></i>

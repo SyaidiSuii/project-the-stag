@@ -12,11 +12,11 @@ class CustomerProfile extends Model
 
     protected $fillable = [
         'user_id',
+        'name',
         'date_of_birth',
         'address',
         'loyalty_points',
         'photo',
-        'phone_number',
         'preferred_contact',
         'dietary_preferences',
         'last_visit',

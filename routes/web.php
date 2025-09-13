@@ -52,8 +52,10 @@ use Illuminate\Support\Facades\Route;
 // =============================================
 // CUSTOMER ROUTES (Public Access)
 // =============================================
+Route::get('/', [CustomerHomeController::class, 'index'])->name('customer.index');
+
+
 Route::prefix('customer')->name('customer.')->group(function () {
-    Route::get('/', [CustomerHomeController::class, 'index'])->name('index');
     Route::post('/feedback', [CustomerHomeController::class, 'storeFeedback'])->name('feedback.store');
     Route::get('/food', [CustomerFoodController::class, 'index'])->name('food.index');
     Route::get('/food/data', [CustomerFoodController::class, 'getMenuData'])->name('food.data');
@@ -62,6 +64,10 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/rewards', [CustomerRewardsController::class, 'index'])->name('rewards.index');
     Route::get('/booking', [CustomerBookingController::class, 'index'])->name('booking.index');
     Route::get('/account', [CustomerAccountController::class, 'index'])->name('account.index');
+    Route::post('/account/update', [CustomerAccountController::class, 'update'])->name('account.update');
+    Route::post('/account/change-password', [CustomerAccountController::class, 'changePassword'])->name('account.change-password');
+    Route::post('/account/forgot-password', [CustomerAccountController::class, 'forgotPassword'])->name('account.forgot-password');
+    Route::delete('/account/delete', [CustomerAccountController::class, 'deleteAccount'])->name('account.delete');
     Route::get('/payment', [CustomerPaymentController::class, 'index'])->name('payment.index');
     Route::post('/payment/place-order', [CustomerPaymentController::class, 'placeOrder'])->name('payment.placeOrder');
     
@@ -77,7 +83,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
 });
 
 // Default homepage redirect
-Route::get('/', function () {
+Route::get('/customer', function () {
     return redirect()->route('customer.index');
 });
 
@@ -201,6 +207,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('menu-items')->name('menu-items.')->group(function () {
             Route::get('featured', [MenuItemController::class, 'getFeatured'])->name('featured');
             Route::get('stats', [MenuItemController::class, 'getStatistics'])->name('stats');
+            Route::get('sub-categories', [MenuItemController::class, 'getSubCategories'])->name('sub-categories');
             Route::patch('{menuItem}/toggle-availability', [MenuItemController::class, 'toggleAvailability'])->name('toggle-availability');
             Route::patch('{menuItem}/toggle-featured', [MenuItemController::class, 'toggleFeatured'])->name('toggle-featured');
             Route::patch('{menuItem}/rating', [MenuItemController::class, 'updateRating'])->name('rating');
@@ -331,3 +338,22 @@ Route::prefix('qr')->name('qr.')->group(function () {
 // AUTHENTICATION ROUTES
 // =============================================
 require __DIR__.'/auth.php';
+
+// Custom email verification route untuk customer
+Route::get('customer/verify-email/{id}/{hash}', function ($id, $hash) {
+    $user = \App\Models\User::findOrFail($id);
+    
+    if (!hash_equals(sha1($user->getEmailForVerification()), $hash)) {
+        return redirect()->route('customer.account.index')->with('error', 'Invalid verification link.');
+    }
+    
+    if ($user->hasVerifiedEmail()) {
+        return redirect()->route('customer.account.index')->with('success', 'Your email is already verified!');
+    }
+    
+    if ($user->markEmailAsVerified()) {
+        event(new \Illuminate\Auth\Events\Verified($user));
+    }
+    
+    return redirect()->route('customer.account.index')->with('success', 'Email verified successfully!');
+})->name('customer.verification.verify');

@@ -95,5 +95,6 @@
     </main>
 
     <script src="{{ asset('js/admin/layout-admin.js') }}"></script>
+    @yield('scripts')
 </body>
 </html>
