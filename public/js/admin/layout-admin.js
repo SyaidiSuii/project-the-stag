@@ -22,4 +22,19 @@ document.addEventListener('DOMContentLoaded', () => {
     hamburgerBtn.addEventListener('click', () => {
         adminSidebar.classList.toggle('open');
     });
+
+    // Collapsible menu functionality
+    const ordersMenu = document.getElementById('ordersMenu');
+    const ordersSubmenu = document.getElementById('ordersSubmenu');
+    
+    // Check if submenu should be expanded on page load (if any order route is active)
+    if (ordersMenu.classList.contains('active')) {
+        ordersMenu.classList.add('expanded');
+        ordersSubmenu.classList.add('expanded');
+    }
+    
+    ordersMenu.addEventListener('click', () => {
+        ordersMenu.classList.toggle('expanded');
+        ordersSubmenu.classList.toggle('expanded');
+    });
 });

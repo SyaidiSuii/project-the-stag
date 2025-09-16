@@ -104,6 +104,56 @@
     .admin-nav-text {
       font-size: 14px;
     }
+    
+    /* ===== Collapsible Menu Styles ===== */
+    .admin-nav-parent {
+      cursor: pointer;
+      position: relative;
+    }
+    .admin-nav-arrow {
+      margin-left: auto;
+      transition: transform 0.3s ease;
+      font-size: 12px;
+    }
+    .admin-nav-parent.expanded .admin-nav-arrow {
+      transform: rotate(180deg);
+    }
+    .admin-nav-submenu {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      margin-left: 20px;
+    }
+    .admin-nav-submenu.expanded {
+      max-height: 200px;
+    }
+    .admin-nav-subitem {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: var(--radius);
+      margin-bottom: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: var(--text-3);
+      font-weight: 400;
+      font-size: 13px;
+      position: relative;
+      border-left: 2px solid transparent;
+    }
+    .admin-nav-subitem:hover {
+      background: var(--bg);
+      color: var(--brand);
+      border-left-color: var(--brand);
+    }
+    .admin-nav-subitem.active {
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--brand);
+      border-left-color: var(--brand);
+      font-weight: 600;
+    }
     .admin-account {
       margin-top: auto;
       padding: 20px;

@@ -19,7 +19,8 @@ class OrderItemController extends Controller
             return redirect()->route('admin.order-item.index');
         }
 
-        $orderItems = OrderItem::with(['order', 'menuItem'])
+        $orderItems = OrderItem::with(['order.user', 'menuItem'])
+            ->whereHas('order')
             ->orderBy('created_at', 'desc')
             ->paginate(15);
         

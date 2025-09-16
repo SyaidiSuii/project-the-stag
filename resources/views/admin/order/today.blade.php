@@ -1,453 +1,653 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __("Today's Orders") }} - {{ now()->format('M d, Y') }}
-        </h2>
-    </x-slot>
+@extends('layouts.admin')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+@section('title', "Today's Orders")
+@section('page-title', "Today's Orders - " . now()->format('M d, Y'))
 
-            <!-- Quick Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
-                @php
-                    $totalOrders = collect($orders)->flatten()->count();
-                    $pendingCount = $orders->get('pending', collect())->count();
-                    $preparingCount = $orders->get('preparing', collect())->count();
-                    $readyCount = $orders->get('ready', collect())->count();
-                    $servedCount = $orders->get('served', collect())->count();
-                    $completedCount = $orders->get('completed', collect())->count();
-                    $totalRevenue = collect($orders)->flatten()->where('payment_status', 'paid')->sum('total_amount');
-                @endphp
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/admin/orders-management.css') }}">
+@endsection
 
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center">
-                                    <span class="text-white font-bold text-sm">{{ $totalOrders }}</span>
-                                </div>
-                            </div>
-                            <div class="ml-3 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Orders</dt>
-                                    <dd class="text-lg font-medium text-gray-900">{{ $totalOrders }}</dd>
-                                </dl>
-                            </div>
-                        </div>
+@section('content')
+@php
+    $totalOrders = collect($orders)->flatten()->count();
+    $pendingCount = $orders->get('pending', collect())->count();
+    $preparingCount = $orders->get('preparing', collect())->count();
+    $readyCount = $orders->get('ready', collect())->count();
+    $servedCount = $orders->get('served', collect())->count();
+    $completedCount = $orders->get('completed', collect())->count();
+    $totalRevenue = collect($orders)->flatten()->where('payment_status', 'paid')->sum('total_amount');
+@endphp
+
+<!-- Stats Cards -->
+<div class="admin-cards">
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Total Orders</div>
+            <div class="admin-card-icon icon-blue"><i class="fas fa-shopping-cart"></i></div>
+        </div>
+        <div class="admin-card-value">{{ $totalOrders }}</div>
+        <div class="admin-card-desc">All orders today</div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Today's Revenue</div>
+            <div class="admin-card-icon icon-green"><i class="fas fa-dollar-sign"></i></div>
+        </div>
+        <div class="admin-card-value">RM {{ number_format($totalRevenue, 2) }}</div>
+        <div class="admin-card-desc">From paid orders</div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Pending Orders</div>
+            <div class="admin-card-icon icon-orange"><i class="fas fa-clock"></i></div>
+        </div>
+        <div class="admin-card-value">{{ $pendingCount }}</div>
+        <div class="admin-card-desc">Awaiting confirmation</div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">In Progress</div>
+            <div class="admin-card-icon icon-red"><i class="fas fa-utensils"></i></div>
+        </div>
+        <div class="admin-card-value">{{ $preparingCount + $readyCount }}</div>
+        <div class="admin-card-desc">Preparing + Ready</div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Served</div>
+            <div class="admin-card-icon icon-purple"><i class="fas fa-check-circle"></i></div>
+        </div>
+        <div class="admin-card-value">{{ $servedCount }}</div>
+        <div class="admin-card-desc">Served orders</div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Completed</div>
+            <div class="admin-card-icon icon-teal"><i class="fas fa-flag-checkered"></i></div>
+        </div>
+        <div class="admin-card-value">{{ $completedCount }}</div>
+        <div class="admin-card-desc">Finished orders</div>
+    </div>
+</div>
+
+<!-- Kitchen Display Section -->
+<div class="admin-section">
+    <div class="section-header">
+        <h2 class="section-title">Kitchen Display - Orders by Status</h2>
+        <div class="section-controls">
+            <a href="{{ route('admin.order.create') }}" class="admin-btn btn-primary">
+                <div class="admin-nav-icon"><i class="fas fa-plus"></i></div>
+                New Order
+            </a>
+            <a href="{{ route('admin.order.index') }}" class="admin-btn btn-secondary">
+                <div class="admin-nav-icon"><i class="fas fa-list"></i></div>
+                All Orders
+            </a>
+        </div>
+    </div>
+
+    @if(session('message'))
+        <div class="alert alert-success">
+            {{ session('message') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-error">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <!-- Active Orders Display -->
+    @foreach(['pending', 'confirmed', 'preparing', 'ready', 'served'] as $status)
+        @if($orders->has($status) && $orders->get($status)->count() > 0)
+        <div class="admin-section-card">
+            <div class="section-card-header
+                @if($status == 'pending') status-pending
+                @elseif($status == 'confirmed') status-confirmed
+                @elseif($status == 'preparing') status-preparing
+                @elseif($status == 'ready') status-ready
+                @elseif($status == 'served') status-served
+                @endif">
+                <h3 class="section-card-title">
+                    {{ str_replace('_', ' ', ucfirst($status)) }} Orders
+                    <span class="section-card-count">({{ $orders->get($status)->count() }})</span>
+                </h3>
+                @if(in_array($status, ['preparing', 'ready']))
+                    <div class="section-card-meta">
+                        <span class="priority-badge">
+                            <i class="fas fa-star"></i> Kitchen Priority
+                        </span>
                     </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                                    <span class="text-white font-bold text-sm">{{ $pendingCount }}</span>
-                                </div>
-                            </div>
-                            <div class="ml-3 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Pending</dt>
-                                    <dd class="text-lg font-medium text-gray-900">{{ $pendingCount }}</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                                    <span class="text-white font-bold text-sm">{{ $preparingCount }}</span>
-                                </div>
-                            </div>
-                            <div class="ml-3 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Preparing</dt>
-                                    <dd class="text-lg font-medium text-gray-900">{{ $preparingCount }}</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                                    <span class="text-white font-bold text-sm">{{ $readyCount }}</span>
-                                </div>
-                            </div>
-                            <div class="ml-3 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Ready</dt>
-                                    <dd class="text-lg font-medium text-gray-900">{{ $readyCount }}</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
-                                    <span class="text-white font-bold text-sm">{{ $servedCount }}</span>
-                                </div>
-                            </div>
-                            <div class="ml-3 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Served</dt>
-                                    <dd class="text-lg font-medium text-gray-900">{{ $servedCount }}</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                                    <span class="text-white font-bold text-xs">RM</span>
-                                </div>
-                            </div>
-                            <div class="ml-3 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Revenue</dt>
-                                    <dd class="text-lg font-medium text-gray-900">{{ number_format($totalRevenue, 2) }}</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                @endif
             </div>
-
-            <!-- Action Buttons -->
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-lg font-medium text-gray-900">Orders by Status</h3>
-                <div class="flex gap-2">
-                    <a href="{{ route('admin.order.create') }}" class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700">
-                        New Order
-                    </a>
-                    <a href="{{ route('admin.order.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
-                        All Orders
-                    </a>
-                </div>
-            </div>
-
-            <!-- Kitchen Display - Active Orders -->
-            <div class="space-y-6">
-                
-                @foreach(['pending', 'confirmed', 'preparing', 'ready', 'served'] as $status)
-                    @if($orders->has($status) && $orders->get($status)->count() > 0)
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-4 border-b flex justify-between items-center
-                            @if($status == 'pending') bg-yellow-50
-                            @elseif($status == 'confirmed') bg-green-50
-                            @elseif($status == 'preparing') bg-blue-50
-                            @elseif($status == 'ready') bg-purple-50
-                            @elseif($status == 'served') bg-indigo-50
-                            @else bg-gray-50 @endif">
-                            <h4 class="font-semibold text-gray-800 capitalize">
-                                {{ str_replace('_', ' ', $status) }} Orders 
-                                <span class="text-sm font-normal text-gray-600">({{ $orders->get($status)->count() }})</span>
-                            </h4>
-                            @if(in_array($status, ['preparing', 'ready']))
-                                <div class="text-sm text-gray-600">
-                                    <span class="font-medium">Kitchen Priority</span>
-                                </div>
+            
+            <div class="kitchen-orders-grid">
+                @foreach($orders->get($status)->sortBy('order_time') as $order)
+                <div class="kitchen-order-card {{ $order->is_rush_order ? 'rush-order' : '' }}">
+                    
+                    <div class="order-card-header">
+                        <div class="order-identity">
+                            <h4 class="order-number">#{{ $order->id }}</h4>
+                            <p class="customer-name">{{ $order->user->name ?? 'Unknown' }}</p>
+                        </div>
+                        <div class="order-badges">
+                            @if($order->confirmation_code)
+                                <span class="confirmation-badge">{{ $order->confirmation_code }}</span>
+                            @endif
+                            @if($order->is_rush_order)
+                                <span class="rush-badge">
+                                    <i class="fas fa-bolt"></i> RUSH
+                                </span>
                             @endif
                         </div>
-                        <div class="p-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                @foreach($orders->get($status)->sortBy('order_time') as $order)
-                                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow
-                                    @if($order->is_rush_order) border-red-500 bg-red-50 @endif">
-                                    
-                                    <div class="flex justify-between items-start mb-3">
-                                        <div>
-                                            <h5 class="font-bold text-lg">#{{ $order->id }}</h5>
-                                            <p class="text-sm text-gray-600">{{ $order->user->name ?? 'Unknown' }}</p>
-                                        </div>
-                                        <div class="text-right">
-                                            @if($order->confirmation_code)
-                                                <span class="text-xs font-mono bg-gray-100 px-2 py-1 rounded">{{ $order->confirmation_code }}</span>
-                                            @endif
-                                            @if($order->is_rush_order)
-                                                <div class="mt-1">
-                                                    <span class="text-xs font-bold bg-red-100 text-red-800 px-2 py-1 rounded">RUSH</span>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="space-y-2 text-sm text-gray-600 mb-3">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center">
-                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                                {{ $order->order_time->format('h:i A') }}
-                                            </div>
-                                            <span class="font-bold text-green-600">RM {{ number_format($order->total_amount, 2) }}</span>
-                                        </div>
-
-                                        <div class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                            </svg>
-                                            @if($order->table)
-                                                Table {{ $order->table->table_number }}
-                                            @elseif($order->table_number)
-                                                {{ $order->table_number }}
-                                            @else
-                                                {{ ucfirst($order->order_type) }}
-                                            @endif
-                                        </div>
-
-                                        <div class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.99 1.99 0 013 12V7a4 4 0 014-4z"></path>
-                                            </svg>
-                                            {{ ucfirst(str_replace('_', ' ', $order->order_type)) }}
-                                        </div>
-
-                                        @if($order->estimated_completion_time)
-                                            @php
-                                                $isOverdue = $order->estimated_completion_time < now() && !$order->actual_completion_time;
-                                            @endphp
-                                            <div class="flex items-center {{ $isOverdue ? 'text-red-600 font-bold' : '' }}">
-                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                                ETA: {{ $order->estimated_completion_time->format('h:i A') }}
-                                                @if($isOverdue)
-                                                    <span class="ml-2 text-xs bg-red-100 px-1 rounded">OVERDUE</span>
-                                                @endif
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                    @if($order->special_instructions && count($order->special_instructions) > 0)
-                                    <div class="mb-3">
-                                        <div class="text-xs text-yellow-700 bg-yellow-50 p-2 rounded border border-yellow-200">
-                                            <strong>Special Instructions:</strong>
-                                            @foreach($order->special_instructions as $instruction)
-                                                @if($instruction)
-                                                    <div>• {{ $instruction }}</div>
-                                                @endif
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                    @endif
-
-                                    <!-- Order Items Preview -->
-                                    @if($order->items && $order->items->count() > 0)
-                                    <div class="mb-3 text-xs bg-gray-50 p-2 rounded">
-                                        <strong>Items ({{ $order->items->count() }}):</strong>
-                                        @foreach($order->items->take(3) as $item)
-                                            <div>{{ $item->quantity ?? 1 }}x {{ $item->name ?? 'Item' }}</div>
-                                        @endforeach
-                                        @if($order->items->count() > 3)
-                                            <div class="text-gray-500">... and {{ $order->items->count() - 3 }} more items</div>
-                                        @endif
-                                    </div>
-                                    @endif
-
-                                    <div class="flex justify-between items-center">
-                                        <div class="flex space-x-1">
-                                            @if($status == 'pending')
-                                                <button onclick="updateOrderStatus({{ $order->id }}, 'confirmed')" 
-                                                        class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
-                                                    Confirm
-                                                </button>
-                                            @elseif($status == 'confirmed')
-                                                <button onclick="updateOrderStatus({{ $order->id }}, 'preparing')" 
-                                                        class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
-                                                    Start Preparing
-                                                </button>
-                                            @elseif($status == 'preparing')
-                                                <button onclick="updateOrderStatus({{ $order->id }}, 'ready')" 
-                                                        class="px-2 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700">
-                                                    Ready
-                                                </button>
-                                            @elseif($status == 'ready')
-                                                <button onclick="updateOrderStatus({{ $order->id }}, 'served')" 
-                                                        class="px-2 py-1 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700">
-                                                    Served
-                                                </button>
-                                            @elseif($status == 'served')
-                                                <button onclick="updateOrderStatus({{ $order->id }}, 'completed')" 
-                                                        class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
-                                                    Complete
-                                                </button>
-                                            @endif
-
-                                            <span class="px-2 py-1 text-xs rounded
-                                                @if($order->payment_status == 'paid') bg-green-100 text-green-800
-                                                @elseif($order->payment_status == 'partial') bg-yellow-100 text-yellow-800
-                                                @elseif($order->payment_status == 'unpaid') bg-red-100 text-red-800
-                                                @else bg-gray-100 text-gray-800 @endif">
-                                                {{ ucfirst($order->payment_status) }}
-                                            </span>
-                                        </div>
-                                        
-                                        <div class="flex space-x-1">
-                                            <a href="{{ route('admin.order.show', $order->id) }}" 
-                                               class="px-2 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700">
-                                                View
-                                            </a>
-                                            <a href="{{ route('admin.order.edit', $order->id) }}" 
-                                               class="px-2 py-1 bg-gray-800 text-white text-xs rounded hover:bg-gray-900">
-                                                Edit
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                                @endforeach
+                    </div>
+                    
+                    <div class="order-details">
+                        <div class="detail-row">
+                            <div class="detail-item">
+                                <i class="fas fa-clock"></i>
+                                <span>{{ $order->order_time->format('h:i A') }}</span>
+                            </div>
+                            <div class="detail-item amount">
+                                <strong>RM {{ number_format($order->total_amount, 2) }}</strong>
                             </div>
                         </div>
+
+                        <div class="detail-row">
+                            <div class="detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                @if($order->table)
+                                    Table {{ $order->table->table_number }}
+                                @elseif($order->table_number)
+                                    {{ $order->table_number }}
+                                @else
+                                    {{ ucfirst($order->order_type) }}
+                                @endif
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-tag"></i>
+                                {{ ucfirst(str_replace('_', ' ', $order->order_type)) }}
+                            </div>
+                        </div>
+
+                        @if($order->estimated_completion_time)
+                            @php
+                                $isOverdue = $order->estimated_completion_time < now() && !$order->actual_completion_time;
+                            @endphp
+                            <div class="detail-row {{ $isOverdue ? 'overdue' : '' }}">
+                                <div class="detail-item">
+                                    <i class="fas fa-hourglass-half"></i>
+                                    ETA: {{ $order->estimated_completion_time->format('h:i A') }}
+                                    @if($isOverdue)
+                                        <span class="overdue-badge">OVERDUE</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    @if($order->special_instructions && count($order->special_instructions) > 0)
+                    <div class="special-instructions">
+                        <strong>Special Instructions:</strong>
+                        @foreach($order->special_instructions as $instruction)
+                            @if($instruction)
+                                <div>• {{ $instruction }}</div>
+                            @endif
+                        @endforeach
                     </div>
                     @endif
-                @endforeach
 
-                <!-- Completed and Cancelled Orders -->
-                @php
-                    $finishedOrders = collect();
-                    if ($orders->has('completed')) {
-                        $finishedOrders = $finishedOrders->merge($orders->get('completed'));
-                    }
-                    if ($orders->has('cancelled')) {
-                        $finishedOrders = $finishedOrders->merge($orders->get('cancelled'));
-                    }
-                @endphp
-
-                @if($finishedOrders->count() > 0)
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-4 bg-gray-50 border-b">
-                        <h4 class="font-semibold text-gray-800">
-                            Completed & Cancelled Orders
-                            <span class="text-sm font-normal text-gray-600">({{ $finishedOrders->count() }})</span>
-                        </h4>
+                    @if($order->items && $order->items->count() > 0)
+                    <div class="order-items-preview">
+                        <strong>Items ({{ $order->items->count() }}):</strong>
+                        @foreach($order->items->take(3) as $item)
+                            <div class="item-preview">{{ $item->quantity ?? 1 }}x {{ $item->name ?? 'Item' }}</div>
+                        @endforeach
+                        @if($order->items->count() > 3)
+                            <div class="items-more">... and {{ $order->items->count() - 3 }} more items</div>
+                        @endif
                     </div>
-                    <div class="p-6">
-                        <div class="space-y-3">
-                            @foreach($finishedOrders->sortByDesc('order_time') as $order)
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div class="flex items-center space-x-4">
-                                    <span class="px-2 py-1 text-xs rounded-full 
-                                        {{ $order->order_status == 'completed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                        {{ ucfirst($order->order_status) }}
-                                    </span>
-                                    <div>
-                                        <p class="font-medium">#{{ $order->id }} - {{ $order->user->name ?? 'Unknown' }}</p>
-                                        <p class="text-sm text-gray-600">
-                                            {{ $order->order_time->format('h:i A') }} - 
-                                            RM {{ number_format($order->total_amount, 2) }}
-                                            @if($order->table)
-                                                - Table {{ $order->table->table_number }}
-                                            @elseif($order->table_number)
-                                                - {{ $order->table_number }}
-                                            @endif
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="flex space-x-2">
-                                    <a href="{{ route('admin.order.show', $order->id) }}" 
-                                       class="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700">
-                                        View
-                                    </a>
-                                </div>
-                            </div>
-                            @endforeach
+                    @endif
+
+                    <div class="order-card-actions">
+                        <div class="status-actions">
+                            @if($status == 'pending')
+                                <button onclick="updateOrderStatus({{ $order->id }}, 'confirmed')" 
+                                        class="action-btn btn-confirm">
+                                    <i class="fas fa-check"></i> Confirm
+                                </button>
+                            @elseif($status == 'confirmed')
+                                <button onclick="updateOrderStatus({{ $order->id }}, 'preparing')" 
+                                        class="action-btn btn-preparing">
+                                    <i class="fas fa-utensils"></i> Start Preparing
+                                </button>
+                            @elseif($status == 'preparing')
+                                <button onclick="updateOrderStatus({{ $order->id }}, 'ready')" 
+                                        class="action-btn btn-ready">
+                                    <i class="fas fa-bell"></i> Ready
+                                </button>
+                            @elseif($status == 'ready')
+                                <button onclick="updateOrderStatus({{ $order->id }}, 'served')" 
+                                        class="action-btn btn-served">
+                                    <i class="fas fa-hand-paper"></i> Served
+                                </button>
+                            @elseif($status == 'served')
+                                <button onclick="updateOrderStatus({{ $order->id }}, 'completed')" 
+                                        class="action-btn btn-complete">
+                                    <i class="fas fa-flag-checkered"></i> Complete
+                                </button>
+                            @endif
+
+                            <span class="payment-status status-{{ str_replace('_', '-', $order->payment_status) }}">
+                                {{ ucfirst($order->payment_status) }}
+                            </span>
                         </div>
-                    </div>
-                </div>
-                @endif
-
-                <!-- Empty State -->
-                @if($totalOrders == 0)
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-12 text-center">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">No orders today</h3>
-                        <p class="mt-1 text-sm text-gray-500">Get started by creating a new order.</p>
-                        <div class="mt-6">
-                            <a href="{{ route('admin.order.create') }}" 
-                               class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-                                New Order
+                        
+                        <div class="order-actions">
+                            <a href="{{ route('admin.order.show', $order->id) }}" 
+                               class="action-btn view-btn" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ route('admin.order.edit', $order->id) }}" 
+                               class="action-btn edit-btn" title="Edit Order">
+                                <i class="fas fa-edit"></i>
                             </a>
                         </div>
                     </div>
                 </div>
-                @endif
+                @endforeach
+            </div>
+        </div>
+        @endif
+    @endforeach
 
+    <!-- Completed and Cancelled Orders -->
+    @php
+        $finishedOrders = collect();
+        if ($orders->has('completed')) {
+            $finishedOrders = $finishedOrders->merge($orders->get('completed'));
+        }
+        if ($orders->has('cancelled')) {
+            $finishedOrders = $finishedOrders->merge($orders->get('cancelled'));
+        }
+    @endphp
+
+    @if($finishedOrders->count() > 0)
+    <div class="admin-section-card">
+        <div class="section-card-header status-finished">
+            <h3 class="section-card-title">
+                Completed & Cancelled Orders
+                <span class="section-card-count">({{ $finishedOrders->count() }})</span>
+            </h3>
+        </div>
+        
+        <div class="finished-orders-list">
+            @foreach($finishedOrders->sortByDesc('order_time') as $order)
+            <div class="finished-order-item">
+                <div class="finished-order-status">
+                    <span class="status status-{{ str_replace('_', '-', $order->order_status) }}">
+                        {{ ucfirst($order->order_status) }}
+                    </span>
+                </div>
+                <div class="finished-order-info">
+                    <div class="order-identity">
+                        <strong>#{{ $order->id }}</strong> - {{ $order->user->name ?? 'Unknown' }}
+                    </div>
+                    <div class="order-meta">
+                        {{ $order->order_time->format('h:i A') }} - 
+                        RM {{ number_format($order->total_amount, 2) }}
+                        @if($order->table)
+                            - Table {{ $order->table->table_number }}
+                        @elseif($order->table_number)
+                            - {{ $order->table_number }}
+                        @endif
+                    </div>
+                </div>
+                <div class="finished-order-actions">
+                    <a href="{{ route('admin.order.show', $order->id) }}" 
+                       class="action-btn view-btn" title="View Details">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    <!-- Empty State -->
+    @if($totalOrders == 0)
+    <div class="admin-section-card">
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="empty-state-title">No orders today</div>
+            <div class="empty-state-text">Get started by creating a new order.</div>
+            <div class="empty-state-actions">
+                <a href="{{ route('admin.order.create') }}" class="admin-btn btn-primary">
+                    <i class="fas fa-plus"></i> New Order
+                </a>
             </div>
         </div>
     </div>
+    @endif
+</div>
+@endsection
 
-    <script>
-        function updateOrderStatus(orderId, status) {
-            if (!confirm(`Are you sure you want to mark this order as '${status}'?`)) {
-                return;
+@section('scripts')
+<script src="{{ asset('js/admin/order-management.js') }}"></script>
+<script>
+    function updateOrderStatus(orderId, status) {
+        if (!confirm(`Are you sure you want to mark this order as '${status}'?`)) {
+            return;
+        }
+
+        fetch(`/order/${orderId}/update-status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                order_status: status
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error updating order status: ' + (data.message || 'Unknown error'));
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating order status');
+        });
+    }
 
-            fetch(`/order/${orderId}/update-status`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    order_status: status
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Reload page to show updated status
-                    window.location.reload();
-                } else {
-                    alert('Error updating order status: ' + (data.message || 'Unknown error'));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error updating order status');
-            });
-        }
+    // Auto-refresh page every 60 seconds for kitchen display
+    setTimeout(function() {
+        window.location.reload();
+    }, 60000);
 
-        // Auto-refresh page every 60 seconds for kitchen display
-        setTimeout(function() {
-            window.location.reload();
-        }, 60000); // 1 minute
+    // Visual timer for rush orders
+    function updateRushOrderTimers() {
+        const rushOrders = document.querySelectorAll('[data-rush-order]');
+        rushOrders.forEach(order => {
+            const orderTime = new Date(order.dataset.orderTime);
+            const now = new Date();
+            const diffMinutes = Math.floor((now - orderTime) / 60000);
+            
+            if (diffMinutes > 15) {
+                order.classList.add('severe-overdue');
+                const timerEl = order.querySelector('.rush-timer');
+                if (timerEl) timerEl.textContent = `${diffMinutes} min ago`;
+            }
+        });
+    }
 
-        // Visual timer for rush orders
-        function updateRushOrderTimers() {
-            const rushOrders = document.querySelectorAll('[data-rush-order]');
-            rushOrders.forEach(order => {
-                const orderTime = new Date(order.dataset.orderTime);
-                const now = new Date();
-                const diffMinutes = Math.floor((now - orderTime) / 60000);
-                
-                if (diffMinutes > 15) {
-                    order.classList.add('border-red-600', 'bg-red-100');
-                    order.querySelector('.rush-timer').textContent = `${diffMinutes} min ago`;
-                }
-            });
-        }
+    setInterval(updateRushOrderTimers, 60000);
+    updateRushOrderTimers();
+</script>
 
-        // Update timers every minute
-        setInterval(updateRushOrderTimers, 60000);
-        updateRushOrderTimers(); // Initial call
-    </script>
-</x-app-layout>
+<style>
+/* Additional styles for today's orders specific to kitchen display */
+.kitchen-orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.kitchen-order-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.2s ease;
+}
+
+.kitchen-order-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.kitchen-order-card.rush-order {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+}
+
+.order-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.order-number {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.customer-name {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.order-badges {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-end;
+}
+
+.confirmation-badge {
+    font-family: monospace;
+    background: #f3f4f6;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.rush-badge {
+    background: #dc2626;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.order-details {
+    margin-bottom: 1rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.detail-row.overdue {
+    color: #dc2626;
+    font-weight: bold;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.detail-item.amount {
+    color: #059669;
+    font-weight: bold;
+}
+
+.detail-item i {
+    width: 16px;
+    color: #6b7280;
+}
+
+.overdue-badge {
+    background: #dc2626;
+    color: white;
+    padding: 0.125rem 0.25rem;
+    border-radius: 4px;
+    font-size: 0.625rem;
+}
+
+.special-instructions {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+}
+
+.order-items-preview {
+    background: #f9fafb;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+}
+
+.item-preview {
+    margin-bottom: 0.25rem;
+}
+
+.items-more {
+    color: #6b7280;
+    font-style: italic;
+}
+
+.order-card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.order-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.action-btn {
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.btn-confirm {
+    background: #10b981;
+    color: white;
+}
+
+.btn-preparing {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-ready {
+    background: #8b5cf6;
+    color: white;
+}
+
+.btn-served {
+    background: #6366f1;
+    color: white;
+}
+
+.btn-complete {
+    background: #059669;
+    color: white;
+}
+
+.payment-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.status-paid {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-unpaid {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-partial {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.finished-orders-list {
+    padding: 1rem;
+}
+
+.finished-order-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+}
+
+.finished-order-info {
+    flex: 1;
+    margin-left: 1rem;
+}
+
+.order-meta {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.status-pending { background: #fef3c7; }
+.status-confirmed { background: #d1fae5; }
+.status-preparing { background: #dbeafe; }
+.status-ready { background: #e9d5ff; }
+.status-served { background: #e0e7ff; }
+.status-finished { background: #f3f4f6; }
+
+.section-card-count {
+    font-weight: normal;
+    color: #6b7280;
+}
+
+.priority-badge {
+    background: #f59e0b;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+</style>
+@endsection

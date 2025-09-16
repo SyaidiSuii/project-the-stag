@@ -26,3 +26,6 @@ yarn-error.log
 /.qoder/rules/byterover-rules.md
 /.augment/rules/byterover-rules.md
 .CLAUDE.md
+CLAUDE.md
+/.github/CLAUDE.md
+/.github/copilot-instructions.md

@@ -29,17 +29,67 @@ class OrderController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         if (request('cancel')) {
             return redirect()->route('admin.order.index');
         }
 
-        $orders = Order::with(['user', 'table', 'reservation', 'items'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $query = Order::with(['user', 'table', 'reservation', 'items']);
+
+        // Filter by order status
+        if ($request->has('order_status') && $request->order_status != '') {
+            $query->where('order_status', $request->order_status);
+        }
+
+        // Filter by order type
+        if ($request->has('order_type') && $request->order_type != '') {
+            $query->where('order_type', $request->order_type);
+        }
+
+        // Filter by payment status
+        if ($request->has('payment_status') && $request->payment_status != '') {
+            $query->where('payment_status', $request->payment_status);
+        }
+
+        // Filter by date
+        if ($request->has('date') && $request->date != '') {
+            $query->whereDate('order_time', $request->date);
+        }
+
+        // Search by order ID, customer name, confirmation code
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'LIKE', "%{$search}%")
+                  ->orWhere('confirmation_code', 'LIKE', "%{$search}%")
+                  ->orWhereHas('user', function ($userQuery) use ($search) {
+                      $userQuery->where('name', 'LIKE', "%{$search}%")
+                               ->orWhere('email', 'LIKE', "%{$search}%");
+                  });
+            });
+        }
+
+        // Default sort by creation time
+        $query->orderBy('created_at', 'desc');
+
+        $orders = $query->paginate(15)->appends($request->query());
         
-        return view('admin.order.index', compact('orders'));
+        // Get statistics for dashboard cards
+        $totalOrders = Order::count();
+        $todayRevenue = Order::whereDate('order_time', today())
+            ->where('payment_status', 'paid')
+            ->sum('total_amount');
+        $pendingOrders = Order::where('order_status', 'pending')->count();
+        $completedOrders = Order::where('order_status', 'completed')->count();
+        
+        return view('admin.order.index', compact(
+            'orders', 
+            'totalOrders', 
+            'todayRevenue', 
+            'pendingOrders', 
+            'completedOrders'
+        ));
     }
 
     /**

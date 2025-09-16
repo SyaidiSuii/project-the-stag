@@ -292,6 +292,11 @@
       color: white;
       transform: translateY(-2px);
     }
+
+    .view-btn {
+      background: #d1fae5;
+      color: var(--success);
+    }
     .toggle-btn {
       background: #d1fae5;
       color: var(--success);

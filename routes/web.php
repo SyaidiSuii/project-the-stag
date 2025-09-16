@@ -112,6 +112,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('admin.dashboard')
         ->middleware(['role:admin|manager']);
 
+        // Redirect /admin → /admin/dashboard
+    Route::get('/admin', function () {
+        return redirect()->route('admin.dashboard');
+    });
+
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('update');

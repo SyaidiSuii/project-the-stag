@@ -41,10 +41,29 @@
                 <div class="admin-nav-icon"><i class="fas fa-utensils"></i></div>
                 <div class="admin-nav-text">Menu Management</div>
             </a>
-            <a href="#" class="admin-nav-item">
+            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.order.*') || request()->routeIs('admin.order-item.*') || request()->routeIs('admin.order-etas.*') || request()->routeIs('admin.order-trackings.*') ? 'active' : '' }}" id="ordersMenu">
                 <div class="admin-nav-icon"><i class="fas fa-shopping-bag"></i></div>
                 <div class="admin-nav-text">Orders</div>
-            </a>
+                <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="admin-nav-submenu" id="ordersSubmenu">
+                <a href="{{ route('admin.order.index') }}" 
+                    class="admin-nav-subitem {{ request()->routeIs('admin.order.index') || request()->routeIs('admin.order.show') || request()->routeIs('admin.order.edit') || request()->routeIs('admin.order.create') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Order Management</div>
+                </a>
+                <a href="{{ route('admin.order-item.index') }}" 
+                    class="admin-nav-subitem {{ request()->routeIs('admin.order-item.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Order Items</div>
+                </a>
+                <a href="{{ route('admin.order-etas.index') }}" 
+                    class="admin-nav-subitem {{ request()->routeIs('admin.order-etas.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Order ETAs</div>
+                </a>
+                <a href="{{ route('admin.order-trackings.index') }}" 
+                    class="admin-nav-subitem {{ request()->routeIs('admin.order-trackings.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Order Tracking</div>
+                </a>
+            </div>
             <a href="#" class="admin-nav-item">
                 <div class="admin-nav-icon"><i class="fas fa-calendar-alt"></i></div>
                 <div class="admin-nav-text">Booking</div>
