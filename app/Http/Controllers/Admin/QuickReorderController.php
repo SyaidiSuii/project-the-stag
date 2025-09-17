@@ -224,7 +224,7 @@ class QuickReorderController extends Controller
         $order->payment_status = 'unpaid';
         $order->special_instructions = $request->special_instructions ?? [];
         $order->order_time = now();
-        $order->confirmation_code = $this->generateConfirmationCode();
+        $order->confirmation_code = Order::generateConfirmationCode();
 
         $order->save();
 
@@ -357,15 +357,4 @@ class QuickReorderController extends Controller
         ]);
     }
 
-    /**
-     * Generate unique confirmation code for orders
-     */
-    private function generateConfirmationCode()
-    {
-        do {
-            $code = strtoupper(substr(md5(uniqid(rand(), true)), 0, 8));
-        } while (Order::where('confirmation_code', $code)->exists());
-
-        return $code;
-    }
 }

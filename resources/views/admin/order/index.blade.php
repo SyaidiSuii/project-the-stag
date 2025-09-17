@@ -127,6 +127,7 @@
                     <th class="th-type">Type/Table</th>
                     <th class="th-amount">Amount</th>
                     <th class="th-status">Status</th>
+                    <th class="th-eta">ETA</th>
                     <th class="th-time">Order Time</th>
                     <th class="th-actions">Actions</th>
                 </tr>
@@ -187,9 +188,37 @@
                         </div>
                     </td>
                     <td class="cell-center">
+                        <div class="eta-info">
+                            @if($order->etas && $order->etas->count() > 0)
+                                @php
+                                    $latestEta = $order->etas->sortByDesc('created_at')->first();
+                                    $estimatedCompletionTime = $order->order_time ? $order->order_time->addMinutes($latestEta->current_estimate) : null;
+                                    $now = now();
+                                    $isOverdue = $estimatedCompletionTime && $estimatedCompletionTime < $now && !in_array($order->order_status, ['completed', 'cancelled']);
+                                @endphp
+                                @if($estimatedCompletionTime && !in_array($order->order_status, ['completed', 'cancelled']))
+                                    <div class="eta-time" style="font-size: 14px; font-weight: 600; color: {{ $isOverdue ? '#ef4444' : '#10b981' }};">
+                                        {{ $estimatedCompletionTime->format('g:i A') }}
+                                    </div>
+                                    @if($isOverdue)
+                                        <div style="font-size: 9px; color: #ef4444; font-weight: 600;">OVERDUE</div>
+                                    @elseif($latestEta->is_delayed)
+                                        <div style="font-size: 9px; color: #f59e0b; font-weight: 600;">DELAYED</div>
+                                    @endif
+                                @elseif(in_array($order->order_status, ['completed', 'cancelled']))
+                                    <span style="color: #6b7280; font-size: 12px;">{{ ucfirst($order->order_status) }}</span>
+                                @else
+                                    <span class="text-muted" style="font-size: 12px;">No ETA</span>
+                                @endif
+                            @else
+                                <span class="text-muted" style="font-size: 12px;">No ETA</span>
+                            @endif
+                        </div>
+                    </td>
+                    <td class="cell-center">
                         <div class="time-info">
-                            <div class="order-date">{{ $order->order_time->format('M d, Y') }}</div>
-                            <div class="order-time">{{ $order->order_time->format('h:i A') }}</div>
+                            <div class="order-date">{{ $order->order_time->format('M d') }}</div>
+                            <div class="order-time">{{ $order->order_time->format('g:i A') }}</div>
                         </div>
                     </td>
                     <td class="cell-center">
@@ -217,7 +246,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="empty-state">
+                    <td colspan="8" class="empty-state">
                         <div class="empty-state-icon">
                             <i class="fas fa-shopping-cart"></i>
                         </div>
@@ -289,4 +318,16 @@
 
 @section('scripts')
 <script src="{{ asset('js/admin/order-management.js') }}"></script>
+<script>
+// Auto-refresh page every 3 minutes to update ETA status
+setInterval(() => {
+    if (document.visibilityState === 'visible') {
+        // Only refresh if no modals or forms are open
+        if (!document.querySelector('.modal.show') && !document.querySelector('form:focus-within')) {
+            location.reload();
+        }
+    }
+}, 180000); // 3 minutes
+
+</script>
 @endsection

@@ -363,6 +363,149 @@
         </div>
     </div>
 
+    <!-- ETA Information -->
+    @if($order->etas && $order->etas->count() > 0)
+    <div class="form-group">
+        <label class="form-label">Estimated Time of Arrival (ETA)</label>
+        <div style="border: 1px solid #d1d5db; border-radius: 12px; background: #f9fafb; overflow: hidden;">
+            @foreach($order->etas as $eta)
+            <div style="padding: 16px; @if(!$loop->last) border-bottom: 1px solid #e5e7eb; @endif">
+                <div style="display: flex; justify-content: between; align-items: center;">
+                    <div style="flex: 1;">
+                        <p style="font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">
+                            <i class="fas fa-clock" style="color: #3b82f6; margin-right: 8px;"></i>
+                            Initial Estimate: {{ $eta->initial_estimate }} minutes
+                        </p>
+                        <p style="font-size: 14px; color: #6b7280; margin: 0 0 4px 0;">
+                            Current Estimate: <span style="font-weight: 600;">{{ $eta->current_estimate }} minutes</span>
+                        </p>
+                        @if($eta->is_delayed)
+                            <div style="margin-top: 8px; background: #fee2e2; padding: 8px; border-radius: 6px; border-left: 3px solid #ef4444;">
+                                <small style="color: #991b1b; font-weight: 500;">
+                                    <i class="fas fa-exclamation-triangle" style="margin-right: 4px;"></i>
+                                    Delayed by {{ $eta->delay_duration }} minutes
+                                    @if($eta->delay_reason)
+                                        - {{ $eta->delay_reason }}
+                                    @endif
+                                </small>
+                            </div>
+                        @endif
+                        @if($eta->actual_completion_time)
+                            <p style="font-size: 14px; color: #10b981; margin: 4px 0 0 0; font-weight: 600;">
+                                <i class="fas fa-check-circle" style="margin-right: 4px;"></i>
+                                Completed in {{ $eta->actual_completion_time }} minutes
+                            </p>
+                        @endif
+                    </div>
+                    <div style="text-align: right; margin-left: 16px;">
+                        @php
+                            $estimatedCompletionTime = $order->order_time ? $order->order_time->addMinutes($eta->current_estimate) : null;
+                            $now = now();
+                            $isOverdue = $estimatedCompletionTime && $estimatedCompletionTime < $now && !in_array($order->order_status, ['completed', 'cancelled']);
+                        @endphp
+                        @if($estimatedCompletionTime)
+                            <p style="font-size: 12px; color: #6b7280; margin: 0 0 4px 0;">
+                                Expected: {{ $estimatedCompletionTime->format('h:i A') }}
+                            </p>
+                            <span style="
+                                background: {{ $isOverdue ? '#fee2e2' : ($eta->is_delayed ? '#fef3c7' : '#ecfdf5') }}; 
+                                color: {{ $isOverdue ? '#991b1b' : ($eta->is_delayed ? '#92400e' : '#065f46') }}; 
+                                padding: 4px 12px; 
+                                border-radius: 12px; 
+                                font-size: 12px; 
+                                font-weight: 700;">
+                                @if($isOverdue)
+                                    OVERDUE
+                                @elseif($eta->is_delayed)
+                                    DELAYED
+                                @else
+                                    ON TIME
+                                @endif
+                            </span>
+                        @endif
+                        @if($eta->customer_notified)
+                            <p style="font-size: 10px; color: #059669; margin: 4px 0 0 0;">
+                                <i class="fas fa-bell" style="margin-right: 2px;"></i>
+                                Customer Notified
+                            </p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    <!-- Order Tracking History -->
+    @if($order->trackings && $order->trackings->count() > 0)
+    <div class="form-group">
+        <label class="form-label">Order Tracking History</label>
+        <div style="border: 1px solid #d1d5db; border-radius: 12px; background: #f9fafb; overflow: hidden;">
+            @foreach($order->trackings->sortByDesc('created_at') as $tracking)
+            <div style="padding: 16px; @if(!$loop->last) border-bottom: 1px solid #e5e7eb; @endif">
+                <div style="display: flex; align-items: start; gap: 12px;">
+                    <div style="
+                        width: 40px; 
+                        height: 40px; 
+                        border-radius: 50%; 
+                        display: flex; 
+                        align-items: center; 
+                        justify-content: center;
+                        background: 
+                            @if($tracking->status == 'pending') #fef3c7
+                            @elseif($tracking->status == 'confirmed') #d1fae5
+                            @elseif($tracking->status == 'preparing') #dbeafe
+                            @elseif($tracking->status == 'ready') #e9d5ff
+                            @elseif($tracking->status == 'served') #e0e7ff
+                            @elseif($tracking->status == 'completed') #d1fae5
+                            @elseif($tracking->status == 'cancelled') #fee2e2
+                            @else #f3f4f6 @endif;
+                        ">
+                        <i class="fas fa-
+                            @if($tracking->status == 'pending') clock
+                            @elseif($tracking->status == 'confirmed') check-circle
+                            @elseif($tracking->status == 'preparing') utensils
+                            @elseif($tracking->status == 'ready') bell
+                            @elseif($tracking->status == 'served') hand-holding
+                            @elseif($tracking->status == 'completed') check-double
+                            @elseif($tracking->status == 'cancelled') times-circle
+                            @else info-circle @endif" 
+                           style="color: 
+                            @if($tracking->status == 'pending') #d97706
+                            @elseif($tracking->status == 'confirmed') #10b981
+                            @elseif($tracking->status == 'preparing') #3b82f6
+                            @elseif($tracking->status == 'ready') #8b5cf6
+                            @elseif($tracking->status == 'served') #6366f1
+                            @elseif($tracking->status == 'completed') #10b981
+                            @elseif($tracking->status == 'cancelled') #ef4444
+                            @else #6b7280 @endif; font-size: 16px;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 4px;">
+                            <h4 style="margin: 0; font-size: 16px; font-weight: 600; text-transform: capitalize;">
+                                {{ str_replace('_', ' ', $tracking->status) }}
+                            </h4>
+                            <span style="font-size: 12px; color: #6b7280;">
+                                {{ $tracking->created_at->format('M d, Y h:i A') }}
+                            </span>
+                        </div>
+                        @if($tracking->notes)
+                            <p style="margin: 4px 0 0 0; font-size: 14px; color: #6b7280;">{{ $tracking->notes }}</p>
+                        @endif
+                        @if($tracking->updated_by_user)
+                            <p style="margin: 4px 0 0 0; font-size: 12px; color: #9ca3af;">
+                                Updated by: {{ $tracking->updatedBy->name ?? 'System' }}
+                            </p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     <!-- Order Items -->
     <div class="form-group">
         <label class="form-label">Order Items</label>
@@ -372,25 +515,25 @@
                 <div style="padding: 16px; @if(!$loop->last) border-bottom: 1px solid #e5e7eb; @endif">
                     <div style="display: flex; justify-content: between; align-items: start;">
                         <div style="flex: 1;">
-                            <p style="font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">{{ $item->name ?? 'Item #' . $item->id }}</p>
+                            <p style="font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">{{ $item->menuItem->name ?? 'Item #' . $item->id }}</p>
                             <p style="font-size: 14px; color: #6b7280; margin: 0;">
                                 <span style="background: #e5e7eb; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
                                     Qty: {{ $item->quantity ?? 1 }}
                                 </span>
                             </p>
-                            @if($item->notes)
+                            @if($item->special_note)
                                 <div style="margin-top: 8px; background: #fef3c7; padding: 8px; border-radius: 6px; border-left: 3px solid #f59e0b;">
                                     <small style="color: #92400e; font-weight: 500;">
                                         <i class="fas fa-sticky-note" style="margin-right: 4px;"></i>
-                                        {{ $item->notes }}
+                                        {{ $item->special_note }}
                                     </small>
                                 </div>
                             @endif
                         </div>
                         <div style="text-align: right; margin-left: 16px;">
-                            <p style="font-size: 16px; font-weight: 600; margin: 0;">RM {{ number_format($item->price ?? 0, 2) }}</p>
+                            <p style="font-size: 16px; font-weight: 600; margin: 0;">RM {{ number_format($item->unit_price ?? 0, 2) }}</p>
                             <p style="font-size: 14px; color: #6b7280; margin: 4px 0 0 0;">
-                                Total: RM {{ number_format(($item->price ?? 0) * ($item->quantity ?? 1), 2) }}
+                                Total: RM {{ number_format($item->total_price ?? 0, 2) }}
                             </p>
                         </div>
                     </div>

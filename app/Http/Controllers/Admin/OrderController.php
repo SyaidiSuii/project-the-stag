@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\OrderEtas;
+use App\Models\OrderTracking;
 use App\Models\User;
 use App\Models\Table;
 use App\Models\TableReservation;
+use App\Models\MenuItem;
 use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
@@ -35,7 +39,7 @@ class OrderController extends Controller
             return redirect()->route('admin.order.index');
         }
 
-        $query = Order::with(['user', 'table', 'reservation', 'items']);
+        $query = Order::with(['user', 'table', 'reservation', 'items', 'etas', 'trackings']);
 
         // Filter by order status
         if ($request->has('order_status') && $request->order_status != '') {
@@ -101,8 +105,9 @@ class OrderController extends Controller
         $users = User::select('id', 'name')->get();
         $tables = Table::where('is_active', true)->select('id', 'table_number', 'status')->get();
         $reservations = TableReservation::with('table')->whereDate('reservation_date', '>=', now())->get();
+        $menuItems = MenuItem::where('availability', true)->select('id', 'name', 'price', 'preparation_time')->get();
         
-        return view('admin.order.form', compact('order', 'users', 'tables', 'reservations'));
+        return view('admin.order.form', compact('order', 'users', 'tables', 'reservations', 'menuItems'));
     }
 
     /**
@@ -124,7 +129,7 @@ class OrderController extends Controller
             'estimated_completion_time' => 'nullable|date|after:now',
             'actual_completion_time' => 'nullable|date',
             'is_rush_order' => 'nullable|boolean',
-            'confirmation_code' => 'nullable|string|max:10|unique:orders,confirmation_code',
+            'confirmation_code' => 'nullable|string|max:20|unique:orders,confirmation_code',
         ], [
             'user_id.required' => 'Customer is required.',
             'user_id.exists' => 'Selected customer does not exist.',
@@ -154,13 +159,38 @@ class OrderController extends Controller
 
         // Generate confirmation code if not provided
         if (empty($request->confirmation_code)) {
-            $order->confirmation_code = $this->generateConfirmationCode();
+            $order->confirmation_code = Order::generateConfirmationCode();
         }
 
         // Set order_time to current timestamp
         $order->order_time = now();
 
         $order->save();
+
+        // Handle order items creation
+        if ($request->has('items') && is_array($request->items)) {
+            foreach ($request->items as $itemData) {
+                if (!empty($itemData['menu_item_id']) && !empty($itemData['price'])) {
+                    $quantity = $itemData['quantity'] ?? 1;
+                    $unitPrice = $itemData['price'];
+                    $totalPrice = $unitPrice * $quantity;
+                    
+                    $order->items()->create([
+                        'menu_item_id' => $itemData['menu_item_id'],
+                        'quantity' => $quantity,
+                        'unit_price' => $unitPrice,
+                        'total_price' => $totalPrice,
+                        'special_note' => $itemData['notes'] ?? null,
+                    ]);
+                }
+            }
+        }
+
+        // Auto-create ETA based on order items
+        $order->load('items.menuItem'); // Load items with menu item data
+        if ($order->items->count() > 0) {
+            $order->autoCreateETA();
+        }
 
         return redirect()->route('admin.order.index')->with('message', 'Order has been created successfully!');
     }
@@ -170,7 +200,7 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        $order->load(['user', 'table', 'reservation', 'items']);
+        $order->load(['user', 'table', 'reservation', 'items', 'etas', 'trackings.updatedBy']);
         return view('admin.order.show', compact('order'));
     }
 
@@ -182,8 +212,9 @@ class OrderController extends Controller
         $users = User::select('id', 'name')->get();
         $tables = Table::where('is_active', true)->select('id', 'table_number', 'status')->get();
         $reservations = TableReservation::with('table')->whereDate('reservation_date', '>=', now())->get();
+        $menuItems = MenuItem::where('availability', true)->select('id', 'name', 'price', 'preparation_time')->get();
         
-        return view('admin.order.form', compact('order', 'users', 'tables', 'reservations'));
+        return view('admin.order.form', compact('order', 'users', 'tables', 'reservations', 'menuItems'));
     }
 
     /**
@@ -205,7 +236,7 @@ class OrderController extends Controller
             'estimated_completion_time' => 'nullable|date',
             'actual_completion_time' => 'nullable|date',
             'is_rush_order' => 'nullable|boolean',
-            'confirmation_code' => 'nullable|string|max:10|unique:orders,confirmation_code,' . $order->id,
+            'confirmation_code' => 'nullable|string|max:20|unique:orders,confirmation_code,' . $order->id,
         ], [
             'user_id.required' => 'Customer is required.',
             'user_id.exists' => 'Selected customer does not exist.',
@@ -241,7 +272,42 @@ class OrderController extends Controller
             $order->actual_completion_time = now();
         }
 
+        // Generate confirmation code if payment status is paid and no code exists
+        if ($request->payment_status === 'paid' && empty($order->confirmation_code)) {
+            $order->confirmation_code = Order::generateConfirmationCode();
+        }
+
         $order->save();
+
+        // Handle order items updates
+        if ($request->has('items') && is_array($request->items)) {
+            // Delete existing items
+            $order->items()->delete();
+            
+            // Create new items
+            foreach ($request->items as $itemData) {
+                if (!empty($itemData['menu_item_id']) && !empty($itemData['price'])) {
+                    $quantity = $itemData['quantity'] ?? 1;
+                    $unitPrice = $itemData['price'];
+                    $totalPrice = $unitPrice * $quantity;
+                    
+                    $order->items()->create([
+                        'menu_item_id' => $itemData['menu_item_id'],
+                        'quantity' => $quantity,
+                        'unit_price' => $unitPrice,
+                        'total_price' => $totalPrice,
+                        'special_note' => $itemData['notes'] ?? null,
+                    ]);
+                }
+            }
+            
+            // Recalculate ETA if items changed
+            $order->load('items.menuItem');
+            if ($order->items->count() > 0) {
+                $order->updateAutoETA();
+            }
+        }
+
 
         return redirect()->route('admin.order.index')->with('message', 'Order has been updated successfully!');
     }
@@ -320,18 +386,6 @@ class OrderController extends Controller
     }
 
     /**
-     * Generate unique confirmation code
-     */
-    private function generateConfirmationCode()
-    {
-        do {
-            $code = strtoupper(substr(md5(uniqid(rand(), true)), 0, 8));
-        } while (Order::where('confirmation_code', $code)->exists());
-
-        return $code;
-    }
-
-    /**
      * Cancel order
      */
     public function cancel(Order $order)
@@ -370,5 +424,60 @@ class OrderController extends Controller
         }
 
         return redirect()->route('admin.order.edit', $newOrder)->with('message', 'Order has been duplicated successfully!');
+    }
+
+    /**
+     * Calculate ETA for given order items (used for AJAX calls)
+     */
+    public function calculateETA(Request $request)
+    {
+        $this->validate($request, [
+            'items' => 'required|array',
+            'items.*.menu_item_id' => 'required|exists:menu_items,id',
+            'items.*.quantity' => 'required|integer|min:1',
+        ]);
+
+        $totalPrepTime = 0;
+        
+        foreach ($request->items as $item) {
+            $menuItem = MenuItem::find($item['menu_item_id']);
+            if ($menuItem) {
+                $prepTime = $menuItem->preparation_time ?? 15;
+                $totalPrepTime += ($prepTime * $item['quantity']);
+            }
+        }
+        
+        // Add buffer time (10% or minimum 5 minutes)
+        $bufferTime = max(5, round($totalPrepTime * 0.1));
+        $totalTime = $totalPrepTime + $bufferTime;
+        
+        $estimatedTime = now()->addMinutes($totalTime);
+        
+        return response()->json([
+            'success' => true,
+            'total_prep_time' => $totalTime,
+            'estimated_time' => $estimatedTime->format('Y-m-d H:i:s'),
+            'estimated_time_formatted' => $estimatedTime->format('M d, Y h:i A'),
+            'human_readable' => "Estimated {$totalTime} minutes from now"
+        ]);
+    }
+
+    /**
+     * Get menu item preparation time (used for AJAX calls)
+     */
+    public function getMenuItemPrepTime(Request $request)
+    {
+        $this->validate($request, [
+            'menu_item_id' => 'required|exists:menu_items,id'
+        ]);
+
+        $menuItem = MenuItem::find($request->menu_item_id);
+        
+        return response()->json([
+            'success' => true,
+            'preparation_time' => $menuItem->preparation_time ?? 15,
+            'name' => $menuItem->name,
+            'price' => $menuItem->price
+        ]);
     }
 }

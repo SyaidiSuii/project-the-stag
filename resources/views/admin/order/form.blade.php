@@ -235,7 +235,7 @@
                         id="estimated_completion_time" 
                         name="estimated_completion_time" 
                         class="form-control @error('estimated_completion_time') is-invalid @enderror"
-                        value="{{ old('estimated_completion_time', $order->estimated_completion_time ? $order->estimated_completion_time->format('Y-m-d\TH:i') : '') }}">
+                        value="{{ old('estimated_completion_time', $order->estimated_completion_time ? $order->estimated_completion_time->timezone(config('app.timezone'))->format('Y-m-d\TH:i') : '') }}"~>
                     @error('estimated_completion_time')
                         <div class="form-error">{{ $message }}</div>
                     @enderror
@@ -310,6 +310,226 @@
             @error('special_instructions')
                 <div class="form-error">{{ $message }}</div>
             @enderror
+        </div>
+
+        <!-- Order Items -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3 class="section-subtitle">Order Items</h3>
+                <button type="button" onclick="addOrderItem()" class="btn-add-item">
+                    <i class="fas fa-plus"></i> Add Item
+                </button>
+            </div>
+            
+            <div id="order-items-container">
+                @if($order->id && $order->items && $order->items->count() > 0)
+                    @foreach($order->items as $index => $item)
+                        <div class="order-item-row" data-index="{{ $index }}">
+                            <div class="item-details">
+                                <div class="form-group">
+                                    <label class="form-label">Menu Item *</label>
+                                    <select name="items[{{ $index }}][menu_item_id]" class="form-control menu-item-select" required>
+                                        <option value="">Select Menu Item</option>
+                                        @foreach($menuItems as $menuItem)
+                                            <option value="{{ $menuItem->id }}" 
+                                                    data-price="{{ $menuItem->price }}"
+                                                    data-name="{{ $menuItem->name }}"
+                                                    {{ $item->menu_item_id == $menuItem->id ? 'selected' : '' }}>
+                                                {{ $menuItem->name }} (RM {{ number_format($menuItem->price, 2) }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                
+                                <!-- Hidden fields for backend processing -->
+                                <input type="hidden" name="items[{{ $index }}][name]" class="item-name" value="{{ $item->menuItem->name ?? '' }}">
+                                <input type="hidden" name="items[{{ $index }}][price]" class="item-price" value="{{ $item->unit_price ?? '' }}">
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Quantity *</label>
+                                    <input type="number" 
+                                           name="items[{{ $index }}][quantity]" 
+                                           class="form-control item-quantity" 
+                                           value="{{ $item->quantity }}" 
+                                           min="1" 
+                                           placeholder="1"
+                                           required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Notes</label>
+                                    <textarea name="items[{{ $index }}][notes]" 
+                                              class="form-control" 
+                                              rows="2" 
+                                              placeholder="Special notes for this item">{{ $item->notes }}</textarea>
+                                </div>
+                                
+                                <div class="item-total">
+                                    <span class="total-label">Total: RM</span>
+                                    <span class="total-value">{{ number_format($item->price * $item->quantity, 2) }}</span>
+                                </div>
+                            </div>
+                            
+                            <button type="button" onclick="removeOrderItem(this)" class="btn-remove-item">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    @endforeach
+                @else
+                    <div class="order-item-row" data-index="0">
+                        <div class="item-details">
+                            <div class="form-group">
+                                <label class="form-label">Menu Item *</label>
+                                <select name="items[0][menu_item_id]" class="form-control menu-item-select" required>
+                                    <option value="">Select Menu Item</option>
+                                    @foreach($menuItems as $menuItem)
+                                        <option value="{{ $menuItem->id }}" 
+                                                data-price="{{ $menuItem->price }}"
+                                                data-name="{{ $menuItem->name }}">
+                                            {{ $menuItem->name }} (RM {{ number_format($menuItem->price, 2) }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <!-- Hidden fields for backend processing -->
+                            <input type="hidden" name="items[0][name]" class="item-name">
+                            <input type="hidden" name="items[0][price]" class="item-price">
+                            
+                            <div class="form-group">
+                                <label class="form-label">Quantity *</label>
+                                <input type="number" 
+                                       name="items[0][quantity]" 
+                                       class="form-control item-quantity" 
+                                       value="1" 
+                                       min="1" 
+                                       placeholder="1"
+                                       required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Notes</label>
+                                <textarea name="items[0][notes]" 
+                                          class="form-control" 
+                                          rows="2" 
+                                          placeholder="Special notes for this item"></textarea>
+                            </div>
+                            
+                            <div class="item-total">
+                                <span class="total-label">Total: RM</span>
+                                <span class="total-value">0.00</span>
+                            </div>
+                        </div>
+                        
+                        <button type="button" onclick="removeOrderItem(this)" class="btn-remove-item">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                @endif
+            </div>
+            
+            <div class="order-summary">
+                <div class="summary-row">
+                    <span class="summary-label">Total Items:</span>
+                    <span id="total-items">{{ $order->items ? $order->items->count() : 1 }}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Subtotal:</span>
+                    <span id="order-subtotal">RM {{ number_format($order->total_amount ?? 0, 2) }}</span>
+                </div>
+                <div class="summary-row" style="border-top: 1px solid #e5e7eb; padding-top: 12px; margin-top: 12px;">
+                    <span class="summary-label">Estimated Prep Time:</span>
+                    <span id="estimated-prep-time" style="color: #10b981; font-weight: 600;">
+                        @if($order->id && $order->items && $order->items->count() > 0)
+                            Calculating...
+                        @else
+                            No items selected
+                        @endif
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ETA Management -->
+        <div class="form-section">
+            <div class="section-header">
+                <h3 class="section-subtitle">Estimated Time of Arrival (ETA)</h3>
+                <button type="button" onclick="addETA()" class="btn-add-item">
+                    <i class="fas fa-clock"></i> Add ETA
+                </button>
+            </div>
+            
+            <div id="eta-container">
+                @if($order->id && $order->etas && $order->etas->count() > 0)
+                    @foreach($order->etas as $index => $eta)
+                        <div class="eta-row" data-index="{{ $index }}">
+                            <div class="form-group">
+                                <label class="form-label">ETA Type</label>
+                                <select name="etas[{{ $index }}][eta_type]" class="form-control">
+                                    <option value="preparation" {{ $eta->eta_type == 'preparation' ? 'selected' : '' }}>Preparation</option>
+                                    <option value="delivery" {{ $eta->eta_type == 'delivery' ? 'selected' : '' }}>Delivery</option>
+                                    <option value="pickup" {{ $eta->eta_type == 'pickup' ? 'selected' : '' }}>Pickup</option>
+                                    <option value="serving" {{ $eta->eta_type == 'serving' ? 'selected' : '' }}>Serving</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Estimated Time *</label>
+                                <input type="datetime-local" 
+                                       name="etas[{{ $index }}][estimated_time]" 
+                                       class="form-control" 
+                                       value="{{ $eta->estimated_time ? $eta->estimated_time->format('Y-m-d\TH:i') : '' }}"
+                                       required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Notes</label>
+                                <input type="text" 
+                                       name="etas[{{ $index }}][notes]" 
+                                       class="form-control" 
+                                       value="{{ $eta->notes }}" 
+                                       placeholder="ETA notes">
+                            </div>
+                            
+                            <button type="button" onclick="removeETA(this)" class="btn-remove-item">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    @endforeach
+                @else
+                    <div class="eta-row" data-index="0">
+                        <div class="form-group">
+                            <label class="form-label">ETA Type</label>
+                            <select name="etas[0][eta_type]" class="form-control">
+                                <option value="preparation">Preparation</option>
+                                <option value="delivery">Delivery</option>
+                                <option value="pickup">Pickup</option>
+                                <option value="serving">Serving</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Estimated Time *</label>
+                            <input type="datetime-local" 
+                                   name="etas[0][estimated_time]" 
+                                   class="form-control" 
+                                   required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Notes</label>
+                            <input type="text" 
+                                   name="etas[0][notes]" 
+                                   class="form-control" 
+                                   placeholder="ETA notes">
+                        </div>
+                        
+                        <button type="button" onclick="removeETA(this)" class="btn-remove-item">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                @endif
+            </div>
         </div>
 
         <!-- Confirmation Code -->
@@ -440,9 +660,15 @@ document.getElementById('order_type').addEventListener('change', function() {
 if (!document.getElementById('estimated_completion_time').value && !@json($order->id)) {
     const now = new Date();
     now.setMinutes(now.getMinutes() + 30);
-    const estimatedTime = now.toISOString().slice(0, 16);
-    document.getElementById('estimated_completion_time').value = estimatedTime;
+
+    // Format ikut local timezone (YYYY-MM-DDTHH:MM)
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16);
+
+    document.getElementById('estimated_completion_time').value = local;
 }
+
 
 // Validate completion times
 document.getElementById('estimated_completion_time').addEventListener('change', function() {
@@ -474,6 +700,273 @@ document.querySelector('form').addEventListener('submit', function() {
             input.remove();
         }
     });
+});
+
+// Order Items Management
+let itemIndex = {{ $order->items ? $order->items->count() : 1 }};
+
+function addOrderItem() {
+    const container = document.getElementById('order-items-container');
+    const newItem = document.createElement('div');
+    newItem.className = 'order-item-row';
+    newItem.setAttribute('data-index', itemIndex);
+    
+    newItem.innerHTML = `
+        <div class="item-details">
+            <div class="form-group">
+                <label class="form-label">Menu Item *</label>
+                <select name="items[${itemIndex}][menu_item_id]" class="form-control menu-item-select" required>
+                    <option value="">Select Menu Item</option>
+                    @foreach($menuItems as $menuItem)
+                        <option value="{{ $menuItem->id }}" 
+                                data-price="{{ $menuItem->price }}"
+                                data-name="{{ $menuItem->name }}">
+                            {{ $menuItem->name }} (RM {{ number_format($menuItem->price, 2) }})
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            
+            <!-- Hidden fields for backend processing -->
+            <input type="hidden" name="items[${itemIndex}][name]" class="item-name">
+            <input type="hidden" name="items[${itemIndex}][price]" class="item-price">
+            
+            <div class="form-group">
+                <label class="form-label">Quantity *</label>
+                <input type="number" 
+                       name="items[${itemIndex}][quantity]" 
+                       class="form-control item-quantity" 
+                       value="1" 
+                       min="1" 
+                       placeholder="1"
+                       required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Notes</label>
+                <textarea name="items[${itemIndex}][notes]" 
+                          class="form-control" 
+                          rows="2" 
+                          placeholder="Special notes for this item"></textarea>
+            </div>
+            
+            <div class="item-total">
+                <span class="total-label">Total: RM</span>
+                <span class="total-value">0.00</span>
+            </div>
+        </div>
+        
+        <button type="button" onclick="removeOrderItem(this)" class="btn-remove-item">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    
+    container.appendChild(newItem);
+    itemIndex++;
+    
+    // Add event listeners for the new item
+    setupItemEventListenersEnhanced(newItem);
+    updateOrderTotals();
+    calculateRealTimeETA();
+}
+
+function removeOrderItem(button) {
+    const container = document.getElementById('order-items-container');
+    if (container.children.length > 1) {
+        button.parentElement.remove();
+        updateOrderTotals();
+        calculateRealTimeETA();
+    } else {
+        alert('At least one item is required');
+    }
+}
+
+
+function updateItemTotal(itemRow) {
+    const price = parseFloat(itemRow.querySelector('.item-price').value) || 0;
+    const quantity = parseInt(itemRow.querySelector('.item-quantity').value) || 0;
+    const total = price * quantity;
+    
+    itemRow.querySelector('.total-value').textContent = total.toFixed(2);
+    updateOrderTotals();
+}
+
+function updateOrderTotals() {
+    const itemRows = document.querySelectorAll('.order-item-row');
+    let totalItems = 0;
+    let subtotal = 0;
+    
+    itemRows.forEach(row => {
+        const quantity = parseInt(row.querySelector('.item-quantity').value) || 0;
+        const price = parseFloat(row.querySelector('.item-price').value) || 0;
+        totalItems += quantity;
+        subtotal += (price * quantity);
+    });
+    
+    document.getElementById('total-items').textContent = totalItems;
+    document.getElementById('order-subtotal').textContent = 'RM ' + subtotal.toFixed(2);
+    document.getElementById('total_amount').value = subtotal.toFixed(2);
+}
+
+// ETA Management
+let etaIndex = {{ $order->etas ? $order->etas->count() : 1 }};
+
+function addETA() {
+    const container = document.getElementById('eta-container');
+    const newETA = document.createElement('div');
+    newETA.className = 'eta-row';
+    newETA.setAttribute('data-index', etaIndex);
+    
+    newETA.innerHTML = `
+        <div class="form-group">
+            <label class="form-label">ETA Type</label>
+            <select name="etas[${etaIndex}][eta_type]" class="form-control">
+                <option value="preparation">Preparation</option>
+                <option value="delivery">Delivery</option>
+                <option value="pickup">Pickup</option>
+                <option value="serving">Serving</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Estimated Time *</label>
+            <input type="datetime-local" 
+                   name="etas[${etaIndex}][estimated_time]" 
+                   class="form-control" 
+                   required>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Notes</label>
+            <input type="text" 
+                   name="etas[${etaIndex}][notes]" 
+                   class="form-control" 
+                   placeholder="ETA notes">
+        </div>
+        
+        <button type="button" onclick="removeETA(this)" class="btn-remove-item">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    
+    container.appendChild(newETA);
+    etaIndex++;
+}
+
+function removeETA(button) {
+    const container = document.getElementById('eta-container');
+    if (container.children.length > 1) {
+        button.parentElement.remove();
+    } else {
+        // Clear the fields instead of removing if it's the last one
+        const inputs = button.parentElement.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            if (input.type !== 'datetime-local') {
+                input.value = '';
+            }
+        });
+    }
+}
+
+// Real-time ETA Calculation
+function calculateRealTimeETA() {
+    const items = [];
+    
+    document.querySelectorAll('.order-item-row').forEach(row => {
+        const menuItemId = row.querySelector('.menu-item-select').value;
+        const quantity = parseInt(row.querySelector('.item-quantity').value) || 0;
+        
+        if (menuItemId && quantity > 0) {
+            items.push({
+                menu_item_id: menuItemId,
+                quantity: quantity
+            });
+        }
+    });
+    
+    if (items.length === 0) {
+        document.getElementById('estimated-prep-time').textContent = 'No items selected';
+        return;
+    }
+    
+    fetch('{{ route("admin.order.calculateETA") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ items: items })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const prepTimeDisplay = document.getElementById('estimated-prep-time');
+            if (prepTimeDisplay) {
+                prepTimeDisplay.textContent = `${data.total_prep_time} minutes (${data.estimated_time_formatted})`;
+                prepTimeDisplay.style.color = '#10b981';
+                prepTimeDisplay.style.fontWeight = '600';
+            }
+            
+            // Auto-populate first ETA field if exists
+            const firstETATime = document.querySelector('input[name="etas[0][estimated_time]"]');
+            if (firstETATime && !firstETATime.value) {
+                // Convert to local datetime format for input
+                const etaDate = new Date(data.estimated_time);
+                const localDateTime = new Date(etaDate.getTime() - etaDate.getTimezoneOffset() * 60000)
+                    .toISOString()
+                    .slice(0, 16);
+                firstETATime.value = localDateTime;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error calculating ETA:', error);
+        const prepTimeDisplay = document.getElementById('estimated-prep-time');
+        if (prepTimeDisplay) {
+            prepTimeDisplay.textContent = 'Error calculating ETA';
+            prepTimeDisplay.style.color = '#ef4444';
+        }
+    });
+}
+
+// Update setupItemEventListeners to include ETA calculation
+function setupItemEventListenersEnhanced(itemRow) {
+    const menuSelect = itemRow.querySelector('.menu-item-select');
+    const nameInput = itemRow.querySelector('.item-name');
+    const priceInput = itemRow.querySelector('.item-price');
+    const quantityInput = itemRow.querySelector('.item-quantity');
+    
+    // Auto-populate when menu item is selected
+    menuSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+            // Use data-name attribute if available, otherwise parse from text
+            const itemName = selectedOption.dataset.name || selectedOption.textContent.split(' (RM')[0];
+            nameInput.value = itemName;
+            priceInput.value = selectedOption.dataset.price;
+            updateItemTotal(itemRow);
+            calculateRealTimeETA(); // Calculate ETA when item changes
+        } else {
+            // Clear fields if no item selected
+            nameInput.value = '';
+            priceInput.value = '';
+            updateItemTotal(itemRow);
+            calculateRealTimeETA();
+        }
+    });
+    
+    // Update totals and ETA when quantity changes
+    quantityInput.addEventListener('input', () => {
+        updateItemTotal(itemRow);
+        calculateRealTimeETA();
+    });
+}
+
+// Initialize event listeners for existing items
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.order-item-row').forEach(setupItemEventListenersEnhanced);
+    updateOrderTotals();
+    calculateRealTimeETA(); // Calculate initial ETA
 });
 </script>
 @endsection

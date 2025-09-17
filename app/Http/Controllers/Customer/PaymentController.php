@@ -53,11 +53,12 @@ class PaymentController extends Controller
                 'guest_name' => $user ? $user->name : null,
                 'guest_phone' => $user ? $user->phone : null,
                 'total_amount' => $totalAmount,
-                'order_status' => 'pending',
-                'payment_status' => 'unpaid', // Fixed: use valid enum value
+                'order_status' => 'confirmed', // Changed to confirmed since payment is processed
+                'payment_status' => 'paid', // Set as paid since payment is being processed
                 'order_type' => 'takeaway', // Fixed: use valid enum value
                 'order_source' => 'web', // Fixed: use valid enum value
                 'order_time' => now(),
+                'confirmation_code' => Order::generateConfirmationCode(), // Generate confirmation code
                 // Add other necessary fields like table_session_id if applicable
             ]);
 

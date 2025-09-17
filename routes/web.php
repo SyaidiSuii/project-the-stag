@@ -7,9 +7,6 @@ use App\Http\Controllers\Admin\TableReservationController;
 use App\Http\Controllers\Admin\TableLayoutConfigController;
 use App\Http\Controllers\Admin\MenuItemController;
 use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\Admin\OrderItemController;
-use App\Http\Controllers\Admin\OrderEtasController; 
-use App\Http\Controllers\Admin\OrderTrackingController;
 use App\Http\Controllers\Admin\SaleAnalyticsController;
 use App\Http\Controllers\Admin\PushNotificationController;
 use App\Http\Controllers\Admin\PermissionController;
@@ -239,41 +236,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('by-status', [OrderController::class, 'getByStatus'])->name('getByStatus');
             Route::post('{order}/cancel', [OrderController::class, 'cancel'])->name('cancel');
             Route::get('{order}/duplicate', [OrderController::class, 'duplicate'])->name('duplicate');
+            Route::post('calculate-eta', [OrderController::class, 'calculateETA'])->name('calculateETA');
+            Route::get('menu-item-prep-time', [OrderController::class, 'getMenuItemPrepTime'])->name('getMenuItemPrepTime');
         });
         Route::resource('order', OrderController::class);
 
-        // Order Items
-        Route::prefix('order-item')->name('order-item.')->group(function () {
-            Route::get('kitchen', [OrderItemController::class, 'kitchen'])->name('kitchen');
-            Route::post('{orderItem}/update-status', [OrderItemController::class, 'updateStatus'])->name('updateStatus');
-            Route::get('by-order', [OrderItemController::class, 'getByOrder'])->name('getByOrder');
-            Route::get('by-status', [OrderItemController::class, 'getByStatus'])->name('getByStatus');
-            Route::post('bulk-update-status', [OrderItemController::class, 'bulkUpdateStatus'])->name('bulkUpdateStatus');
-            Route::get('calculate-total', [OrderItemController::class, 'calculateTotal'])->name('calculateTotal');
-            Route::get('get-menu-item-price', [OrderItemController::class, 'getMenuItemPrice'])->name('getMenuItemPrice');
-            Route::get('{orderItem}/duplicate', [OrderItemController::class, 'duplicate'])->name('duplicate');
-        });
-        Route::resource('order-item', OrderItemController::class);
 
-        // Order ETAs
-        Route::prefix('order-etas')->name('order-etas.')->group(function () {
-            Route::post('{orderEta}/update-estimate', [OrderEtasController::class, 'updateEstimate'])->name('updateEstimate');
-            Route::post('{orderEta}/mark-completed', [OrderEtasController::class, 'markCompleted'])->name('markCompleted');
-            Route::post('{orderEta}/notify-customer', [OrderEtasController::class, 'notifyCustomer'])->name('notifyCustomer');
-            Route::get('delayed-orders', [OrderEtasController::class, 'getDelayedOrders'])->name('getDelayedOrders');
-            Route::get('statistics', [OrderEtasController::class, 'getStatistics'])->name('getStatistics');
-            Route::get('needing-attention', [OrderEtasController::class, 'getNeedingAttention'])->name('getNeedingAttention');
-        });
-        Route::resource('order-etas', OrderEtasController::class);
 
-        // Order Tracking
-        Route::prefix('order-trackings')->name('order-trackings.')->group(function () {
-            Route::get('stats/performance', [OrderTrackingController::class, 'getPerformanceStats'])->name('stats.performance');
-            Route::get('stations/active-orders', [OrderTrackingController::class, 'getActiveOrdersByStation'])->name('stations.active-orders');
-            Route::patch('{orderTracking}/status', [OrderTrackingController::class, 'updateStatus'])->name('update-status');
-        });
-        Route::get('orders/{id}/tracking-history', [OrderTrackingController::class, 'getOrderHistory'])->name('orders.tracking-history');
-        Route::resource('order-trackings', OrderTrackingController::class);
 
         // Quick Reorder
         Route::prefix('quick-reorder')->name('quick-reorder.')->group(function () {
