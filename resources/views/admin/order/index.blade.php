@@ -77,7 +77,6 @@
             <select class="filter-select" id="orderStatusFilter">
                 <option value="">All Statuses</option>
                 <option value="pending" {{ request('order_status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                <option value="confirmed" {{ request('order_status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
                 <option value="preparing" {{ request('order_status') == 'preparing' ? 'selected' : '' }}>Preparing</option>
                 <option value="ready" {{ request('order_status') == 'ready' ? 'selected' : '' }}>Ready</option>
                 <option value="served" {{ request('order_status') == 'served' ? 'selected' : '' }}>Served</option>
@@ -223,6 +222,35 @@
                     </td>
                     <td class="cell-center">
                         <div class="table-actions">
+                            <!-- Status Update Buttons -->
+                            @if($order->order_status === 'pending')
+                                <button class="action-btn confirm-btn" title="Confirm Order" onclick="updateOrderStatus({{ $order->id }}, 'preparing')">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="action-btn cancel-btn" title="Cancel Order" onclick="updateOrderStatus({{ $order->id }}, 'cancelled')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            @elseif($order->order_status === 'preparing')
+                                <button class="action-btn ready-btn" title="Mark as Ready" onclick="updateOrderStatus({{ $order->id }}, 'ready')">
+                                    <i class="fas fa-bell"></i>
+                                </button>
+                            @elseif($order->order_status === 'ready')
+                                @if($order->order_type === 'dine_in')
+                                    <button class="action-btn serve-btn" title="Mark as Served" onclick="updateOrderStatus({{ $order->id }}, 'served')">
+                                        <i class="fas fa-utensils"></i>
+                                    </button>
+                                @else
+                                    <button class="action-btn complete-btn" title="Mark as Completed" onclick="updateOrderStatus({{ $order->id }}, 'completed')">
+                                        <i class="fas fa-check-circle"></i>
+                                    </button>
+                                @endif
+                            @elseif($order->order_status === 'served')
+                                <button class="action-btn complete-btn" title="Mark as Completed" onclick="updateOrderStatus({{ $order->id }}, 'completed')">
+                                    <i class="fas fa-check-circle"></i>
+                                </button>
+                            @endif
+
+                            <!-- Default Action Buttons -->
                             <a href="{{ route('admin.order.show', $order->id) }}" 
                                class="action-btn view-btn" title="View Details">
                                 <i class="fas fa-eye"></i>
@@ -329,5 +357,54 @@ setInterval(() => {
     }
 }, 180000); // 3 minutes
 
+// Function to update order status
+function updateOrderStatus(orderId, newStatus) {
+    // Status transition validation
+    const statusTransitions = {
+        'pending': ['preparing', 'cancelled'],
+        'preparing': ['ready', 'cancelled'], 
+        'ready': ['served', 'completed', 'cancelled'],
+        'served': ['completed']
+    };
+
+    // Confirmation messages
+    const confirmMessages = {
+        'preparing': 'Start preparing this order?',
+        'ready': 'Mark this order as ready?',
+        'served': 'Mark this order as served?', 
+        'completed': 'Mark this order as completed?',
+        'cancelled': 'Cancel this order? This action cannot be undone.'
+    };
+
+    if (!confirm(confirmMessages[newStatus] || 'Update order status?')) {
+        return;
+    }
+
+    // Use fetch API instead of form submit to handle JSON response
+    fetch(`/admin/order/${orderId}/update-status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            order_status: newStatus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message and reload page
+            console.log('Order status updated successfully');
+            location.reload();
+        } else {
+            alert('Error updating order status: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating order status. Please try again.');
+    });
+}
 </script>
 @endsection

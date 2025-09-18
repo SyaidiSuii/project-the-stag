@@ -237,23 +237,23 @@
 <!-- Food-specific JavaScript -->
 <script src="{{ asset('js/customer/food_and_drink.js') }}"></script>
 <script>
-    /* --- Animations --- */
-  @keyframes fadeInCard {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  //   /* --- Animations --- */
+  // @keyframes fadeInCard {
+  //   from { opacity: 0; transform: translateY(20px); }
+  //   to   { opacity: 1; transform: translateY(0); }
+  // }
 
-  @keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-10px); }
-    60% { transform: translateY(-5px); }
-  }
+  // @keyframes bounce {
+  //   0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  //   40% { transform: translateY(-10px); }
+  //   60% { transform: translateY(-5px); }
+  // }
 
-  /* Hover effect untuk cart item */
-  .cart-item:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    transition: background-color 0.2s ease-in-out;
-  }
+  // /* Hover effect untuk cart item */
+  // .cart-item:hover {
+  //   background-color: rgba(0, 0, 0, 0.05);
+  //   transition: background-color 0.2s ease-in-out;
+  // }
 
   // --- UX Enhancements ---
 
@@ -273,9 +273,9 @@
     fab.classList.add('bounce');
   }
 
-  /* FAB bounce trigger */
-  .bounce {
-    animation: bounce 0.6s;
-  }
+  // /* FAB bounce trigger */
+  // .bounce {
+  //   animation: bounce 0.6s;
+  // }
 </script>
 @endsection

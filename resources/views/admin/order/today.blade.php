@@ -99,12 +99,11 @@
     @endif
 
     <!-- Active Orders Display -->
-    @foreach(['pending', 'confirmed', 'preparing', 'ready', 'served'] as $status)
+    @foreach(['pending', 'preparing', 'ready', 'served'] as $status)
         @if($orders->has($status) && $orders->get($status)->count() > 0)
         <div class="admin-section-card">
             <div class="section-card-header
                 @if($status == 'pending') status-pending
-                @elseif($status == 'confirmed') status-confirmed
                 @elseif($status == 'preparing') status-preparing
                 @elseif($status == 'ready') status-ready
                 @elseif($status == 'served') status-served
@@ -213,14 +212,9 @@
                     <div class="order-card-actions">
                         <div class="status-actions">
                             @if($status == 'pending')
-                                <button onclick="updateOrderStatus({{ $order->id }}, 'confirmed')" 
-                                        class="action-btn btn-confirm">
-                                    <i class="fas fa-check"></i> Confirm
-                                </button>
-                            @elseif($status == 'confirmed')
                                 <button onclick="updateOrderStatus({{ $order->id }}, 'preparing')" 
-                                        class="action-btn btn-preparing">
-                                    <i class="fas fa-utensils"></i> Start Preparing
+                                        class="action-btn btn-confirm">
+                                    <i class="fas fa-check"></i> Start Preparing
                                 </button>
                             @elseif($status == 'preparing')
                                 <button onclick="updateOrderStatus({{ $order->id }}, 'ready')" 
@@ -228,10 +222,17 @@
                                     <i class="fas fa-bell"></i> Ready
                                 </button>
                             @elseif($status == 'ready')
-                                <button onclick="updateOrderStatus({{ $order->id }}, 'served')" 
-                                        class="action-btn btn-served">
-                                    <i class="fas fa-hand-paper"></i> Served
-                                </button>
+                                @if($order->order_type === 'dine_in')
+                                    <button onclick="updateOrderStatus({{ $order->id }}, 'served')" 
+                                            class="action-btn btn-served">
+                                        <i class="fas fa-utensils"></i> Served
+                                    </button>
+                                @else
+                                    <button onclick="updateOrderStatus({{ $order->id }}, 'completed')" 
+                                            class="action-btn btn-complete">
+                                        <i class="fas fa-flag-checkered"></i> Complete
+                                    </button>
+                                @endif
                             @elseif($status == 'served')
                                 <button onclick="updateOrderStatus({{ $order->id }}, 'completed')" 
                                         class="action-btn btn-complete">
@@ -344,7 +345,7 @@
             return;
         }
 
-        fetch(`/order/${orderId}/update-status`, {
+        fetch(`/admin/order/${orderId}/update-status`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -631,7 +632,6 @@
 }
 
 .status-pending { background: #fef3c7; }
-.status-confirmed { background: #d1fae5; }
 .status-preparing { background: #dbeafe; }
 .status-ready { background: #e9d5ff; }
 .status-served { background: #e0e7ff; }

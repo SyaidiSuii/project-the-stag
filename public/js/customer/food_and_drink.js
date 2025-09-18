@@ -1,4 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Check URL parameters for cart actions (from reorder)
+    const urlParams = new URLSearchParams(window.location.search);
+    const showCart = urlParams.get('showCart');
+    const cartRefresh = urlParams.get('cartRefresh');
+    
     // Category filtering functionality for both food and drink pages
     const categoryTabs = document.querySelectorAll('.tab');
     const categoryTitle = document.getElementById('categoryTitle');
@@ -575,4 +580,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    
+    // Handle URL parameters for cart actions (from reorder)
+    if (showCart === 'true' || cartRefresh) {
+        console.log('Reorder redirect detected, showing cart modal...');
+        
+        // Wait a bit for cart manager to load
+        setTimeout(() => {
+            if (typeof showCartModal === 'function') {
+                showCartModal();
+                console.log('Cart modal opened from reorder redirect');
+            } else {
+                console.warn('showCartModal function not found');
+            }
+            
+            // Clean up URL parameters
+            if (window.history && window.history.replaceState) {
+                const cleanUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
+        }, 1000);
+    }
 });

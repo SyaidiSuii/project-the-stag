@@ -192,7 +192,6 @@
                         class="form-control @error('order_status') is-invalid @enderror"
                         required>
                         <option value="pending" {{ old('order_status', $order->order_status) == 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="confirmed" {{ old('order_status', $order->order_status) == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
                         <option value="preparing" {{ old('order_status', $order->order_status) == 'preparing' ? 'selected' : '' }}>Preparing</option>
                         <option value="ready" {{ old('order_status', $order->order_status) == 'ready' ? 'selected' : '' }}>Ready</option>
                         <option value="served" {{ old('order_status', $order->order_status) == 'served' ? 'selected' : '' }}>Served</option>

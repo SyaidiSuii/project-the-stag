@@ -58,6 +58,11 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/food/data', [CustomerFoodController::class, 'getMenuData'])->name('food.data');
     Route::get('/drinks', [CustomerDrinksController::class, 'index'])->name('drinks.index');
     Route::get('/orders', [CustomerOrdersController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{orderId}/details', [CustomerOrdersController::class, 'getOrderDetails'])->name('orders.details');
+    Route::get('/orders/{orderId}/tracking', [CustomerOrdersController::class, 'getOrderTracking'])->name('orders.tracking');
+    Route::post('/orders/{orderId}/cancel', [CustomerOrdersController::class, 'cancelOrder'])->name('orders.cancel');
+    Route::get('/orders/{orderId}/reorder', [CustomerOrdersController::class, 'getReorderDetails'])->name('orders.reorder');
+    Route::post('/orders/{orderId}/add-to-cart', [CustomerOrdersController::class, 'addToCart'])->name('orders.addToCart');
     Route::get('/rewards', [CustomerRewardsController::class, 'index'])->name('rewards.index');
     Route::get('/booking', [CustomerBookingController::class, 'index'])->name('booking.index');
     Route::get('/account', [CustomerAccountController::class, 'index'])->name('account.index');

@@ -183,8 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(viewOrderBtn) {
         viewOrderBtn.addEventListener('click', () => {
-            // Assuming you have a route for order tracking
-            window.location.href = '/qr/track'; 
+            // Redirect to customer orders page
+            window.location.href = '/customer/orders'; 
         });
     }
 

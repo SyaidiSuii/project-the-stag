@@ -32,21 +32,23 @@
         </div>
         <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
             @if($order->order_status == 'pending')
-                <button onclick="updateOrderStatus('confirmed')" class="btn-save" style="background: #10b981;">
-                    <i class="fas fa-check"></i> Confirm Order
-                </button>
-            @elseif($order->order_status == 'confirmed')
-                <button onclick="updateOrderStatus('preparing')" class="btn-save" style="background: #3b82f6;">
-                    <i class="fas fa-utensils"></i> Start Preparing
+                <button onclick="updateOrderStatus('preparing')" class="btn-save" style="background: #10b981;">
+                    <i class="fas fa-check"></i> Start Preparing
                 </button>
             @elseif($order->order_status == 'preparing')
                 <button onclick="updateOrderStatus('ready')" class="btn-save" style="background: #8b5cf6;">
                     <i class="fas fa-bell"></i> Mark Ready
                 </button>
             @elseif($order->order_status == 'ready')
-                <button onclick="updateOrderStatus('served')" class="btn-save" style="background: #6366f1;">
-                    <i class="fas fa-hand-holding"></i> Mark Served
-                </button>
+                @if($order->order_type === 'dine_in')
+                    <button onclick="updateOrderStatus('served')" class="btn-save" style="background: #6366f1;">
+                        <i class="fas fa-utensils"></i> Mark Served
+                    </button>
+                @else
+                    <button onclick="updateOrderStatus('completed')" class="btn-save" style="background: #10b981;">
+                        <i class="fas fa-check-circle"></i> Complete Order
+                    </button>
+                @endif
             @elseif($order->order_status == 'served')
                 <button onclick="updateOrderStatus('completed')" class="btn-save" style="background: #10b981;">
                     <i class="fas fa-check-circle"></i> Complete Order
@@ -151,8 +153,7 @@
         <div class="form-group">
             <label class="form-label">Order Status</label>
             <div class="checkbox-group" style="background: 
-                @if($order->order_status == 'confirmed') #d1fae5
-                @elseif($order->order_status == 'pending') #fef3c7
+                @if($order->order_status == 'pending') #fef3c7
                 @elseif($order->order_status == 'preparing') #dbeafe
                 @elseif($order->order_status == 'ready') #e9d5ff
                 @elseif($order->order_status == 'served') #e0e7ff
@@ -160,17 +161,15 @@
                 @elseif($order->order_status == 'cancelled') #fee2e2
                 @else #f3f4f6 @endif;">
                 <i class="fas fa-
-                    @if($order->order_status == 'confirmed') check-circle
-                    @elseif($order->order_status == 'pending') clock
+                    @if($order->order_status == 'pending') clock
                     @elseif($order->order_status == 'preparing') utensils
                     @elseif($order->order_status == 'ready') bell
-                    @elseif($order->order_status == 'served') hand-holding
+                    @elseif($order->order_status == 'served') utensils
                     @elseif($order->order_status == 'completed') check-double
                     @elseif($order->order_status == 'cancelled') times-circle
                     @else info-circle @endif" 
                    style="color: 
-                    @if($order->order_status == 'confirmed') #10b981
-                    @elseif($order->order_status == 'pending') #d97706
+                    @if($order->order_status == 'pending') #d97706
                     @elseif($order->order_status == 'preparing') #3b82f6
                     @elseif($order->order_status == 'ready') #8b5cf6
                     @elseif($order->order_status == 'served') #6366f1
@@ -178,8 +177,7 @@
                     @elseif($order->order_status == 'cancelled') #ef4444
                     @else #6b7280 @endif;"></i>
                 <span style="color: 
-                    @if($order->order_status == 'confirmed') #065f46
-                    @elseif($order->order_status == 'pending') #92400e
+                    @if($order->order_status == 'pending') #92400e
                     @elseif($order->order_status == 'preparing') #1e40af
                     @elseif($order->order_status == 'ready') #6b21a8
                     @elseif($order->order_status == 'served') #3730a3
@@ -454,7 +452,6 @@
                         justify-content: center;
                         background: 
                             @if($tracking->status == 'pending') #fef3c7
-                            @elseif($tracking->status == 'confirmed') #d1fae5
                             @elseif($tracking->status == 'preparing') #dbeafe
                             @elseif($tracking->status == 'ready') #e9d5ff
                             @elseif($tracking->status == 'served') #e0e7ff
@@ -464,16 +461,14 @@
                         ">
                         <i class="fas fa-
                             @if($tracking->status == 'pending') clock
-                            @elseif($tracking->status == 'confirmed') check-circle
                             @elseif($tracking->status == 'preparing') utensils
                             @elseif($tracking->status == 'ready') bell
-                            @elseif($tracking->status == 'served') hand-holding
+                            @elseif($tracking->status == 'served') utensils
                             @elseif($tracking->status == 'completed') check-double
                             @elseif($tracking->status == 'cancelled') times-circle
                             @else info-circle @endif" 
                            style="color: 
                             @if($tracking->status == 'pending') #d97706
-                            @elseif($tracking->status == 'confirmed') #10b981
                             @elseif($tracking->status == 'preparing') #3b82f6
                             @elseif($tracking->status == 'ready') #8b5cf6
                             @elseif($tracking->status == 'served') #6366f1

@@ -53,7 +53,7 @@ class PaymentController extends Controller
                 'guest_name' => $user ? $user->name : null,
                 'guest_phone' => $user ? $user->phone : null,
                 'total_amount' => $totalAmount,
-                'order_status' => 'confirmed', // Changed to confirmed since payment is processed
+                'order_status' => 'pending', // Changed to confirmed since payment is processed
                 'payment_status' => 'paid', // Set as paid since payment is being processed
                 'order_type' => 'takeaway', // Fixed: use valid enum value
                 'order_source' => 'web', // Fixed: use valid enum value
