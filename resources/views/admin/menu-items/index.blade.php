@@ -130,8 +130,8 @@
                 <tr>
                     <td>
                         <div class="item-info">
-                            @if($item->image_url)
-                                <img src="{{ $item->image_url }}" alt="{{ $item->name }}" class="item-image">
+                            @if($item->image)
+                                <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}" class="item-image">
                             @else
                                 <div class="item-image-placeholder">
                                     <i class="fas fa-utensils"></i>

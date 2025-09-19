@@ -110,7 +110,8 @@ class CartManager {
                     name: itemData.name,
                     price: itemData.price,
                     quantity: itemData.quantity,
-                    notes: itemData.notes
+                    notes: itemData.notes,
+                    image: itemData.image
                 });
             }
 

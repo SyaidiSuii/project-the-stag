@@ -27,6 +27,7 @@ class CartController extends Controller
                     'price' => 'RM ' . number_format($item->unit_price, 2),
                     'quantity' => $item->quantity,
                     'notes' => $item->special_notes,
+                    'image' => $item->menuItem->image_url,
                     'total' => $item->total_price
                 ];
             });

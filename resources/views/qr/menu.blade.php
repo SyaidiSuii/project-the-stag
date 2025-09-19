@@ -37,8 +37,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         @foreach ($items as $item)
                             <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                                @if($item->image_url)
-                                    <img src="{{ $item->image_url }}" alt="{{ $item->name }}" class="w-full h-48 object-cover">
+                                @if($item->image)
+                                    <img src="{{ $item->image }}" alt="{{ $item->name }}" class="w-full h-48 object-cover">
                                 @else
                                     <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
                                         <span class="text-gray-500">No Image</span>

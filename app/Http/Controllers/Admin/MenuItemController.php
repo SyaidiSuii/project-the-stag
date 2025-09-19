@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Models\MenuItem;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
@@ -115,7 +117,7 @@ class MenuItemController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'category_id' => 'required|exists:categories,id',
-            'image_url' => 'nullable|url',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:2048',
             'allergens' => 'nullable|array',
             'allergens.*' => 'string|max:100',
             'preparation_time' => 'nullable|integer|min:1|max:180',
@@ -127,6 +129,17 @@ class MenuItemController extends Controller
         $validated['availability'] = $validated['availability'] ?? true;
         $validated['is_featured'] = $validated['is_featured'] ?? false;
         $validated['preparation_time'] = $validated['preparation_time'] ?? 15;
+
+        // upload image kalau ada
+        if ($request->hasFile('image')) {
+            $category = Category::find($validated['category_id']);
+            $validated['image'] = $this->storeImageToStoragePublic(
+                $request->file('image'),
+                'menu_items',
+                $validated['name'],
+                $category->name ?? null
+            );
+        }
 
         $menuItem = MenuItem::create($validated);
 
@@ -171,7 +184,7 @@ class MenuItemController extends Controller
             'description' => 'nullable|string',
             'price' => 'sometimes|numeric|min:0',
             'category_id' => 'sometimes|exists:categories,id',
-            'image_url' => 'nullable|url',
+            'image' => 'nullable',
             'allergens' => 'nullable|array',
             'allergens.*' => 'string|max:100',
             'preparation_time' => 'nullable|integer|min:1|max:180',
@@ -182,6 +195,29 @@ class MenuItemController extends Controller
         // Handle checkboxes that might not be sent if unchecked
         $validated['availability'] = $request->has('availability');
         $validated['is_featured'] = $request->has('is_featured');
+
+
+        // handle new image
+        if ($request->hasFile('image')) {
+            // delete old file
+            if ($menuItem->image) {
+                $oldFull = storage_path('app/public/' . $menuItem->image);
+                if (file_exists($oldFull)) {
+                    @unlink($oldFull);
+                }
+            }
+
+            // dapatkan nama category
+            $category = Category::find($validated['category_id'] ?? $menuItem->category_id);
+
+            // upload baru
+            $validated['image'] = $this->storeImageToStoragePublic(
+                $request->file('image'),
+                'menu_items',
+                $validated['name'] ?? $menuItem->name,
+                $category->name ?? null
+            );
+        }
 
         $menuItem->update($validated);
 
@@ -303,4 +339,38 @@ class MenuItemController extends Controller
 
         return response()->json($subCategories);
     }
+
+    private function storeImageToStoragePublic(\Illuminate\Http\UploadedFile $file, string $subfolder = 'images', ?string $itemName = null, ?string $categoryName = null): string
+    {
+        if (!$file->isValid()) {
+            throw new \RuntimeException('Uploaded file is not valid');
+        }
+
+        // buat folder penuh: storage/app/public/{subfolder}
+        $dir = storage_path('app/public/' . trim($subfolder, '/'));
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        // extension asal
+        $extension = $file->getClientOriginalExtension() ?: $file->extension();
+
+        // slug untuk item dan kategori
+        $itemSlug = $itemName ? Str::slug($itemName) : 'item';
+        $categorySlug = $categoryName ? Str::slug($categoryName) : 'general';
+
+        // nama fail: item-kategori-tarikh-random.ext
+        $filename = $itemSlug
+            . '_' . $categorySlug
+            . '_' . date('Ymd_His')
+            . '_' . Str::random(6)
+            . '.' . $extension;
+
+        // move file
+        $file->move($dir, $filename);
+
+        // return relative path untuk DB
+        return trim($subfolder, '/') . '/' . $filename;
+    }
+
 }

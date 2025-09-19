@@ -56,8 +56,8 @@
         <div class="form-group">
             <label class="form-label">Item Image</label>
             <div style="border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; background: #f9fafb;">
-                @if($menuItem->image_url)
-                    <img src="{{ $menuItem->image_url }}" alt="{{ $menuItem->name }}" 
+                @if($menuItem->image)
+                    <img src="{{ asset('storage/' . $menuItem->image) }}" alt="{{ $menuItem->name }}" 
                          style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
                 @else
                     <div style="width: 100%; height: 200px; background: #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6b7280;">

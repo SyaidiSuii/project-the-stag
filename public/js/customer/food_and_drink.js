@@ -202,12 +202,23 @@ document.addEventListener('DOMContentLoaded', function() {
             // Get item data - works for both food and drink cards
             const itemName = itemCard.querySelector('.food-name, .drink-name').textContent;
             const itemPrice = itemCard.querySelector('.food-price, .drink-price').textContent;
+            
+            // Check if item has image or just emoji
+            const imgElement = itemCard.querySelector('.food-image img, .drink-image img');
+            const itemImage = imgElement ? imgElement.src : null;
+
+            console.log('Debug cart add:', {
+                itemName,
+                hasImg: !!imgElement,
+                imgSrc: itemImage
+            });
 
             const itemData = {
                 id: itemId,
                 name: itemName,
                 price: itemPrice,
-                quantity: 1
+                quantity: 1,
+                image: itemImage
             };
 
             // Add to cart using hybrid cart manager
@@ -248,7 +259,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemName = itemCard.querySelector('.food-name, .drink-name').textContent;
             const itemPrice = itemCard.querySelector('.food-price, .drink-price').textContent;
             const itemDescription = itemCard.querySelector('.food-description, .drink-description')?.textContent || '';
-            const itemImage = itemCard.querySelector('.food-image img, .drink-image img')?.src || '';
+            
+            // Check if item has image or just emoji for order modal
+            const imgElement = itemCard.querySelector('.food-image img, .drink-image img');
+            const itemImage = imgElement ? imgElement.src : null;
 
             // Show order modal
             showOrderModal(itemId, itemName, itemPrice, itemDescription, itemImage);
@@ -287,6 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const cartCount = document.getElementById('cart-count');
         const totalItems = document.getElementById('total-items');
         const totalAmount = document.getElementById('total-amount');
+        const storageUrl = "{{ asset('storage') }}/"; 
 
         if (!cartItemsContainer) return;
 
@@ -319,7 +334,11 @@ document.addEventListener('DOMContentLoaded', function() {
             cartItems.forEach((item, index) => {
                 const cartItemHTML = `
                     <div class="cart-item">
-                        <div class="cart-item-image">🍽️</div>
+                        <div class="cart-item-image">
+                            ${item.image ? 
+                                `<img src="${item.image}" alt="${item.name}">` : 
+                                `🍽️`
+                            }</div>
                         <div class="cart-item-details">
                             <div class="cart-item-name">${item.name}</div>
                             <div class="cart-item-price">${item.price}</div>

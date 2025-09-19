@@ -43,9 +43,13 @@
               <div class="featured-badge">FEATURED</div>
             @endif
             <div class="food-image">
-              <img src="{{ $item->image_url ? asset($item->image_url) : asset('images/food/placeholder.jpg') }}" 
-                   alt="{{ $item->name }}" 
-                   style="width:100%; height:100%; object-fit:cover; border-radius: 15px;">
+              @if($item->image_url)
+                <img src="{{ $item->image_url }}" 
+                     alt="{{ $item->name }}" 
+                     style="width:100%; height:100%; object-fit:cover; border-radius: 15px;">
+              @else
+                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:3rem;">🍽️</div>
+              @endif
             </div>
             <div class="food-name">{{ $item->name }}</div>
             <div class="food-price">{{ $item->formatted_price }}</div>
@@ -73,9 +77,13 @@
           @foreach($category->menuItems as $item)
             <div class="food-card" data-category="{{ $category->id }}">
               <div class="food-image">
-                <img src="{{ $item->image_url ? asset($item->image_url) : asset('images/food/placeholder.jpg') }}" 
-                     alt="{{ $item->name }}" 
-                     style="width:100%; height:100%; object-fit:cover; border-radius: 15px;">
+                @if($item->image_url)
+                  <img src="{{ $item->image_url }}" 
+                       alt="{{ $item->name }}" 
+                       style="width:100%; height:100%; object-fit:cover; border-radius: 15px;">
+                @else
+                  <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:3rem;">🍽️</div>
+                @endif
               </div>
               <div class="food-name">{{ $item->name }}</div>
               <div class="food-price">{{ $item->formatted_price }}</div>

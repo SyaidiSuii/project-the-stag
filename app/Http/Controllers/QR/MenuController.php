@@ -90,7 +90,7 @@ class MenuController extends Controller
                 'name' => $menuItem->name,
                 'price' => $menuItem->price,
                 'quantity' => $request->quantity,
-                'image_url' => $menuItem->image_url,
+                'image' => $menuItem->image,
             ];
         }
         

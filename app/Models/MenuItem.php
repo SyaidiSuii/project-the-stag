@@ -15,7 +15,7 @@ class MenuItem extends Model
         'description',
         'price',
         'category_id',
-        'image_url',
+        'image',
         'allergens',
         'preparation_time',
         'availability',
@@ -167,5 +167,13 @@ class MenuItem extends Model
     {
         $this->update(['is_featured' => !$this->is_featured]);
         return $this;
+    }
+
+    /**
+     * Get the image URL for display
+     */
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? \Storage::url($this->image) : null;
     }
 }

@@ -16,7 +16,7 @@
         </a>
     </div>
 
-    <form method="POST" action="{{ $menuItem->id ? route('admin.menu-items.update', $menuItem->id) : route('admin.menu-items.store') }}" class="menu-item-form">
+    <form method="POST" action="{{ $menuItem->id ? route('admin.menu-items.update', $menuItem->id) : route('admin.menu-items.store') }}" class="menu-item-form" enctype="multipart/form-data">
         @csrf
         @if($menuItem->id)
             @method('PUT')
@@ -116,15 +116,27 @@
         </div>
 
         <div class="form-group">
-            <label for="image_url" class="form-label">Image URL</label>
+            <label for="image" class="form-label">Image Photo</label>
             <input 
-                type="url" 
-                id="image_url" 
-                name="image_url" 
-                class="form-control @error('image_url') is-invalid @enderror"
-                value="{{ old('image_url', $menuItem->image_url) }}"
-                placeholder="https://example.com/image.jpg">
-            @error('image_url')
+                type="file" 
+                id="image" 
+                name="image" 
+                class="form-control @error('image') is-invalid @enderror"
+                accept="image/*"
+                onchange="previewImage(event)">
+            <div class="image-preview-container mt-2">
+                @if($menuItem->image)
+                    <div class="current-image">
+                        <p class="text-sm text-gray-600">Current image:</p>
+                        <img src="{{ asset('storage/' . $menuItem->image) }}" alt="Current image" class="img-thumbnail" id="currentImage" style="max-width: 200px; max-height: 200px;">
+                    </div>
+                @endif
+                <div class="preview-image mt-2" style="display: none;">
+                    <p class="text-sm text-gray-600">New image preview:</p>
+                    <img id="imagePreview" src="#" alt="Image Preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                </div>
+            </div>
+            @error('image')
                 <div class="form-error">{{ $message }}</div>
             @enderror
         </div>
@@ -223,4 +235,20 @@
 @endsection
 
 @section('scripts')
+<script>
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function(){
+            var output = document.getElementById('imagePreview');
+            output.src = reader.result;
+            document.querySelector('.preview-image').style.display = 'block';
+            
+            var currentImage = document.getElementById('currentImage');
+            if (currentImage) {
+                document.querySelector('.current-image').style.display = 'none';
+            }
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>
 @endsection
