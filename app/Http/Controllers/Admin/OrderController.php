@@ -104,7 +104,7 @@ class OrderController extends Controller
         $order = new Order;
         $users = User::select('id', 'name')->get();
         $tables = Table::where('is_active', true)->select('id', 'table_number', 'status')->get();
-        $reservations = TableReservation::with('table')->whereDate('reservation_date', '>=', now())->get();
+        $reservations = TableReservation::with('table')->whereDate('booking_date', '>=', now())->get();
         $menuItems = MenuItem::where('availability', true)->select('id', 'name', 'price', 'preparation_time')->get();
         
         return view('admin.order.form', compact('order', 'users', 'tables', 'reservations', 'menuItems'));

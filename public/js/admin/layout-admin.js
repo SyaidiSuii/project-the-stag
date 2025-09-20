@@ -24,17 +24,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Collapsible menu functionality
-    const ordersMenu = document.getElementById('ordersMenu');
-    const ordersSubmenu = document.getElementById('ordersSubmenu');
+    const tablesMenu = document.getElementById('tablesMenu');
+    const tablesSubmenu = document.getElementById('tablesSubmenu');
     
     // Check if submenu should be expanded on page load (if any order route is active)
-    if (ordersMenu.classList.contains('active')) {
-        ordersMenu.classList.add('expanded');
-        ordersSubmenu.classList.add('expanded');
+    if (tablesMenu.classList.contains('active')) {
+        tablesMenu.classList.add('expanded');
+        tablesSubmenu.classList.add('expanded');
     }
     
-    ordersMenu.addEventListener('click', () => {
-        ordersMenu.classList.toggle('expanded');
-        ordersSubmenu.classList.toggle('expanded');
+    tablesMenu.addEventListener('click', () => {
+        tablesMenu.classList.toggle('expanded');
+        tablesSubmenu.classList.toggle('expanded');
     });
 });

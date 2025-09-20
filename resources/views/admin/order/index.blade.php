@@ -47,7 +47,7 @@
 <!-- Search and Filter Section -->
 <div class="admin-section">
     <div class="section-header">
-        <h2 class="section-title">Orders</h2>
+        <h2 class="section-title">View Orders</h2>
         <div class="section-controls">
             <a href="{{ route('admin.order.today') }}" class="admin-btn btn-secondary">
                 <div class="admin-nav-icon"><i class="fas fa-calendar-day"></i></div>

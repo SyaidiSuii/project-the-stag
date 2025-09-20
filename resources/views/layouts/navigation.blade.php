@@ -133,21 +133,6 @@
                                        class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.order.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
                                         {{ __('Orders') }}
                                     </a>
-                                    <a href="{{ route('admin.order-item.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.order-item.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
-                                        {{ __('Order Items') }}
-                                    </a>
-                                    <a href="{{ route('admin.quick-reorder.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.quick-reorder.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
-                                        {{ __('Quick Reorders') }}
-                                    </a>
-                                    <a href="{{ route('admin.order-etas.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.order-etas.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
-                                        {{ __('Order ETAS') }}
-                                    </a>
-                                    <a href="{{ route('admin.order-trackings.index') }}" 
-                                       class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 {{ request()->routeIs('admin.order-trackings.index') ? 'bg-gray-100 dark:bg-gray-600' : '' }}">
-                                        {{ __('Order Trackings') }}
                                     </a>
                                 </div>
                             </div>
@@ -231,12 +216,6 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.order.index')" :active="request()->routeIs('admin.order.index')">
                     {{ __('Orders') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.order-item.index')" :active="request()->routeIs('admin.order-item.index')">
-                    {{ __('Order Items') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.order-etas.index')" :active="request()->routeIs('admin.order-etas.index')">
-                    {{ __('Order ETAs') }}
                 </x-responsive-nav-link>
                 
 

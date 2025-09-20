@@ -46,21 +46,21 @@
                 <div class="admin-nav-icon"><i class="fas fa-shopping-bag"></i></div>
                 <div class="admin-nav-text">Order Management</div>
             </a>
-            {{-- <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.order.*') ? 'active' : '' }}" id="ordersMenu">
-                <div class="admin-nav-icon"><i class="fas fa-shopping-bag"></i></div>
-                <div class="admin-nav-text">Orders</div>
+            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.table-reservation.*') ? 'active' : '' }}" id="tablesMenu">
+                <div class="admin-nav-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div class="admin-nav-text">Bookings</div>
                 <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
             </div>
-            <div class="admin-nav-submenu" id="ordersSubmenu">
-                <a href="{{ route('admin.order.index') }}" 
-                    class="admin-nav-subitem {{ request()->routeIs('admin.order.*') ? 'active' : '' }}">
-                    <div class="admin-nav-text">Order Management</div>
+            <div class="admin-nav-submenu" id="tablesSubmenu">
+                <a href="{{ route('admin.table-reservation.index') }}" 
+                    class="admin-nav-subitem {{ request()->routeIs('admin.table-reservation.index') ? 'active' : '' }}">
+                    <div class="admin-nav-text">All Bookings</div>
                 </a>
-            </div> --}}
-            <a href="#" class="admin-nav-item">
-                <div class="admin-nav-icon"><i class="fas fa-calendar-alt"></i></div>
-                <div class="admin-nav-text">Booking</div>
-            </a>
+                <a href="{{ route('admin.table.index') }}" 
+                    class="admin-nav-subitem {{ request()->routeIs('admin.table.index') ? 'active' : '' }}">
+                    <div class="admin-nav-text">All Table</div>
+                </a>
+            </div>
             <a href="#" class="admin-nav-item">
                 <div class="admin-nav-icon"><i class="fas fa-gift"></i></div>
                 <div class="admin-nav-text">Rewards</div>

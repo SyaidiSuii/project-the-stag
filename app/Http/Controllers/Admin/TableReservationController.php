@@ -30,7 +30,7 @@ class TableReservationController extends Controller
 
         // Filter by date
         if ($request->filled('date')) {
-            $query->whereDate('reservation_date', $request->date);
+            $query->whereDate('booking_date', $request->date);
         }
 
         // Filter by table
@@ -38,20 +38,24 @@ class TableReservationController extends Controller
             $query->where('table_id', $request->table_id);
         }
 
-        // Search by guest name or confirmation code
+        // Search by customer name, phone, or confirmation code
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('guest_name', 'like', "%{$search}%")
-                  ->orWhere('guest_phone', 'like', "%{$search}%")
+                $q->where('id', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('confirmation_code', 'like', "%{$search}%")
+                  ->orWhere('guest_name', 'like', "%{$search}%")
                   ->orWhere('guest_email', 'like', "%{$search}%")
-                  ->orWhere('confirmation_code', 'like', "%{$search}%");
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', "%{$search}%");
+                  });
             });
         }
 
-        $reservations = $query->orderBy('reservation_date', 'desc')
-                             ->orderBy('reservation_time', 'desc')
-                             ->paginate(15);
+        $reservations = $query->orderBy('booking_date', 'desc')
+                          ->orderBy('booking_time', 'desc')
+                          ->paginate(15);
 
         $tables = Table::where('is_active', true)->get();
         $statuses = ['pending', 'confirmed', 'seated', 'completed', 'cancelled', 'no_show'];
@@ -77,38 +81,36 @@ class TableReservationController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'user_id' => 'required|exists:users,id',
+            'user_id' => 'nullable|exists:users,id',
             'table_id' => 'nullable|exists:tables,id',
-            'reservation_date' => 'required|date|after_or_equal:today',
-            'reservation_time' => 'required|date_format:H:i',
-            'guest_name' => 'required|string|max:255',
+            'booking_date' => 'required|date|after_or_equal:today',
+            'booking_time' => 'required|date_format:H:i',
+            'guest_name' => 'required_without:user_id|string|max:255',
             'guest_email' => 'nullable|email|max:255',
-            'guest_phone' => 'required|string|max:20',
-            'number_of_guests' => 'required|integer|min:1|max:50',
+            'phone' => 'required|string|max:20',
+            'party_size' => 'required|integer|min:1|max:50',
             'special_requests' => 'nullable|string',
             'status' => 'required|in:pending,confirmed,seated,completed,cancelled,no_show',
             'notes' => 'nullable|string',
-            'auto_release_time' => 'nullable|date|after:now',
         ], [
-            'user_id.required' => 'User is required.',
             'user_id.exists' => 'Selected user does not exist.',
             'table_id.exists' => 'Selected table does not exist.',
-            'reservation_date.required' => 'Reservation date is required.',
-            'reservation_date.after_or_equal' => 'Reservation date must be today or later.',
-            'reservation_time.required' => 'Reservation time is required.',
-            'guest_name.required' => 'Guest name is required.',
-            'guest_phone.required' => 'Guest phone is required.',
-            'number_of_guests.required' => 'Number of guests is required.',
-            'number_of_guests.min' => 'Number of guests must be at least 1.',
-            'number_of_guests.max' => 'Number of guests cannot exceed 50.',
+            'booking_date.required' => 'Booking date is required.',
+            'booking_date.after_or_equal' => 'Booking date must be today or later.',
+            'booking_time.required' => 'Booking time is required.',
+            'guest_name.required_without' => 'Guest name is required when no user is selected.',
+            'phone.required' => 'Phone number is required.',
+            'party_size.required' => 'Party size is required.',
+            'party_size.min' => 'Party size must be at least 1.',
+            'party_size.max' => 'Party size cannot exceed 50.',
         ]);
 
         // Check table availability if table is selected
         if ($request->table_id) {
             $conflictingReservation = $this->checkTableAvailability(
                 $request->table_id,
-                $request->reservation_date,
-                $request->reservation_time
+                $request->booking_date,
+                $request->booking_time
             );
 
             if ($conflictingReservation) {
@@ -153,37 +155,35 @@ class TableReservationController extends Controller
     public function update(Request $request, TableReservation $tableReservation)
     {
         $this->validate($request, [
-            'user_id' => 'required|exists:users,id',
+            'user_id' => 'nullable|exists:users,id',
             'table_id' => 'nullable|exists:tables,id',
-            'reservation_date' => 'required|date',
-            'reservation_time' => 'required|date_format:H:i',
-            'guest_name' => 'required|string|max:255',
+            'booking_date' => 'required|date',
+            'booking_time' => 'required|date_format:H:i',
+            'guest_name' => 'required_without:user_id|string|max:255',
             'guest_email' => 'nullable|email|max:255',
-            'guest_phone' => 'required|string|max:20',
-            'number_of_guests' => 'required|integer|min:1|max:50',
+            'phone' => 'required|string|max:20',
+            'party_size' => 'required|integer|min:1|max:50',
             'special_requests' => 'nullable|string',
             'status' => 'required|in:pending,confirmed,seated,completed,cancelled,no_show',
             'notes' => 'nullable|string',
-            'auto_release_time' => 'nullable|date|after:now',
         ], [
-            'user_id.required' => 'User is required.',
             'user_id.exists' => 'Selected user does not exist.',
             'table_id.exists' => 'Selected table does not exist.',
-            'reservation_date.required' => 'Reservation date is required.',
-            'reservation_time.required' => 'Reservation time is required.',
-            'guest_name.required' => 'Guest name is required.',
-            'guest_phone.required' => 'Guest phone is required.',
-            'number_of_guests.required' => 'Number of guests is required.',
-            'number_of_guests.min' => 'Number of guests must be at least 1.',
-            'number_of_guests.max' => 'Number of guests cannot exceed 50.',
+            'booking_date.required' => 'Booking date is required.',
+            'booking_time.required' => 'Booking time is required.',
+            'guest_name.required_without' => 'Guest name is required when no user is selected.',
+            'phone.required' => 'Phone number is required.',
+            'party_size.required' => 'Party size is required.',
+            'party_size.min' => 'Party size must be at least 1.',
+            'party_size.max' => 'Party size cannot exceed 50.',
         ]);
 
         // Check table availability if table is being changed
         if ($request->table_id && $request->table_id != $tableReservation->table_id) {
             $conflictingReservation = $this->checkTableAvailability(
                 $request->table_id,
-                $request->reservation_date,
-                $request->reservation_time,
+                $request->booking_date,
+                $request->booking_time,
                 $tableReservation->id
             );
 
@@ -239,16 +239,16 @@ class TableReservationController extends Controller
      */
     private function checkTableAvailability($tableId, $date, $time, $excludeId = null)
     {
-        $reservationDateTime = Carbon::parse($date . ' ' . $time);
+        $bookingDateTime = Carbon::parse($date . ' ' . $time);
         $bufferMinutes = 120; // 2 hours buffer between reservations
 
         $query = TableReservation::where('table_id', $tableId)
-            ->whereDate('reservation_date', $date)
+            ->whereDate('booking_date', $date)
             ->whereIn('status', ['confirmed', 'seated', 'pending'])
-            ->where(function($q) use ($reservationDateTime, $bufferMinutes) {
-                $q->whereBetween('reservation_time', [
-                    $reservationDateTime->copy()->subMinutes($bufferMinutes)->format('H:i'),
-                    $reservationDateTime->copy()->addMinutes($bufferMinutes)->format('H:i')
+            ->where(function($q) use ($bookingDateTime, $bufferMinutes) {
+                $q->whereBetween('booking_time', [
+                    $bookingDateTime->copy()->subMinutes($bufferMinutes)->format('H:i'),
+                    $bookingDateTime->copy()->addMinutes($bufferMinutes)->format('H:i')
                 ]);
             });
 
@@ -267,8 +267,8 @@ class TableReservationController extends Controller
         $today = today();
         
         $reservations = TableReservation::with(['table', 'user'])
-            ->whereDate('reservation_date', $today)
-            ->orderBy('reservation_time')
+            ->whereDate('booking_date', $today)
+            ->orderBy('booking_time')
             ->get()
             ->groupBy('status');
 

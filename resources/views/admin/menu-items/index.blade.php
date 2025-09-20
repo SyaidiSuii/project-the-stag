@@ -47,7 +47,7 @@
 <!-- Search and Filter Section -->
 <div class="admin-section">
     <div class="section-header">
-        <h2 class="section-title">Menu Items</h2>
+        <h2 class="section-title">View Menu Items</h2>
         <div class="section-controls">
             {{--  --}}
         </div>

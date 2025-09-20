@@ -1,204 +1,237 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Table Reservations') }}
-        </h2>
-    </x-slot>
+@extends('layouts.admin')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+@section('title', 'Booking Management')
+@section('page-title', 'Booking Management')
 
-            <!-- Action Buttons -->
-            <div class="pb-3 flex justify-between items-center">
-                <a href="{{ route('admin.table-reservation.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
-                    Add New Reservation
-                </a>
-                <a href="{{ route('admin.table-reservation.today') }}" class="items-center px-4 py-2 bg-blue-600 rounded font-semibold text-white hover:bg-blue-700">
-                    Today's Reservations
-                </a>
-            </div>
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/admin/table-managements.css') }}">
+@endsection
 
-            <!-- Filters -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-4">
-                <div class="p-4 bg-gray-50">
-                    <form method="GET" action="{{ route('admin.table-reservation.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div>
-                            <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
-                            <input type="text" name="search" id="search" value="{{ request('search') }}" 
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                   placeholder="Name, phone, email, code...">
-                        </div>
-
-                        <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-                            <select name="status" id="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                <option value="">All Statuses</option>
-                                @foreach($statuses as $status)
-                                    <option value="{{ $status }}" @if(request('status') == $status) selected @endif>
-                                        {{ ucfirst($status) }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div>
-                            <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
-                            <input type="date" name="date" id="date" value="{{ request('date') }}" 
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                        </div>
-
-                        <div>
-                            <label for="table_id" class="block text-sm font-medium text-gray-700">Table</label>
-                            <select name="table_id" id="table_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                <option value="">All Tables</option>
-                                @foreach($tables as $table)
-                                    <option value="{{ $table->id }}" @if(request('table_id') == $table->id) selected @endif>
-                                        {{ $table->table_number }} ({{ $table->capacity }} pax)
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="flex items-end">
-                            <button type="submit"
-                                class="w-full px-4 py-2 bg-indigo-600 !text-white font-semibold 
-                                    rounded-md hover:bg-indigo-700 
-                                    focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                                Filter
-                            </button>
-                        </div>
-                    </form>
-
-                    @if(request()->hasAny(['search', 'status', 'date', 'table_id']))
-                        <div class="mt-3">
-                            <a href="{{ route('admin.table-reservation.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
-                                Clear all filters
-                            </a>
-                        </div>
-                    @endif
-                </div>
-            </div>
-            
-            <!-- Reservations Table -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    
-                    @if(session('message'))
-                        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-                            {{ session('message') }}
-                        </div>
-                    @endif
-                    
-                    <div class="overflow-x-auto">
-                        <table class="w-full min-w-full">
-                            <thead>
-                                <tr class="border-b">
-                                    <th class="text-left py-2">#</th>
-                                    <th class="text-left py-2">Confirmation</th>
-                                    <th class="text-left py-2">Guest</th>
-                                    <th class="text-left py-2">Date & Time</th>
-                                    <th class="text-left py-2">Table</th>
-                                    <th class="text-left py-2">Guests</th>
-                                    <th class="text-left py-2">Status</th>
-                                    <th class="text-left py-2">Created By</th>
-                                    <th class="text-left py-2">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($reservations as $reservation)
-                                <tr class="border-b hover:bg-gray-50">
-                                    <td class="px-6 py-4">{{ ($reservations->currentPage() - 1) * $reservations->perPage() + $loop->iteration }}</td>
-                                    <td class="px-6 py-4">
-                                        <span class="font-mono text-sm font-medium">{{ $reservation->confirmation_code }}</span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div>
-                                            <div class="font-medium">{{ $reservation->guest_name }}</div>
-                                            <div class="text-sm text-gray-600">{{ $reservation->guest_phone }}</div>
-                                            @if($reservation->guest_email)
-                                                <div class="text-sm text-gray-500">{{ $reservation->guest_email }}</div>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div>
-                                            <div class="font-medium">{{ $reservation->reservation_date->format('M d, Y') }}</div>
-                                            <div class="text-sm text-gray-600">{{ \Carbon\Carbon::parse($reservation->reservation_time)->format('h:i A') }}</div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        @if($reservation->table)
-                                            <span class="font-medium">{{ $reservation->table->table_number }}</span>
-                                            <div class="text-sm text-gray-600">{{ $reservation->table->table_type }}</div>
-                                        @else
-                                            <span class="text-gray-500">No table assigned</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span class="font-medium">{{ $reservation->number_of_guests }}</span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span class="px-2 py-1 text-xs rounded capitalize
-                                            @if($reservation->status == 'confirmed') bg-green-100 text-green-800
-                                            @elseif($reservation->status == 'pending') bg-yellow-100 text-yellow-800
-                                            @elseif($reservation->status == 'seated') bg-blue-100 text-blue-800
-                                            @elseif($reservation->status == 'completed') bg-indigo-100 text-indigo-800
-                                            @elseif($reservation->status == 'cancelled') bg-red-100 text-red-800
-                                            @elseif($reservation->status == 'no_show') bg-gray-100 text-gray-800
-                                            @else bg-gray-100 text-gray-800 @endif">
-                                            {{ str_replace('_', ' ', $reservation->status) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm">{{ $reservation->user->name ?? 'Unknown' }}</div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex space-x-2">
-                                            <a href="{{ route('admin.table-reservation.show', $reservation->id) }}" 
-                                               class="relative z-10 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 
-                                                border border-transparent rounded-lg font-medium text-sm text-black shadow">
-                                                View
-                                            </a>
-                                            <a href="{{ route('admin.table-reservation.edit', $reservation->id) }}" 
-                                               class="inline-flex items-center px-2 py-1 bg-gray-800 border border-transparent rounded text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                                                Edit
-                                            </a>
-                                            @if(in_array($reservation->status, ['pending', 'confirmed']))
-                                                <form method="POST" action="{{ route('admin.table-reservation.destroy', $reservation->id) }}" 
-                                                      onsubmit="return confirm('Are you sure to delete this reservation?');" class="inline">
-                                                    <input type="hidden" name="_method" value="DELETE">
-                                                    @csrf
-                                                   <x-danger-button class="text-xs">
-                                                        Delete
-                                                    </x-danger-button>
-                                                </form>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="9" class="px-6 py-8 text-center text-gray-500">
-                                        <div class="flex flex-col items-center">
-                                            <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                                            </svg>
-                                            <p class="text-lg font-medium">No reservations found</p>
-                                            <p class="text-sm">Try adjusting your search criteria or create a new reservation</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="mt-4">
-                        {{ $reservations->withQueryString()->links() }}
-                    </div>
-
-                </div>
-            </div>
+@section('content')
+<!-- Stats Cards -->
+<div class="admin-cards">
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Bookings Today</div>
+            <div class="admin-card-icon icon-blue"><i class="fas fa-calendar-day"></i></div>
         </div>
+        <div class="admin-card-value">0</div>
+        <div class="admin-card-desc">Total reservations for today</div>
     </div>
-</x-app-layout>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Pending Bookings</div>
+            <div class="admin-card-icon icon-green"><i class="fas fa-clock"></i></div>
+        </div>
+        <div class="admin-card-value">0</div>
+        <div class="admin-card-desc">Require confirmation</div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Confirmed Today</div>
+            <div class="admin-card-icon icon-orange"><i class="fas fa-calendar-check"></i></div>
+        </div>
+        <div class="admin-card-value">0</div>
+        <div class="admin-card-desc">Guests arriving today</div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Total Tables</div>
+            <div class="admin-card-icon icon-red"><i class="fas fa-chair"></i></div>
+        </div>
+        <div class="admin-card-value">0</div>
+        <div class="admin-card-desc">Available for booking</div>
+    </div>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="admin-section">
+    <div class="section-header">
+        <h2 class="section-title">View Bookings</h2>
+    </div>
+    
+    @if(session('message'))
+        <div class="alert alert-success">
+            {{ session('message') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-error">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <div class="search-filter">
+        <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search bookings by ID, customer, confirmation..." id="searchInput" value="{{ request('search') }}">
+        </div>
+        <div class="filter-group">
+            <select class="filter-select" id="bookingStatusFilter">
+                <option value="">All Statuses</option>
+                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                <option value="seated" {{ request('status') == 'seated' ? 'selected' : '' }}>Seated</option>
+                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                <option value="no_show" {{ request('status') == 'no_show' ? 'selected' : '' }}>No Show</option>
+            </select>
+            <input type="date" class="filter-select" id="dateFilter" value="{{ request('date') }}">
+        </div>
+        <a href="{{ route('admin.table-reservation.create') }}" class="admin-btn btn-primary">
+            <div class="admin-nav-icon"><i class="fas fa-plus"></i></div>
+            Create New Booking
+        </a>
+    </div>
+
+    <!-- booking Table -->
+    <div class="table-container">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th class="th-order">Booking ID</th>
+                    <th class="th-customer">Customer</th>
+                    <th class="th-type">Date & Time</th>
+                    <th class="th-amount">Part Size</th>
+                    <th class="th-status">Table</th>
+                    <th class="th-eta">Status</th>
+                    <th class="th-time">Order Time</th>
+                    <th class="th-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($reservations as $reservation)
+                <tr>
+                    <td>
+                        <div class="booking-info">
+                            <div class="booking-id">{{ $reservation->id }}</div>
+                            @if($reservation->confirmation_code)
+                                <div class="confirmation-code">{{ $reservation->confirmation_code }}</div>
+                            @endif
+                        </div>
+                    </td>
+                    <td>
+                        <div class="customer-info">
+                            <div class="customer-name">
+                                {{ $reservation->user ? $reservation->user->name : $reservation->guest_name }}
+                            </div>
+                            @if($reservation->phone)
+                                <div class="customer-phone">{{ $reservation->phone }}</div>
+                            @endif
+                            @if(!$reservation->user && $reservation->guest_email)
+                                <div class="customer-email">{{ $reservation->guest_email }}</div>
+                            @endif
+                        </div>
+                    </td>
+                    <td>
+                        <div class="datetime-info">
+                            <div class="booking-date">{{ $reservation->booking_date->format('M d, Y') }}</div>
+                            <div class="booking-time">{{ $reservation->booking_time->format('g:i A') }}</div>
+                        </div>
+                    </td>
+                    <td class="cell-center">
+                        <div class="party-size">{{ $reservation->party_size }} guests</div>
+                    </td>
+                    <td class="cell-center">
+                        <div class="table-info">
+                            @if($reservation->table)
+                                <strong>Table {{ $reservation->table->table_number }}</strong>
+                                <div class="table-type">{{ $reservation->table->table_type }}</div>
+                            @else
+                                <span class="text-muted">Not assigned</span>
+                            @endif
+                        </div>
+                    </td>
+                    <td class="cell-center">
+                        <span class="status status-booking status-{{ str_replace('_', '-', $reservation->status) }}">
+                            {{ str_replace('_', ' ', ucfirst($reservation->status)) }}
+                        </span>
+                    </td>
+                    <td class="cell-center">
+                        <div class="time-info">
+                            <div class="order-date">{{ $reservation->created_at->format('M d') }}</div>
+                            <div class="order-time">{{ $reservation->created_at->format('g:i A') }}</div>
+                        </div>
+                    </td>
+                    <td class="cell-center">
+                        <div class="table-actions">
+                            <!-- Status Update Buttons -->
+                            @if($reservation->status === 'pending')
+                                <button class="action-btn confirm-btn" title="Confirm Booking" onclick="updateBookingStatus({{ $reservation->id }}, 'confirmed')">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="action-btn cancel-btn" title="Cancel Booking" onclick="updateBookingStatus({{ $reservation->id }}, 'cancelled')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            @elseif($reservation->status === 'confirmed')
+                                <button class="action-btn ready-btn" title="Mark as Seated" onclick="updateBookingStatus({{ $reservation->id }}, 'seated')">
+                                    <i class="fas fa-chair"></i>
+                                </button>
+                                <button class="action-btn cancel-btn" title="Mark as No Show" onclick="updateBookingStatus({{ $reservation->id }}, 'no_show')">
+                                    <i class="fas fa-user-times"></i>
+                                </button>
+                            @elseif($reservation->status === 'seated')
+                                <button class="action-btn complete-btn" title="Mark as Completed" onclick="updateBookingStatus({{ $reservation->id }}, 'completed')">
+                                    <i class="fas fa-check-circle"></i>
+                                </button>
+                            @endif
+
+                            <!-- Default Action Buttons -->
+                            <a href="{{ route('admin.table-reservation.show', $reservation->id) }}" 
+                               class="action-btn view-btn" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ route('admin.table-reservation.edit', $reservation->id) }}" 
+                               class="action-btn edit-btn" title="Edit Booking">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            @if(!in_array($reservation->status, ['completed', 'cancelled']))
+                                <form method="POST" action="{{ route('admin.table-reservation.destroy', $reservation->id) }}" style="display: inline;"
+                                      onsubmit="return confirm('Are you sure you want to delete this booking?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="action-btn delete-btn" title="Delete Booking">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="8" class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="empty-state-title">No bookings found</div>
+                        <div class="empty-state-text">
+                            @if(request()->hasAny(['search', 'status', 'date']))
+                                No bookings match your current filters. Try adjusting your search criteria.
+                            @else
+                                No bookings have been made yet.
+                            @endif
+                        </div>
+                        @if(!request()->hasAny(['search', 'status', 'date']))
+                            <div style="margin-top: 20px;">
+                                <a href="{{ route('admin.table-reservation.create') }}" class="admin-btn btn-primary">
+                                    <i class="fas fa-plus"></i> Create First Booking
+                                </a>
+                            </div>
+                        @endif
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+
+</div>
+
+@endsection
+
+@section('scripts')
+<script src="{{ asset('js/admin/.js') }}"></script>
+@endsection
