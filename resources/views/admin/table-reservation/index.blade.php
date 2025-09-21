@@ -105,10 +105,7 @@
                 <tr>
                     <td>
                         <div class="booking-info">
-                            <div class="booking-id">{{ $reservation->id }}</div>
-                            @if($reservation->confirmation_code)
-                                <div class="confirmation-code">{{ $reservation->confirmation_code }}</div>
-                            @endif
+                            <div class="booking-id">BK-{{ $reservation->id }}</div>
                         </div>
                     </td>
                     <td>
@@ -116,8 +113,8 @@
                             <div class="customer-name">
                                 {{ $reservation->user ? $reservation->user->name : $reservation->guest_name }}
                             </div>
-                            @if($reservation->phone)
-                                <div class="customer-phone">{{ $reservation->phone }}</div>
+                            @if($reservation->guest_phone)
+                                <div class="customer-phone">{{ $reservation->guest_phone }}</div>
                             @endif
                             @if(!$reservation->user && $reservation->guest_email)
                                 <div class="customer-email">{{ $reservation->guest_email }}</div>
@@ -126,8 +123,20 @@
                     </td>
                     <td>
                         <div class="datetime-info">
-                            <div class="booking-date">{{ $reservation->booking_date->format('M d, Y') }}</div>
-                            <div class="booking-time">{{ $reservation->booking_time->format('g:i A') }}</div>
+                            <div class="booking-date">
+                                @if($reservation->booking_date instanceof \Carbon\Carbon)
+                                    {{ $reservation->booking_date->format('M d, Y') }}
+                                @else
+                                    {{ \Carbon\Carbon::parse($reservation->booking_date)->format('M d, Y') }}
+                                @endif
+                            </div>
+                            <div class="booking-time">
+                                @if($reservation->booking_time instanceof \Carbon\Carbon)
+                                    {{ $reservation->booking_time->format('g:i A') }}
+                                @else
+                                    {{ \Carbon\Carbon::parse($reservation->booking_time)->format('g:i A') }}
+                                @endif
+                            </div>
                         </div>
                     </td>
                     <td class="cell-center">
@@ -233,5 +242,93 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/admin/.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('bookingStatusFilter');
+    const dateFilter = document.getElementById('dateFilter');
+
+    // Function to apply filters
+    function applyFilters() {
+        const params = new URLSearchParams();
+        
+        // Add search parameter
+        if (searchInput.value.trim()) {
+            params.append('search', searchInput.value.trim());
+        }
+        
+        // Add status filter
+        if (statusFilter.value) {
+            params.append('status', statusFilter.value);
+        }
+        
+        // Add date filter
+        if (dateFilter.value) {
+            params.append('date', dateFilter.value);
+        }
+        
+        // Redirect with parameters
+        const url = '{{ route("admin.table-reservation.index") }}' + (params.toString() ? '?' + params.toString() : '');
+        window.location.href = url;
+    }
+
+    // Search input handler with debounce
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(applyFilters, 500); // 500ms delay
+    });
+
+    // Status filter change handler
+    statusFilter.addEventListener('change', applyFilters);
+
+    // Date filter change handler
+    dateFilter.addEventListener('change', applyFilters);
+
+    // Clear filters function
+    window.clearFilters = function() {
+        searchInput.value = '';
+        statusFilter.value = '';
+        dateFilter.value = '';
+        window.location.href = '{{ route("admin.table-reservation.index") }}';
+    };
+});
+
+// Function to update booking status
+function updateBookingStatus(bookingId, status) {
+    if (!confirm(`Are you sure you want to mark this booking as ${status.replace('_', ' ')}?`)) {
+        return;
+    }
+
+    // Create a form and submit it
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/admin/table-reservation/${bookingId}/status`;
+    
+    // Add CSRF token
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = '_token';
+    csrfToken.value = '{{ csrf_token() }}';
+    form.appendChild(csrfToken);
+    
+    // Add method override for PATCH
+    const methodInput = document.createElement('input');
+    methodInput.type = 'hidden';
+    methodInput.name = '_method';
+    methodInput.value = 'PATCH';
+    form.appendChild(methodInput);
+    
+    // Add status
+    const statusInput = document.createElement('input');
+    statusInput.type = 'hidden';
+    statusInput.name = 'status';
+    statusInput.value = status;
+    form.appendChild(statusInput);
+    
+    // Submit form
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
 @endsection

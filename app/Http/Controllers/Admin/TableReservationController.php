@@ -43,7 +43,7 @@ class TableReservationController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('id', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('guest_phone', 'like', "%{$search}%")
                   ->orWhere('confirmation_code', 'like', "%{$search}%")
                   ->orWhere('guest_name', 'like', "%{$search}%")
                   ->orWhere('guest_email', 'like', "%{$search}%")
@@ -87,7 +87,7 @@ class TableReservationController extends Controller
             'booking_time' => 'required|date_format:H:i',
             'guest_name' => 'required_without:user_id|string|max:255',
             'guest_email' => 'nullable|email|max:255',
-            'phone' => 'required|string|max:20',
+            'guest_phone' => 'required|string|max:20',
             'party_size' => 'required|integer|min:1|max:50',
             'special_requests' => 'nullable|string',
             'status' => 'required|in:pending,confirmed,seated,completed,cancelled,no_show',
@@ -99,7 +99,7 @@ class TableReservationController extends Controller
             'booking_date.after_or_equal' => 'Booking date must be today or later.',
             'booking_time.required' => 'Booking time is required.',
             'guest_name.required_without' => 'Guest name is required when no user is selected.',
-            'phone.required' => 'Phone number is required.',
+            'guest_phone.required' => 'Phone number is required.',
             'party_size.required' => 'Party size is required.',
             'party_size.min' => 'Party size must be at least 1.',
             'party_size.max' => 'Party size cannot exceed 50.',
@@ -161,7 +161,7 @@ class TableReservationController extends Controller
             'booking_time' => 'required|date_format:H:i',
             'guest_name' => 'required_without:user_id|string|max:255',
             'guest_email' => 'nullable|email|max:255',
-            'phone' => 'required|string|max:20',
+            'guest_phone' => 'required|string|max:20',
             'party_size' => 'required|integer|min:1|max:50',
             'special_requests' => 'nullable|string',
             'status' => 'required|in:pending,confirmed,seated,completed,cancelled,no_show',
@@ -172,7 +172,7 @@ class TableReservationController extends Controller
             'booking_date.required' => 'Booking date is required.',
             'booking_time.required' => 'Booking time is required.',
             'guest_name.required_without' => 'Guest name is required when no user is selected.',
-            'phone.required' => 'Phone number is required.',
+            'guest_phone.required' => 'Phone number is required.',
             'party_size.required' => 'Party size is required.',
             'party_size.min' => 'Party size must be at least 1.',
             'party_size.max' => 'Party size cannot exceed 50.',

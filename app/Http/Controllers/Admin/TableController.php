@@ -13,13 +13,44 @@ class TableController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         if (request('cancel')) {
             return redirect()->route('admin.table.index');
         }
 
-        $tables = Table::paginate(10);
+        $query = Table::query();
+
+        // Filter by search (table number, type, location)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('table_number', 'like', "%{$search}%")
+                  ->orWhere('table_type', 'like', "%{$search}%")
+                  ->orWhere('location_description', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by table type
+        if ($request->filled('table_type')) {
+            $query->where('table_type', $request->table_type);
+        }
+
+        // Filter by active status
+        if ($request->filled('active')) {
+            $query->where('is_active', $request->active == '1');
+        }
+
+        $tables = $query->orderBy('table_number')
+                       ->paginate(10)
+                       ->appends($request->query());
+
         return view('admin.table.index', compact('tables'));
     }
 
@@ -38,19 +69,19 @@ class TableController extends Controller
     public function store(Request $request)
     {
         // Define a list of valid amenities for validation
-        $amenitiesList = ['wifi', 'power_outlet', 'window_view', 'air_conditioning', 'heating', 'wheelchair_accessible', 'high_chair_available', 'privacy_screen', 'soundproof', 'tv_screen'];
+        $amenitiesList = ['wifi_available', 'power_outlet', 'window_view', 'air_conditioning', 'heating', 'wheelchair_accessible', 'high_chair_available', 'privacy_screen', 'soundproof', 'tv_screen'];
         
         $this->validate($request, [
             'table_number' => 'required|string|max:10|unique:tables,table_number',
             'capacity' => 'required|integer|min:1|max:50',
             'status' => 'required|in:available,occupied,reserved,maintenance',
-            'qr_code' => 'required|string|max:255|unique:tables,qr_code',
+            'qr_code' => 'nullable|string|max:255|unique:tables,qr_code',
             'nfc_tag_id' => 'nullable|string|max:100|unique:tables,nfc_tag_id',
             'location_description' => 'nullable|string|max:255',
             'coordinates' => 'nullable|array', // Ensures coordinates is an array if present
             'coordinates.lat' => 'nullable|numeric|between:-90,90', // Validates latitude
             'coordinates.lng' => 'nullable|numeric|between:-180,180', // Validates longitude
-            'table_type' => 'required|in:indoor,outdoor,private,vip',
+            'table_type' => 'required|in:indoor,outdoor,vip',
             'amenities' => 'nullable|array', // Ensures amenities is an array if present
             'amenities.*' => ['string', Rule::in($amenitiesList)], // Validates each amenity
             'is_active' => 'nullable|boolean',
@@ -74,6 +105,9 @@ class TableController extends Controller
 
         // Correctly handle the 'is_active' checkbox
         $table->is_active = $request->has('is_active');
+
+        // Handle amenities - let Laravel's casting handle the array conversion
+        $table->amenities = $request->get('amenities', []);
 
         $table->save();
 
@@ -102,19 +136,19 @@ class TableController extends Controller
     public function update(Request $request, Table $table)
     {
         // Define a list of valid amenities for validation
-        $amenitiesList = ['wifi', 'power_outlet', 'window_view', 'air_conditioning', 'heating', 'wheelchair_accessible', 'high_chair_available', 'privacy_screen', 'soundproof', 'tv_screen'];
+        $amenitiesList = ['wifi_available', 'power_outlet', 'window_view', 'air_conditioning', 'heating', 'wheelchair_accessible', 'high_chair_available', 'privacy_screen', 'soundproof', 'tv_screen'];
 
         $this->validate($request, [
             'table_number' => 'required|string|max:10|unique:tables,table_number,' . $table->id,
             'capacity' => 'required|integer|min:1|max:50',
             'status' => 'required|in:available,occupied,reserved,maintenance',
-            'qr_code' => 'required|string|max:255|unique:tables,qr_code,' . $table->id,
+            'qr_code' => 'nullable|string|max:255|unique:tables,qr_code,' . $table->id,
             'nfc_tag_id' => 'nullable|string|max:100|unique:tables,nfc_tag_id,' . $table->id,
             'location_description' => 'nullable|string|max:255',
             'coordinates' => 'nullable|array',
             'coordinates.lat' => 'nullable|numeric|between:-90,90',
             'coordinates.lng' => 'nullable|numeric|between:-180,180',
-            'table_type' => 'required|in:indoor,outdoor,private,vip',
+            'table_type' => 'required|in:indoor,outdoor,vip',
             'amenities' => 'nullable|array',
             'amenities.*' => ['string', Rule::in($amenitiesList)],
             'is_active' => 'nullable|boolean',
@@ -135,15 +169,11 @@ class TableController extends Controller
 
         $table->fill($request->all());
         
-        // Handle coordinates as JSON
-        if ($request->has('coordinates')) {
-            $table->coordinates = json_encode($request->coordinates);
-        }
-        
-        // Handle amenities as JSON
-        if ($request->has('amenities')) {
-            $table->amenities = json_encode($request->amenities);
-        }
+        // Correctly handle the 'is_active' checkbox
+        $table->is_active = $request->has('is_active');
+
+        // Handle amenities - let Laravel's casting handle the array conversion
+        $table->amenities = $request->get('amenities', []);
         
         $table->save();
 

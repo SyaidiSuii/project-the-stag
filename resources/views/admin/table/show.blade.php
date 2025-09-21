@@ -1,240 +1,156 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Table Details') }} - {{ $table->table_number }}
-        </h2>
-    </x-slot>
+@extends('layouts.admin')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    
-                    <div class="flex justify-between items-start mb-6">
-                        <div>
-                            <h3 class="text-lg font-semibold">Table {{ $table->table_number }}</h3>
-                            <p class="text-sm text-gray-600">{{ $table->location_description ?: 'No location specified' }}</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <a href="{{ route('admin.table.edit', $table->id) }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                                Edit Table
-                            </a>
-                            <a href="{{ route('admin.table.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600">
-                                Back to List
-                            </a>
-                        </div>
+@section('title', 'Table Details')
+@section('page-title', 'Table Details')
+
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/admin/table-managements.css') }}">
+@endsection
+
+@section('content')
+<div class="admin-section">
+    <div class="section-header">
+        <h2 class="section-title">{{ $table->table_number ?? 'T-03' }}</h2>
+        <div class="section-controls">
+            <a href="{{ route('admin.table.edit', $table->id ?? 1) }}" class="btn-save">
+                <i class="fas fa-edit"></i> Edit Table
+            </a>
+            <a href="{{ route('admin.table.index') }}" class="btn-cancel">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <!-- Basic Information -->
+    <div class="form-group">
+        <label class="form-label">Basic Information</label>
+        <div style="border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; background: #f9fafb;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div>
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">TABLE NUMBER</span>
+                    <p style="font-size: 18px; font-weight: 700; margin: 4px 0 0 0;">{{ $table->table_number ?? 'T-03' }}</p>
+                </div>
+                
+                <div>
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">CAPACITY</span>
+                    <p style="font-size: 16px; font-weight: 600; margin: 4px 0 0 0;">{{ $table->capacity ?? '4' }} people</p>
+                </div>
+
+                <div>
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">TYPE</span>
+                    <p style="font-size: 16px; font-weight: 600; margin: 4px 0 0 0; text-transform: capitalize;">{{ $table->table_type ?? 'vip' }}</p>
+                </div>
+
+                <div>
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">STATUS</span>
+                    <div style="margin-top: 4px;">
+                        <span style="background: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 12px; font-size: 14px; font-weight: 600; text-transform: capitalize;">
+                            {{ $table->status ?? 'available' }}
+                        </span>
                     </div>
+                </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        
-                        <!-- Basic Information -->
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <h4 class="font-semibold text-gray-800 mb-3">Basic Information</h4>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Table Number:</span>
-                                    <span class="font-medium">{{ $table->table_number }}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Capacity:</span>
-                                    <span class="font-medium">{{ $table->capacity }} people</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Type:</span>
-                                    <span class="px-2 py-1 text-xs rounded capitalize 
-                                        @if($table->table_type == 'vip') bg-purple-100 text-purple-800
-                                        @elseif($table->table_type == 'private') bg-blue-100 text-blue-800
-                                        @elseif($table->table_type == 'outdoor') bg-green-100 text-green-800
-                                        @else bg-gray-100 text-gray-800 @endif">
-                                        {{ $table->table_type }}
-                                    </span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Status:</span>
-                                    <span class="px-2 py-1 text-xs rounded capitalize
-                                        @if($table->status == 'available') bg-green-100 text-green-800
-                                        @elseif($table->status == 'occupied') bg-red-100 text-red-800
-                                        @elseif($table->status == 'reserved') bg-yellow-100 text-yellow-800
-                                        @else bg-gray-100 text-gray-800 @endif">
-                                        {{ $table->status }}
-                                    </span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Active:</span>
-                                    <span class="px-2 py-1 text-xs rounded {{ $table->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                        {{ $table->is_active ? 'Yes' : 'No' }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Technical Details -->
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <h4 class="font-semibold text-gray-800 mb-3">Technical Details</h4>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">QR Code:</span>
-                                    <span class="font-mono text-xs">{{ $table->qr_code }}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">NFC Tag:</span>
-                                    <span class="font-mono text-xs">{{ $table->nfc_tag_id ?: 'Not set' }}</span>
-                                </div>
-                                @if($table->coordinates)
-                                    @php
-                                        $coords = is_array($table->coordinates) ? $table->coordinates : json_decode($table->coordinates, true);
-                                    @endphp
-                                    @if(isset($coords['lat']) && isset($coords['lng']))
-                                    <div>
-                                        <span class="text-gray-600">Coordinates:</span>
-                                        <div class="font-mono text-xs mt-1">
-                                            <div>Lat: {{ $coords['lat'] }}</div>
-                                            <div>Lng: {{ $coords['lng'] }}</div>
-                                        </div>
-                                    </div>
-                                    @endif
-                                @endif
-                            </div>
-                        </div>
-
-                        <!-- Amenities -->
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <h4 class="font-semibold text-gray-800 mb-3">Amenities</h4>
-                            @if($table->amenities)
-                                @php
-                                    $amenities = is_array($table->amenities) ? $table->amenities : json_decode($table->amenities, true);
-                                    $amenityLabels = [
-                                        'wifi' => 'WiFi Available',
-                                        'power_outlet' => 'Power Outlet',
-                                        'window_view' => 'Window View',
-                                        'air_conditioning' => 'Air Conditioning',
-                                        'heating' => 'Heating',
-                                        'wheelchair_accessible' => 'Wheelchair Accessible',
-                                        'high_chair_available' => 'High Chair Available',
-                                        'privacy_screen' => 'Privacy Screen',
-                                        'soundproof' => 'Soundproof',
-                                        'tv_screen' => 'TV Screen',
-                                    ];
-                                @endphp
-                                <div class="space-y-1">
-                                    @forelse($amenities as $amenity)
-                                        <span class="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded mr-1 mb-1">
-                                            {{ $amenityLabels[$amenity] ?? ucfirst(str_replace('_', ' ', $amenity)) }}
-                                        </span>
-                                    @empty
-                                        <p class="text-gray-500 text-sm">No amenities specified</p>
-                                    @endforelse
-                                </div>
-                            @else
-                                <p class="text-gray-500 text-sm">No amenities specified</p>
-                            @endif
-                        </div>
-
+                <div>
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">ACTIVE</span>
+                    <div style="margin-top: 4px;">
+                        <span style="background: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 12px; font-size: 14px; font-weight: 600;">
+                            {{ $table->is_active ?? true ? 'Yes' : 'No' }}
+                        </span>
                     </div>
-
-                    <!-- Location Description -->
-                    @if($table->location_description)
-                    <div class="mt-6 bg-gray-50 p-4 rounded-lg">
-                        <h4 class="font-semibold text-gray-800 mb-3">Location Description</h4>
-                        <p class="text-sm text-gray-700">{{ $table->location_description }}</p>
-                    </div>
-                    @endif
-
-                    <!-- Current Active Session QR Code -->
-                    @php
-                        $activeSession = $table->sessions()->where('status', 'active')->where('expires_at', '>', now())->first();
-                    @endphp
-                    
-                    @if($activeSession)
-                    <div class="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
-                        <h4 class="font-semibold text-green-800 mb-3">Active Session QR Code</h4>
-                        
-                        @if($activeSession->qr_code_png)
-                            <div class="flex items-start gap-4">
-                                <!-- QR Code Image -->
-                                <div class="flex-shrink-0">
-                                    <img src="{{ asset('storage/' . $activeSession->qr_code_png) }}" 
-                                         alt="QR Code for Table {{ $table->table_number }}"
-                                         class="w-32 h-32 border border-green-300 rounded-md">
-                                </div>
-                                
-                                <!-- Session Info & Actions -->
-                                <div class="flex-1">
-                                    <div class="text-sm text-green-700 mb-3">
-                                        <p><strong>Session:</strong> {{ $activeSession->session_code }}</p>
-                                        <p><strong>Expires:</strong> {{ $activeSession->expires_at->format('M d, Y h:i A') }}</p>
-                                        @if($activeSession->guest_name)
-                                            <p><strong>Guest:</strong> {{ $activeSession->guest_name }}</p>
-                                        @endif
-                                    </div>
-                                    
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <button onclick="copyToClipboard('{{ $activeSession->qr_code_url }}')"
-                                                class="px-3 py-2 bg-green-600 text-white text-xs rounded hover:bg-green-700">
-                                            Copy URL
-                                        </button>
-                                        <a href="{{ $activeSession->qr_code_url }}" target="_blank"
-                                           class="px-3 py-2 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 text-center">
-                                            Test QR
-                                        </a>
-                                        <a href="{{ route('admin.table-sessions.qr-download', [$activeSession, 'png']) }}"
-                                           class="px-3 py-2 bg-purple-600 text-white text-xs rounded hover:bg-purple-700 text-center">
-                                            Download PNG
-                                        </a>
-                                        <a href="{{ route('admin.table-sessions.qr-download', [$activeSession, 'svg']) }}"
-                                           class="px-3 py-2 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 text-center">
-                                            Download SVG
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        @else
-                            <!-- Fallback if QR image not generated -->
-                            <div class="text-sm text-green-700 mb-2">
-                                <p><strong>Session:</strong> {{ $activeSession->session_code }}</p>
-                                <p><strong>URL:</strong> <span class="break-all">{{ $activeSession->qr_code_url }}</span></p>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="copyToClipboard('{{ $activeSession->qr_code_url }}')"
-                                        class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
-                                    Copy URL
-                                </button>
-                                <a href="{{ $activeSession->qr_code_url }}" target="_blank"
-                                   class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
-                                    Test QR
-                                </a>
-                            </div>
-                        @endif
-                    </div>
-                    @else
-                    <div class="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
-                        <h4 class="font-semibold text-gray-800 mb-2">QR Code Status</h4>
-                        <p class="text-sm text-gray-600">No active session. QR code will be generated when a new session is created.</p>
-                    </div>
-                    @endif
-
                 </div>
             </div>
         </div>
     </div>
-    
-    <script>
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(function() {
-            // Show success feedback
-            const button = event.target;
-            const originalText = button.textContent;
-            button.textContent = 'Copied!';
-            button.classList.add('bg-green-800');
+
+    <!-- Technical Details -->
+    <div class="form-group">
+        <label class="form-label">Technical Details</label>
+        <div style="border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; background: #f9fafb;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div>
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">QR CODE</span>
+                    <p style="font-family: monospace; font-size: 16px; font-weight: 700; margin: 4px 0 0 0;">{{ $table->qr_code ?? 'QR_T03' }}</p>
+                </div>
+                
+                <div>
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">NFC TAG</span>
+                    <p style="color: #6b7280; margin: 4px 0 0 0;">{{ $table->nfc_tag ?? 'Not set' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Amenities -->
+    <div class="form-group">
+        <label class="form-label">Amenities</label>
+        <div style="border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; background: #f9fafb;">
+            @php
+            // Define all possible amenities with their labels and icons
+            $allAmenities = [
+                'wifi_available' => ['label' => 'WiFi Available', 'icon' => 'wifi'],
+                'power_outlet' => ['label' => 'Power Outlet', 'icon' => 'plug'],
+                'window_view' => ['label' => 'Window View', 'icon' => 'eye'],
+                'air_conditioning' => ['label' => 'Air Conditioning', 'icon' => 'snowflake'],
+                'heating' => ['label' => 'Heating', 'icon' => 'fire'],
+                'wheelchair_accessible' => ['label' => 'Wheelchair Accessible', 'icon' => 'wheelchair'],
+                'high_chair_available' => ['label' => 'High Chair Available', 'icon' => 'baby'],
+                'privacy_screen' => ['label' => 'Privacy Screen', 'icon' => 'shield-alt'],
+                'soundproof' => ['label' => 'Soundproof', 'icon' => 'volume-mute'],
+                'tv_screen' => ['label' => 'TV Screen', 'icon' => 'tv']
+            ];
+
+            // Get only the amenities that are saved in the database
+            $savedAmenities = is_array($table->amenities) ? $table->amenities : [];
+            @endphp
             
-            setTimeout(() => {
-                button.textContent = originalText;
-                button.classList.remove('bg-green-800');
-            }, 2000);
-        }).catch(function(err) {
-            console.error('Could not copy text: ', err);
-            alert('Could not copy to clipboard');
-        });
-    }
-    </script>
-</x-app-layout>
+            @if(count($savedAmenities) > 0)
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                    @foreach($savedAmenities as $amenityKey)
+                        @if(isset($allAmenities[$amenityKey]))
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-{{ $allAmenities[$amenityKey]['icon'] }}" style="color: #10b981; width: 16px;"></i>
+                                <span style="font-size: 14px; color: #374151;">{{ $allAmenities[$amenityKey]['label'] }}</span>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+            @else
+                <div style="text-align: center; padding: 20px;">
+                    <i class="fas fa-info-circle" style="font-size: 48px; color: #6b7280; margin-bottom: 12px;"></i>
+                    <p style="color: #6b7280; font-weight: 600; margin: 0;">No amenities selected for this table.</p>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <!-- QR Code Status -->
+    <div class="form-group">
+        <label class="form-label">QR Code Status</label>
+        <div style="border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; background: #f9fafb;">
+            <div style="text-align: center; padding: 20px;">
+                <i class="fas fa-qrcode" style="font-size: 48px; color: #6b7280; margin-bottom: 12px;"></i>
+                <p style="color: #6b7280; font-weight: 600; margin: 0;">No active session. QR code will be generated when a new session is created.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="form-actions">
+        <a href="{{ route('admin.table.edit', $table->id ?? 1) }}" class="btn-save">
+            <i class="fas fa-edit"></i>
+            Edit Table
+        </a>
+        <a href="{{ route('admin.table.index') }}" class="btn-cancel">
+            <i class="fas fa-list"></i>
+            Back to List
+        </a>
+    </div>
+</div>
+
+@endsection
+
+@section('scripts')
+<script>
+// Table management scripts can be added here
+</script>
+@endsection

@@ -75,11 +75,22 @@
                 <option value="reserved" {{ request('status') == 'reserved' ? 'selected' : '' }}>Reserved</option>
                 <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
             </select>
+            <select class="filter-select" id="tableTypeFilter">
+                <option value="">All Types</option>
+                <option value="indoor" {{ request('table_type') == 'indoor' ? 'selected' : '' }}>Indoor</option>
+                <option value="outdoor" {{ request('table_type') == 'outdoor' ? 'selected' : '' }}>Outdoor</option>
+                <option value="vip" {{ request('table_type') == 'vip' ? 'selected' : '' }}>VIP</option>
+            </select>
             <select class="filter-select" id="tableActiveFilter">
                 <option value="">All Tables</option>
                 <option value="1" {{ request('active') == '1' ? 'selected' : '' }}>Active Only</option>
                 <option value="0" {{ request('active') == '0' ? 'selected' : '' }}>Inactive Only</option>
             </select>
+            @if(request()->hasAny(['search', 'status', 'table_type', 'active']))
+                <button type="button" class="admin-btn btn-secondary" onclick="clearFilters()">
+                    <i class="fas fa-times"></i> Clear Filters
+                </button>
+            @endif
         </div>
         <a href="{{ route('admin.table.create') }}" class="admin-btn btn-primary">
             <div class="admin-nav-icon"><i class="fas fa-plus"></i></div>
@@ -194,13 +205,13 @@
                         </div>
                         <div class="empty-state-title">No tables found</div>
                         <div class="empty-state-text">
-                            @if(request()->hasAny(['search', 'status']))
+                            @if(request()->hasAny(['search', 'status', 'table_type', 'active']))
                                 No tables match your current filters. Try adjusting your search criteria.
                             @else
                                 No tables have been created yet.
                             @endif
                         </div>
-                        @if(!request()->hasAny(['search', 'status']))
+                        @if(!request()->hasAny(['search', 'status', 'table_type', 'active']))
                             <div style="margin-top: 20px;">
                                 <a href="{{ route('admin.table.create') }}" class="admin-btn btn-primary">
                                     <i class="fas fa-plus"></i> Create First Table
@@ -214,11 +225,111 @@
         </table>
     </div>
 
+    <!-- Pagination -->
+    @if($tables->hasPages())
+        <div class="pagination-wrapper">
+            {{ $tables->links() }}
+        </div>
+    @endif
 
 </div>
 
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/admin/.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('tableStatusFilter');
+    const typeFilter = document.getElementById('tableTypeFilter');
+    const activeFilter = document.getElementById('tableActiveFilter');
+
+    // Function to apply filters
+    function applyFilters() {
+        const params = new URLSearchParams();
+        
+        // Add search parameter
+        if (searchInput.value.trim()) {
+            params.append('search', searchInput.value.trim());
+        }
+        
+        // Add status filter
+        if (statusFilter.value) {
+            params.append('status', statusFilter.value);
+        }
+        
+        // Add table type filter
+        if (typeFilter.value) {
+            params.append('table_type', typeFilter.value);
+        }
+        
+        // Add active filter
+        if (activeFilter.value) {
+            params.append('active', activeFilter.value);
+        }
+        
+        // Redirect with parameters
+        const url = '{{ route("admin.table.index") }}' + (params.toString() ? '?' + params.toString() : '');
+        window.location.href = url;
+    }
+
+    // Search input handler with debounce
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(applyFilters, 500); // 500ms delay
+    });
+
+    // Filter change handlers
+    statusFilter.addEventListener('change', applyFilters);
+    typeFilter.addEventListener('change', applyFilters);
+    activeFilter.addEventListener('change', applyFilters);
+
+    // Clear filters function
+    window.clearFilters = function() {
+        searchInput.value = '';
+        statusFilter.value = '';
+        typeFilter.value = '';
+        activeFilter.value = '';
+        window.location.href = '{{ route("admin.table.index") }}';
+    };
+});
+
+// Function to update table status
+function updateTableStatus(tableId, status) {
+    if (!confirm(`Are you sure you want to change this table status to ${status}?`)) {
+        return;
+    }
+
+    // Create a form and submit it
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/admin/table/${tableId}/status`;
+    
+    // Add CSRF token
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = '_token';
+    csrfToken.value = '{{ csrf_token() }}';
+    form.appendChild(csrfToken);
+    
+    // Add method override for PATCH
+    const methodInput = document.createElement('input');
+    methodInput.type = 'hidden';
+    methodInput.name = '_method';
+    methodInput.value = 'PATCH';
+    form.appendChild(methodInput);
+    
+    // Add status
+    const statusInput = document.createElement('input');
+    statusInput.type = 'hidden';
+    statusInput.name = 'status';
+    statusInput.value = status;
+    form.appendChild(statusInput);
+    
+    // Submit form
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
 @endsection

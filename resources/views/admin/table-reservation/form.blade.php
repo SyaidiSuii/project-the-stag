@@ -86,16 +86,16 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="phone" class="form-label">Guest Phone *</label>
+                    <label for="guest_phone" class="form-label">Guest Phone *</label>
                     <input 
                         type="text" 
-                        id="phone" 
-                        name="phone" 
-                        class="form-control @error('phone') is-invalid @enderror"
-                        value="{{ old('phone', $reservation->phone) }}"
+                        id="guest_phone" 
+                        name="guest_phone" 
+                        class="form-control @error('guest_phone') is-invalid @enderror"
+                        value="{{ old('guest_phone', $reservation->guest_phone) }}"
                         placeholder="Enter phone number"
                         required>
-                    @error('phone')
+                    @error('guest_phone')
                         <div class="form-error">{{ $message }}</div>
                     @enderror
                 </div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\TableLayoutConfig;
+use App\Models\Table;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -19,34 +20,10 @@ class TableLayoutConfigController extends Controller
             return redirect()->route('admin.table-layout-config.index');
         }
 
-        $query = TableLayoutConfig::query();
+        // Fetch all active tables with their layout positions
+        $tables = Table::where('is_active', true)->get();
 
-        // Search by layout name
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where('layout_name', 'like', "%{$search}%");
-        }
-
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('is_active', $request->status);
-        }
-
-        // Filter by canvas size
-        if ($request->filled('canvas_size')) {
-            $canvasSize = $request->canvas_size;
-            $dimensions = explode('x', $canvasSize);
-            if (count($dimensions) === 2) {
-                $query->where('canvas_width', $dimensions[0])
-                      ->where('canvas_height', $dimensions[1]);
-            }
-        }
-
-        $layouts = $query->orderBy('is_active', 'desc')
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(12);
-
-        return view('admin.table-layout-config.index', compact('layouts'));
+        return view('admin.table-layout-config.index', compact('tables'));
     }
 
     /**
@@ -365,5 +342,104 @@ class TableLayoutConfigController extends Controller
         ];
 
         return response()->json($stats);
+    }
+
+    /**
+     * Save table layout positions
+     */
+    public function saveLayout(Request $request)
+    {
+        $request->validate([
+            'tables' => 'required|array',
+            'tables.*.id' => 'required|exists:tables,id',
+            'tables.*.x' => 'required|numeric',
+            'tables.*.y' => 'required|numeric',
+        ]);
+
+        foreach ($request->tables as $tableData) {
+            $table = Table::find($tableData['id']);
+            if ($table) {
+                $coordinates = $table->coordinates ?? [];
+                $coordinates['x'] = $tableData['x'];
+                $coordinates['y'] = $tableData['y'];
+                $table->coordinates = $coordinates;
+                $table->save();
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Layout saved successfully']);
+    }
+
+    /**
+     * Add new table to layout
+     */
+    public function addTable(Request $request)
+    {
+        $request->validate([
+            'table_number' => 'required|string|unique:tables,table_number',
+            'capacity' => 'required|integer|min:1|max:50',
+            'table_type' => 'required|in:indoor,outdoor,vip',
+            'x' => 'required|numeric',
+            'y' => 'required|numeric',
+        ]);
+
+        $table = new Table();
+        $table->table_number = $request->table_number;
+        $table->capacity = $request->capacity;
+        $table->table_type = $request->table_type;
+        $table->status = 'available';
+        $table->qr_code = null; // Will be generated later if needed
+        $table->coordinates = [
+            'x' => $request->x,
+            'y' => $request->y
+        ];
+        $table->is_active = true;
+        $table->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Table added successfully',
+            'table' => $table
+        ]);
+    }
+
+    /**
+     * Update table details
+     */
+    public function updateTable(Request $request, $tableId)
+    {
+        $table = Table::findOrFail($tableId);
+        
+        $request->validate([
+            'table_number' => 'required|string|unique:tables,table_number,' . $table->id,
+            'capacity' => 'required|integer|min:1|max:50',
+            'table_type' => 'required|in:indoor,outdoor,vip',
+        ]);
+
+        $table->update([
+            'table_number' => $request->table_number,
+            'capacity' => $request->capacity,
+            'table_type' => $request->table_type,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Table updated successfully',
+            'table' => $table
+        ]);
+    }
+
+    /**
+     * Delete table from layout
+     */
+    public function deleteTable($tableId)
+    {
+        $table = Table::findOrFail($tableId);
+        $table->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Table deleted successfully'
+        ]);
     }
 }

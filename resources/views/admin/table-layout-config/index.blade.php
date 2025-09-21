@@ -1,185 +1,400 @@
-<!-- index.blade.php for Table Layout Config -->
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Table Layout Configurations') }}
-        </h2>
-    </x-slot>
+@extends('layouts.admin')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+@section('title', 'Table Management')
+@section('page-title', 'Table Management')
 
-            <!-- Action Buttons -->
-            <div class="pb-3 flex justify-between items-center">
-                <a href="{{ route('admin.table-layout-config.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
-                    Add New Layout
-                </a>
-                <div class="text-sm text-gray-600">
-                    Total Layouts: {{ $layouts->total() }}
-                </div>
-            </div>
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/admin/table-managements.css') }}">
+@endsection
 
-            <!-- Filters -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-4">
-                <div class="p-4 bg-gray-50">
-                    <form method="GET" action="{{ route('admin.table-layout-config.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
-                            <input type="text" name="search" id="search" value="{{ request('search') }}" 
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                   placeholder="Layout name...">
-                        </div>
-
-                        <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-                            <select name="status" id="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                <option value="">All Status</option>
-                                <option value="1" @if(request('status') === '1') selected @endif>Active</option>
-                                <option value="0" @if(request('status') === '0') selected @endif>Inactive</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label for="canvas_size" class="block text-sm font-medium text-gray-700">Canvas Size</label>
-                            <select name="canvas_size" id="canvas_size" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                <option value="">All Sizes</option>
-                                <option value="800x600" @if(request('canvas_size') === '800x600') selected @endif>800x600</option>
-                                <option value="1024x768" @if(request('canvas_size') === '1024x768') selected @endif>1024x768</option>
-                                <option value="1200x800" @if(request('canvas_size') === '1200x800') selected @endif>1200x800</option>
-                            </select>
-                        </div>
-
-                        <div class="flex items-end">
-                            <button type="submit"
-                                class="w-full px-4 py-2 bg-indigo-600 !text-white font-semibold 
-                                    rounded-md hover:bg-indigo-700 
-                                    focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                                Filter
-                            </button>
-                        </div>
-                    </form>
-
-                    @if(request()->hasAny(['search', 'status', 'canvas_size']))
-                        <div class="mt-3">
-                            <a href="{{ route('admin.table-layout-config.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
-                                Clear all filters
-                            </a>
-                        </div>
-                    @endif
-                </div>
-            </div>
-            
-            <!-- Layouts Grid/Table -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    
-                    @if(session('message'))
-                        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-                            {{ session('message') }}
-                        </div>
-                    @endif
-                    
-                    <!-- Grid View for Layouts -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        @forelse($layouts as $layout)
-                        <div class="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                            <!-- Layout Preview -->
-                            <div class="bg-gray-100 h-48 flex items-center justify-center relative">
-                                @if($layout->floor_plan_image)
-                                    <img src="{{ Storage::url($layout->floor_plan_image) }}" 
-                                         alt="{{ $layout->layout_name }}" 
-                                         class="max-w-full max-h-full object-contain">
-                                @else
-                                    <div class="text-center text-gray-500">
-                                        <svg class="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                        </svg>
-                                        <p class="text-sm">No image</p>
-                                    </div>
-                                @endif
-                                
-                                <!-- Status Badge -->
-                                <div class="absolute top-2 right-2">
-                                    <span class="px-2 py-1 text-xs rounded-full
-                                        {{ $layout->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                        {{ $layout->is_active ? 'Active' : 'Inactive' }}
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <!-- Layout Info -->
-                            <div class="p-4">
-                                <h3 class="font-semibold text-lg mb-2">{{ $layout->layout_name }}</h3>
-                                
-                                <div class="space-y-1 text-sm text-gray-600 mb-4">
-                                    <div class="flex items-center">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
-                                        </svg>
-                                        {{ $layout->canvas_width }} x {{ $layout->canvas_height }}
-                                    </div>
-                                    <div class="flex items-center">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        Created {{ $layout->created_at->diffForHumans() }}
-                                    </div>
-                                    @if($layout->updated_at != $layout->created_at)
-                                    <div class="flex items-center">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                                        </svg>
-                                        Updated {{ $layout->updated_at->diffForHumans() }}
-                                    </div>
-                                    @endif
-                                </div>
-
-                                <!-- Action Buttons -->
-                                <div class="flex space-x-2">
-                                    <a href="{{ route('admin.table-layout-config.show', $layout->id) }}" 
-                                       class="relative z-10 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 
-                                                border border-transparent rounded-lg font-medium text-sm text-black shadow">
-                                        View
-                                    </a>
-                                    <a href="{{ route('admin.table-layout-config.edit', $layout->id) }}" 
-                                       class="flex-1 text-center px-3 py-2 bg-gray-800 text-white text-sm rounded hover:bg-gray-700">
-                                        Edit
-                                    </a>
-                                    <form method="POST" action="{{ route('admin.table-layout-config.destroy', $layout->id) }}" 
-                                          onsubmit="return confirm('Are you sure to delete this layout configuration?');" class="inline">
-                                        <input type="hidden" name="_method" value="DELETE">
-                                        @csrf
-                                        <button type="submit" class="px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700">
-                                            Delete
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        @empty
-                        <div class="col-span-full">
-                            <div class="text-center py-12">
-                                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                </svg>
-                                <h3 class="text-lg font-medium text-gray-900 mb-2">No layout configurations found</h3>
-                                <p class="text-gray-500 mb-6">Create your first table layout configuration to get started.</p>
-                                <a href="{{ route('admin.table-layout-config.create') }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                                    Create Layout
-                                </a>
-                            </div>
-                        </div>
-                        @endforelse
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="mt-6">
-                        {{ $layouts->withQueryString()->links() }}
-                    </div>
-
-                </div>
-            </div>
+@section('content')
+<div class="admin-section" id="layout-section" style="display: block;">
+      <div class="section-header">
+        <h2 class="section-title">Table Layout Editor</h2>
+        <div class="admin-actions">
+            <button class="admin-btn btn-secondary" id="add-vvip-room-btn" aria-label="Add VVIP room">
+              <i class="fas fa-crown" aria-hidden="true"></i> Add VVIP Room
+            </button>
+            <button class="admin-btn btn-secondary" id="add-square-table-btn" aria-label="Add square table">
+              <i class="fas fa-plus" aria-hidden="true"></i> Add Square Table
+            </button>
+            <button class="admin-btn btn-secondary" id="add-rectangle-table-btn" aria-label="Add rectangle table">
+              <i class="fas fa-plus" aria-hidden="true"></i> Add Rectangle Table
+            </button>
+            <button class="admin-btn btn-danger" id="reset-layout-btn" aria-label="Reset layout">
+              <i class="fas fa-undo" aria-hidden="true"></i> Reset
+            </button>
+            <button class="admin-btn btn-primary" id="save-layout-btn" aria-label="Save layout">
+              <i class="fas fa-save" aria-hidden="true"></i> Save Layout
+            </button>
         </div>
+      </div>
+      
+      <div id="layout-editor-container" role="application" aria-label="Table layout editor">
+        @foreach($tables as $table)
+          @php
+            $coordinates = $table->coordinates ?? [];
+            $x = $coordinates['x'] ?? (30 + (($loop->index % 5) * 110));
+            $y = $coordinates['y'] ?? (30 + (floor($loop->index / 5) * 100));
+            $tableClass = match($table->table_type) {
+              'vip' => 'vvip',
+              'outdoor' => 'rectangle',
+              default => 'square'
+            };
+          @endphp
+          <div class="layout-table {{ $tableClass }}" 
+               id="table-{{ $table->id }}" 
+               data-table-id="{{ $table->id }}"
+               style="left: {{ $x }}px; top: {{ $y }}px;">
+            {{ $table->table_number }}
+            <span class="table-capacity-display">{{ $table->capacity }}p</span>
+          </div>
+        @endforeach
+      </div>
+      
+      <!-- Table Editor Panel -->
+      <div id="table-editor-panel" role="dialog" aria-labelledby="panel-title" aria-hidden="true" style="display: none;">
+        <div class="panel-header">
+          <h3 id="panel-title">Edit Table</h3>
+          <button id="close-panel-btn" aria-label="Close panel">×</button>
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label for="table-name-input">Table Name / ID</label>
+            <input type="text" id="table-name-input" placeholder="e.g., T-01" aria-describedby="table-name-help">
+          </div>
+          <div class="form-group">
+            <label for="table-capacity-input">Capacity</label>
+            <input type="number" id="table-capacity-input" min="1" placeholder="e.g., 4" aria-describedby="table-capacity-help">
+          </div>
+          <div class="form-group">
+            <label for="table-shape-select">Table Shape</label>
+            <select id="table-shape-select" aria-describedby="table-shape-help">
+              <option value="square">Square</option>
+              <option value="rectangle">Rectangle</option>
+              <option value="round">Round</option>
+              <option value="vvip">VVIP Room</option>
+            </select>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <button class="panel-btn" id="save-table-btn">Apply Changes</button>
+          <button class="panel-btn-danger" id="delete-table-btn">Delete Table</button>
+        </div>
+      </div>
     </div>
-</x-app-layout>
+
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let isDragging = false;
+    let draggedElement = null;
+    let offset = { x: 0, y: 0 };
+    let currentTable = null;
+
+    // Make tables draggable
+    function makeDraggable(element) {
+        element.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            draggedElement = this;
+            const rect = this.getBoundingClientRect();
+            const containerRect = document.getElementById('layout-editor-container').getBoundingClientRect();
+            offset.x = e.clientX - rect.left;
+            offset.y = e.clientY - rect.top;
+            
+            this.style.cursor = 'grabbing';
+            e.preventDefault();
+        });
+
+        element.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            openEditPanel(this);
+        });
+    }
+
+    // Initialize draggable for existing tables
+    document.querySelectorAll('.layout-table').forEach(makeDraggable);
+
+    // Mouse move handler
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging || !draggedElement) return;
+
+        const container = document.getElementById('layout-editor-container');
+        const containerRect = container.getBoundingClientRect();
+        
+        let newX = e.clientX - containerRect.left - offset.x;
+        let newY = e.clientY - containerRect.top - offset.y;
+
+        // Keep within container bounds
+        newX = Math.max(0, Math.min(newX, container.offsetWidth - draggedElement.offsetWidth));
+        newY = Math.max(0, Math.min(newY, container.offsetHeight - draggedElement.offsetHeight));
+
+        draggedElement.style.left = newX + 'px';
+        draggedElement.style.top = newY + 'px';
+    });
+
+    // Mouse up handler
+    document.addEventListener('mouseup', function() {
+        if (isDragging && draggedElement) {
+            draggedElement.style.cursor = 'grab';
+            isDragging = false;
+            draggedElement = null;
+        }
+    });
+
+    // Open edit panel
+    function openEditPanel(tableElement) {
+        currentTable = tableElement;
+        const tableId = tableElement.dataset.tableId;
+        
+        // Get table name by removing the capacity span content
+        const capacitySpan = tableElement.querySelector('.table-capacity-display');
+        const fullText = tableElement.textContent;
+        const capacityText = capacitySpan ? capacitySpan.textContent : '';
+        const tableName = fullText.replace(capacityText, '').trim();
+        
+        const capacity = capacitySpan ? capacitySpan.textContent.replace('p', '') : '';
+        
+        document.getElementById('table-name-input').value = tableName;
+        document.getElementById('table-capacity-input').value = capacity;
+        
+        // Set table shape based on class
+        let shape = 'square';
+        if (tableElement.classList.contains('rectangle')) shape = 'rectangle';
+        else if (tableElement.classList.contains('vvip')) shape = 'vvip';
+        document.getElementById('table-shape-select').value = shape;
+        
+        // Change panel title for editing
+        document.getElementById('panel-title').textContent = 'Edit Table';
+        
+        document.getElementById('table-editor-panel').style.display = 'flex';
+        document.getElementById('table-editor-panel').setAttribute('aria-hidden', 'false');
+    }
+
+    // Close panel
+    document.getElementById('close-panel-btn').addEventListener('click', function() {
+        document.getElementById('table-editor-panel').style.display = 'none';
+        document.getElementById('table-editor-panel').setAttribute('aria-hidden', 'true');
+        currentTable = null;
+    });
+
+    // Save table changes
+    document.getElementById('save-table-btn').addEventListener('click', function() {
+        const tableName = document.getElementById('table-name-input').value;
+        const capacity = document.getElementById('table-capacity-input').value;
+        const shape = document.getElementById('table-shape-select').value;
+
+        if (!tableName || !capacity) {
+            showNotification('Please fill all required fields', 'error');
+            return;
+        }
+
+        if (currentTable) {
+            // Edit existing table
+            const tableId = currentTable.dataset.tableId;
+
+            // Update table display
+            currentTable.innerHTML = tableName + '<span class="table-capacity-display">' + capacity + 'p</span>';
+            
+            // Update table class
+            currentTable.className = 'layout-table ' + (shape === 'vvip' ? 'vvip' : shape);
+
+            // Save to server
+            fetch(`{{ route('admin.api.table-layouts.update-table', ':id') }}`.replace(':id', tableId), {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    table_number: tableName,
+                    capacity: capacity,
+                    table_type: shape === 'vvip' ? 'vip' : (shape === 'rectangle' ? 'outdoor' : 'indoor')
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Table updated successfully', 'success');
+                } else {
+                    showNotification('Error updating table', 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('Error updating table', 'error');
+            });
+        } else {
+            // Add new table
+            const tableType = shape === 'vvip' ? 'vip' : (shape === 'rectangle' ? 'outdoor' : 'indoor');
+
+            fetch('{{ route("admin.api.table-layouts.add-table") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    table_number: tableName,
+                    capacity: capacity,
+                    table_type: tableType,
+                    x: 50,
+                    y: 50
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Create new table element
+                    const newTable = document.createElement('div');
+                    newTable.className = 'layout-table ' + shape;
+                    newTable.id = 'table-' + data.table.id;
+                    newTable.dataset.tableId = data.table.id;
+                    newTable.style.left = '50px';
+                    newTable.style.top = '50px';
+                    newTable.innerHTML = tableName + '<span class="table-capacity-display">' + capacity + 'p</span>';
+                    
+                    document.getElementById('layout-editor-container').appendChild(newTable);
+                    makeDraggable(newTable);
+                    
+                    showNotification('Table added successfully', 'success');
+                } else {
+                    showNotification('Error adding table', 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('Error adding table', 'error');
+            });
+        }
+
+        document.getElementById('table-editor-panel').style.display = 'none';
+    });
+
+    // Delete table
+    document.getElementById('delete-table-btn').addEventListener('click', function() {
+        if (!currentTable || !confirm('Are you sure you want to delete this table?')) return;
+
+        const tableId = currentTable.dataset.tableId;
+
+        fetch(`{{ route('admin.api.table-layouts.delete-table', ':id') }}`.replace(':id', tableId), {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                currentTable.remove();
+                showNotification('Table deleted successfully', 'success');
+                document.getElementById('table-editor-panel').style.display = 'none';
+            } else {
+                showNotification('Error deleting table', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error deleting table', 'error');
+        });
+    });
+
+    // Save layout
+    document.getElementById('save-layout-btn').addEventListener('click', function() {
+        const tables = [];
+        document.querySelectorAll('.layout-table').forEach(function(table) {
+            if (table.dataset.tableId) {
+                tables.push({
+                    id: table.dataset.tableId,
+                    x: parseInt(table.style.left.replace('px', '')),
+                    y: parseInt(table.style.top.replace('px', ''))
+                });
+            }
+        });
+
+        fetch('{{ route("admin.api.table-layouts.save-layout") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ tables: tables })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Layout saved successfully', 'success');
+            } else {
+                showNotification('Error saving layout', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error saving layout', 'error');
+        });
+    });
+
+    // Add new table buttons
+    document.getElementById('add-square-table-btn').addEventListener('click', function() {
+        addNewTable('square');
+    });
+
+    document.getElementById('add-rectangle-table-btn').addEventListener('click', function() {
+        addNewTable('rectangle');
+    });
+
+    document.getElementById('add-vvip-room-btn').addEventListener('click', function() {
+        addNewTable('vvip');
+    });
+
+    // Add new table function
+    function addNewTable(shape) {
+        currentTable = null; // Mark as new table
+        
+        // Clear the form
+        document.getElementById('table-name-input').value = '';
+        document.getElementById('table-capacity-input').value = '';
+        
+        // Set default shape
+        const shapeValue = shape === 'vvip' ? 'vvip' : shape;
+        document.getElementById('table-shape-select').value = shapeValue;
+        
+        // Change panel title for adding
+        document.getElementById('panel-title').textContent = 'Add New Table';
+        
+        // Show the modal
+        document.getElementById('table-editor-panel').style.display = 'flex';
+        document.getElementById('table-editor-panel').setAttribute('aria-hidden', 'false');
+    }
+
+    // Reset layout
+    document.getElementById('reset-layout-btn').addEventListener('click', function() {
+        if (!confirm('Are you sure you want to reset the layout? This will reload the page.')) return;
+        location.reload();
+    });
+
+    // Notification function
+    function showNotification(message, type) {
+        // Create a simple notification
+        const notification = document.createElement('div');
+        notification.className = 'notification ' + type;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            z-index: 9999;
+            ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+});
+</script>
+@endsection

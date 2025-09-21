@@ -183,6 +183,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('active', [TableLayoutConfigController::class, 'getActiveLayouts'])->name('active');
             Route::get('{tableLayoutConfig}', [TableLayoutConfigController::class, 'getLayoutDetails'])->name('details');
             Route::get('statistics', [TableLayoutConfigController::class, 'getStatistics'])->name('statistics');
+            Route::post('save-layout', [TableLayoutConfigController::class, 'saveLayout'])->name('save-layout');
+            Route::post('add-table', [TableLayoutConfigController::class, 'addTable'])->name('add-table');
+            Route::put('update-table/{tableId}', [TableLayoutConfigController::class, 'updateTable'])->name('update-table');
+            Route::delete('delete-table/{tableId}', [TableLayoutConfigController::class, 'deleteTable'])->name('delete-table');
         });
         Route::resource('table-layout-config', TableLayoutConfigController::class);
 

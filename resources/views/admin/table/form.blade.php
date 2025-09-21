@@ -91,12 +91,9 @@
                         id="table_type" 
                         name="table_type" 
                         class="form-control @error('table_type') is-invalid @enderror">
-                        <option value="standard" {{ old('table_type', $table->table_type) == 'standard' ? 'selected' : '' }}>Standard</option>
+                        <option value="indoor" {{ old('table_type', $table->table_type) == 'indoor' ? 'selected' : '' }}>Indoor</option>
                         <option value="vip" {{ old('table_type', $table->table_type) == 'vip' ? 'selected' : '' }}>VIP</option>
-                        <option value="booth" {{ old('table_type', $table->table_type) == 'booth' ? 'selected' : '' }}>Booth</option>
-                        <option value="bar" {{ old('table_type', $table->table_type) == 'bar' ? 'selected' : '' }}>Bar</option>
                         <option value="outdoor" {{ old('table_type', $table->table_type) == 'outdoor' ? 'selected' : '' }}>Outdoor</option>
-                        <option value="private" {{ old('table_type', $table->table_type) == 'private' ? 'selected' : '' }}>Private Dining</option>
                     </select>
                     @error('table_type')
                         <div class="form-error">{{ $message }}</div>

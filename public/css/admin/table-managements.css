@@ -770,6 +770,34 @@
       background: #e5e7eb;
       color: var(--text-2);
     }
+    
+    /* Table specific status styles */
+    .status-available {
+      background: #d1fae5;
+      color: var(--success);
+    }
+    .status-occupied {
+      background: #fee2e2;
+      color: var(--danger);
+    }
+    .status-reserved {
+      background: #ffedd5;
+      color: var(--warning);
+    }
+    .status-maintenance {
+      background: #e5e7eb;
+      color: var(--text-2);
+    }
+    
+    /* Active/Inactive status styles */
+    .status-active {
+      background: #d1fae5;
+      color: var(--success);
+    }
+    .status-inactive {
+      background: #fee2e2;
+      color: var(--danger);
+    }
     /* Column widths for booking table */
     .admin-table .th-booking-id { width: 12%; }
     .admin-table .th-customer { width: 14%; }

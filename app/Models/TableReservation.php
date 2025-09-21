@@ -14,12 +14,12 @@ class TableReservation extends Model
     protected $fillable = [
         'user_id',
         'table_id',
-        'reservation_date',
-        'reservation_time',
+        'booking_date',
+        'booking_time',
         'guest_name',
         'guest_email',
         'guest_phone',
-        'number_of_guests',
+        'party_size',
         'special_requests',
         'status',
         'confirmation_code',
@@ -49,7 +49,11 @@ class TableReservation extends Model
         static::creating(function ($reservation) {
             if (empty($reservation->confirmation_code)) {
                 do {
-                    $code = strtoupper(Str::random(6));
+                    // Format: BK-YYYYMMDD-XXXX
+                    $prefix = 'BK';
+                    $date = now()->format('Ymd'); // 20250920
+                    $random = strtoupper(Str::random(4)); // XYZ1
+                    $code = $prefix . '-' . $date . '-' . $random;
                 } while (static::where('confirmation_code', $code)->exists());
                 $reservation->confirmation_code = $code;
             }

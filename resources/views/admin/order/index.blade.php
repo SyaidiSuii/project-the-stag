@@ -137,8 +137,8 @@
                     <td>
                         <div class="order-info">
                             {{-- <div class="order-id">#{{ $order->id }}</div> --}}
-                            @if($order->confirmation_code)
-                                <div class="confirmation-code">{{ $order->confirmation_code }}</div>
+                            @if($order->id)
+                                <div class="confirmation-code">ORD-{{ $order->id }}</div>
                             @endif
                             @if($order->is_rush_order)
                                 <span class="status status-rush">
