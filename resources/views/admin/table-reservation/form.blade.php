@@ -22,6 +22,33 @@
         </a>
     </div>
 
+    <!-- Display Validation Errors -->
+    @if($errors->any())
+        <div class="form-group">
+            <div style="background: #fee2e2; border: 1px solid #ef4444; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                <h4 style="color: #991b1b; margin: 0 0 12px 0; font-size: 16px;">
+                    <i class="fas fa-exclamation-triangle"></i> Please fix the following errors:
+                </h4>
+                <ul style="margin: 0; padding-left: 20px; color: #991b1b;">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    @endif
+
+    <!-- Display Success Message -->
+    @if(session('message'))
+        <div class="form-group">
+            <div style="background: #d1fae5; border: 1px solid #10b981; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                <p style="color: #065f46; margin: 0; font-weight: 500;">
+                    <i class="fas fa-check-circle"></i> {{ session('message') }}
+                </p>
+            </div>
+        </div>
+    @endif
+
     @if($reservation->id)
         <form method="POST" action="{{ route('admin.table-reservation.update', $reservation->id) }}" class="reservation-form">
             @method('PUT')
@@ -280,6 +307,36 @@
 <script>
 // Add any specific JavaScript for table reservation form here
 document.addEventListener('DOMContentLoaded', function() {
+    // Debug form submission
+    const reservationForm = document.querySelector('.reservation-form');
+    if (reservationForm) {
+        reservationForm.addEventListener('submit', function(e) {
+            console.log('Form submission detected');
+            
+            // Check if all required fields are filled
+            const requiredFields = reservationForm.querySelectorAll('[required]');
+            let hasErrors = false;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    console.log('Missing required field:', field.name);
+                    hasErrors = true;
+                    field.style.borderColor = '#ef4444';
+                } else {
+                    field.style.borderColor = '';
+                }
+            });
+            
+            if (hasErrors) {
+                e.preventDefault();
+                alert('Please fill in all required fields');
+                return false;
+            }
+            
+            // If validation passes, allow form to submit normally
+            console.log('Form validation passed, submitting...');
+        });
+    }
     // Auto-update table capacity info when table is selected
     const tableSelect = document.getElementById('table_id');
     const partySizeInput = document.getElementById('party_size');

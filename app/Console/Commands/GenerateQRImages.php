@@ -29,7 +29,7 @@ class GenerateQRImages extends Command
         
         if ($sessionCode) {
             // Generate QR for specific session
-            $session = \App\Models\TableSession::where('session_code', $sessionCode)->first();
+            $session = \App\Models\TableQrcode::where('session_code', $sessionCode)->first();
             
             if (!$session) {
                 $this->error("Session with code '{$sessionCode}' not found.");
@@ -44,7 +44,7 @@ class GenerateQRImages extends Command
             
         } else {
             // Generate QR for all active sessions without images
-            $sessions = \App\Models\TableSession::where('status', 'active')
+            $sessions = \App\Models\TableQrcode::where('status', 'active')
                 ->where('expires_at', '>', now())
                 ->whereNull('qr_code_png')
                 ->get();

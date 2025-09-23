@@ -27,7 +27,6 @@
         <div style="border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; background: #f9fafb;">
             <form method="POST" action="{{ route('admin.table-reservation.update-status', $tableReservation->id) }}" style="display: flex; gap: 12px; align-items: end;">
                 @csrf
-                @method('PATCH')
                 <div style="flex: 1;">
                     <label style="font-size: 12px; color: #6b7280; font-weight: 600; display: block; margin-bottom: 4px;">New Status</label>
                     <select name="status" class="form-control" style="margin-bottom: 0;">

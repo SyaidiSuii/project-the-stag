@@ -312,12 +312,8 @@ function updateBookingStatus(bookingId, status) {
     csrfToken.value = '{{ csrf_token() }}';
     form.appendChild(csrfToken);
     
-    // Add method override for PATCH
-    const methodInput = document.createElement('input');
-    methodInput.type = 'hidden';
-    methodInput.name = '_method';
-    methodInput.value = 'PATCH';
-    form.appendChild(methodInput);
+    // Using POST method as defined in routes
+    // No method override needed since route expects POST
     
     // Add status
     const statusInput = document.createElement('input');

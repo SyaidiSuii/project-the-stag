@@ -4,7 +4,7 @@ namespace App\Http\Controllers\QR;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\TableSession;
+use App\Models\TableQrcode;
 use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -25,7 +25,7 @@ class MenuController extends Controller
         }
         
         // Find and validate session
-        $session = TableSession::where('session_code', $sessionCode)
+        $session = TableQrcode::where('session_code', $sessionCode)
             ->with(['table', 'reservation'])
             ->first();
             
@@ -38,11 +38,14 @@ class MenuController extends Controller
         }
         
         // Get available menu items
-        $menuItems = MenuItem::where('availability', true)
-            ->orderBy('category')
-            ->orderBy('name')
+        $menuItems = MenuItem::with('category')
+            ->where('availability', true)
+            ->join('categories', 'menu_items.category_id', '=', 'categories.id')
+            ->orderBy('categories.name')
+            ->orderBy('menu_items.name')
+            ->select('menu_items.*')
             ->get()
-            ->groupBy('category');
+            ->groupBy('category.name');
             
         // Get cart from session if exists
         $cartKey = 'qr_cart_' . $session->session_code;
@@ -63,7 +66,7 @@ class MenuController extends Controller
             'quantity' => 'required|integer|min:1|max:10',
         ]);
         
-        $session = TableSession::where('session_code', $request->session_code)
+        $session = TableQrcode::where('session_code', $request->session_code)
             ->where('status', 'active')
             ->first();
             
@@ -117,7 +120,7 @@ class MenuController extends Controller
             'quantity' => 'required|integer|min:0|max:10',
         ]);
         
-        $session = TableSession::where('session_code', $request->session_code)
+        $session = TableQrcode::where('session_code', $request->session_code)
             ->where('status', 'active')
             ->first();
             
@@ -156,7 +159,7 @@ class MenuController extends Controller
     {
         $sessionCode = $request->get('session');
         
-        $session = TableSession::where('session_code', $sessionCode)
+        $session = TableQrcode::where('session_code', $sessionCode)
             ->with(['table'])
             ->first();
             
@@ -183,7 +186,7 @@ class MenuController extends Controller
             'special_instructions' => 'nullable|string|max:500',
         ]);
         
-        $session = TableSession::where('session_code', $request->session_code)
+        $session = TableQrcode::where('session_code', $request->session_code)
             ->with(['table'])
             ->where('status', 'active')
             ->first();
@@ -256,7 +259,7 @@ class MenuController extends Controller
         $order = Order::where('confirmation_code', $request->order_code)
             ->where('guest_phone', $request->phone)
             ->where('order_type', 'qr_table')
-            ->with(['items.menuItem', 'tableSession.table', 'trackings'])
+            ->with(['items.menuItem', 'tableQrcode.table', 'trackings'])
             ->first();
             
         if (!$order) {
@@ -301,7 +304,7 @@ class MenuController extends Controller
             'message' => 'nullable|string|max:255',
         ]);
         
-        $session = TableSession::where('session_code', $request->session_code)
+        $session = TableQrcode::where('session_code', $request->session_code)
             ->with(['table'])
             ->first();
             

@@ -46,7 +46,7 @@
                 <div class="admin-nav-icon"><i class="fas fa-shopping-bag"></i></div>
                 <div class="admin-nav-text">Order Management</div>
             </a>
-            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.table-reservation.*') || request()->routeIs('admin.table.*') || request()->routeIs('admin.table-layout-config.*') ? 'active' : '' }}" id="tablesMenu">
+            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.table-reservation.*') || request()->routeIs('admin.table.*') || request()->routeIs('admin.table-layout-config.*') || request()->routeIs('admin.table-qrcodes.*') ? 'active' : '' }}" id="tablesMenu">
                 <div class="admin-nav-icon"><i class="fas fa-calendar-alt"></i></div>
                 <div class="admin-nav-text">Bookings</div>
                 <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
@@ -55,6 +55,10 @@
                 <a href="{{ route('admin.table-reservation.index') }}" 
                     class="admin-nav-subitem {{ request()->routeIs('admin.table-reservation.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">All Bookings</div>
+                </a>
+                <a href="{{ route('admin.table-qrcodes.index') }}" 
+                    class="admin-nav-subitem {{ request()->routeIs('admin.table-qrcodes.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">QR Codes Generate</div>
                 </a>
                 <a href="{{ route('admin.table.index') }}" 
                     class="admin-nav-subitem {{ request()->routeIs('admin.table.*') ? 'active' : '' }}">

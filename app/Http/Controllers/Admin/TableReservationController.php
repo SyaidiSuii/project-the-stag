@@ -133,7 +133,7 @@ class TableReservationController extends Controller
      */
     public function show(TableReservation $tableReservation)
     {
-        $tableReservation->load(['user', 'table', 'tableSession']);
+        $tableReservation->load(['user', 'table', 'tableQrcode']);
         return view('admin.table-reservation.show', compact('tableReservation'));
     }
 
@@ -221,7 +221,7 @@ class TableReservationController extends Controller
         ]);
 
         // Load relationships to prevent errors
-        $tableReservation->load(['table', 'tableSession']);
+        $tableReservation->load(['table', 'tableQrcode']);
         
         $tableReservation->status = $request->status;
         

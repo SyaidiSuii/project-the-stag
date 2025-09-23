@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('table_reservations', function (Blueprint $table) {
             // Rename columns to match new naming convention
-            $table->renameColumn('reservation_date', 'booking_date');
+            $table->renameColumn('booking_date', 'booking_date');
             $table->renameColumn('reservation_time', 'booking_time');
             $table->renameColumn('guest_phone', 'phone');
             $table->renameColumn('number_of_guests', 'party_size');
@@ -30,7 +30,7 @@ return new class extends Migration
     {
         Schema::table('table_reservations', function (Blueprint $table) {
             // Reverse the column renames
-            $table->renameColumn('booking_date', 'reservation_date');
+            $table->renameColumn('booking_date', 'booking_date');
             $table->renameColumn('booking_time', 'reservation_time');
             $table->renameColumn('phone', 'guest_phone');
             $table->renameColumn('party_size', 'number_of_guests');

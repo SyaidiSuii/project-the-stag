@@ -32,7 +32,7 @@ class TableReservation extends Model
     ];
 
     protected $casts = [
-        'reservation_date' => 'date',
+        'booking_date' => 'date',
         'reservation_time' => 'datetime:H:i',
         'confirmed_at' => 'datetime',
         'seated_at' => 'datetime',
@@ -131,21 +131,21 @@ class TableReservation extends Model
         return $this->belongsTo(Table::class);
     }
     
-    public function tableSession()
+    public function tableQrcode()
     {
-        return $this->hasOne(TableSession::class, 'reservation_id');
+        return $this->hasOne(TableQrcode::class, 'reservation_id');
     }
     
     // Helper methods
     public function hasActiveSession()
     {
-        return $this->tableSession && $this->tableSession->isActive();
+        return $this->tableQrcode && $this->tableQrcode->isActive();
     }
     
     public function getQRCodeUrl()
     {
         if ($this->hasActiveSession()) {
-            return $this->tableSession->qr_code_url;
+            return $this->tableQrcode->qr_code_url;
         }
         return null;
     }

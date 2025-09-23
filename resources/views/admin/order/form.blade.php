@@ -169,7 +169,7 @@
                         <option value="{{ $reservation->id }}" 
                                 {{ old('reservation_id', $order->reservation_id) == $reservation->id ? 'selected' : '' }}>
                             {{ $reservation->confirmation_code }} - {{ $reservation->guest_name }} 
-                            ({{ $reservation->reservation_date->format('M d') }} {{ \Carbon\Carbon::parse($reservation->reservation_time)->format('H:i') }})
+                            ({{ $reservation->booking_date->format('M d') }} {{ \Carbon\Carbon::parse($reservation->reservation_time)->format('H:i') }})
                         </option>
                     @endforeach
                 </select>

@@ -92,7 +92,7 @@
           <div class="booking-header">
             <div class="booking-info">
               <h3>Table Reservation #{{ $reservation->confirmation_code }}</h3>
-              <div class="order-date">{{ $reservation->reservation_date->format('M j') }}, {{ $reservation->reservation_time->format('g:i A') }}</div>
+              <div class="order-date">{{ $reservation->booking_date->format('M j') }}, {{ $reservation->reservation_time->format('g:i A') }}</div>
             </div>
             <div class="order-status status-{{ $reservation->status }}">{{ ucfirst($reservation->status) }}</div>
           </div>

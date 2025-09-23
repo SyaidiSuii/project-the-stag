@@ -28,7 +28,7 @@ class OrdersController extends Controller
         // Get customer's table reservations
         $reservations = TableReservation::with('table')
             ->where('user_id', $userId)
-            ->orderBy('reservation_date', 'desc')
+            ->orderBy('booking_date', 'desc')
             ->orderBy('reservation_time', 'desc')
             ->get();
         

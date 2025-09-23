@@ -37,12 +37,12 @@ class Table extends Model
 
     public function sessions()
     {
-        return $this->hasMany(TableSession::class);
+        return $this->hasMany(TableQrcode::class);
     }
 
     public function currentSession()
     {
-        return $this->hasOne(TableSession::class)
+        return $this->hasOne(TableQrcode::class)
                     ->where('status', 'active')
                     ->where('expires_at', '>', now())
                     ->latest();

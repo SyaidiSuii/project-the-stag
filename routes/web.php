@@ -11,7 +11,7 @@ use App\Http\Controllers\Admin\SaleAnalyticsController;
 use App\Http\Controllers\Admin\PushNotificationController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleManagementController;
-use App\Http\Controllers\Admin\TableSessionController;
+use App\Http\Controllers\Admin\TableQrcodeController;
 use App\Http\Controllers\QR\MenuController as QRMenuController;
 use App\Http\Controllers\Admin\MenuCustomizationController;
 use App\Http\Controllers\Admin\QuickReorderController;
@@ -190,18 +190,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
         Route::resource('table-layout-config', TableLayoutConfigController::class);
 
-        // Table Sessions
-        Route::prefix('table-sessions')->name('table-sessions.')->group(function () {
-            Route::get('active', [TableSessionController::class, 'active'])->name('active');
-            Route::post('{tableSession}/complete', [TableSessionController::class, 'complete'])->name('complete');
-            Route::post('{tableSession}/extend', [TableSessionController::class, 'extend'])->name('extend');
-            Route::post('{tableSession}/regenerate-qr', [TableSessionController::class, 'regenerateQR'])->name('regenerate-qr');
-            Route::get('{tableSession}/qr-code', [TableSessionController::class, 'qrCode'])->name('qr-code');
-            Route::get('{tableSession}/qr-download/{format}', [TableSessionController::class, 'downloadQR'])->name('qr-download')->where('format', 'png|svg');
-            Route::get('{tableSession}/qr-preview/{format?}', [TableSessionController::class, 'previewQR'])->name('qr-preview');
-            Route::post('expire-old', [TableSessionController::class, 'expireOldSessions'])->name('expire-old');
+        // Table QR Codes
+        Route::prefix('table-qrcodes')->name('table-qrcodes.')->group(function () {
+            Route::get('active', [TableQrcodeController::class, 'active'])->name('active');
+            Route::post('{tableQrcode}/complete', [TableQrcodeController::class, 'complete'])->name('complete');
+            Route::post('{tableQrcode}/extend', [TableQrcodeController::class, 'extend'])->name('extend');
+            Route::post('{tableQrcode}/regenerate-qr', [TableQrcodeController::class, 'regenerateQR'])->name('regenerate-qr');
+            Route::get('{tableQrcode}/qr-code', [TableQrcodeController::class, 'qrCode'])->name('qr-code');
+            Route::get('{tableQrcode}/qr-download/{format}', [TableQrcodeController::class, 'downloadQR'])->name('download-qr')->where('format', 'png|svg');
+            Route::get('{tableQrcode}/qr-preview/{format?}', [TableQrcodeController::class, 'previewQR'])->name('qr-preview');
+            Route::get('{tableQrcode}/print', [TableQrcodeController::class, 'printQR'])->name('print');
+            Route::post('expire-old', [TableQrcodeController::class, 'expireOldSessions'])->name('expire-old');
         });
-        Route::resource('table-sessions', TableSessionController::class);
+        Route::resource('table-qrcodes', TableQrcodeController::class);
 
         // ---------------------------------------------
         // MENU MANAGEMENT

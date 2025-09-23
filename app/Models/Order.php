@@ -13,7 +13,7 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'table_id',
-        'table_session_id',
+        'table_qrcode_id',
         'reservation_id',
         'order_type',
         'order_source',
@@ -80,15 +80,15 @@ class Order extends Model
         return $this->hasMany(OrderEtas::class);
     }
 
-    public function tableSession()
+    public function tableQrcode()
     {
-        return $this->belongsTo(TableSession::class, 'table_session_id');
+        return $this->belongsTo(TableQrcode::class, 'table_qrcode_id');
     }
 
     // Helper methods
     public function isQROrder()
     {
-        return $this->order_type === 'qr_table' && !empty($this->table_session_id);
+        return $this->order_type === 'qr_table' && !empty($this->table_qrcode_id);
     }
 
     public function isWebsiteOrder()

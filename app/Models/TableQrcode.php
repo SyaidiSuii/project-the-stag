@@ -14,7 +14,7 @@ use Endroid\QrCode\ErrorCorrectionLevel;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Writer\SvgWriter;
 
-class TableSession extends Model
+class TableQrcode extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -91,7 +91,7 @@ class TableSession extends Model
 
     public function orders()
     {
-        return $this->hasMany(Order::class, 'table_session_id');
+        return $this->hasMany(Order::class, 'table_qrcode_id');
     }
 
     // Helper Methods
