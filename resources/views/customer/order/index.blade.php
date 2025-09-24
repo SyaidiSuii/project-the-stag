@@ -78,7 +78,11 @@
             @elseif($order->order_status === 'cancelled')
               <button class="btn btn-primary reorder-btn" data-order-id="{{ $order->id }}">Reorder</button>
             @endif
-            <button class="btn btn-secondary view-details-btn" data-order-id="{{ $order->id }}">View Details</button>
+            @if($order->payment_status === 'unpaid')
+              <button class="btn btn-primary pay-now-btn" data-order-id="{{ $order->id }}">Pay Now</button>
+            @else
+              <button class="btn btn-secondary view-details-btn" data-order-id="{{ $order->id }}">View Details</button>
+            @endif
           </div>
         </div>
         @empty
@@ -92,7 +96,7 @@
           <div class="booking-header">
             <div class="booking-info">
               <h3>Table Reservation #{{ $reservation->confirmation_code }}</h3>
-              <div class="order-date">{{ $reservation->booking_date->format('M j') }}, {{ $reservation->reservation_time->format('g:i A') }}</div>
+              <div class="order-date">{{ $reservation->booking_date->format('M j') }}, {{ $reservation->booking_time->format('g:i A') }}</div>
             </div>
             <div class="order-status status-{{ $reservation->status }}">{{ ucfirst($reservation->status) }}</div>
           </div>
@@ -256,6 +260,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const orderId = reorderBtn.getAttribute('data-order-id');
             console.log('Reorder Order ID:', orderId); // Debug log
             showReorderModal(orderId);
+        }
+    });
+    
+    // Pay Now Button Click Handler
+    document.addEventListener('click', function(e) {
+        const payNowBtn = e.target.closest('.pay-now-btn');
+        if (payNowBtn) {
+            e.preventDefault();
+            console.log('Pay now clicked'); // Debug log
+            const orderId = payNowBtn.getAttribute('data-order-id');
+            console.log('Pay Now Order ID:', orderId); // Debug log
+            // Redirect to booking payment page
+            window.location.href = `/customer/booking/${orderId}/payment`;
         }
     });
     

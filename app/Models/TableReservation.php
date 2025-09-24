@@ -28,16 +28,14 @@ class TableReservation extends Model
         'completed_at',
         'notes',
         'reminder_sent',
-        'auto_release_time',
     ];
 
     protected $casts = [
         'booking_date' => 'date',
-        'reservation_time' => 'datetime:H:i',
+        'booking_time' => 'datetime:H:i',
         'confirmed_at' => 'datetime',
         'seated_at' => 'datetime',
         'completed_at' => 'datetime',
-        'auto_release_time' => 'datetime',
         'reminder_sent' => 'boolean',
     ];
 

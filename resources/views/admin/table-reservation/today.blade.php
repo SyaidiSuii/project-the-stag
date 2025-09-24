@@ -148,7 +148,7 @@
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
-                                            {{ \Carbon\Carbon::parse($reservation->reservation_time)->format('h:i A') }}
+                                            {{ \Carbon\Carbon::parse($reservation->booking_time)->format('h:i A') }}
                                         </div>
                                         <div class="flex items-center">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,7 +259,7 @@
                                     <div>
                                         <p class="font-medium">{{ $reservation->guest_name }}</p>
                                         <p class="text-sm text-gray-600">
-                                            {{ \Carbon\Carbon::parse($reservation->reservation_time)->format('h:i A') }} - 
+                                            {{ \Carbon\Carbon::parse($reservation->booking_time)->format('h:i A') }} - 
                                             {{ $reservation->number_of_guests }} guests
                                             @if($reservation->table)
                                                 - Table {{ $reservation->table->table_number }}

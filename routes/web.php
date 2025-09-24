@@ -25,6 +25,7 @@ use App\Http\Controllers\Customer\BookingController as CustomerBookingController
 use App\Http\Controllers\Customer\AccountController as CustomerAccountController;
 use App\Http\Controllers\Customer\PaymentController as CustomerPaymentController;
 use App\Http\Controllers\Customer\CartController as CustomerCartController;
+use App\Http\Controllers\Customer\BookingPaymentController as CustomerBookingPaymentController;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\HappyBirthday;
@@ -65,6 +66,9 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::post('/orders/{orderId}/add-to-cart', [CustomerOrdersController::class, 'addToCart'])->name('orders.addToCart');
     Route::get('/rewards', [CustomerRewardsController::class, 'index'])->name('rewards.index');
     Route::get('/booking', [CustomerBookingController::class, 'index'])->name('booking.index');
+    Route::post('/booking/store', [CustomerBookingController::class, 'store'])->name('booking.store');
+    Route::get('/booking/{orderId}/payment', [CustomerBookingPaymentController::class, 'index'])->name('booking.payment.index');
+    Route::post('/booking/{orderId}/payment', [CustomerBookingPaymentController::class, 'processPayment'])->name('booking.payment.process');
     Route::get('/account', [CustomerAccountController::class, 'index'])->name('account.index');
     Route::post('/account/update', [CustomerAccountController::class, 'update'])->name('account.update');
     Route::post('/account/change-password', [CustomerAccountController::class, 'changePassword'])->name('account.change-password');

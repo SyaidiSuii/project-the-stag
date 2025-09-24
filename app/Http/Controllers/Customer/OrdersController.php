@@ -29,7 +29,7 @@ class OrdersController extends Controller
         $reservations = TableReservation::with('table')
             ->where('user_id', $userId)
             ->orderBy('booking_date', 'desc')
-            ->orderBy('reservation_time', 'desc')
+            ->orderBy('booking_time', 'desc')
             ->get();
         
         return view('customer.order.index', compact('orders', 'reservations'));
