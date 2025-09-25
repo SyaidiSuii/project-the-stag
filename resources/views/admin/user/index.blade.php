@@ -205,5 +205,60 @@
 @endsection
 
 @section('scripts')
+<script>
+    // Notification function
+function showNotification(message, type) {
+    // Create a simple notification
+    const notification = document.createElement('div');
+    notification.className = 'notification ' + type;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 9999;
+        ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Handle form submission with loading state and notifications
+document.addEventListener('DOMContentLoaded', function() {
+    const userForm = document.querySelector('.user-form');
+    if (userForm) {
+        userForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('.btn-save');
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitBtn.disabled = true;
+            
+            // Let the form submit normally - don't prevent default
+        });
+    }
+    
+    // Check for success/error messages from session
+    @if(session('message'))
+        showNotification('{{ session('message') }}', 'success');
+    @endif
+    
+    @if(session('success'))
+        showNotification('{{ session('success') }}', 'success');
+    @endif
+    
+    @if(session('error'))
+        showNotification('{{ session('error') }}', 'error');
+    @endif
+});
+</script>
 <script src="{{ asset('js/admin/user-management.js') }}"></script>
 @endsection

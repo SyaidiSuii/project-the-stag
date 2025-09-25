@@ -14,18 +14,6 @@
     <div class="section-header">
         <h2 class="section-title">View QR Codes</h2>
     </div>
-    
-    @if(session('message'))
-        <div class="alert alert-success">
-            {{ session('message') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-error">
-            {{ session('error') }}
-        </div>
-    @endif
 
     <div class="search-filter">
         <div class="search-box">
@@ -48,135 +36,134 @@
     </div>
 
     <!-- OR Codes Table -->
-    <div class="table-container">
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th class="th-order">Table Number</th>
-                    <th class="th-customer">Reservation ID</th>
-                    <th class="th-time">Stared At</th>
-                    <th class="th-time">Expired At</th>
-                    <th class="th-status">Status</th>
-                    <th class="th-actions">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($sessions as $session)
-                <tr>
-                    <td>
-                        <div class="table-info">
-                            <strong>{{ $session->table->table_number ?? 'Unknown' }}</strong>
-                            <div class="table-type">{{ $session->table->table_type ?? '' }}</div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="reservation-info">
-                            @if($session->reservation)
-                                <div class="reservation-id">RES-{{ $session->reservation->id }}</div>
-                                <div class="guest-name">{{ $session->reservation->guest_name }}</div>
-                            @else
-                                <span class="text-muted">No Reservation</span>
-                            @endif
-                        </div>
-                    </td>
-                    <td>
-                        <div class="time-info">
-                            <div class="date">{{ $session->started_at->format('M d, Y') }}</div>
-                            <div class="time">{{ $session->started_at->format('g:i A') }}</div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="time-info">
-                            <div class="date">{{ $session->expires_at->format('M d, Y') }}</div>
-                            <div class="time">{{ $session->expires_at->format('g:i A') }}</div>
-                        </div>
-                    </td>
-                    <td class="cell-center">
-                        <span class="status status-{{ $session->status }}">
-                            {{ ucfirst($session->status) }}
-                        </span>
-                    </td>
-                    <td class="cell-center">
-                        <div class="table-actions">
-                            @if($session->status === 'active')
-                                <a href="{{ route('admin.table-qrcodes.qr-preview', [$session, 'png']) }}" 
-                                   class="action-btn view-btn" title="View QR Code" target="_blank">
-                                    <i class="fas fa-qrcode"></i>
-                                </a>
-                                <a href="{{ route('admin.table-qrcodes.download-qr', [$session, 'png']) }}" 
-                                   class="action-btn download-btn" title="Download QR PNG">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                                <button class="action-btn refresh-btn" title="Regenerate QR Code" onclick="regenerateQR({{ $session->id }})">
-                                    <i class="fas fa-sync"></i>
-                                </button>
-                            @endif
-                            
-                            <a href="{{ route('admin.table-qrcodes.show', $session) }}" 
-                               class="action-btn view-btn" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            
-                            @if($session->status === 'active')
-                                <button class="action-btn complete-btn" title="Complete Session" onclick="completeSession({{ $session->id }})">
-                                    <i class="fas fa-check-circle"></i>
-                                </button>
-                            @endif
-                            
-                            @if($session->orders()->count() == 0)
-                                <form method="POST" action="{{ route('admin.table-qrcodes.destroy', $session) }}" style="display: inline;"
-                                      onsubmit="return confirm('Are you sure you want to delete this QR code session?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="action-btn delete-btn" title="Delete Session">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            @endif
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="6" class="empty-state">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-qrcode"></i>
-                        </div>
-                        <div class="empty-state-title">No QR codes found</div>
-                        <div class="empty-state-text">
-                            @if(request()->hasAny(['search', 'order_status', 'order_type', 'payment_status', 'date']))
-                                No QR codes match your current filters. Try adjusting your search criteria.
-                            @else
-                                No QR codes have been generated yet.
-                            @endif
-                        </div>
-                        @if(!request()->hasAny(['search', 'order_status', 'order_type', 'payment_status', 'date']))
-                            <div style="margin-top: 20px;">
-                                <a href="{{ route('admin.table-qrcodes.create') }}" class="admin-btn btn-primary">
-                                    <i class="fas fa-plus"></i> Create First QR Code
-                                </a>
+    @if($sessions->count() > 0)
+        <div class="table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th class="th-order">Table Number</th>
+                        <th class="th-customer">Reservation ID</th>
+                        <th class="th-time">Stared At</th>
+                        <th class="th-time">Expired At</th>
+                        <th class="th-status">Status</th>
+                        <th class="th-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($sessions as $session)
+                    <tr>
+                        <td>
+                            <div class="table-info">
+                                <strong>{{ $session->table->table_number ?? 'Unknown' }}</strong>
+                                <div class="table-type">{{ $session->table->table_type ?? '' }}</div>
                             </div>
-                        @endif
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    @if($sessions->hasPages())
-    <!-- Pagination -->
-    <div class="pagination">
-        <div class="pagination-info">
-            <span>
-                Showing {{ $sessions->firstItem() }} to {{ $sessions->lastItem() }} 
-                of {{ $sessions->total() }} results
-            </span>
+                        </td>
+                        <td>
+                            <div class="reservation-info">
+                                @if($session->reservation)
+                                    <div class="reservation-id">RES-{{ $session->reservation->id }}</div>
+                                    <div class="guest-name">{{ $session->reservation->guest_name }}</div>
+                                @else
+                                    <span class="text-muted">No Reservation</span>
+                                @endif
+                            </div>
+                        </td>
+                        <td>
+                            <div class="time-info">
+                                <div class="date">{{ $session->started_at->format('M d, Y') }}</div>
+                                <div class="time">{{ $session->started_at->format('g:i A') }}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="time-info">
+                                <div class="date">{{ $session->expires_at->format('M d, Y') }}</div>
+                                <div class="time">{{ $session->expires_at->format('g:i A') }}</div>
+                            </div>
+                        </td>
+                        <td class="cell-center">
+                            <span class="status status-{{ $session->status }}">
+                                {{ ucfirst($session->status) }}
+                            </span>
+                        </td>
+                        <td class="cell-center">
+                            <div class="table-actions">
+                                @if($session->status === 'active')
+                                    <a href="{{ route('admin.table-qrcodes.qr-preview', [$session, 'png']) }}" 
+                                       class="action-btn view-btn" title="View QR Code" target="_blank">
+                                        <i class="fas fa-qrcode"></i>
+                                    </a>
+                                    <a href="{{ route('admin.table-qrcodes.download-qr', [$session, 'png']) }}" 
+                                       class="action-btn download-btn" title="Download QR PNG">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <button class="action-btn refresh-btn" title="Regenerate QR Code" onclick="regenerateQR({{ $session->id }})">
+                                        <i class="fas fa-sync"></i>
+                                    </button>
+                                @endif
+                                
+                                <a href="{{ route('admin.table-qrcodes.show', $session) }}" 
+                                   class="action-btn view-btn" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                
+                                @if($session->status === 'active')
+                                    <button class="action-btn complete-btn" title="Complete Session" onclick="completeSession({{ $session->id }})">
+                                        <i class="fas fa-check-circle"></i>
+                                    </button>
+                                @endif
+                                
+                                @if($session->orders()->count() == 0)
+                                    <form method="POST" action="{{ route('admin.table-qrcodes.destroy', $session) }}" style="display: inline;"
+                                          onsubmit="return confirm('Are you sure you want to delete this QR code session?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="action-btn delete-btn" title="Delete Session">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
-        
-        <div class="pagination-links">
+    @else
+        <!-- Empty State Outside Table -->
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-qrcode"></i>
+            </div>
+            <div class="empty-state-title">No QR codes found</div>
+            <div class="empty-state-text">
+                @if(request()->hasAny(['search', 'order_status', 'order_type', 'payment_status', 'date']))
+                    No QR codes match your current filters. Try adjusting your search criteria.
+                @else
+                    No QR codes have been generated yet.
+                @endif
+            </div>
+            @if(!request()->hasAny(['search', 'order_status', 'order_type', 'payment_status', 'date']))
+                <div style="margin-top: 20px;">
+                    <a href="{{ route('admin.table-qrcodes.create') }}" class="admin-btn btn-primary">
+                        <i class="fas fa-plus"></i> Create First QR Code
+                    </a>
+                </div>
+            @endif
+        </div>
+    @endif
+
+    <!-- Pagination -->
+    @if($sessions->hasPages())
+        <div class="pagination">
+            <div style="display: flex; align-items: center; gap: 16px; margin-right: auto;">
+                <span style="font-size: 14px; color: var(--text-2);">
+                    Showing {{ $sessions->firstItem() }} to {{ $sessions->lastItem() }} of {{ $sessions->total() }} results
+                </span>
+            </div>
+            
             @if($sessions->onFirstPage())
-                <span class="pagination-btn disabled">
+                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
                     <i class="fas fa-chevron-left"></i>
                 </span>
             @else
@@ -198,16 +185,55 @@
                     <i class="fas fa-chevron-right"></i>
                 </a>
             @else
-                <span class="pagination-btn disabled">
+                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
                     <i class="fas fa-chevron-right"></i>
                 </span>
             @endif
         </div>
-    </div>
     @endif
 </div>
 @endsection
 
 @section('scripts')
-{{--  --}}
+<script>
+    // Notification function
+function showNotification(message, type) {
+    // Create a simple notification
+    const notification = document.createElement('div');
+    notification.className = 'notification ' + type;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 9999;
+        ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Check for session messages on page load
+document.addEventListener('DOMContentLoaded', function() {
+    @if(session('message'))
+        showNotification('{{ session('message') }}', 'success');
+    @endif
+    
+    @if(session('success'))
+        showNotification('{{ session('success') }}', 'success');
+    @endif
+    
+    @if(session('error'))
+        showNotification('{{ session('error') }}', 'error');
+    @endif
+});
+</script>
 @endsection

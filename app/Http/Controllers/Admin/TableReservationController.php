@@ -57,10 +57,15 @@ class TableReservationController extends Controller
                           ->orderBy('booking_time', 'desc')
                           ->paginate(15);
 
+        // Get statistics for dashboard cards
         $tables = Table::where('is_active', true)->get();
         $statuses = ['pending', 'confirmed', 'seated', 'completed', 'cancelled', 'no_show'];
+        $totalTables = Table::count();
+        $pendingTables = TableReservation::where('status', 'pending')->count();
+        $confirmedTables = TableReservation::where('status', 'confirmed')->count();
+        $todayBooking = TableReservation::whereDate('created_at', now())->count();
 
-        return view('admin.table-reservation.index', compact('reservations', 'tables', 'statuses'));
+        return view('admin.table-reservation.index', compact('reservations', 'tables', 'statuses','totalTables'));
     }
 
     /**

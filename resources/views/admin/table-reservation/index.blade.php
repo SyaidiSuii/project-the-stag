@@ -15,7 +15,7 @@
             <div class="admin-card-title">Bookings Today</div>
             <div class="admin-card-icon icon-blue"><i class="fas fa-calendar-day"></i></div>
         </div>
-        <div class="admin-card-value">0</div>
+        <div class="admin-card-value">{{ $todayBooking ?? 0 }}</div>
         <div class="admin-card-desc">Total reservations for today</div>
     </div>
     <div class="admin-card">
@@ -23,7 +23,7 @@
             <div class="admin-card-title">Pending Bookings</div>
             <div class="admin-card-icon icon-green"><i class="fas fa-clock"></i></div>
         </div>
-        <div class="admin-card-value">0</div>
+        <div class="admin-card-value">{{ $pendingTables ?? 0 }}</div>
         <div class="admin-card-desc">Require confirmation</div>
     </div>
     <div class="admin-card">
@@ -31,7 +31,7 @@
             <div class="admin-card-title">Confirmed Today</div>
             <div class="admin-card-icon icon-orange"><i class="fas fa-calendar-check"></i></div>
         </div>
-        <div class="admin-card-value">0</div>
+        <div class="admin-card-value">{{ $confirmedTables ?? 0 }}</div>
         <div class="admin-card-desc">Guests arriving today</div>
     </div>
     <div class="admin-card">
@@ -39,7 +39,7 @@
             <div class="admin-card-title">Total Tables</div>
             <div class="admin-card-icon icon-red"><i class="fas fa-chair"></i></div>
         </div>
-        <div class="admin-card-value">0</div>
+        <div class="admin-card-value">{{ $totalTables ?? 0 }}</div>
         <div class="admin-card-desc">Available for booking</div>
     </div>
 </div>
@@ -49,18 +49,6 @@
     <div class="section-header">
         <h2 class="section-title">View Bookings</h2>
     </div>
-    
-    @if(session('message'))
-        <div class="alert alert-success">
-            {{ session('message') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-error">
-            {{ session('error') }}
-        </div>
-    @endif
 
     <div class="search-filter">
         <div class="search-box">
@@ -236,6 +224,44 @@
         </table>
     </div>
 
+    <!-- Pagination -->
+    @if($reservations->hasPages())
+        <div class="pagination">
+            <div style="display: flex; align-items: center; gap: 16px; margin-right: auto;">
+                <span style="font-size: 14px; color: var(--text-2);">
+                    Showing {{ $reservations->firstItem() }} to {{ $reservations->lastItem() }} of {{ $reservations->total() }} results
+                </span>
+            </div>
+            
+            @if($reservations->onFirstPage())
+                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
+                    <i class="fas fa-chevron-left"></i>
+                </span>
+            @else
+                <a href="{{ $reservations->previousPageUrl() }}" class="pagination-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            @endif
+
+            @foreach($reservations->getUrlRange(1, $reservations->lastPage()) as $page => $url)
+                @if($page == $reservations->currentPage())
+                    <span class="pagination-btn active">{{ $page }}</span>
+                @else
+                    <a href="{{ $url }}" class="pagination-btn">{{ $page }}</a>
+                @endif
+            @endforeach
+
+            @if($reservations->hasMorePages())
+                <a href="{{ $reservations->nextPageUrl() }}" class="pagination-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            @else
+                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
+                    <i class="fas fa-chevron-right"></i>
+                </span>
+            @endif
+        </div>
+    @endif
 
 </div>
 
@@ -243,6 +269,46 @@
 
 @section('scripts')
 <script>
+// Notification function
+function showNotification(message, type) {
+    // Create a simple notification
+    const notification = document.createElement('div');
+    notification.className = 'notification ' + type;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 9999;
+        ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Check for session messages on page load
+document.addEventListener('DOMContentLoaded', function() {
+    @if(session('message'))
+        showNotification('{{ session('message') }}', 'success');
+    @endif
+    
+    @if(session('success'))
+        showNotification('{{ session('success') }}', 'success');
+    @endif
+    
+    @if(session('error'))
+        showNotification('{{ session('error') }}', 'error');
+    @endif
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     const statusFilter = document.getElementById('bookingStatusFilter');

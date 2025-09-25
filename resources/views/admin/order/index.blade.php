@@ -56,17 +56,6 @@
         </div>
     </div>
     
-    @if(session('message'))
-        <div class="alert alert-success">
-            {{ session('message') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-error">
-            {{ session('error') }}
-        </div>
-    @endif
 
     <div class="search-filter">
         <div class="search-box">
@@ -300,19 +289,17 @@
         </table>
     </div>
 
-    @if($orders->hasPages())
     <!-- Pagination -->
-    <div class="pagination">
-        <div class="pagination-info">
-            <span>
-                Showing {{ $orders->firstItem() }} to {{ $orders->lastItem() }} 
-                of {{ $orders->total() }} results
-            </span>
-        </div>
-        
-        <div class="pagination-links">
+    @if($orders->hasPages())
+        <div class="pagination">
+            <div style="display: flex; align-items: center; gap: 16px; margin-right: auto;">
+                <span style="font-size: 14px; color: var(--text-2);">
+                    Showing {{ $orders->firstItem() }} to {{ $orders->lastItem() }} of {{ $orders->total() }} results
+                </span>
+            </div>
+            
             @if($orders->onFirstPage())
-                <span class="pagination-btn disabled">
+                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
                     <i class="fas fa-chevron-left"></i>
                 </span>
             @else
@@ -334,12 +321,11 @@
                     <i class="fas fa-chevron-right"></i>
                 </a>
             @else
-                <span class="pagination-btn disabled">
+                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
                     <i class="fas fa-chevron-right"></i>
                 </span>
             @endif
         </div>
-    </div>
     @endif
 </div>
 @endsection
@@ -347,6 +333,46 @@
 @section('scripts')
 <script src="{{ asset('js/admin/order-management.js') }}"></script>
 <script>
+// Notification function
+function showNotification(message, type) {
+    // Create a simple notification
+    const notification = document.createElement('div');
+    notification.className = 'notification ' + type;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 9999;
+        ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Check for session messages on page load
+document.addEventListener('DOMContentLoaded', function() {
+    @if(session('message'))
+        showNotification('{{ session('message') }}', 'success');
+    @endif
+    
+    @if(session('success'))
+        showNotification('{{ session('success') }}', 'success');
+    @endif
+    
+    @if(session('error'))
+        showNotification('{{ session('error') }}', 'error');
+    @endif
+});
+
 // Auto-refresh page every 3 minutes to update ETA status
 setInterval(() => {
     if (document.visibilityState === 'visible') {

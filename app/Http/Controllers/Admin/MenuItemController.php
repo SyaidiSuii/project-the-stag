@@ -61,7 +61,7 @@ class MenuItemController extends Controller
         }
 
         $menuItems = $query->paginate(
-            $request->get('per_page', 15)
+            $request->get('per_page', 10)
         )->appends($request->query());
 
         // Get categories for filter dropdown

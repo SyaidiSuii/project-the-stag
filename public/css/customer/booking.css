@@ -890,6 +890,67 @@
     .modal-actions .btn {
       flex: 1;
     }
+
+    /* ===== Guest Content ===== */
+    .guest-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .guest-content .account-card {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      color: white;
+      border: none;
+    }
+
+    .guest-content .card-icon {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .guest-content .card-title {
+      color: white;
+      margin-bottom: 1rem;
+    }
+
+    .guest-content p {
+      color: rgba(255, 255, 255, 0.9) !important;
+      font-size: 1.1rem;
+    }
+
+    .guest-content .btn-group {
+      justify-content: center;
+      margin-top: 2rem;
+    }
+
+    .guest-content .btn {
+      min-width: 150px;
+      background: white;
+      color: var(--brand);
+      border: 2px solid white;
+    }
+
+    .guest-content .btn:hover {
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .guest-content .btn-secondary {
+      background: transparent;
+      color: white;
+      border: 2px solid white;
+    }
+
+    .guest-content .btn-secondary:hover {
+      background: white;
+      color: var(--brand);
+    }
+
     /* ===== Responsive Design ===== */
     @media (max-width: 1400px) {
       .floor-grid { grid-template-columns: repeat(5, 1fr); }

@@ -44,9 +44,9 @@
                         value="{{ old('table_number', $table->table_number) }}"
                         placeholder="e.g. T001, A1, B2"
                         required>
-                    @error('table_number')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('table_number'))
+                        <div class="form-error">{{ implode(', ', $errors->get('table_number')) }}</div>
+                    @endif
                 </div>
 
                 <div class="form-group">
@@ -61,9 +61,9 @@
                         max="20"
                         placeholder="Number of people"
                         required>
-                    @error('capacity')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('capacity'))
+                        <div class="form-error">{{ implode(', ', $errors->get('capacity')) }}</div>
+                    @endif
                 </div>
             </div>
 
@@ -80,9 +80,9 @@
                         <option value="reserved" {{ old('status', $table->status) == 'reserved' ? 'selected' : '' }}>Reserved</option>
                         <option value="maintenance" {{ old('status', $table->status) == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
                     </select>
-                    @error('status')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('status'))
+                        <div class="form-error">{{ implode(', ', $errors->get('status')) }}</div>
+                    @endif
                 </div>
 
                 <div class="form-group">
@@ -95,9 +95,9 @@
                         <option value="vip" {{ old('table_type', $table->table_type) == 'vip' ? 'selected' : '' }}>VIP</option>
                         <option value="outdoor" {{ old('table_type', $table->table_type) == 'outdoor' ? 'selected' : '' }}>Outdoor</option>
                     </select>
-                    @error('table_type')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('table_type'))
+                        <div class="form-error">{{ implode(', ', $errors->get('table_type')) }}</div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -115,9 +115,9 @@
                         class="form-control @error('qr_code') is-invalid @enderror"
                         value="{{ old('qr_code', $table->qr_code) }}"
                         placeholder="QR code for digital menu">
-                    @error('qr_code')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('qr_code'))
+                        <div class="form-error">{{ implode(', ', $errors->get('qr_code')) }}</div>
+                    @endif
                     <div class="form-hint">Leave empty to auto-generate</div>
                 </div>
 
@@ -130,9 +130,9 @@
                         class="form-control @error('nfc_tag_id') is-invalid @enderror"
                         value="{{ old('nfc_tag_id', $table->nfc_tag_id) }}"
                         placeholder="NFC tag identifier">
-                    @error('nfc_tag_id')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('nfc_tag_id'))
+                        <div class="form-error">{{ implode(', ', $errors->get('nfc_tag_id')) }}</div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -148,9 +148,9 @@
                     class="form-control @error('location_description') is-invalid @enderror"
                     rows="3"
                     placeholder="Describe the table location (e.g., Near window, Corner booth, Main dining area)">{{ old('location_description', $table->location_description) }}</textarea>
-                @error('location_description')
-                    <div class="form-error">{{ $message }}</div>
-                @enderror
+                @if($errors->get('location_description'))
+                    <div class="form-error">{{ implode(', ', $errors->get('location_description')) }}</div>
+                @endif
             </div>
 
             <div class="form-row">
@@ -164,9 +164,9 @@
                         value="{{ old('latitude', $table->latitude) }}"
                         step="0.000001"
                         placeholder="GPS latitude coordinate">
-                    @error('latitude')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('latitude'))
+                        <div class="form-error">{{ implode(', ', $errors->get('latitude')) }}</div>
+                    @endif
                 </div>
 
                 <div class="form-group">
@@ -179,9 +179,9 @@
                         value="{{ old('longitude', $table->longitude) }}"
                         step="0.000001"
                         placeholder="GPS longitude coordinate">
-                    @error('longitude')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('longitude'))
+                        <div class="form-error">{{ implode(', ', $errors->get('longitude')) }}</div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -241,9 +241,9 @@
                     <label for="tv_screen">TV Screen</label>
                 </div>
             </div>
-            @error('amenities')
-                <div class="form-error">{{ $message }}</div>
-            @enderror
+            @if($errors->get('amenities'))
+                <div class="form-error">{{ implode(', ', $errors->get('amenities')) }}</div>
+            @endif
         </div>
 
         <!-- Active Status -->
@@ -256,9 +256,9 @@
                     <label for="is_active" class="checkbox-label">Active Table</label>
                     <div class="form-hint">Uncheck to disable this table temporarily</div>
                 </div>
-                @error('is_active')
-                    <div class="form-error">{{ $message }}</div>
-                @enderror
+                @if($errors->get('is_active'))
+                    <div class="form-error">{{ implode(', ', $errors->get('is_active')) }}</div>
+                @endif
             </div>
         </div>
 
@@ -307,6 +307,31 @@
 
 @section('scripts')
 <script>
+// Notification function
+function showNotification(message, type) {
+    // Create a simple notification
+    const notification = document.createElement('div');
+    notification.className = 'notification ' + type;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 9999;
+        ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
 // Add JavaScript for amenities handling and GPS coordinates
 document.addEventListener('DOMContentLoaded', function() {
     // Auto-generate QR code if empty on new table
@@ -340,6 +365,33 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (latInput) validateCoordinate(latInput, -90, 90);
     if (lngInput) validateCoordinate(lngInput, -180, 180);
+    
+    // Handle form submission loading state
+    const tableForm = document.querySelector('.table-form');
+    if (tableForm) {
+        tableForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('.btn-save');
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitBtn.disabled = true;
+            
+            // Let the form submit normally - don't prevent default
+        });
+    }
+    
+    // Check for success message from session
+    @if(session('message'))
+        showNotification('{{ session('message') }}', 'success');
+    @endif
+    
+    @if(session('success'))
+        showNotification('{{ session('success') }}', 'success');
+    @endif
+    
+    @if(session('error'))
+        showNotification('{{ session('error') }}', 'error');
+    @endif
 });
 </script>
 @endsection

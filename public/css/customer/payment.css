@@ -689,3 +689,108 @@
       padding-right: 2.5rem;
       appearance: none;
     }
+    
+    /* ===== Online Banking Info Card Styles ===== */
+    .banking-info-card {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      border: 1px solid var(--muted);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+    }
+    .banking-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 28px;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-md);
+    }
+    .banking-details h4 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+    .banking-details p {
+      color: var(--text-light);
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+    .banking-features {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .banking-features li {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+    .banking-features li i {
+      color: var(--success);
+      font-size: 0.8rem;
+      width: 16px;
+      flex-shrink: 0;
+    }
+    .supported-banks {
+      background: white;
+      border: 1px solid var(--muted);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-top: 1rem;
+    }
+    .supported-banks h5 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .bank-logos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .bank-name {
+      background: var(--bg-light);
+      color: var(--text-light);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border: 1px solid var(--muted);
+      transition: var(--transition);
+    }
+    .bank-name:hover {
+      background: var(--brand-light);
+      color: white;
+      transform: translateY(-1px);
+    }
+    
+    /* ===== Responsive Design for Banking Card ===== */
+    @media (max-width: 768px) {
+      .banking-info-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+      }
+      .banking-icon {
+        align-self: center;
+      }
+      .bank-logos {
+        justify-content: center;
+      }
+    }

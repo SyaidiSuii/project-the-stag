@@ -62,6 +62,9 @@ class OrdersController extends Controller
                 'order_time' => $order->created_at->format('M j, g:i A'),
                 'total_amount' => $order->total_amount,
                 'formatted_total' => 'RM ' . number_format($order->total_amount, 2),
+                'payment_status' => $order->payment_status,
+                'payment_status_text' => $this->getPaymentStatusText($order->payment_status),
+                'payment_status_color' => $this->getPaymentStatusColor($order->payment_status),
                 'table_number' => $order->table ? $order->table->table_number : $order->table_number,
                 'customer_name' => $order->user->name ?? 'Unknown',
                 'items' => $order->items->map(function($item) {
@@ -132,6 +135,79 @@ class OrdersController extends Controller
                 })
             ]
         ]);
+    }
+
+    /**
+     * Cancel a booking reservation.
+     */
+    public function cancelBooking($reservationId)
+    {
+        $userId = Auth::id();
+        
+        $reservation = TableReservation::with('table')
+            ->where('id', $reservationId)
+            ->where('user_id', $userId) // Ensure customer can only cancel their own reservations
+            ->first();
+        
+        if (!$reservation) {
+            return response()->json(['error' => 'Booking not found'], 404);
+        }
+        
+        // Check if booking can be cancelled using model method
+        if (!$reservation->canBeCancelled()) {
+            return response()->json([
+                'error' => 'This booking cannot be cancelled. Only confirmed or pending bookings that are not in the past can be cancelled.'
+            ], 400);
+        }
+        
+        try {
+            DB::beginTransaction();
+            
+            // Update reservation status to cancelled
+            $reservation->update([
+                'status' => 'cancelled',
+                'notes' => ($reservation->notes ? $reservation->notes . "\n\n" : '') . 
+                          'Cancelled by customer on ' . now()->format('Y-m-d H:i:s')
+            ]);
+            
+            // If table status is reserved for this booking, make it available
+            if ($reservation->table && $reservation->table->status === 'reserved') {
+                $reservation->table->update(['status' => 'available']);
+            }
+            
+            // Cancel associated order if exists
+            $order = Order::where('reservation_id', $reservation->id)
+                         ->where('order_status', '!=', 'completed')
+                         ->first();
+            
+            if ($order) {
+                $order->update([
+                    'order_status' => 'cancelled',
+                    'notes' => ($order->notes ? $order->notes . "\n\n" : '') . 
+                              'Order cancelled due to booking cancellation on ' . now()->format('Y-m-d H:i:s')
+                ]);
+            }
+            
+            DB::commit();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking cancelled successfully.',
+                'reservation' => [
+                    'id' => $reservation->id,
+                    'confirmation_code' => $reservation->confirmation_code,
+                    'status' => 'cancelled'
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'error' => 'Failed to cancel booking. Please try again.',
+                'debug' => config('app.debug') ? $e->getMessage() : 'An error occurred'
+            ], 500);
+        }
     }
 
     /**
@@ -315,6 +391,38 @@ class OrdersController extends Controller
                 'debug' => config('app.debug') ? $e->getMessage() : 'An error occurred'
             ], 500);
         }
+    }
+
+    /**
+     * Get payment status text for display.
+     */
+    private function getPaymentStatusText($status)
+    {
+        return match($status) {
+            'paid' => 'Paid',
+            'unpaid' => 'Unpaid',
+            'partial' => 'Partial Payment',
+            'refunded' => 'Refunded',
+            'pending' => 'Payment Pending',
+            'failed' => 'Payment Failed',
+            default => ucfirst($status ?? 'Unknown')
+        };
+    }
+
+    /**
+     * Get payment status color for display.
+     */
+    private function getPaymentStatusColor($status)
+    {
+        return match($status) {
+            'paid' => 'success',
+            'unpaid' => 'warning', 
+            'partial' => 'info',
+            'refunded' => 'secondary',
+            'pending' => 'warning',
+            'failed' => 'danger',
+            default => 'secondary'
+        };
     }
 
     /**

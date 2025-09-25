@@ -12,11 +12,11 @@ class Payment extends Model
 
      protected $fillable = [
         'order_id',
-        'reservation_id',
-        'user_id',
+        'gateway',
         'payment_method',
-        'amount',
         'currency',
+        'amount',
+        'bill_code',
         'transaction_id',
         'payment_status',
         'payment_gateway_response',
@@ -35,18 +35,6 @@ class Payment extends Model
     public function order()
     {
         return $this->belongsTo(Order::class);
-    }
-
-    // 🔗 Relationship ke Table Reservation
-    public function reservation()
-    {
-        return $this->belongsTo(TableReservation::class);
-    }
-
-    // 🔗 Relationship ke Users (staff/customer)
-    public function user()
-    {
-        return $this->belongsTo(User::class);
     }
 
     // 🎯 Helper Method

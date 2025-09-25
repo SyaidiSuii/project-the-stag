@@ -1,4 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
+
+    // 🌙 Animation contoh (fade in table rows) - with safety check
+    const tableBody = document.querySelector('tbody');
+    if (tableBody) {
+        tableBody.querySelectorAll('tr').forEach((row, i) => {
+            row.style.opacity = 0;
+            setTimeout(() => {
+                row.style.transition = 'opacity 0.5s ease';
+                row.style.opacity = 1;
+            }, i * 150); // delay sikit untuk effect "staggered fade-in"
+        });
+    }
+
+    
     // Set current date
     document.getElementById('currentDate').textContent =
         new Date().toLocaleDateString('en-MY', {

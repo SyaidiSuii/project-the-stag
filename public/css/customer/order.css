@@ -302,6 +302,15 @@
       grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); 
       gap: 20px; 
     }
+    
+    /* Center empty state messages */
+    .orders-grid:has(.no-orders-message),
+    .orders-grid:has(.no-bookings-message) {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 300px;
+    }
 
     .order-card {
       background: white;
@@ -406,6 +415,72 @@
       background: rgba(16, 185, 129, 0.1);
       color: var(--success);
       border-color: var(--success);
+    }
+
+    /* Payment Status Styles */
+    .payment-success {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+      border-color: var(--success);
+      padding: 0px 10px;
+      border-radius: 15px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 2px solid;
+    }
+
+    .payment-warning {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+      border-color:  var(--warning);
+      padding: 0px 10px;
+      border-radius: 15px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 2px solid;
+    }
+
+    .payment-info {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+      border-color: #3b82f6;
+      padding: 0px 10px;
+      border-radius: 15px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 2px solid;
+    }
+
+    .payment-secondary {
+      background: rgba(107, 114, 128, 0.1);
+      color: #6b7280;
+      border-color:  #6b7280;
+      padding: 0px 10px;
+      border-radius: 15px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 2px solid;
+    }
+
+    .payment-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+      border-color: var(--danger);
+      padding: 0px 10px;
+      border-radius: 15px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 2px solid;
     }
 
     .order-items {
@@ -955,6 +1030,22 @@
     .error-message {
       color: var(--danger);
       font-weight: bold;
+    }
+
+    .no-orders-message, .no-bookings-message {
+      text-align: center;
+      color: var(--text-2);
+      font-size: 1.1rem;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
     /* ===== Responsive Design ===== */

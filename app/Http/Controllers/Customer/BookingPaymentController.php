@@ -5,12 +5,20 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\TableReservation;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class BookingPaymentController extends Controller
 {
+    protected $paymentService;
+
+    public function __construct(PaymentService $paymentService)
+    {
+        $this->paymentService = $paymentService;
+    }
+
     /**
      * Display the payment page for a booking order.
      */
@@ -95,6 +103,56 @@ class BookingPaymentController extends Controller
                     'success' => false,
                     'message' => 'This order has already been paid.'
                 ], 400);
+            }
+
+            // Handle different payment methods
+            $paymentMethod = $validated['payment_details']['method'];
+            $reservationId = $order->reservation ? $order->reservation->id : null;
+            
+            if (in_array($paymentMethod, ['card', 'wallet'])) {
+                // Online payment - use gateway
+                $paymentData = [
+                    'payment_method' => $paymentMethod,
+                    'amount' => $order->total_amount,
+                    'currency' => 'MYR',
+                    'customer_name' => $user ? $user->name : 'Guest',
+                    'customer_email' => $validated['payment_details']['email'] ?? ($user ? $user->email : ''),
+                    'customer_phone' => $user ? $user->phone_number : '',
+                ];
+
+                $gatewayResult = $this->paymentService->createGatewayPayment($paymentData, $order->id, $reservationId);
+                
+                if (!$gatewayResult['success']) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => $gatewayResult['message']
+                    ], 400);
+                }
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Redirecting to payment gateway...',
+                    'redirect_url' => $gatewayResult['redirect_url'],
+                    'payment_method' => 'gateway'
+                ]);
+
+            } else {
+                // Manual payment (cash at restaurant)
+                $paymentData = [
+                    'payment_method' => $paymentMethod,
+                    'amount' => $order->total_amount,
+                    'currency' => 'MYR',
+                    'payment_status' => 'pending',
+                    'gateway' => 'manual',
+                ];
+                
+                $payment = $this->paymentService->savePaymentData($paymentData, $order->id, $reservationId);
+
+                // Update payment status to completed for manual process
+                $this->paymentService->updatePaymentStatus($payment->transaction_id, 'completed', null, $reservationId);
             }
 
             // Update payment status

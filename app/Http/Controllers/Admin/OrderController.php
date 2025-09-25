@@ -77,7 +77,7 @@ class OrderController extends Controller
         // Default sort by creation time
         $query->orderBy('created_at', 'desc');
 
-        $orders = $query->paginate(15)->appends($request->query());
+        $orders = $query->paginate(10)->appends($request->query());
         
         // Get statistics for dashboard cards
         $totalOrders = Order::count();

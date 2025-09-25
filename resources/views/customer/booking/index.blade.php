@@ -7,6 +7,7 @@
 @endsection
 
 @section('content')
+@auth
 {{-- Main Content --}}
 <div class="main-content">
       <!-- Header Section -->
@@ -266,7 +267,32 @@
     </div>
   </div>
 </div>
+@endauth
 
+@guest
+<!-- Guest User Content -->
+<div class="main-content">
+  <div class="guest-content">
+    <div class="account-card">
+      <div class="card-header">
+        <div class="card-icon"><i class="fas fa-user-plus"></i></div>
+        <h2 class="card-title">Join The Stag SmartDine</h2>
+      </div>
+      <p style="color: var(--text-2); margin-bottom: 2rem; text-align: center;">
+        Please login or create an account to access table booking, track reservations, and manage your dining preferences.
+      </p>
+      <div class="btn-group" style="justify-content: center;">
+        <a href="{{ route('login') }}" class="btn btn-primary">
+          <i class="fas fa-sign-in-alt"></i> Login
+        </a>
+        <a href="{{ route('register') }}" class="btn btn-secondary">
+          <i class="fas fa-user-plus"></i> Create Account
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+@endguest
 
 @endsection
 

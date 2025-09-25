@@ -98,9 +98,9 @@
         <div class="payment-methods">
           <div class="payment-method selected" data-method="card">
             <div class="method-icon">
-              <i class="fas fa-credit-card"></i>
+              <i class="fas fa-university"></i>
             </div>
-            <div class="method-name">Credit/Debit Card</div>
+            <div class="method-name">Online Banking</div>
           </div>
           <div class="payment-method" data-method="wallet">
             <div class="method-icon">
@@ -121,37 +121,35 @@
       <form id="payment-form">
         <div class="form-section" id="card-payment-section">
           <h3 class="section-title">
-            <i class="fas fa-lock"></i> Card Information
+            <i class="fas fa-lock"></i> Online Banking Payment
           </h3>
-          <div class="form-group">
-            <label for="card-number" class="form-label">Card Number</label>
-            <div class="card-input-group">
-              <input type="text" id="card-number" class="form-input" placeholder="1234 5678 9012 3456" maxlength="19">
-              <div class="card-icons">
-                <i class="fab fa-cc-visa card-icon visa"></i>
-                <i class="fab fa-cc-mastercard card-icon mastercard"></i>
-                <i class="fab fa-cc-amex card-icon amex"></i>
-              </div>
+          <div class="banking-info-card">
+            <div class="banking-icon">
+              <i class="fas fa-university"></i>
             </div>
-            <div class="error-message">Please enter a valid card number</div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="card-name" class="form-label">Name on Card</label>
-              <input type="text" id="card-name" class="form-input" placeholder="John Doe">
-              <div class="error-message">Please enter the name on your card</div>
+            <div class="banking-details">
+              <h4>Secure Online Banking Payment</h4>
+              <p>You will be redirected to ToyyibPay's secure payment page where you can:</p>
+              <ul class="banking-features">
+                <li><i class="fas fa-check"></i> Choose from all major Malaysian banks</li>
+                <li><i class="fas fa-check"></i> Login securely through your bank's official page</li>
+                <li><i class="fas fa-check"></i> Complete payment with your existing banking credentials</li>
+                <li><i class="fas fa-check"></i> Get instant payment confirmation</li>
+              </ul>
             </div>
           </div>
-          <div class="form-row">
-            <div class="form-group half-width">
-              <label for="expiry-date" class="form-label">Expiry Date</label>
-              <input type="text" id="expiry-date" class="form-input" placeholder="MM/YY" maxlength="5">
-              <div class="error-message">Please enter a valid expiry date</div>
-            </div>
-            <div class="form-group half-width">
-              <label for="cvv" class="form-label">CVV</label>
-              <input type="text" id="cvv" class="form-input" placeholder="123" maxlength="4">
-              <div class="error-message">Please enter a valid CVV</div>
+          <div class="supported-banks">
+            <h5>Supported Banks Include:</h5>
+            <div class="bank-logos">
+              <span class="bank-name">Maybank2u</span>
+              <span class="bank-name">CIMB Clicks</span>
+              <span class="bank-name">Public Bank</span>
+              <span class="bank-name">RHB Now</span>
+              <span class="bank-name">Hong Leong</span>
+              <span class="bank-name">AmBank</span>
+              <span class="bank-name">Bank Islam</span>
+              <span class="bank-name">BSN</span>
+              <span class="bank-name">And more...</span>
             </div>
           </div>
         </div>
@@ -174,7 +172,7 @@
           </div>
           <div class="form-group">
             <label for="phone-number" class="form-label">Phone Number</label>
-            <input type="tel" id="phone-number" class="form-input" placeholder="012-345 6789">
+            <input type="tel" id="phone-number" class="form-input" placeholder="012-345 6789" value="{{ auth()->user()->phone_number ?? '' }}">
             <div class="error-message">Please enter a valid phone number</div>
           </div>
         </div>

@@ -508,53 +508,67 @@ function hideLoading(overlay) {
     }
 }
 
-function showToast(message, type = 'success') {
-    // Create toast container if it doesn't exist
-    let toastContainer = document.querySelector('.toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.className = 'toast-container';
-        document.body.appendChild(toastContainer);
-    }
-    
-    // Create toast element
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-        <span>${message}</span>
+// Notification function
+function showNotification(message, type) {
+    // Create a simple notification
+    const notification = document.createElement('div');
+    notification.className = 'notification ' + type;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 9999;
+        ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
     `;
     
-    // Add to container
-    toastContainer.appendChild(toast);
+    document.body.appendChild(notification);
     
-    // Remove after 3 seconds
     setTimeout(() => {
-        if (toast.parentNode) {
-            toast.parentNode.removeChild(toast);
-        }
+        notification.remove();
     }, 3000);
 }
 
 
 // Form submission handling
 document.getElementById('qrGenerateForm').addEventListener('submit', function(e) {
-    // Only prevent if client-side validation fails
+    // Client-side validation only
     if (!selectedTableId) {
         e.preventDefault();
-        showToast('Please select a table', 'error');
+        showNotification('Please select a table', 'error');
         return;
     }
     
     const startTime = document.getElementById('started_at').value;
     if (!startTime) {
         e.preventDefault();
-        showToast('Please select start time', 'error');
+        showNotification('Please select start time', 'error');
         return;
     }
     
-    // If validation passes, show loading and let form submit normally
-    const loadingOverlay = showLoading();
+    // Show loading state for valid submissions
+    const submitBtn = document.getElementById('generateBtn');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating QR Code...';
+    submitBtn.disabled = true;
+    
+    // Let the form submit normally - don't prevent default for valid forms
 });
+
+// Check for success/error messages from session
+@if(session('message'))
+    showNotification('{{ session('message') }}', 'success');
+@endif
+
+@if(session('success'))
+    showNotification('{{ session('success') }}', 'success');
+@endif
+
+@if(session('error'))
+    showNotification('{{ session('error') }}', 'error');
+@endif
 </script>
 @endsection

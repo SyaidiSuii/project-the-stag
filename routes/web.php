@@ -62,11 +62,14 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/orders/{orderId}/details', [CustomerOrdersController::class, 'getOrderDetails'])->name('orders.details');
     Route::get('/orders/{orderId}/tracking', [CustomerOrdersController::class, 'getOrderTracking'])->name('orders.tracking');
     Route::post('/orders/{orderId}/cancel', [CustomerOrdersController::class, 'cancelOrder'])->name('orders.cancel');
+    Route::post('/orders/booking/{reservationId}/cancel', [CustomerOrdersController::class, 'cancelBooking'])->name('orders.booking.cancel');
     Route::get('/orders/{orderId}/reorder', [CustomerOrdersController::class, 'getReorderDetails'])->name('orders.reorder');
     Route::post('/orders/{orderId}/add-to-cart', [CustomerOrdersController::class, 'addToCart'])->name('orders.addToCart');
     Route::get('/rewards', [CustomerRewardsController::class, 'index'])->name('rewards.index');
     Route::get('/booking', [CustomerBookingController::class, 'index'])->name('booking.index');
     Route::post('/booking/store', [CustomerBookingController::class, 'store'])->name('booking.store');
+    Route::get('/booking/history', [CustomerBookingController::class, 'history'])->name('booking.history');
+    Route::post('/booking/{reservationId}/cancel', [CustomerBookingController::class, 'cancel'])->name('booking.cancel');
     Route::get('/booking/{orderId}/payment', [CustomerBookingPaymentController::class, 'index'])->name('booking.payment.index');
     Route::post('/booking/{orderId}/payment', [CustomerBookingPaymentController::class, 'processPayment'])->name('booking.payment.process');
     Route::get('/account', [CustomerAccountController::class, 'index'])->name('account.index');
@@ -86,6 +89,12 @@ Route::prefix('customer')->name('customer.')->group(function () {
         Route::delete('/clear', [CustomerCartController::class, 'clearCart'])->name('clear');
         Route::post('/merge', [CustomerCartController::class, 'mergeCart'])->name('merge');
     });
+});
+
+// Payment Gateway Routes (Public - No Authentication Required)
+Route::prefix('payment')->name('payment.')->group(function () {
+    Route::get('return/{payment}', [CustomerPaymentController::class, 'paymentReturn'])->name('return');
+    Route::post('callback', [CustomerPaymentController::class, 'paymentCallback'])->name('callback');
 });
 
 // Default homepage redirect

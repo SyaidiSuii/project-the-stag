@@ -274,19 +274,17 @@
         </table>
     </div>
 
-    @if($menuItems->hasPages())
     <!-- Pagination -->
-    <div class="pagination">
-        <div class="pagination-info">
-            <span>
-                Showing {{ $menuItems->firstItem() }} to {{ $menuItems->lastItem() }} 
-                of {{ $menuItems->total() }} results
-            </span>
-        </div>
-        
-        <div class="pagination-links">
+    @if($menuItems->hasPages())
+        <div class="pagination">
+            <div style="display: flex; align-items: center; gap: 16px; margin-right: auto;">
+                <span style="font-size: 14px; color: var(--text-2);">
+                    Showing {{ $menuItems->firstItem() }} to {{ $menuItems->lastItem() }} of {{ $menuItems->total() }} results
+                </span>
+            </div>
+            
             @if($menuItems->onFirstPage())
-                <span class="pagination-btn disabled">
+                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
                     <i class="fas fa-chevron-left"></i>
                 </span>
             @else
@@ -308,12 +306,11 @@
                     <i class="fas fa-chevron-right"></i>
                 </a>
             @else
-                <span class="pagination-btn disabled">
+                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
                     <i class="fas fa-chevron-right"></i>
                 </span>
             @endif
         </div>
-    </div>
     @endif
 </div>
 @endsection

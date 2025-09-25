@@ -28,12 +28,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 cardDetails.style.display = 'block';
                 walletDetails.style.display = 'none';
                 receiptSection.style.display = 'block';
-                payNowBtn.innerHTML = `<i class="fas fa-lock"></i> <span>Pay RM ${window.bookingOrderData.total_amount.toFixed(2)}</span>`;
+                payNowBtn.innerHTML = `<i class="fas fa-lock"></i> <span>Pay RM ${parseFloat(window.bookingOrderData.total_amount || 0).toFixed(2)}</span>`;
             } else if (selectedPaymentMethod === 'wallet') {
                 cardDetails.style.display = 'none';
                 walletDetails.style.display = 'block';
                 receiptSection.style.display = 'block';
-                payNowBtn.innerHTML = `<i class="fas fa-lock"></i> <span>Pay RM ${window.bookingOrderData.total_amount.toFixed(2)}</span>`;
+                payNowBtn.innerHTML = `<i class="fas fa-lock"></i> <span>Pay RM ${parseFloat(window.bookingOrderData.total_amount || 0).toFixed(2)}</span>`;
             } else if (selectedPaymentMethod === 'cash') {
                 cardDetails.style.display = 'none';
                 walletDetails.style.display = 'none';
@@ -193,7 +193,13 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Payment response:', data);
             
             if (data.success) {
-                showSuccessModal(data);
+                if (data.payment_method === 'gateway') {
+                    // Redirect to payment gateway
+                    window.location.href = data.redirect_url;
+                } else {
+                    // Show success modal for manual payment
+                    showSuccessModal(data);
+                }
             } else {
                 alert('Payment failed: ' + (data.message || 'Unknown error occurred'));
                 resetPayButton();
@@ -208,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function resetPayButton() {
         payNowBtn.disabled = false;
-        payNowBtn.innerHTML = `<i class="fas fa-lock"></i> Pay RM ${window.bookingOrderData.total_amount.toFixed(2)}`;
+        payNowBtn.innerHTML = `<i class="fas fa-lock"></i> Pay RM ${parseFloat(window.bookingOrderData.total_amount || 0).toFixed(2)}`;
     }
 
     function showSuccessModal(data) {
@@ -216,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
         successDetails.innerHTML = `
             <div class="success-details">
                 <p><strong>Order ID:</strong> ${data.order_id}</p>
-                <p><strong>Amount Paid:</strong> RM ${window.bookingOrderData.total_amount.toFixed(2)}</p>
+                <p><strong>Amount Paid:</strong> RM ${parseFloat(window.bookingOrderData.total_amount || 0).toFixed(2)}</p>
                 <p class="success-note">Your table reservation is confirmed! Please arrive on time.</p>
             </div>
         `;
@@ -236,7 +242,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Initialize card details visibility
-    const initialMethod = document.querySelector('input[name="payment_method"]:checked').value;
+    const initialMethodElement = document.querySelector('.payment-method.selected');
+    const initialMethod = initialMethodElement ? initialMethodElement.getAttribute('data-method') : 'card';
     if (initialMethod !== 'card') {
         cardDetails.style.display = 'none';
     }

@@ -255,6 +255,7 @@
       align-items: center;
       gap: 8px;
       border: none;
+      text-decoration: none;
     }
     .btn-primary {
       background: linear-gradient(135deg, var(--brand), var(--brand-2));

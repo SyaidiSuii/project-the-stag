@@ -78,9 +78,9 @@
             @elseif($order->order_status === 'cancelled')
               <button class="btn btn-primary reorder-btn" data-order-id="{{ $order->id }}">Reorder</button>
             @endif
-            @if($order->payment_status === 'unpaid')
+            @if($order->payment_status === 'unpaid' && $order->order_status !== 'cancelled')
               <button class="btn btn-primary pay-now-btn" data-order-id="{{ $order->id }}">Pay Now</button>
-            @else
+            @elseif($order->order_status !== 'cancelled')
               <button class="btn btn-secondary view-details-btn" data-order-id="{{ $order->id }}">View Details</button>
             @endif
           </div>
@@ -103,7 +103,7 @@
           <div class="booking-details">
             <div class="booking-detail">
               <span class="booking-detail-icon">👥</span>
-              <span class="booking-detail-text">{{ $reservation->number_of_guests }} People</span>
+              <span class="booking-detail-text">{{ $reservation->party_size }} People</span>
             </div>
             
             @if($reservation->table)
@@ -367,6 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <h4>Summary</h4>
                                     <p><strong>Date:</strong> ${order.order_time}</p>
                                     <p><strong>Status:</strong> ${order.order_status.charAt(0).toUpperCase() + order.order_status.slice(1)}</p>
+                                    <p><strong>Payment:</strong> <span class="status-badge payment-${order.payment_status_color}">${order.payment_status_text}</span></p>
                                     <p><strong>Customer:</strong> ${order.customer_name}</p>
                                     ${order.table_number ? `<p><strong>Table:</strong> ${order.table_number}</p>` : ''}
                                     <p><strong>Total Amount:</strong> ${order.formatted_total}</p>
@@ -821,6 +822,109 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         orderDetailsModal.classList.add('open');
     };
+
+    // Category Filtering Logic
+    const categoryTabs = document.querySelectorAll('.category-tabs .tab');
+    const orderCards = document.querySelectorAll('.order-card');
+    const bookingCards = document.querySelectorAll('.booking-card');
+    const categoryTitle = document.getElementById('categoryTitle');
+
+    // Add event listeners to category tabs
+    categoryTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const selectedCategory = this.dataset.category;
+            
+            // Update active tab
+            categoryTabs.forEach(t => t.removeAttribute('aria-current'));
+            this.setAttribute('aria-current', 'page');
+            
+            // Update category title
+            categoryTitle.textContent = selectedCategory === 'All' ? 'All Orders' : 
+                                       selectedCategory === 'History' ? 'Order History' : 
+                                       selectedCategory;
+            
+            // Filter orders and bookings
+            filterByCategory(selectedCategory);
+        });
+    });
+
+    function filterByCategory(category) {
+        // Define status groups
+        const ongoingOrderStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'served'];
+        const historyOrderStatuses = ['completed', 'cancelled'];
+        const ongoingBookingStatuses = ['pending', 'confirmed', 'seated'];
+        const historyBookingStatuses = ['completed', 'cancelled'];
+
+        let visibleCount = 0;
+
+        // Filter order cards
+        orderCards.forEach(card => {
+            const orderStatus = card.dataset.status;
+            let shouldShow = false;
+
+            switch(category) {
+                case 'All':
+                    shouldShow = true;
+                    break;
+                case 'Ongoing':
+                    shouldShow = ongoingOrderStatuses.includes(orderStatus);
+                    break;
+                case 'History':
+                    shouldShow = historyOrderStatuses.includes(orderStatus);
+                    break;
+                case 'Booking':
+                    shouldShow = false; // Only bookings, no orders
+                    break;
+            }
+
+            if (shouldShow) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Filter booking cards
+        bookingCards.forEach(card => {
+            const bookingStatus = card.dataset.status;
+            let shouldShow = false;
+
+            switch(category) {
+                case 'All':
+                    shouldShow = true;
+                    break;
+                case 'Ongoing':
+                    shouldShow = ongoingBookingStatuses.includes(bookingStatus);
+                    break;
+                case 'History':
+                    shouldShow = historyBookingStatuses.includes(bookingStatus);
+                    break;
+                case 'Booking':
+                    shouldShow = true; // All bookings
+                    break;
+            }
+
+            if (shouldShow) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Show/hide no results message
+        const noResultsMsg = document.getElementById('noResults');
+        if (visibleCount === 0) {
+            noResultsMsg.style.display = 'block';
+            noResultsMsg.textContent = `No ${category.toLowerCase()} found.`;
+        } else {
+            noResultsMsg.style.display = 'none';
+        }
+    }
+
+    // Initialize with 'All' category on page load
+    filterByCategory('All');
 });
 </script>
 

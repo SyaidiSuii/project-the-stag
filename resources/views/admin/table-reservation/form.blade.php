@@ -75,9 +75,9 @@
                             </option>
                         @endforeach
                     </select>
-                    @error('user_id')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('user_id'))
+                        <div class="form-error">{{ implode(', ', $errors->get('user_id')) }}</div>
+                    @endif
                     <div class="form-hint">Leave empty for walk-in guests</div>
                 </div>
 
@@ -91,9 +91,9 @@
                         value="{{ old('guest_name', $reservation->guest_name) }}"
                         placeholder="Enter guest name"
                         required>
-                    @error('guest_name')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('guest_name'))
+                        <div class="form-error">{{ implode(', ', $errors->get('guest_name')) }}</div>
+                    @endif
                 </div>
             </div>
 
@@ -107,9 +107,9 @@
                         class="form-control @error('guest_email') is-invalid @enderror"
                         value="{{ old('guest_email', $reservation->guest_email) }}"
                         placeholder="Enter guest email">
-                    @error('guest_email')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('guest_email'))
+                        <div class="form-error">{{ implode(', ', $errors->get('guest_email')) }}</div>
+                    @endif
                 </div>
 
                 <div class="form-group">
@@ -122,9 +122,9 @@
                         value="{{ old('guest_phone', $reservation->guest_phone) }}"
                         placeholder="Enter phone number"
                         required>
-                    @error('guest_phone')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('guest_phone'))
+                        <div class="form-error">{{ implode(', ', $errors->get('guest_phone')) }}</div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -148,9 +148,9 @@
                             </option>
                         @endforeach
                     </select>
-                    @error('table_id')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('table_id'))
+                        <div class="form-error">{{ implode(', ', $errors->get('table_id')) }}</div>
+                    @endif
                 </div>
 
                 <div class="form-group">
@@ -165,9 +165,9 @@
                         max="20"
                         placeholder="Number of guests"
                         required>
-                    @error('party_size')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('party_size'))
+                        <div class="form-error">{{ implode(', ', $errors->get('party_size')) }}</div>
+                    @endif
                 </div>
             </div>
 
@@ -181,9 +181,9 @@
                         class="form-control @error('booking_date') is-invalid @enderror"
                         value="{{ old('booking_date', $reservation->booking_date ? $reservation->booking_date->format('Y-m-d') : '') }}"
                         required>
-                    @error('booking_date')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('booking_date'))
+                        <div class="form-error">{{ implode(', ', $errors->get('booking_date')) }}</div>
+                    @endif
                 </div>
 
                 <div class="form-group">
@@ -195,9 +195,9 @@
                         class="form-control @error('booking_time') is-invalid @enderror"
                         value="{{ old('booking_time', $reservation->booking_time ? $reservation->booking_time : '') }}"
                         required>
-                    @error('booking_time')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('booking_time'))
+                        <div class="form-error">{{ implode(', ', $errors->get('booking_time')) }}</div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -220,9 +220,9 @@
                         <option value="cancelled" {{ old('status', $reservation->status) == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                         <option value="no_show" {{ old('status', $reservation->status) == 'no_show' ? 'selected' : '' }}>No Show</option>
                     </select>
-                    @error('status')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('status'))
+                        <div class="form-error">{{ implode(', ', $errors->get('status')) }}</div>
+                    @endif
                 </div>
             </div>
 
@@ -234,9 +234,9 @@
                     class="form-control @error('special_requests') is-invalid @enderror"
                     rows="3"
                     placeholder="Any special requests or dietary requirements">{{ old('special_requests', $reservation->special_requests) }}</textarea>
-                @error('special_requests')
-                    <div class="form-error">{{ $message }}</div>
-                @enderror
+                @if($errors->get('special_requests'))
+                    <div class="form-error">{{ implode(', ', $errors->get('special_requests')) }}</div>
+                @endif
             </div>
 
             <div class="form-group">
@@ -247,9 +247,9 @@
                     class="form-control @error('notes') is-invalid @enderror"
                     rows="3"
                     placeholder="Internal notes (not visible to guest)">{{ old('notes', $reservation->notes) }}</textarea>
-                @error('notes')
-                    <div class="form-error">{{ $message }}</div>
-                @enderror
+                @if($errors->get('notes'))
+                    <div class="form-error">{{ implode(', ', $errors->get('notes')) }}</div>
+                @endif
             </div>
         </div>
 
@@ -305,6 +305,31 @@
 
 @section('scripts')
 <script>
+// Notification function
+function showNotification(message, type) {
+    // Create a simple notification
+    const notification = document.createElement('div');
+    notification.className = 'notification ' + type;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 9999;
+        ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
 // Add any specific JavaScript for table reservation form here
 document.addEventListener('DOMContentLoaded', function() {
     // Debug form submission
@@ -333,7 +358,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
             
-            // If validation passes, allow form to submit normally
+            // If validation passes, show loading and allow form to submit normally
+            const submitBtn = this.querySelector('.btn-save');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitBtn.disabled = true;
+            
             console.log('Form validation passed, submitting...');
         });
     }
@@ -366,6 +395,19 @@ document.addEventListener('DOMContentLoaded', function() {
         // Trigger on page load if table is already selected
         tableSelect.dispatchEvent(new Event('change'));
     }
+    
+    // Check for success/error messages from session
+    @if(session('message'))
+        showNotification('{{ session('message') }}', 'success');
+    @endif
+    
+    @if(session('success'))
+        showNotification('{{ session('success') }}', 'success');
+    @endif
+    
+    @if(session('error'))
+        showNotification('{{ session('error') }}', 'error');
+    @endif
 });
 </script>
 @endsection

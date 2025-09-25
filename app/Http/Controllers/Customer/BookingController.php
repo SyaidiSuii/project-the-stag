@@ -38,6 +38,125 @@ class BookingController extends Controller
     }
 
     /**
+     * Display customer's booking history.
+     */
+    public function history()
+    {
+        $user = Auth::user();
+        
+        $reservations = TableReservation::with(['table'])
+            ->where(function ($query) use ($user) {
+                if ($user) {
+                    $query->where('user_id', $user->id)
+                          ->orWhere('guest_email', $user->email);
+                } else {
+                    $query->whereNull('id'); // Return empty if no user
+                }
+            })
+            ->orderBy('booking_date', 'desc')
+            ->orderBy('booking_time', 'desc')
+            ->paginate(10);
+
+        return view('customer.booking.history', compact('reservations'));
+    }
+
+    /**
+     * Cancel a booking reservation.
+     */
+    public function cancel(Request $request, $reservationId)
+    {
+        try {
+            $user = Auth::user();
+            
+            $reservation = TableReservation::with('table')
+                ->where('id', $reservationId)
+                ->where(function ($query) use ($user) {
+                    if ($user) {
+                        $query->where('user_id', $user->id)
+                              ->orWhere('guest_email', $user->email);
+                    } else {
+                        $query->whereNull('id'); // No access if not logged in
+                    }
+                })
+                ->first();
+
+            if (!$reservation) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Booking not found or you do not have permission to cancel this booking.'
+                ], 404);
+            }
+
+            // Check if booking can be cancelled
+            if (!in_array($reservation->status, ['confirmed', 'pending'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This booking cannot be cancelled. Status: ' . $reservation->status
+                ], 400);
+            }
+
+            // Check if booking date is in the future (allow same day cancellation)
+            $bookingDateTime = $reservation->booking_date->setTimeFromTimeString($reservation->booking_time);
+            if ($bookingDateTime->isPast()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot cancel past bookings.'
+                ], 400);
+            }
+
+            DB::beginTransaction();
+
+            // Update reservation status to cancelled
+            $reservation->update([
+                'status' => 'cancelled',
+                'notes' => ($reservation->notes ? $reservation->notes . "\n\n" : '') . 
+                          'Cancelled by customer on ' . now()->format('Y-m-d H:i:s')
+            ]);
+
+            // If table status is reserved for this booking, make it available
+            if ($reservation->table && $reservation->table->status === 'reserved') {
+                $reservation->table->update(['status' => 'available']);
+            }
+
+            // Cancel associated order if exists
+            $order = Order::where('reservation_id', $reservation->id)
+                         ->where('order_status', '!=', 'completed')
+                         ->first();
+            
+            if ($order) {
+                $order->update([
+                    'order_status' => 'cancelled',
+                    'notes' => ($order->notes ? $order->notes . "\n\n" : '') . 
+                              'Order cancelled due to booking cancellation on ' . now()->format('Y-m-d H:i:s')
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking cancelled successfully.',
+                'reservation' => [
+                    'id' => $reservation->id,
+                    'confirmation_code' => $reservation->confirmation_code,
+                    'status' => 'cancelled',
+                    'booking_date' => $reservation->booking_date->format('Y-m-d'),
+                    'booking_time' => $reservation->booking_time,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to cancel booking. Please try again.',
+                'error' => config('app.debug') ? $e->getMessage() : 'An error occurred'
+            ], 500);
+        }
+    }
+
+    /**
      * Store a new booking reservation.
      */
     public function store(Request $request)

@@ -42,6 +42,7 @@ class MenuCustomizationController extends Controller
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
         
+        // Get statistics for dashboard cards
         $allowedSortFields = ['customization_type', 'customization_value', 'additional_price', 'created_at'];
         if (in_array($sortBy, $allowedSortFields)) {
             $query->orderBy($sortBy, $sortOrder);

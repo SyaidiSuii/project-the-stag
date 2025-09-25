@@ -74,6 +74,9 @@ class TableReservation extends Model
                         if (!$reservation->seated_at) $reservation->seated_at = $now;
                         if (!$reservation->completed_at) $reservation->completed_at = $now;
                         break;
+                    case 'cancelled':
+                        // Cancelled reservations don't need additional timestamps
+                        break;
                 }
             }
         });
@@ -146,5 +149,50 @@ class TableReservation extends Model
             return $this->tableQrcode->qr_code_url;
         }
         return null;
+    }
+
+    /**
+     * Check if booking can be cancelled
+     */
+    public function canBeCancelled()
+    {
+        // Can only cancel confirmed or pending bookings
+        if (!in_array($this->status, ['confirmed', 'pending'])) {
+            return false;
+        }
+
+        // Can't cancel past bookings
+        $bookingDateTime = $this->booking_date->setTimeFromTimeString($this->booking_time);
+        return $bookingDateTime->isFuture() || $bookingDateTime->isToday();
+    }
+
+    /**
+     * Get status color for display
+     */
+    public function getStatusColor()
+    {
+        return match($this->status) {
+            'pending' => 'warning',
+            'confirmed' => 'success',
+            'seated' => 'info',
+            'completed' => 'primary',
+            'cancelled' => 'danger',
+            default => 'secondary'
+        };
+    }
+
+    /**
+     * Get formatted status text
+     */
+    public function getStatusText()
+    {
+        return match($this->status) {
+            'pending' => 'Pending Confirmation',
+            'confirmed' => 'Confirmed',
+            'seated' => 'Currently Seated',
+            'completed' => 'Completed',
+            'cancelled' => 'Cancelled',
+            default => ucfirst($this->status)
+        };
     }
 }

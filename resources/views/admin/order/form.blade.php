@@ -51,9 +51,9 @@
                             </option>
                         @endforeach
                     </select>
-                    @error('user_id')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('user_id'))
+                        <div class="form-error">{{ implode(', ', $errors->get('user_id')) }}</div>
+                    @endif
                 </div>
 
                 <div class="form-group">
@@ -68,9 +68,9 @@
                         min="0"
                         placeholder="0.00"
                         required>
-                    @error('total_amount')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('total_amount'))
+                        <div class="form-error">{{ implode(', ', $errors->get('total_amount')) }}</div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -93,9 +93,9 @@
                     <option value="delivery" {{ old('order_type', $order->order_type) == 'delivery' ? 'selected' : '' }}>Delivery</option>
                     <option value="event" {{ old('order_type', $order->order_type) == 'event' ? 'selected' : '' }}>Event</option>
                 </select>
-                @error('order_type')
-                    <div class="form-error">{{ $message }}</div>
-                @enderror
+                @if($errors->get('order_type'))
+                    <div class="form-error">{{ implode(', ', $errors->get('order_type')) }}</div>
+                @endif
             </div>
 
             <div class="form-group">
@@ -111,9 +111,9 @@
                     <option value="waiter" {{ old('order_source', $order->order_source) == 'waiter' ? 'selected' : '' }}>Waiter</option>
                     <option value="qr_scan" {{ old('order_source', $order->order_source) == 'qr_scan' ? 'selected' : '' }}>QR Scan</option>
                 </select>
-                @error('order_source')
-                    <div class="form-error">{{ $message }}</div>
-                @enderror
+                @if($errors->get('order_source'))
+                    <div class="form-error">{{ implode(', ', $errors->get('order_source')) }}</div>
+                @endif
             </div>
             </div>
         </div>
@@ -137,9 +137,9 @@
                             </option>
                         @endforeach
                     </select>
-                    @error('table_id')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('table_id'))
+                        <div class="form-error">{{ implode(', ', $errors->get('table_id')) }}</div>
+                    @endif
                 </div>
 
                 <div class="form-group">
@@ -151,9 +151,9 @@
                         class="form-control @error('table_number') is-invalid @enderror"
                         value="{{ old('table_number', $order->table_number) }}"
                         placeholder="e.g. A1, B2">
-                    @error('table_number')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('table_number'))
+                        <div class="form-error">{{ implode(', ', $errors->get('table_number')) }}</div>
+                    @endif
                     <div class="form-hint" style="font-size: 12px; color: #6b7280; margin-top: 4px;">Use this for custom table numbers or delivery orders</div>
                 </div>
             </div>
@@ -173,9 +173,9 @@
                         </option>
                     @endforeach
                 </select>
-                @error('reservation_id')
-                    <div class="form-error">{{ $message }}</div>
-                @enderror
+                @if($errors->get('reservation_id'))
+                    <div class="form-error">{{ implode(', ', $errors->get('reservation_id')) }}</div>
+                @endif
             </div>
         </div>
 
@@ -198,9 +198,9 @@
                         <option value="completed" {{ old('order_status', $order->order_status) == 'completed' ? 'selected' : '' }}>Completed</option>
                         <option value="cancelled" {{ old('order_status', $order->order_status) == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                     </select>
-                    @error('order_status')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('order_status'))
+                        <div class="form-error">{{ implode(', ', $errors->get('order_status')) }}</div>
+                    @endif
                 </div>
 
                 <div class="form-group">
@@ -215,9 +215,9 @@
                         <option value="paid" {{ old('payment_status', $order->payment_status) == 'paid' ? 'selected' : '' }}>Paid</option>
                         <option value="refunded" {{ old('payment_status', $order->payment_status) == 'refunded' ? 'selected' : '' }}>Refunded</option>
                     </select>
-                    @error('payment_status')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('payment_status'))
+                        <div class="form-error">{{ implode(', ', $errors->get('payment_status')) }}</div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -235,9 +235,9 @@
                         name="estimated_completion_time" 
                         class="form-control @error('estimated_completion_time') is-invalid @enderror"
                         value="{{ old('estimated_completion_time', $order->estimated_completion_time ? $order->estimated_completion_time->timezone(config('app.timezone'))->format('Y-m-d\TH:i') : '') }}"~>
-                    @error('estimated_completion_time')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('estimated_completion_time'))
+                        <div class="form-error">{{ implode(', ', $errors->get('estimated_completion_time')) }}</div>
+                    @endif
                 </div>
 
                 <div class="form-group">
@@ -248,9 +248,9 @@
                         name="actual_completion_time" 
                         class="form-control @error('actual_completion_time') is-invalid @enderror"
                         value="{{ old('actual_completion_time', $order->actual_completion_time ? $order->actual_completion_time->format('Y-m-d\TH:i') : '') }}">
-                    @error('actual_completion_time')
-                        <div class="form-error">{{ $message }}</div>
-                    @enderror
+                    @if($errors->get('actual_completion_time'))
+                        <div class="form-error">{{ implode(', ', $errors->get('actual_completion_time')) }}</div>
+                    @endif
                 </div>
             </div>
 
@@ -306,9 +306,9 @@
             <button type="button" onclick="addInstruction()" class="btn-add-instruction">
                 <i class="fas fa-plus"></i> Add Instruction
             </button>
-            @error('special_instructions')
-                <div class="form-error">{{ $message }}</div>
-            @enderror
+            @if($errors->get('special_instructions'))
+                <div class="form-error">{{ implode(', ', $errors->get('special_instructions')) }}</div>
+            @endif
         </div>
 
         <!-- Order Items -->
@@ -544,9 +544,9 @@
                     class="form-control @error('confirmation_code') is-invalid @enderror"
                     value="{{ old('confirmation_code', $order->confirmation_code) }}"
                     placeholder="Auto-generated if empty">
-                @error('confirmation_code')
-                    <div class="form-error">{{ $message }}</div>
-                @enderror
+                @if($errors->get('confirmation_code'))
+                    <div class="form-error">{{ implode(', ', $errors->get('confirmation_code')) }}</div>
+                @endif
                 <div class="form-hint" style="font-size: 12px; color: #6b7280; margin-top: 4px;">Leave empty to auto-generate a unique confirmation code</div>
             </div>
         </div>
@@ -601,6 +601,31 @@
 
 @section('scripts')
 <script>
+// Notification function
+function showNotification(message, type) {
+    // Create a simple notification
+    const notification = document.createElement('div');
+    notification.className = 'notification ' + type;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 9999;
+        ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
 // Special Instructions Management
 function addInstruction() {
     const container = document.getElementById('special-instructions-container');
@@ -966,6 +991,33 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.order-item-row').forEach(setupItemEventListenersEnhanced);
     updateOrderTotals();
     calculateRealTimeETA(); // Calculate initial ETA
+    
+    // Handle form submission with loading state
+    const orderForm = document.querySelector('.menu-item-form');
+    if (orderForm) {
+        orderForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('.btn-save');
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitBtn.disabled = true;
+            
+            // Let the form submit normally - don't prevent default
+        });
+    }
+    
+    // Check for success/error messages from session
+    @if(session('message'))
+        showNotification('{{ session('message') }}', 'success');
+    @endif
+    
+    @if(session('success'))
+        showNotification('{{ session('success') }}', 'success');
+    @endif
+    
+    @if(session('error'))
+        showNotification('{{ session('error') }}', 'error');
+    @endif
 });
 </script>
 @endsection

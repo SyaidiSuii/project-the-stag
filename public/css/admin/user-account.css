@@ -306,7 +306,9 @@
     }
     .pagination-btn:hover:not(.active) {
       background: var(--bg);
-    }/* ===== Dashboard Cards ===== */
+    }
+    
+    /* ===== Dashboard Cards ===== */
     .admin-cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -606,6 +608,7 @@
       background: white;
       font-size: 14px;
       transition: all 0.3s ease;
+      text-decoration: none;
     }
     .pagination-btn.active {
       background: var(--brand);

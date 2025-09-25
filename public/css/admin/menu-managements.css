@@ -823,3 +823,34 @@
         margin: 10px;
       }
     }
+
+    /* ===== Pagination ===== */
+    .pagination {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .pagination-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      border: 1px solid var(--muted);
+      background: white;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .pagination-btn.active {
+      background: var(--brand);
+      color: white;
+      border-color: var(--brand);
+    }
+    .pagination-btn:hover:not(.active) {
+      background: var(--bg);
+    }

@@ -51,7 +51,14 @@ class TableController extends Controller
                        ->paginate(10)
                        ->appends($request->query());
 
-        return view('admin.table.index', compact('tables'));
+        // Get statistics for dashboard cards
+        $totalTables = Table::count();
+        $availableTables = Table::where('status', 'available')->count();
+        $maintenanceTables = Table::where('status', 'maintenance')->count();
+        
+
+        
+        return view('admin.table.index', compact('tables','totalTables','availableTables','maintenanceTables'));
     }
 
     /**

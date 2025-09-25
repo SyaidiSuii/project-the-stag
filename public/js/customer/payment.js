@@ -139,22 +139,31 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 console.log('Debug: Server response:', data);
                 if (data.success) {
-                    console.log('Debug: Payment successful! Clearing cart...');
+                    console.log('Debug: Payment successful!');
                     
-                    // Clear cart from sessionStorage
-                    sessionStorage.removeItem('checkoutCart');
-                    sessionStorage.removeItem('currentOrder');
-                    
-                    // Clear cart from localStorage (main cart storage)
-                    localStorage.removeItem('cartItems');
-                    
-                    console.log('Debug: Cart cleared from both sessionStorage and localStorage. Showing success modal...');
-                    
-                    // Show success modal
-                    if (successModal && orderIdEl) {
-                        orderIdEl.textContent = data.order_id;
-                        successModal.style.display = 'flex';
-                        console.log('Debug: Success modal displayed');
+                    if (data.payment_method === 'gateway') {
+                        // Redirect to payment gateway
+                        console.log('Debug: Redirecting to payment gateway:', data.redirect_url);
+                        window.location.href = data.redirect_url;
+                    } else {
+                        // Manual payment - clear cart and show success
+                        console.log('Debug: Manual payment! Clearing cart...');
+                        
+                        // Clear cart from sessionStorage
+                        sessionStorage.removeItem('checkoutCart');
+                        sessionStorage.removeItem('currentOrder');
+                        
+                        // Clear cart from localStorage (main cart storage)
+                        localStorage.removeItem('cartItems');
+                        
+                        console.log('Debug: Cart cleared. Showing success modal...');
+                        
+                        // Show success modal
+                        if (successModal && orderIdEl) {
+                            orderIdEl.textContent = data.order_id;
+                            successModal.style.display = 'flex';
+                            console.log('Debug: Success modal displayed');
+                        }
                     }
                 } else {
                     // Handle failure

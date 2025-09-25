@@ -10,9 +10,17 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User; // Assuming you might need to create a guest user or link to an existing one
 use App\Models\UserCart;
+use App\Services\PaymentService;
 
 class PaymentController extends Controller
 {
+    protected $paymentService;
+
+    public function __construct(PaymentService $paymentService)
+    {
+        $this->paymentService = $paymentService;
+    }
+
     public function index()
     {
         return view('customer.payment.index');
@@ -76,6 +84,57 @@ class PaymentController extends Controller
                 ]);
             }
 
+            // Handle different payment methods
+            $paymentMethod = $paymentDetails['method'];
+            
+            if (in_array($paymentMethod, ['card', 'wallet'])) {
+                // Online payment - use gateway
+                $paymentData = [
+                    'payment_method' => $paymentMethod,
+                    'amount' => $totalAmount,
+                    'currency' => 'MYR',
+                    'customer_name' => $user ? $user->name : 'Guest',
+                    'customer_email' => $paymentDetails['email'] ?? ($user ? $user->email : ''),
+                    'customer_phone' => $user ? $user->phone_number : '',
+                ];
+
+                $gatewayResult = $this->paymentService->createGatewayPayment($paymentData, $order->id);
+                
+                if (!$gatewayResult['success']) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => $gatewayResult['message']
+                    ], 400);
+                }
+
+                // Clear user's cart if logged in
+                if ($user) {
+                    UserCart::where('user_id', $user->id)->delete();
+                }
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Redirecting to payment gateway...',
+                    'redirect_url' => $gatewayResult['redirect_url'],
+                    'payment_method' => 'gateway'
+                ]);
+
+            } else {
+                // Manual payment (cash at restaurant)
+                $paymentData = [
+                    'payment_method' => $paymentMethod,
+                    'amount' => $totalAmount,
+                    'currency' => 'MYR',
+                    'payment_status' => 'pending',
+                    'gateway' => 'manual',
+                ];
+
+                $payment = $this->paymentService->savePaymentData($paymentData, $order->id);
+            }
+
             // Clear user's cart if logged in
             if ($user) {
                 UserCart::where('user_id', $user->id)->delete();
@@ -107,6 +166,77 @@ class PaymentController extends Controller
                 'message' => 'An error occurred while placing your order. Please try again.',
                 'debug' => config('app.debug') ? $e->getMessage() : null
             ], 500);
+        }
+    }
+
+    /**
+     * Handle payment return from gateway (customer redirected back)
+     */
+    public function paymentReturn($paymentId)
+    {
+        try {
+            $payment = \App\Models\Payment::findOrFail($paymentId);
+            
+            // Get latest bill status from Toyyibpay
+            $toyyibpayService = new \App\Services\ToyyibpayService();
+            $billStatus = $toyyibpayService->getBillStatus($payment->bill_code);
+            
+            if ($billStatus['success']) {
+                // Update payment status based on current status
+                $this->paymentService->updatePaymentStatus(
+                    $payment->transaction_id, 
+                    $billStatus['status'],
+                    $billStatus['response']
+                );
+                
+                if ($billStatus['status'] === 'completed') {
+                    return redirect()->route('customer.orders.index')
+                        ->with('success', 'Payment completed successfully!');
+                } else {
+                    return redirect()->route('customer.orders.index')
+                        ->with('info', 'Payment is still processing. Please wait for confirmation.');
+                }
+            }
+            
+            return redirect()->route('customer.orders.index')
+                ->with('warning', 'Unable to verify payment status. Please contact support if payment was made.');
+                
+        } catch (\Exception $e) {
+            logger()->error('Payment return error', [
+                'payment_id' => $paymentId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return redirect()->route('customer.orders.index')
+                ->with('error', 'An error occurred while processing your return. Please contact support.');
+        }
+    }
+
+    /**
+     * Handle payment callback from gateway (webhook)
+     */
+    public function paymentCallback(Request $request)
+    {
+        try {
+            $callbackData = $request->all();
+            
+            logger()->info('Payment callback received', ['data' => $callbackData]);
+            
+            $result = $this->paymentService->handleGatewayCallback($callbackData);
+            
+            if ($result['success']) {
+                return response('OK', 200);
+            }
+            
+            return response('FAILED', 400);
+            
+        } catch (\Exception $e) {
+            logger()->error('Payment callback error', [
+                'data' => $request->all(),
+                'error' => $e->getMessage()
+            ]);
+            
+            return response('ERROR', 500);
         }
     }
 }
