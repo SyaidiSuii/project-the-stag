@@ -892,10 +892,18 @@
     }
 
     /* ===== Guest Content ===== */
-    .guest-content {
-      max-width: 800px;
-      margin: 0 auto;
+    .main-content.guest-layout {
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
       padding: 2rem;
+      flex-direction: row;
+    }
+    
+    .guest-content {
+      max-width: 600px;
+      width: 100%;
     }
 
     .guest-content .account-card {
@@ -981,6 +989,16 @@
       body {
         padding-left: 0;
         padding-bottom: 70px; /* Space for bottom nav */
+      }
+      
+      /* Guest layout responsive */
+      .main-content.guest-layout {
+        padding: 1rem;
+        min-height: calc(100vh - 70px);
+      }
+      
+      .guest-content {
+        max-width: 100%;
       }
       .sidebar {
         width: 100%;

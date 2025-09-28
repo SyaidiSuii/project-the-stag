@@ -271,7 +271,7 @@
 
 @guest
 <!-- Guest User Content -->
-<div class="main-content">
+<div class="main-content guest-layout">
   <div class="guest-content">
     <div class="account-card">
       <div class="card-header">

@@ -38,4 +38,9 @@ class CustomerProfile extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function customerRewards()
+    {
+        return $this->hasMany(CustomerReward::class);
+    }
 }

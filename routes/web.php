@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\PushNotificationController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleManagementController;
 use App\Http\Controllers\Admin\TableQrcodeController;
+use App\Http\Controllers\Admin\RewardsController;
 use App\Http\Controllers\QR\MenuController as QRMenuController;
 use App\Http\Controllers\Admin\MenuCustomizationController;
 use App\Http\Controllers\Admin\QuickReorderController;
@@ -293,6 +294,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('trends', [SaleAnalyticsController::class, 'getTrends'])->name('trends');
         });
         Route::resource('sale-analytics', SaleAnalyticsController::class);
+
+        // ---------------------------------------------
+        // REWARDS MANAGEMENT
+        // ---------------------------------------------
+        Route::prefix('rewards')->name('rewards.')->group(function () {
+            Route::post('{reward}/toggle', [RewardsController::class, 'toggle'])->name('toggle');
+            Route::get('voucher-templates', [RewardsController::class, 'getVoucherTemplates'])->name('voucher-templates');
+        });
+        Route::resource('rewards', RewardsController::class);
 
     }); // End of admin routes
 
