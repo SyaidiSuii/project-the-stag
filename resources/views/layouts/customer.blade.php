@@ -11,7 +11,11 @@
     
     <!-- Custom Design System CSS -->
     <link rel="stylesheet" href="{{ asset('css/customer/layout.css') }}">
-    
+
+    <!-- Toast & Confirm Modal CSS -->
+    <link rel="stylesheet" href="{{ asset('css/toast.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/confirm-modal.css') }}">
+
     <!-- Page Specific Styles -->
     @yield('styles')
 </head>
@@ -24,13 +28,9 @@
             <div class="nav-icon"><i class="fas fa-home"></i></div>
             <div class="nav-text">HOME</div>
         </a>
-        <a class="nav-item {{ Request::routeIs('customer.food*') ? 'active' : '' }}" href="{{ route('customer.food.index') }}">
+        <a class="nav-item {{ Request::routeIs('customer.menu*') || Request::routeIs('customer.food*') || Request::routeIs('customer.drinks*') ? 'active' : '' }}" href="{{ route('customer.menu.index') }}">
             <div class="nav-icon"><i class="fas fa-utensils"></i></div>
-            <div class="nav-text">FOOD</div>
-        </a>
-        <a class="nav-item {{ Request::routeIs('customer.drinks*') ? 'active' : '' }}" href="{{ route('customer.drinks.index') }}">
-            <div class="nav-icon"><i class="fas fa-cocktail"></i></div>
-            <div class="nav-text">DRINKS</div>
+            <div class="nav-text">MENU</div>
         </a>
         <a class="nav-item {{ Request::routeIs('customer.orders*') ? 'active' : '' }}" href="{{ route('customer.orders.index') }}">
             <div class="nav-icon"><i class="fas fa-shopping-bag"></i></div>
@@ -54,6 +54,10 @@
     <div class="main-content">
         @yield('content')
     </div>
+
+    <!-- Toast & Confirm Modal JavaScript -->
+    <script src="{{ asset('js/toast.js') }}"></script>
+    <script src="{{ asset('js/confirm-modal.js') }}"></script>
 
     <!-- Customer Design System JavaScript -->
     <script src="{{ asset('js/customer/layout.js') }}"></script>

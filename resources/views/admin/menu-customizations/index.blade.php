@@ -355,14 +355,22 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Function to bulk delete customizations
-function bulkDeleteCustomizations() {
+async function bulkDeleteCustomizations() {
     const checkedBoxes = document.querySelectorAll('.customization-checkbox:checked');
     if (checkedBoxes.length === 0) {
-        alert('Please select customizations to delete.');
+        Toast.warning('No Selection', 'Please select customizations to delete.');
         return;
     }
 
-    if (!confirm(`Are you sure you want to delete ${checkedBoxes.length} selected customizations?`)) {
+    const confirmed = await showConfirm(
+        'Delete Multiple Items?',
+        `Are you sure you want to delete ${checkedBoxes.length} selected customizations?`,
+        'danger',
+        'Delete All',
+        'Cancel'
+    );
+
+    if (!confirmed) {
         return;
     }
 

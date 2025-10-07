@@ -224,10 +224,25 @@
     .food-description.expanded::after {
       content: none;
     }
+    .item-type-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 6px;
+      border-radius: 8px;
+      z-index: 2;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+    }
     .set-meal-badge {
       position: absolute;
       top: 12px;
-      right: 12px;
+      left: 12px;
       background: linear-gradient(135deg, var(--accent), #ff8c42);
       color: white;
       font-size: 0.75rem;

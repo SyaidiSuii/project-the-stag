@@ -426,12 +426,24 @@ class RewardsController extends Controller
             'daily_points.*' => 'required|integer|min:1',
         ]);
 
-        CheckinSetting::updateOrCreate(
+        $setting = CheckinSetting::updateOrCreate(
             ['id' => 1],
             ['daily_points' => $request->daily_points]
         );
 
-        return response()->json(['success' => true, 'message' => 'Check-in settings updated successfully']);
+        \Cache::forget('checkin_settings');
+
+        // If it's an AJAX request, return JSON
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Check-in settings updated successfully',
+                'daily_points' => $setting->fresh()->daily_points
+            ]);
+        }
+
+        // Otherwise, redirect back with success message (for regular form submit)
+        return redirect()->back()->with('success', 'Check-in settings updated successfully');
     }
 
     public function updateRewardsContent(Request $request)

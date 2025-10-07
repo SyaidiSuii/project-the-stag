@@ -16,26 +16,35 @@ class CategoryController extends Controller
      */
     public function index(): View
     {
-        $categories = Category::with(['parent', 'subCategories'])
-            ->whereNull('parent_id') // Hanya ambil kategori utama
+        // Get only subcategories (parent categories are fixed and not editable)
+        $categories = Category::with('menuItems', 'parent')
+            ->whereNotNull('parent_id')
+            ->orderBy('type')
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
 
-        return view('admin.categories.index', compact('categories'));
+        // Get parent categories for reference
+        $parentCategories = Category::whereNull('parent_id')
+            ->orderBy('type')
+            ->get();
+
+        return view('admin.categories.index', compact('categories', 'parentCategories'));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
-        $mainCategories = Category::whereNull('parent_id')
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get();
+        $type = $request->get('type', 'food');
 
-        return view('admin.categories.create', compact('mainCategories'));
+        // Get parent category based on type
+        $parentCategory = Category::whereNull('parent_id')
+            ->where('type', $type)
+            ->first();
+
+        return view('admin.categories.create', compact('type', 'parentCategory'));
     }
 
     /**
@@ -45,31 +54,23 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:categories,name',
-            'type' => 'required|in:main,sub',
-            'parent_id' => 'nullable|exists:categories,id',
+            'type' => 'required|in:food,drink,set-meal',
+            'parent_id' => 'required|exists:categories,id',
             'sort_order' => 'nullable|integer|min:0'
         ]);
 
-        // Validasi tambahan: jika type = sub, parent_id harus ada
-        if ($validated['type'] === 'sub' && empty($validated['parent_id'])) {
-            return back()->withErrors(['parent_id' => 'Sub kategori harus memiliki parent kategori.']);
-        }
-
-        // Validasi tambahan: jika type = main, parent_id harus null
-        if ($validated['type'] === 'main') {
-            $validated['parent_id'] = null;
-        }
-
-        // Set default sort_order jika tidak diisi
+        // Set default sort_order if not provided
         if (empty($validated['sort_order'])) {
-            $maxSortOrder = Category::where('parent_id', $validated['parent_id'])->max('sort_order');
+            $maxSortOrder = Category::where('type', $validated['type'])
+                ->where('parent_id', $validated['parent_id'])
+                ->max('sort_order');
             $validated['sort_order'] = ($maxSortOrder ?? 0) + 1;
         }
 
         Category::create($validated);
 
         return redirect()->route('admin.categories.index')
-            ->with('success', 'Kategori berhasil ditambahkan.');
+            ->with('success', 'Category created successfully.');
     }
 
     /**
@@ -77,8 +78,8 @@ class CategoryController extends Controller
      */
     public function show(Category $category): View
     {
-        $category->load(['parent', 'subCategories', 'menuItems']);
-        
+        $category->load('menuItems');
+
         return view('admin.categories.show', compact('category'));
     }
 
@@ -87,13 +88,13 @@ class CategoryController extends Controller
      */
     public function edit(Category $category): View
     {
-        $mainCategories = Category::whereNull('parent_id')
-            ->where('id', '!=', $category->id) // Exclude kategori yang sedang diedit
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get();
+        // Prevent editing of parent categories (Food, Drink, Set Meal)
+        if ($category->parent_id === null) {
+            return redirect()->route('admin.categories.index')
+                ->withErrors(['edit' => 'Cannot edit main categories.']);
+        }
 
-        return view('admin.categories.edit', compact('category', 'mainCategories'));
+        return view('admin.categories.edit', compact('category'));
     }
 
     /**
@@ -101,37 +102,22 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category): RedirectResponse
     {
+        // Prevent updating parent categories
+        if ($category->parent_id === null) {
+            return redirect()->route('admin.categories.index')
+                ->withErrors(['update' => 'Cannot update main categories.']);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
-            'type' => 'required|in:main,sub',
-            'parent_id' => 'nullable|exists:categories,id',
             'sort_order' => 'nullable|integer|min:0'
         ]);
 
-        // Validasi tambahan: jika type = sub, parent_id harus ada
-        if ($validated['type'] === 'sub' && empty($validated['parent_id'])) {
-            return back()->withErrors(['parent_id' => 'Sub kategori harus memiliki parent kategori.']);
-        }
-
-        // Validasi tambahan: jika type = main, parent_id harus null
-        if ($validated['type'] === 'main') {
-            $validated['parent_id'] = null;
-        }
-
-        // Validasi: kategori tidak bisa menjadi parent dari dirinya sendiri
-        if ($validated['parent_id'] == $category->id) {
-            return back()->withErrors(['parent_id' => 'Kategori tidak bisa menjadi parent dari dirinya sendiri.']);
-        }
-
-        // Validasi: kategori tidak bisa menjadi child dari sub kategorinya
-        if ($validated['parent_id'] && $category->subCategories()->where('id', $validated['parent_id'])->exists()) {
-            return back()->withErrors(['parent_id' => 'Kategori tidak bisa menjadi child dari sub kategorinya.']);
-        }
-
+        // Type and parent_id cannot be changed
         $category->update($validated);
 
         return redirect()->route('admin.categories.index')
-            ->with('success', 'Kategori berhasil diupdate.');
+            ->with('success', 'Category updated successfully.');
     }
 
     /**
@@ -139,20 +125,20 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category): RedirectResponse
     {
-        // Cek apakah kategori memiliki sub kategori
-        if ($category->subCategories()->count() > 0) {
-            return back()->withErrors(['delete' => 'Tidak bisa menghapus kategori yang memiliki sub kategori.']);
+        // Prevent deleting parent categories (Food, Drink, Set Meal)
+        if ($category->parent_id === null) {
+            return back()->withErrors(['delete' => 'Cannot delete main categories.']);
         }
 
-        // Cek apakah kategori memiliki menu items
+        // Check if category has menu items
         if ($category->menuItems()->count() > 0) {
-            return back()->withErrors(['delete' => 'Tidak bisa menghapus kategori yang memiliki menu items.']);
+            return back()->withErrors(['delete' => 'Cannot delete category with existing menu items.']);
         }
 
         $category->delete();
 
         return redirect()->route('admin.categories.index')
-            ->with('success', 'Kategori berhasil dihapus.');
+            ->with('success', 'Category deleted successfully.');
     }
 
     /**

@@ -194,7 +194,7 @@
                 <div style="text-align: center; padding: 20px; color: var(--text-2);">
                   <div style="font-size: 2rem; margin-bottom: 10px;"><i class="fas fa-shopping-cart"></i></div>
                   <div>Your pre-order cart is empty.</div>
-                  <div>Add items from the <a href="{{ route('customer.food.index') }}" style="color: var(--brand); text-decoration: none; font-weight: 600;">Food</a> or <a href="{{ route('customer.drinks.index') }}" style="color: var(--brand); text-decoration: none; font-weight: 600;">Drinks</a> menu.</div>
+                  <div>Add items from the <a href="{{ route('customer.menu.index') }}" style="color: var(--brand); text-decoration: none; font-weight: 600;">menu</a>.</div>
                 </div>
               @endif
             </div>
@@ -216,7 +216,7 @@
         <button class="btn btn-secondary" id="bookTableOnly" disabled="">
           <i class="fas fa-calendar-alt"></i> Book Table Only  
         </button>
-        <a class="btn btn-accent" href="{{ route('customer.food.index') }}">
+        <a class="btn btn-accent" href="{{ route('customer.menu.index') }}">
           <i class="fas fa-shopping-cart"></i> View Menu
         </a>
       </div>

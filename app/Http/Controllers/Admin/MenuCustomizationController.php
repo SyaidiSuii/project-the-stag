@@ -41,7 +41,7 @@ class MenuCustomizationController extends Controller
         // Sort options
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
-        
+
         // Get statistics for dashboard cards
         $allowedSortFields = ['customization_type', 'customization_value', 'additional_price', 'created_at'];
         if (in_array($sortBy, $allowedSortFields)) {
@@ -72,7 +72,7 @@ class MenuCustomizationController extends Controller
                 $query->whereIn('order_status', ['pending', 'confirmed', 'preparing']);
             })
             ->get();
-            
+
         return view('admin.menu-customizations.form', compact('menuCustomization', 'orderItems'));
     }
 
@@ -107,7 +107,7 @@ class MenuCustomizationController extends Controller
         }
 
         return redirect()->route('admin.menu-customizations.index')
-                        ->with('message', 'Menu customization created successfully');
+            ->with('message', 'Menu customization created successfully');
     }
 
     /**
@@ -129,7 +129,7 @@ class MenuCustomizationController extends Controller
                 $query->whereIn('order_status', ['pending', 'confirmed', 'preparing']);
             })
             ->get();
-            
+
         return view('admin.menu-customizations.form', compact('menuCustomization', 'orderItems'));
     }
 
@@ -153,7 +153,7 @@ class MenuCustomizationController extends Controller
         ]);
 
         $oldOrderItemId = $menuCustomization->order_item_id;
-        
+
         $menuCustomization->update($validated);
 
         // Update order item totals for affected order items
@@ -163,7 +163,7 @@ class MenuCustomizationController extends Controller
         $this->updateOrderItemTotal($menuCustomization->order_item_id);
 
         return redirect()->route('admin.menu-customizations.index')
-                        ->with('message', 'Menu customization updated successfully');
+            ->with('message', 'Menu customization updated successfully');
     }
 
     /**
@@ -172,14 +172,14 @@ class MenuCustomizationController extends Controller
     public function destroy(MenuCustomization $menuCustomization)
     {
         $orderItemId = $menuCustomization->order_item_id;
-        
+
         $menuCustomization->delete();
 
         // Update order item total after deletion
         $this->updateOrderItemTotal($orderItemId);
 
         return redirect()->route('admin.menu-customizations.index')
-                        ->with('message', 'Menu customization deleted successfully');
+            ->with('message', 'Menu customization deleted successfully');
     }
 
 
@@ -189,8 +189,8 @@ class MenuCustomizationController extends Controller
     public function getByOrderItem(OrderItem $orderItem)
     {
         $customizations = MenuCustomization::where('order_item_id', $orderItem->id)
-                                         ->orderBy('created_at', 'desc')
-                                         ->get();
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return view('admin.menu-customizations.by-order-item', compact('customizations', 'orderItem'));
     }
@@ -229,7 +229,7 @@ class MenuCustomizationController extends Controller
     public function getCustomizationsByOrderItem(Request $request)
     {
         $orderItemId = $request->get('order_item_id');
-        
+
         if (!$orderItemId) {
             return response()->json(['error' => 'Order item ID is required'], 400);
         }
@@ -252,7 +252,7 @@ class MenuCustomizationController extends Controller
     private function updateOrderItemTotal($orderItemId)
     {
         $orderItem = OrderItem::find($orderItemId);
-        
+
         if (!$orderItem) {
             return;
         }
@@ -276,11 +276,11 @@ class MenuCustomizationController extends Controller
     private function updateOrderTotal($orderId)
     {
         $order = Order::find($orderId);
-        
+
         if ($order) {
             $totalAmount = OrderItem::where('order_id', $orderId)
                 ->sum('total_price');
-            
+
             $order->total_amount = $totalAmount;
             $order->save();
         }

@@ -10,65 +10,50 @@
 @section('content')
 <div class="admin-section">
     <div class="section-header">
-        <h2 class="section-title">Create New Category</h2>
+        <h2 class="section-title">Create New {{ ucfirst($type) }} Category</h2>
         <a href="{{ route('admin.categories.index') }}" class="btn-cancel">
             <i class="fas fa-arrow-left"></i> Back to Categories
         </a>
     </div>
 
+    <div class="info-box" style="background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1rem; margin-bottom: 1.5rem; border-radius: 8px;">
+        <p style="margin: 0; color: #1e40af;">
+            <i class="fas fa-info-circle"></i>
+            <strong>Note:</strong> You are creating a subcategory under <strong>{{ $parentCategory->name }}</strong>.
+            This category will be used to organize menu items within the {{ $type }} section.
+        </p>
+    </div>
+
     <form method="post" action="{{ route('admin.categories.store') }}" class="category-form">
         @csrf
+
+        <!-- Hidden fields for type and parent_id -->
+        <input type="hidden" name="type" value="{{ $type }}">
+        <input type="hidden" name="parent_id" value="{{ $parentCategory->id }}">
 
         <div class="form-row">
             <div class="form-group">
                 <label for="name" class="form-label">Category Name</label>
-                <input type="text" id="name" name="name" class="form-control" value="{{ old('name') }}" required>
+                <input type="text" id="name" name="name" class="form-control" value="{{ old('name') }}" placeholder="e.g., Asian Cuisine, Smoothies, Family Meals" required autofocus>
                 @if($errors->get('name'))
-                    <div class="form-error">{{ implode(', ', $errors->get('name')) }}</div>
+                <div class="form-error">{{ implode(', ', $errors->get('name')) }}</div>
                 @endif
+                <small class="form-help">Enter a descriptive name for this category (e.g., "Asian Cuisine" for food, "Smoothies" for drinks)</small>
             </div>
 
             <div class="form-group">
-                <label for="type" class="form-label">Category Type</label>
-                <select id="type" name="type" class="form-control" required>
-                    <option value="main" {{ old('type', 'main') == 'main' ? 'selected' : '' }}>Main Category</option>
-                    <option value="sub" {{ old('type') == 'sub' ? 'selected' : '' }}>Sub Category</option>
-                </select>
-                @if($errors->get('type'))
-                    <div class="form-error">{{ implode(', ', $errors->get('type')) }}</div>
-                @endif
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group" id="parent-category-group" style="{{ old('type', 'main') == 'main' ? 'display: none;' : '' }}">
-                <label for="parent_id" class="form-label">Parent Category</label>
-                <select id="parent_id" name="parent_id" class="form-control">
-                    <option value="">Select Parent Category</option>
-                    @foreach($mainCategories as $mainCategory)
-                        <option value="{{ $mainCategory->id }}" {{ old('parent_id') == $mainCategory->id ? 'selected' : '' }}>
-                            {{ $mainCategory->name }}
-                        </option>
-                    @endforeach
-                </select>
-                @if($errors->get('parent_id'))
-                    <div class="form-error">{{ implode(', ', $errors->get('parent_id')) }}</div>
-                @endif
-            </div>
-
-            <div class="form-group">
-                <label for="sort_order" class="form-label">Sort Order</label>
+                <label for="sort_order" class="form-label">Sort Order (Optional)</label>
                 <input type="number" id="sort_order" name="sort_order" class="form-control" min="0" value="{{ old('sort_order') }}" placeholder="Leave empty for auto sort">
                 @if($errors->get('sort_order'))
-                    <div class="form-error">{{ implode(', ', $errors->get('sort_order')) }}</div>
+                <div class="form-error">{{ implode(', ', $errors->get('sort_order')) }}</div>
                 @endif
+                <small class="form-help">Controls the display order. Lower numbers appear first. Leave empty to add at the end.</small>
             </div>
         </div>
-
 
         <div class="form-actions">
             <button type="submit" class="btn-save">
-                Create Category
+                <i class="fas fa-plus"></i> Create Category
             </button>
             <a href="{{ route('admin.categories.index') }}" class="btn-cancel">
                 Cancel
@@ -76,28 +61,4 @@
         </div>
     </form>
 </div>
-@endsection
-
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const typeSelect = document.getElementById('type');
-    const parentCategoryGroup = document.getElementById('parent-category-group');
-    const parentIdSelect = document.getElementById('parent_id');
-
-    function toggleParentCategory() {
-        if (typeSelect.value === 'sub') {
-            parentCategoryGroup.style.display = 'block';
-            parentIdSelect.required = true;
-        } else {
-            parentCategoryGroup.style.display = 'none';
-            parentIdSelect.required = false;
-            parentIdSelect.value = '';
-        }
-    }
-
-    typeSelect.addEventListener('change', toggleParentCategory);
-    toggleParentCategory();
-});
-</script>
 @endsection

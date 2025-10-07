@@ -358,6 +358,14 @@ class OrderController extends Controller
         $order->payment_status = $request->payment_status;
         $order->save();
 
+        // Update loyalty tier if payment is marked as paid
+        if ($request->payment_status === 'paid' && $order->user_id) {
+            $customerProfile = \App\Models\CustomerProfile::where('user_id', $order->user_id)->first();
+            if ($customerProfile) {
+                $customerProfile->updateLoyaltyTier();
+            }
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Payment status updated successfully!',

@@ -9,6 +9,11 @@
     @stack('head')
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/layout.css') }}?v={{ time() }}">
+
+    <!-- Toast & Confirm Modal CSS -->
+    <link rel="stylesheet" href="{{ asset('css/toast.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/confirm-modal.css') }}">
+
     @yield('styles')
 </head>
 
@@ -30,6 +35,7 @@
                 <div class="admin-nav-icon"><i class="fas fa-users"></i></div>
                 <div class="admin-nav-text">Users Management</div>
             </a>
+
             <a href="#" class="admin-nav-item">
                 <div class="admin-nav-icon"><i class="fas fa-home"></i></div>
                 <div class="admin-nav-text">Menu Contect</div>
@@ -200,6 +206,11 @@
         {{-- Page Content --}}
         @yield('content')
     </main>
+
+    <!-- Toast & Confirm Modal JavaScript -->
+    <script src="{{ asset('js/toast.js') }}"></script>
+    <script src="{{ asset('js/confirm-modal.js') }}"></script>
+    <script src="{{ asset('js/form-confirm-handler.js') }}"></script>
 
     <script src="{{ asset('js/admin/layout-admin.js') }}?v={{ time() }}"></script>
     @yield('scripts')

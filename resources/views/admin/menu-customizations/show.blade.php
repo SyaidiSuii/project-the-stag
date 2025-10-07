@@ -31,7 +31,7 @@
                         <span style="font-size: 12px; color: #6b7280; font-weight: 600;">CUSTOMIZATION ID</span>
                         <p style="font-size: 18px; font-weight: 700; margin: 4px 0 0 0;">#{{ $menuCustomization->id }}</p>
                     </div>
-                    
+
                     <div>
                         <span style="font-size: 12px; color: #6b7280; font-weight: 600;">CUSTOMIZATION TYPE</span>
                         <p style="font-size: 16px; font-weight: 600; margin: 4px 0 0 0;">{{ $menuCustomization->customization_type }}</p>
@@ -68,18 +68,18 @@
             <label class="form-label">Related Order Item</label>
             <div style="border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; background: #f9fafb;">
                 @if($menuCustomization->orderItem->menuItem)
-                    <div style="margin-bottom: 12px;">
-                        <span style="font-size: 12px; color: #6b7280; font-weight: 600;">MENU ITEM</span>
-                        <p style="font-size: 18px; font-weight: 600; margin: 4px 0 0 0;">
-                            <i class="fas fa-utensils" style="color: #6b7280; margin-right: 8px;"></i>
-                            {{ $menuCustomization->orderItem->menuItem->name }}
-                        </p>
-                        @if($menuCustomization->orderItem->menuItem->description)
-                            <p style="font-size: 14px; color: #6b7280; margin: 4px 0 0 0;">
-                                {{ $menuCustomization->orderItem->menuItem->description }}
-                            </p>
-                        @endif
-                    </div>
+                <div style="margin-bottom: 12px;">
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">MENU ITEM</span>
+                    <p style="font-size: 18px; font-weight: 600; margin: 4px 0 0 0;">
+                        <i class="fas fa-utensils" style="color: #6b7280; margin-right: 8px;"></i>
+                        {{ $menuCustomization->orderItem->menuItem->name }}
+                    </p>
+                    @if($menuCustomization->orderItem->menuItem->description)
+                    <p style="font-size: 14px; color: #6b7280; margin: 4px 0 0 0;">
+                        {{ $menuCustomization->orderItem->menuItem->description }}
+                    </p>
+                    @endif
+                </div>
                 @endif
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
@@ -98,10 +98,10 @@
                 </div>
 
                 @if($menuCustomization->orderItem->notes)
-                    <div style="margin-top: 12px; background: #fef3c7; padding: 12px; border-radius: 8px; border-left: 4px solid #f59e0b;">
-                        <span style="font-size: 12px; color: #92400e; font-weight: 600;">ORDER ITEM NOTES</span>
-                        <p style="color: #92400e; margin: 4px 0 0 0;">{{ $menuCustomization->orderItem->notes }}</p>
-                    </div>
+                <div style="margin-top: 12px; background: #fef3c7; padding: 12px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                    <span style="font-size: 12px; color: #92400e; font-weight: 600;">ORDER ITEM NOTES</span>
+                    <p style="color: #92400e; margin: 4px 0 0 0;">{{ $menuCustomization->orderItem->notes }}</p>
+                </div>
                 @endif
             </div>
         </div>
@@ -114,8 +114,8 @@
                 <div style="margin-bottom: 12px;">
                     <span style="font-size: 12px; color: #6b7280; font-weight: 600;">ORDER ID</span>
                     <p style="font-size: 18px; font-weight: 600; margin: 4px 0 0 0;">
-                        <a href="{{ route('admin.order.show', $menuCustomization->orderItem->order->id) }}" 
-                           style="color: #3b82f6; text-decoration: none;">
+                        <a href="{{ route('admin.order.show', $menuCustomization->orderItem->order->id) }}"
+                            style="color: #3b82f6; text-decoration: none;">
                             <i class="fas fa-shopping-cart" style="margin-right: 8px;"></i>
                             Order #{{ $menuCustomization->orderItem->order->id }}
                         </a>
@@ -173,21 +173,21 @@
                 </div>
 
                 @if($menuCustomization->orderItem->order->user)
-                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
-                        <span style="font-size: 12px; color: #6b7280; font-weight: 600;">CUSTOMER</span>
-                        <p style="margin: 4px 0 0 0; font-weight: 600;">
-                            <i class="fas fa-user" style="color: #6b7280; margin-right: 8px;"></i>
-                            {{ $menuCustomization->orderItem->order->user->name }}
-                        </p>
-                        @if($menuCustomization->orderItem->order->user->email)
-                            <p style="margin: 4px 0 0 0; font-size: 14px; color: #6b7280;">
-                                <a href="mailto:{{ $menuCustomization->orderItem->order->user->email }}" 
-                                   style="color: #3b82f6; text-decoration: none;">
-                                    {{ $menuCustomization->orderItem->order->user->email }}
-                                </a>
-                            </p>
-                        @endif
-                    </div>
+                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                    <span style="font-size: 12px; color: #6b7280; font-weight: 600;">CUSTOMER</span>
+                    <p style="margin: 4px 0 0 0; font-weight: 600;">
+                        <i class="fas fa-user" style="color: #6b7280; margin-right: 8px;"></i>
+                        {{ $menuCustomization->orderItem->order->user->name }}
+                    </p>
+                    @if($menuCustomization->orderItem->order->user->email)
+                    <p style="margin: 4px 0 0 0; font-size: 14px; color: #6b7280;">
+                        <a href="mailto:{{ $menuCustomization->orderItem->order->user->email }}"
+                            style="color: #3b82f6; text-decoration: none;">
+                            {{ $menuCustomization->orderItem->order->user->email }}
+                        </a>
+                    </p>
+                    @endif
+                </div>
                 @endif
             </div>
         </div>
@@ -239,9 +239,9 @@
                     <span style="font-size: 12px; color: #6b7280; font-weight: 600;">CUSTOMIZATION PRICE</span>
                     <p style="margin: 4px 0 0 0; font-size: 18px; font-weight: 600; color: {{ $menuCustomization->additional_price > 0 ? '#10b981' : '#6b7280' }};">
                         @if($menuCustomization->additional_price > 0)
-                            +RM {{ number_format($menuCustomization->additional_price, 2) }}
+                        +RM {{ number_format($menuCustomization->additional_price, 2) }}
                         @else
-                            FREE
+                        FREE
                         @endif
                     </p>
                 </div>
@@ -257,19 +257,19 @@
             </div>
 
             @if($menuCustomization->additional_price > 0)
-                <div style="margin-top: 12px; padding: 12px; background: #ecfdf5; border-radius: 8px; border-left: 4px solid #10b981;">
-                    <p style="font-size: 14px; color: #065f46; margin: 0; font-weight: 500;">
-                        <i class="fas fa-plus-circle" style="margin-right: 8px;"></i>
-                        This customization adds RM {{ number_format($menuCustomization->additional_price, 2) }} to the base price
-                    </p>
-                </div>
+            <div style="margin-top: 12px; padding: 12px; background: #ecfdf5; border-radius: 8px; border-left: 4px solid #10b981;">
+                <p style="font-size: 14px; color: #065f46; margin: 0; font-weight: 500;">
+                    <i class="fas fa-plus-circle" style="margin-right: 8px;"></i>
+                    This customization adds RM {{ number_format($menuCustomization->additional_price, 2) }} to the base price
+                </p>
+            </div>
             @elseif($menuCustomization->additional_price == 0)
-                <div style="margin-top: 12px; padding: 12px; background: #f3f4f6; border-radius: 8px; border-left: 4px solid #6b7280;">
-                    <p style="font-size: 14px; color: #374151; margin: 0; font-weight: 500;">
-                        <i class="fas fa-gift" style="margin-right: 8px;"></i>
-                        This customization is provided at no additional cost
-                    </p>
-                </div>
+            <div style="margin-top: 12px; padding: 12px; background: #f3f4f6; border-radius: 8px; border-left: 4px solid #6b7280;">
+                <p style="font-size: 14px; color: #374151; margin: 0; font-weight: 500;">
+                    <i class="fas fa-gift" style="margin-right: 8px;"></i>
+                    This customization is provided at no additional cost
+                </p>
+            </div>
             @endif
         </div>
     </div>
@@ -281,17 +281,17 @@
             Edit Customization
         </a>
         @if($menuCustomization->orderItem && $menuCustomization->orderItem->order)
-            <a href="{{ route('admin.order.show', $menuCustomization->orderItem->order->id) }}" class="btn-save" style="background: #3b82f6;">
-                <i class="fas fa-shopping-cart"></i>
-                View Order
-            </a>
+        <a href="{{ route('admin.order.show', $menuCustomization->orderItem->order->id) }}" class="btn-save" style="background: #3b82f6;">
+            <i class="fas fa-shopping-cart"></i>
+            View Order
+        </a>
         @endif
         <a href="{{ route('admin.menu-customizations.index') }}" class="btn-cancel">
             <i class="fas fa-list"></i>
             Back to List
         </a>
-        <form method="POST" action="{{ route('admin.menu-customizations.destroy', $menuCustomization->id) }}" 
-              style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this customization?');">
+        <form method="POST" action="{{ route('admin.menu-customizations.destroy', $menuCustomization->id) }}"
+            style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this customization?');">
             @csrf
             @method('DELETE')
             <button type="submit" class="btn-save" style="background: #ef4444;">
@@ -305,12 +305,12 @@
 
 @section('scripts')
 <script>
-// Notification function
-function showNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = 'notification ' + type;
-    notification.textContent = message;
-    notification.style.cssText = `
+    // Notification function
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = 'notification ' + type;
+        notification.textContent = message;
+        notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
@@ -321,13 +321,13 @@ function showNotification(message, type) {
         z-index: 9999;
         ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
     `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
 
     // Show session messages
     document.addEventListener('DOMContentLoaded', function() {

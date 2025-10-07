@@ -14,12 +14,17 @@
 
         <form action="{{ route('admin.rewards.checkin.update') }}" method="POST">
             @csrf
+            @php
+                $dailyPoints = $checkinSettings && $checkinSettings->daily_points
+                    ? $checkinSettings->daily_points
+                    : [25, 5, 5, 10, 10, 15, 20];
+            @endphp
             <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
                 @foreach(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as $index => $day)
                     <div class="form-group">
                         <label for="day_{{ $index }}" class="form-label">{{ $day }}</label>
-                        <input type="number" id="day_{{ $index }}" name="day_{{ $index }}" class="form-input"
-                               value="{{ old('day_' . $index, $checkinSettings->{'day_' . $index} ?? 10) }}"
+                        <input type="number" id="day_{{ $index }}" name="daily_points[{{ $index }}]" class="form-input"
+                               value="{{ old('daily_points.' . $index, $dailyPoints[$index] ?? 0) }}"
                                min="0" required>
                     </div>
                 @endforeach

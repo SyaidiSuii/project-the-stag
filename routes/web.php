@@ -57,9 +57,19 @@ Route::get('/', [CustomerHomeController::class, 'index'])->name('customer.index'
 
 Route::prefix('customer')->name('customer.')->group(function () {
     Route::post('/feedback', [CustomerHomeController::class, 'storeFeedback'])->name('feedback.store');
-    Route::get('/food', [CustomerFoodController::class, 'index'])->name('food.index');
-    Route::get('/food/data', [CustomerFoodController::class, 'getMenuData'])->name('food.data');
-    Route::get('/drinks', [CustomerDrinksController::class, 'index'])->name('drinks.index');
+
+    // Unified Menu Page
+    Route::get('/menu', [\App\Http\Controllers\Customer\MenuController::class, 'index'])->name('menu.index');
+    Route::get('/menu/data', [\App\Http\Controllers\Customer\MenuController::class, 'getMenuData'])->name('menu.data');
+
+    // Legacy routes for backward compatibility (redirect to menu)
+    Route::get('/food', function () {
+        return redirect()->route('customer.menu.index');
+    })->name('food.index');
+    Route::get('/food/data', [\App\Http\Controllers\Customer\MenuController::class, 'getMenuData'])->name('food.data');
+    Route::get('/drinks', function () {
+        return redirect()->route('customer.menu.index');
+    })->name('drinks.index');
     Route::get('/orders', [CustomerOrdersController::class, 'index'])->name('orders.index');
     Route::get('/orders/{orderId}/details', [CustomerOrdersController::class, 'getOrderDetails'])->name('orders.details');
     Route::get('/orders/{orderId}/tracking', [CustomerOrdersController::class, 'getOrderTracking'])->name('orders.tracking');
@@ -83,7 +93,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::delete('/account/delete', [CustomerAccountController::class, 'deleteAccount'])->name('account.delete');
     Route::get('/payment', [CustomerPaymentController::class, 'index'])->name('payment.index');
     Route::post('/payment/place-order', [CustomerPaymentController::class, 'placeOrder'])->name('payment.placeOrder');
-    
+
     // Cart API routes
     Route::prefix('cart')->name('cart.')->group(function () {
         Route::get('/', [CustomerCartController::class, 'index'])->name('index');
@@ -126,12 +136,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])
         ->name('dashboard')
         ->middleware(['role:admin|manager']);
-        
+
     Route::get('/admin/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])
         ->name('admin.dashboard')
         ->middleware(['role:admin|manager']);
 
-        // Redirect /admin → /admin/dashboard
+    // Redirect /admin → /admin/dashboard
     Route::get('/admin', function () {
         return redirect()->route('admin.dashboard');
     });
@@ -147,7 +157,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // =============================================
     // USER MANAGEMENT SECTION (Non-Admin)
     // =============================================
-    
+
     // Users Management (for managers/supervisors)
     Route::middleware(['permission:user.menu'])->group(function () {
         Route::resource('users', UserController::class)->except(['show']);
@@ -160,7 +170,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Admin User Management (Full Access)
         Route::resource('user', UserController::class);
-        
+
         // ---------------------------------------------
         // PERMISSIONS & ROLES MANAGEMENT
         // ---------------------------------------------
@@ -168,13 +178,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('api/list', [PermissionController::class, 'getPermissions'])->name('api.list');
         });
         Route::resource('permissions', PermissionController::class);
-        
+
         Route::prefix('roles')->name('roles.')->group(function () {
             Route::get('assign', [RoleManagementController::class, 'assignForm'])->name('assign.form');
             Route::post('assign', [RoleManagementController::class, 'assignToUser'])->name('assign');
             Route::get('{role}/permissions', [RoleManagementController::class, 'getRolePermissions'])->name('permissions');
         });
         Route::resource('roles', RoleManagementController::class);
+
         // ---------------------------------------------
         // SETTINGS MANAGEMENT
         // ---------------------------------------------
@@ -185,6 +196,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('admins/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'deleteAdmin'])->name('admins.delete');
             Route::post('admins/{id}/toggle-super-admin', [\App\Http\Controllers\Admin\SettingsController::class, 'toggleSuperAdmin'])->name('admins.toggle-super-admin');
         });
+
         // ---------------------------------------------
         // TABLE MANAGEMENT
         // ---------------------------------------------
@@ -202,7 +214,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('{tableLayoutConfig}/toggle-status', [TableLayoutConfigController::class, 'toggleStatus'])->name('toggle-status');
             Route::post('{tableLayoutConfig}/duplicate', [TableLayoutConfigController::class, 'duplicate'])->name('duplicate');
         });
-        
+
         Route::prefix('api/table-layouts')->name('api.table-layouts.')->group(function () {
             Route::get('active', [TableLayoutConfigController::class, 'getActiveLayouts'])->name('active');
             Route::get('{tableLayoutConfig}', [TableLayoutConfigController::class, 'getLayoutDetails'])->name('details');
@@ -239,7 +251,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('hierarchical', [CategoryController::class, 'getHierarchical'])->name('hierarchical');
         });
         Route::resource('categories', CategoryController::class);
-        
+
         Route::prefix('menu-items')->name('menu-items.')->group(function () {
             Route::get('featured', [MenuItemController::class, 'getFeatured'])->name('featured');
             Route::get('stats', [MenuItemController::class, 'getStatistics'])->name('stats');
@@ -303,6 +315,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('trends', [SaleAnalyticsController::class, 'getTrends'])->name('trends');
         });
         Route::resource('sale-analytics', SaleAnalyticsController::class);
+
+        // ---------------------------------------------
+        // REWARDS MANAGEMENT
         // ---------------------------------------------
         // REWARDS MANAGEMENT
         // ---------------------------------------------
@@ -425,7 +440,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('voucher-templates/{voucherTemplate}/generate', [RewardsController::class, 'generateVouchersFromTemplate'])->name('templates.generate');
             Route::patch('special-events/{event}/toggle', [RewardsController::class, 'toggleSpecialEvent'])->name('events.toggle');
         });
-
     }); // End of admin routes
 
 }); // End of authenticated routes
@@ -434,34 +448,34 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // QR CODE PUBLIC ROUTES (No Authentication)
 // =============================================
 Route::prefix('qr')->name('qr.')->group(function () {
-    
+
     // Main QR Pages
     Route::get('menu', [QRMenuController::class, 'index'])->name('menu');
     Route::get('cart', [QRMenuController::class, 'viewCart'])->name('cart');
     Route::get('error', [QRMenuController::class, 'error'])->name('error');
     Route::get('track', [QRMenuController::class, 'trackOrder'])->name('track');
-    
+
     // Cart Management
     Route::prefix('cart')->name('cart.')->group(function () {
         Route::post('add', [QRMenuController::class, 'addToCart'])->name('add');
         Route::post('update', [QRMenuController::class, 'updateCart'])->name('update');
     });
-    
+
     // Order Management
     Route::prefix('order')->name('order.')->group(function () {
         Route::post('place', [QRMenuController::class, 'placeOrder'])->name('place');
     });
-    
+
     // Payment Management
     Route::get('payment', [QRPaymentController::class, 'showPayment'])->name('payment');
     Route::post('payment/process', [QRPaymentController::class, 'processPayment'])->name('payment.process');
     Route::get('payment/confirmation', [QRPaymentController::class, 'showConfirmation'])->name('payment.confirmation');
-    
+
     // Service Requests
     Route::prefix('waiter')->name('waiter.')->group(function () {
         Route::post('call', [QRMenuController::class, 'callWaiter'])->name('call');
     });
-    
+
     // API Endpoints
     Route::prefix('api')->name('api.')->group(function () {
         Route::post('track-order', [QRMenuController::class, 'trackOrder'])->name('track-order');
@@ -471,23 +485,23 @@ Route::prefix('qr')->name('qr.')->group(function () {
 // =============================================
 // AUTHENTICATION ROUTES
 // =============================================
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 // Custom email verification route untuk customer
 Route::get('customer/verify-email/{id}/{hash}', function ($id, $hash) {
     $user = \App\Models\User::findOrFail($id);
-    
+
     if (!hash_equals(sha1($user->getEmailForVerification()), $hash)) {
         return redirect()->route('customer.account.index')->with('error', 'Invalid verification link.');
     }
-    
+
     if ($user->hasVerifiedEmail()) {
         return redirect()->route('customer.account.index')->with('success', 'Your email is already verified!');
     }
-    
+
     if ($user->markEmailAsVerified()) {
         event(new \Illuminate\Auth\Events\Verified($user));
     }
-    
+
     return redirect()->route('customer.account.index')->with('success', 'Email verified successfully!');
 })->name('customer.verification.verify');

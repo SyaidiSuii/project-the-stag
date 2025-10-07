@@ -4,12 +4,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelBookingButtons = document.querySelectorAll('.cancel-booking-btn[data-reservation-id]');
     
     cancelBookingButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', async function() {
             const reservationId = this.dataset.reservationId;
             const confirmationCode = this.closest('.booking-card').querySelector('h3').textContent.trim();
-            
+
             // Show confirmation dialog
-            if (confirm(`Are you sure you want to cancel this booking?\n\n${confirmationCode}\n\nThis action cannot be undone.`)) {
+            const confirmed = await showConfirm(
+                'Cancel Booking?',
+                `Are you sure you want to cancel this booking?\n\n${confirmationCode}\n\nThis action cannot be undone.`,
+                'danger',
+                'Cancel Booking',
+                'Keep Booking'
+            );
+
+            if (confirmed) {
                 cancelBooking(reservationId, this);
             }
         });
@@ -19,12 +27,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelOrderButtons = document.querySelectorAll('.cancel-booking-btn[data-order-id]');
     
     cancelOrderButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', async function() {
             const orderId = this.dataset.orderId;
             const confirmationCode = this.closest('.order-card').querySelector('h3').textContent.trim();
-            
+
             // Show confirmation dialog
-            if (confirm(`Are you sure you want to cancel this order?\n\n${confirmationCode}\n\nThis action cannot be undone.`)) {
+            const confirmed = await showConfirm(
+                'Cancel Order?',
+                `Are you sure you want to cancel this order?\n\n${confirmationCode}\n\nThis action cannot be undone.`,
+                'danger',
+                'Cancel Order',
+                'Keep Order'
+            );
+
+            if (confirmed) {
                 cancelOrder(orderId, this);
             }
         });
@@ -53,8 +69,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.success) {
                 // Show success message
-                showToast('success', data.message);
-                
+                Toast.success('Booking Cancelled', data.message);
+
                 // Update the booking card status and remove cancel button
                 const bookingCard = buttonElement.closest('.booking-card');
                 const statusElement = bookingCard.querySelector('.order-status');
@@ -75,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Cancel booking error:', error);
-            showToast('error', error.message || 'Failed to cancel booking. Please try again.');
+            Toast.error('Cancellation Failed', error.message || 'Failed to cancel booking. Please try again.');
             
             // Restore button state
             buttonElement.innerHTML = originalText;
@@ -106,8 +122,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.success) {
                 // Show success message
-                showToast('success', data.message);
-                
+                Toast.success('Order Cancelled', data.message);
+
                 // Update the order card status and remove cancel button
                 const orderCard = buttonElement.closest('.order-card');
                 const statusElement = orderCard.querySelector('.order-status');
@@ -133,8 +149,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Cancel order error:', error);
-            showToast('error', error.message || 'Failed to cancel order. Please try again.');
-            
+            Toast.error('Cancellation Failed', error.message || 'Failed to cancel order. Please try again.');
+
             // Restore button state
             buttonElement.innerHTML = originalText;
             buttonElement.disabled = false;
@@ -142,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Show toast notification
+     * Show toast notification (deprecated - now using global Toast system)
      */
     function showToast(type, message) {
         // Create toast element if it doesn't exist

@@ -48,4 +48,27 @@ class CustomerProfile extends Model
     {
         return $this->belongsTo(LoyaltyTier::class);
     }
+
+    /**
+     * Update the customer's loyalty tier based on their total spending
+     */
+    public function updateLoyaltyTier()
+    {
+        // Calculate total spending from paid orders
+        $totalSpending = \App\Models\Order::where('user_id', $this->user_id)
+            ->where('payment_status', 'paid')
+            ->sum('total_amount');
+
+        // Find the appropriate tier
+        $tier = \App\Models\LoyaltyTier::active()
+            ->where('minimum_spending', '<=', $totalSpending)
+            ->orderBy('minimum_spending', 'desc')
+            ->first();
+
+        if ($tier && $this->loyalty_tier_id !== $tier->id) {
+            $this->update(['loyalty_tier_id' => $tier->id]);
+        }
+
+        return $tier;
+    }
 }

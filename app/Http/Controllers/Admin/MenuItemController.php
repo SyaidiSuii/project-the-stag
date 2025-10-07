@@ -20,16 +20,9 @@ class MenuItemController extends Controller
     {
         $query = MenuItem::with('category');
 
-        // Filter by category - prioritize sub category, fallback to main category
+        // Filter by category
         if ($request->has('category_id') && $request->category_id != '') {
-            // Sub category selected
             $query->where('category_id', $request->category_id);
-        } elseif ($request->has('main_category_id') && $request->main_category_id != '') {
-            // Only main category selected - get all menu items from sub categories
-            $subCategoryIds = Category::where('parent_id', $request->main_category_id)->pluck('id');
-            if ($subCategoryIds->isNotEmpty()) {
-                $query->whereIn('category_id', $subCategoryIds);
-            }
         }
 
         // Filter by availability
@@ -65,8 +58,7 @@ class MenuItemController extends Controller
         )->appends($request->query());
 
         // Get categories for filter dropdown
-        $categories = Category::with('subCategories')
-            ->whereNull('parent_id')
+        $categories = Category::orderBy('type')
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
@@ -93,10 +85,10 @@ class MenuItemController extends Controller
     public function create(Request $request)
     {
         $menuItem = new MenuItem();
-        
-        // Get categories for dropdown
-        $categories = Category::with('subCategories')
-            ->whereNull('parent_id')
+
+        // Get only subcategories for dropdown (exclude parent categories)
+        $categories = Category::whereNotNull('parent_id')
+            ->orderBy('type')
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
@@ -161,9 +153,9 @@ class MenuItemController extends Controller
      */
     public function edit(MenuItem $menuItem)
     {
-        // Get categories for dropdown
-        $categories = Category::with('subCategories')
-            ->whereNull('parent_id')
+        // Get only subcategories for dropdown (exclude parent categories)
+        $categories = Category::whereNotNull('parent_id')
+            ->orderBy('type')
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
@@ -321,24 +313,6 @@ class MenuItemController extends Controller
         return back()->with('message', 'Rating updated successfully');
     }
 
-    /**
-     * Get subcategories for AJAX request
-     */
-    public function getSubCategories(Request $request)
-    {
-        $mainCategoryId = $request->get('main_category_id');
-        
-        if (!$mainCategoryId) {
-            return response()->json([]);
-        }
-        
-        $subCategories = Category::where('parent_id', $mainCategoryId)
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get(['id', 'name']);
-
-        return response()->json($subCategories);
-    }
 
     private function storeImageToStoragePublic(\Illuminate\Http\UploadedFile $file, string $subfolder = 'images', ?string $itemName = null, ?string $categoryName = null): string
     {

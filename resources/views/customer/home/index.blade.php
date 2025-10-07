@@ -13,7 +13,7 @@
         <h1 class="hero-title" id="heroTitle">Welcome to <span>The Stag</span></h1>
         <p class="hero-sub" id="heroSubtitle">Experience premium dining with our signature steaks, authentic Malaysian flavors, and exceptional service that creates unforgettable culinary memories</p>
         <div class="hero-cta">
-            <a href="{{ route('customer.food.index') }}" class="btn-primary" id="heroBtn1">Explore Menu</a>
+            <a href="{{ route('customer.menu.index') }}" class="btn-primary" id="heroBtn1">Explore Menu</a>
             <button class="btn-muted" data-scroll="#about" id="heroBtn2">Learn More</button>
         </div>
     </div>
@@ -36,7 +36,7 @@
                 <li>🌟 Award-winning culinary team with years of expertise</li>
             </ul>
             <div class="about-cta">
-                <a href="{{ route('customer.food.index') }}" class="btn-primary" id="aboutBtn1">View Full Menu</a>
+                <a href="{{ route('customer.menu.index') }}" class="btn-primary" id="aboutBtn1">View Full Menu</a>
                 <button class="btn-muted" data-scroll="#contact" id="aboutBtn2">Contact Us</button>
             </div>
         </div>
@@ -59,8 +59,8 @@
                         <p class="card-description">{{ $promo['description'] ?? 'Delicious meal prepared with care.' }}</p>
                         <div class="price">RM {{ number_format($promo['price'] ?? 25.00, 2) }}</div>
                         <div class="card-actions">
-                            <a class="btn-muted" href="{{ $promo['link'] ?? route('customer.food.index') }}">View Details</a>
-                            <a class="btn-primary" href="{{ $promo['link'] ?? route('customer.food.index') }}">Order Now</a>
+                            <a class="btn-muted" href="{{ $promo['link'] ?? route('customer.menu.index') }}">View Details</a>
+                            <a class="btn-primary" href="{{ $promo['link'] ?? route('customer.menu.index') }}">Order Now</a>
                         </div>
                     </div>
                 </article>
@@ -74,8 +74,8 @@
                     <p class="card-description">Premium beef steak grilled to perfection with our special seasoning.</p>
                     <div class="price">RM 45.00</div>
                     <div class="card-actions">
-                        <a class="btn-muted" href="{{ route('customer.food.index') }}">View Details</a>
-                        <a class="btn-primary" href="{{ route('customer.food.index') }}">Order Now</a>
+                        <a class="btn-muted" href="{{ route('customer.menu.index') }}">View Details</a>
+                        <a class="btn-primary" href="{{ route('customer.menu.index') }}">Order Now</a>
                     </div>
                 </div>
             </article>
@@ -86,8 +86,8 @@
                     <p class="card-description">Authentic Malaysian laksa with fresh ingredients and rich coconut broth.</p>
                     <div class="price">RM 18.00</div>
                     <div class="card-actions">
-                        <a class="btn-muted" href="{{ route('customer.food.index') }}">View Details</a>
-                        <a class="btn-primary" href="{{ route('customer.food.index') }}">Order Now</a>
+                        <a class="btn-muted" href="{{ route('customer.menu.index') }}">View Details</a>
+                        <a class="btn-primary" href="{{ route('customer.menu.index') }}">Order Now</a>
                     </div>
                 </div>
             </article>
@@ -98,8 +98,8 @@
                     <p class="card-description">Creamy carbonara pasta with crispy bacon and fresh herbs.</p>
                     <div class="price">RM 22.00</div>
                     <div class="card-actions">
-                        <a class="btn-muted" href="{{ route('customer.food.index') }}">View Details</a>
-                        <a class="btn-primary" href="{{ route('customer.food.index') }}">Order Now</a>
+                        <a class="btn-muted" href="{{ route('customer.menu.index') }}">View Details</a>
+                        <a class="btn-primary" href="{{ route('customer.menu.index') }}">Order Now</a>
                     </div>
                 </div>
             </article>
@@ -110,8 +110,8 @@
                     <p class="card-description">Juicy beef patty with fresh lettuce, tomato, and our special sauce.</p>
                     <div class="price">RM 28.00</div>
                     <div class="card-actions">
-                        <a class="btn-muted" href="{{ route('customer.food.index') }}">View Details</a>
-                        <a class="btn-primary" href="{{ route('customer.food.index') }}">Order Now</a>
+                        <a class="btn-muted" href="{{ route('customer.menu.index') }}">View Details</a>
+                        <a class="btn-primary" href="{{ route('customer.menu.index') }}">Order Now</a>
                     </div>
                 </div>
             </article>
@@ -122,15 +122,15 @@
                     <p class="card-description">Fresh mixed greens with seasonal vegetables and house dressing.</p>
                     <div class="price">RM 15.00</div>
                     <div class="card-actions">
-                        <a class="btn-muted" href="{{ route('customer.food.index') }}">View Details</a>
-                        <a class="btn-primary" href="{{ route('customer.food.index') }}">Order Now</a>
+                        <a class="btn-muted" href="{{ route('customer.menu.index') }}">View Details</a>
+                        <a class="btn-primary" href="{{ route('customer.menu.index') }}">Order Now</a>
                     </div>
                 </div>
             </article>
         @endif --}}
     </div>
     <div class="promotion-cta">
-        <a href="{{ route('customer.food.index') }}" class="btn-primary" id="promotionBtn">See Full Menu</a>
+        <a href="{{ route('customer.menu.index') }}" class="btn-primary" id="promotionBtn">See Full Menu</a>
     </div>
 </section>
 
@@ -224,7 +224,7 @@
                 </div>
                 <nav class="footer-nav">
                     <a href="#about">About</a>
-                    <a href="{{ route('customer.food.index') }}">Menu</a>
+                    <a href="{{ route('customer.menu.index') }}">Menu</a>
                     <a href="#contact">Contact</a>
                     <a href="#">Privacy</a>
                 </nav>

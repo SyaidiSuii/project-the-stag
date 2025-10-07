@@ -639,12 +639,9 @@
                 case 'promotions': return rewardData.promotions || [];
                 case 'vouchers': return rewardData.vouchers || [];
                 case 'checkin':
-                    console.log('AppData.get checkin called, checkinSettings:', rewardData.checkinSettings);
                     if (rewardData.checkinSettings && rewardData.checkinSettings.daily_points && Array.isArray(rewardData.checkinSettings.daily_points)) {
-                        console.log('Returning existing daily_points:', rewardData.checkinSettings.daily_points);
                         return rewardData.checkinSettings.daily_points;
                     }
-                    console.log('Returning default points: [25, 5, 5, 10, 10, 15, 20]');
                     return [25, 5, 5, 10, 10, 15, 20];
                 case 'events':
                     return (rewardData.specialEvents || []).map(e => ({
@@ -909,7 +906,6 @@
       
       function renderCheckinForm() {
         const checkinPoints = AppData.get('checkin', []);
-        console.log('Rendering checkin form with points:', checkinPoints);
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
         if (!elements.checkinForm) {
@@ -1528,16 +1524,17 @@
         })
         .then(data => {
             if (data.success) {
-                console.log('Settings Updated:', data.message);
-                alert('Settings updated successfully!');
                 // Update local data
                 if (typeof rewardData !== 'undefined') {
-                    rewardData.checkinSettings = { daily_points: newCheckinPoints };
+                    rewardData.checkinSettings = { daily_points: data.daily_points || newCheckinPoints };
                 }
+
+                Toast.success('Settings Saved', data.message);
+                renderCheckinForm();
             } else {
                 const errorMessage = data.message || 'Failed to save check-in settings';
                 console.log('Error:', errorMessage);
-                alert(errorMessage);
+                Toast.error('Save Failed', errorMessage);
                 if (data.errors) {
                     console.log('Validation errors:', data.errors);
                 }

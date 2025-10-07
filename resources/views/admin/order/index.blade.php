@@ -166,12 +166,27 @@
                         <div class="amount">RM {{ number_format($order->total_amount, 2) }}</div>
                     </td>
                     <td class="cell-center">
-                        <div class="status-group">
-                            <span class="status status-order status-{{ str_replace('_', '-', $order->order_status) }}">
+                        <div class="status-group-vertical">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 6px;">
+                                <span class="status status-payment status-payment-{{ str_replace('_', '-', $order->payment_status) }}">
+                                    <i class="fas fa-{{ $order->payment_status === 'paid' ? 'check-circle' : ($order->payment_status === 'unpaid' ? 'clock' : 'info-circle') }}"></i>
+                                    {{ ucfirst($order->payment_status) }}
+                                </span>
+                                @if($order->payment_method)
+                                    <span class="status status-method" style="font-size: 9px; background: #e0e7ff; color: #4c51bf; padding: 3px 6px;">
+                                        {{ $order->payment_method === 'online' ? 'Online' : 'Counter' }}
+                                    </span>
+                                @endif
+                            </div>
+                            <span class="status status-order status-order-{{ str_replace('_', '-', $order->order_status) }}">
+                                <i class="fas fa-{{
+                                    $order->order_status === 'pending' ? 'clock' :
+                                    ($order->order_status === 'preparing' ? 'utensils' :
+                                    ($order->order_status === 'ready' ? 'bell' :
+                                    ($order->order_status === 'served' ? 'check' :
+                                    ($order->order_status === 'completed' ? 'check-double' : 'times'))))
+                                }}"></i>
                                 {{ str_replace('_', ' ', ucfirst($order->order_status)) }}
-                            </span>
-                            <span class="status status-payment status-{{ str_replace('_', '-', $order->payment_status) }}">
-                                {{ ucfirst($order->payment_status) }}
                             </span>
                         </div>
                     </td>
@@ -211,6 +226,15 @@
                     </td>
                     <td class="cell-center">
                         <div class="table-actions">
+                            <!-- Payment Status Button for Counter Payments -->
+                            @if($order->payment_method === 'counter' && $order->payment_status === 'unpaid')
+                                <button class="action-btn" title="Mark as Paid"
+                                        onclick="updatePaymentStatus({{ $order->id }}, 'paid')"
+                                        style="background: #10b981; color: white;">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </button>
+                            @endif
+
                             <!-- Status Update Buttons -->
                             @if($order->order_status === 'pending')
                                 <button class="action-btn confirm-btn" title="Confirm Order" onclick="updateOrderStatus({{ $order->id }}, 'preparing')">
@@ -236,6 +260,12 @@
                             @elseif($order->order_status === 'served')
                                 <button class="action-btn complete-btn" title="Mark as Completed" onclick="updateOrderStatus({{ $order->id }}, 'completed')">
                                     <i class="fas fa-check-circle"></i>
+                                </button>
+                            @elseif($order->order_status === 'completed' && $order->payment_method === 'counter' && $order->payment_status === 'unpaid')
+                                <button class="action-btn" title="Mark as Paid"
+                                        onclick="updatePaymentStatus({{ $order->id }}, 'paid')"
+                                        style="background: #10b981; color: white;">
+                                    <i class="fas fa-dollar-sign"></i>
                                 </button>
                             @endif
 
@@ -388,7 +418,7 @@ function updateOrderStatus(orderId, newStatus) {
     // Status transition validation
     const statusTransitions = {
         'pending': ['preparing', 'cancelled'],
-        'preparing': ['ready', 'cancelled'], 
+        'preparing': ['ready', 'cancelled'],
         'ready': ['served', 'completed', 'cancelled'],
         'served': ['completed']
     };
@@ -397,7 +427,7 @@ function updateOrderStatus(orderId, newStatus) {
     const confirmMessages = {
         'preparing': 'Start preparing this order?',
         'ready': 'Mark this order as ready?',
-        'served': 'Mark this order as served?', 
+        'served': 'Mark this order as served?',
         'completed': 'Mark this order as completed?',
         'cancelled': 'Cancel this order? This action cannot be undone.'
     };
@@ -430,6 +460,37 @@ function updateOrderStatus(orderId, newStatus) {
     .catch(error => {
         console.error('Error:', error);
         alert('Error updating order status. Please try again.');
+    });
+}
+
+// Function to update payment status
+function updatePaymentStatus(orderId, newStatus) {
+    if (!confirm('Mark this order as paid?')) {
+        return;
+    }
+
+    fetch(`/admin/order/${orderId}/update-payment-status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            payment_status: newStatus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Payment status updated successfully');
+            location.reload();
+        } else {
+            alert('Error updating payment status: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating payment status. Please try again.');
     });
 }
 </script>

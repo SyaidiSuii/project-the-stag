@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Refresh CSRF token on page load
+    fetch('/sanctum/csrf-cookie', {
+        method: 'GET',
+        credentials: 'same-origin'
+    }).catch(err => console.log('CSRF refresh failed:', err));
+
     // --- ORDER SUMMARY LOGIC ---
     const orderItemsContainer = document.getElementById('order-items');
     const subtotalEl = document.getElementById('subtotal');
@@ -11,9 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Debug: checkoutCartData:', checkoutCartData);
     console.log('Debug: currentOrderData:', currentOrderData);
 
+    // Get selected payment method and order type from cart checkout or Order Now
+    let selectedPaymentMethod = sessionStorage.getItem('selectedPaymentMethod') || 'online';
+    let selectedOrderType = sessionStorage.getItem('selectedOrderType') || 'dine_in'; // Get from sessionStorage
+
     if (checkoutCartData) {
         cart = JSON.parse(checkoutCartData);
         console.log('Debug: Cart loaded from checkoutCart:', cart);
+        console.log('Debug: Order type from cart checkout:', selectedOrderType);
     } else if (currentOrderData) {
         const singleOrder = JSON.parse(currentOrderData);
         cart = [{
@@ -21,9 +32,14 @@ document.addEventListener('DOMContentLoaded', () => {
             name: singleOrder.item_name,
             price: singleOrder.item_price,
             quantity: singleOrder.quantity,
-            notes: singleOrder.notes
+            notes: singleOrder.notes,
+            payment_method: singleOrder.payment_method
         }];
+        selectedPaymentMethod = singleOrder.payment_method || 'online';
+        selectedOrderType = singleOrder.order_type || 'dine_in';
         console.log('Debug: Cart loaded from currentOrder:', cart);
+        console.log('Debug: Payment method from order:', selectedPaymentMethod);
+        console.log('Debug: Order type from order:', selectedOrderType);
     }
 
     console.log('Debug: Final cart:', cart);
@@ -64,17 +80,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- PAYMENT METHOD SWITCHING LOGIC ---
     const paymentMethods = document.querySelectorAll('.payment-method');
-    const cardSection = document.getElementById('card-payment-section');
-    const walletSection = document.getElementById('wallet-payment-section');
+    const onlineSection = document.getElementById('online-payment-section');
+    const counterSection = document.getElementById('counter-payment-section');
+    const billingSection = document.querySelector('.form-section:has(#email)') ||
+                          document.querySelector('.form-section h3.section-title i.fa-map-marker-alt')?.closest('.form-section');
 
+    // Function to toggle sections based on payment method
+    function updatePaymentSections(method) {
+        if (onlineSection && counterSection) {
+            onlineSection.style.display = (method === 'online') ? 'block' : 'none';
+            counterSection.style.display = (method === 'counter') ? 'block' : 'none';
+        }
+
+        // Hide billing address for counter payment
+        if (billingSection) {
+            billingSection.style.display = (method === 'online') ? 'block' : 'none';
+        }
+    }
+
+    // Pre-select payment method from cart checkout or Order Now modal
+    if (selectedPaymentMethod) {
+        paymentMethods.forEach(m => m.classList.remove('selected'));
+        const methodToSelect = document.querySelector(`.payment-method[data-method="${selectedPaymentMethod}"]`);
+        if (methodToSelect) {
+            methodToSelect.classList.add('selected');
+            updatePaymentSections(selectedPaymentMethod);
+        }
+    }
+
+    // Handle payment method selection clicks
     paymentMethods.forEach(method => {
         method.addEventListener('click', () => {
             paymentMethods.forEach(m => m.classList.remove('selected'));
             method.classList.add('selected');
             const selectedMethod = method.dataset.method;
-            
-            cardSection.style.display = (selectedMethod === 'card') ? 'block' : 'none';
-            walletSection.style.display = (selectedMethod === 'wallet') ? 'block' : 'none';
+
+            updatePaymentSections(selectedMethod);
+
+            // Update the selected payment method for form submission
+            selectedPaymentMethod = selectedMethod;
         });
     });
 
@@ -94,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Debug: Cart at submission:', cart);
 
             if (cart.length === 0) {
-                alert('Your cart is empty. Please add items before checkout.');
+                Toast.warning('Cart Empty', 'Please add items before checkout.');
                 return;
             }
 
@@ -104,13 +148,17 @@ document.addEventListener('DOMContentLoaded', () => {
             submitButton.disabled = true;
 
             // Gather form data
-            const selectedMethod = document.querySelector('.payment-method.selected').dataset.method;
             const email = document.getElementById('email')?.value || '';
+
+            // Determine if this is from cart checkout or Order Now
+            const isFromCart = !!checkoutCartData;
 
             const payload = {
                 cart: cart,
+                is_from_cart: isFromCart,
                 payment_details: {
-                    method: selectedMethod,
+                    method: selectedPaymentMethod,
+                    order_type: selectedOrderType,
                     email: email,
                     // In a real scenario, you would collect more details here
                     // For card: card number, expiry, cvv from a secure payment gateway integration
@@ -134,6 +182,18 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .then(response => {
                 console.log('Debug: Response status:', response.status);
+
+                // Handle CSRF token mismatch (419)
+                if (response.status === 419) {
+                    throw new Error('Session expired. Please refresh the page and try again.');
+                }
+
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Invalid response from server. Please try again.');
+                }
+
                 return response.json();
             })
             .then(data => {
@@ -168,7 +228,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     // Handle failure
                     console.error('Payment failed:', data);
-                    alert(data.message || 'Payment failed. Please try again.');
+                    if (typeof Toast !== 'undefined') {
+                        Toast.error('Payment Failed', data.message || 'Payment failed. Please try again.');
+                    } else {
+                        alert('Payment Failed: ' + (data.message || 'Payment failed. Please try again.'));
+                    }
                     // Re-enable the button
                     buttonText.style.display = 'inline-block';
                     loadingSpinner.style.display = 'none';
@@ -177,7 +241,11 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('A critical error occurred. Please check the console and try again.');
+                if (typeof Toast !== 'undefined') {
+                    Toast.error('Error Occurred', error.message || 'A critical error occurred. Please try again.');
+                } else {
+                    alert('Error: ' + (error.message || 'A critical error occurred. Please try again.'));
+                }
                 // Re-enable the button
                 buttonText.style.display = 'inline-block';
                 loadingSpinner.style.display = 'none';

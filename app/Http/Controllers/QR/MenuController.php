@@ -21,43 +21,43 @@ class MenuController extends Controller
     {
         $this->paymentService = $paymentService;
     }
-    
+
     /**
      * Display menu for QR code access
      */
     public function index(Request $request)
     {
         $sessionCode = $request->get('session');
-        
+
         if (!$sessionCode) {
             return redirect()->route('qr.error')->with('error', 'Invalid QR code. Session not found.');
         }
-        
+
         // Find and validate session
         $session = TableQrcode::where('session_code', $sessionCode)
             ->with(['table', 'reservation'])
             ->first();
-            
+
         if (!$session) {
             return redirect()->route('qr.error')->with('error', 'Session not found.');
         }
-        
+
         if (!$session->isActive()) {
             return redirect()->route('qr.error')->with('error', 'Session has expired.');
         }
-        
+
         // Get main categories (Food and Drinks)
         $mainCategories = Category::whereNull('parent_id')
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('name', 'LIKE', '%food%')
-                      ->orWhere('name', 'LIKE', '%drink%');
+                    ->orWhere('name', 'LIKE', '%drink%');
             })
             ->orderBy('name')
             ->get();
-        
+
         // Prepare menu items grouped by main category and subcategory
         $menuData = [];
-        
+
         foreach ($mainCategories as $mainCategory) {
             // Get subcategories for this main category
             $subCategories = Category::where('parent_id', $mainCategory->id)
@@ -67,7 +67,7 @@ class MenuController extends Controller
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->get();
-            
+
             // Group items by subcategory
             $categoryItems = [];
             foreach ($subCategories as $subCategory) {
@@ -75,21 +75,21 @@ class MenuController extends Controller
                     $categoryItems[$subCategory->name] = $subCategory->menuItems;
                 }
             }
-            
+
             // Only add category if it has items
             if (!empty($categoryItems)) {
                 $menuData[$mainCategory->name] = $categoryItems;
             }
         }
-            
+
         // Get cart from session if exists
         $cartKey = 'qr_cart_' . $session->session_code;
         $cart = session($cartKey, []);
         $cartTotal = $this->calculateCartTotal($cart);
-        
+
         return view('qr.menu', compact('session', 'menuData', 'cart', 'cartTotal'));
     }
-    
+
     /**
      * Add item to cart
      */
@@ -100,26 +100,26 @@ class MenuController extends Controller
             'menu_item_id' => 'required|exists:menu_items,id',
             'quantity' => 'required|integer|min:1|max:10',
         ]);
-        
+
         $session = TableQrcode::where('session_code', $request->session_code)
             ->where('status', 'active')
             ->first();
-            
+
         if (!$session || !$session->isActive()) {
             return response()->json(['error' => 'Session expired'], 400);
         }
-        
+
         $menuItem = MenuItem::findOrFail($request->menu_item_id);
-        
+
         if (!$menuItem->availability) {
             return response()->json(['error' => 'Item not available'], 400);
         }
-        
+
         $cartKey = 'qr_cart_' . $session->session_code;
         $cart = session($cartKey, []);
-        
+
         $itemId = $menuItem->id;
-        
+
         if (isset($cart[$itemId])) {
             $cart[$itemId]['quantity'] += $request->quantity;
         } else {
@@ -131,11 +131,11 @@ class MenuController extends Controller
                 'image' => $menuItem->image,
             ];
         }
-        
+
         session([$cartKey => $cart]);
-        
+
         $cartTotal = $this->calculateCartTotal($cart);
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Item added to cart',
@@ -143,7 +143,7 @@ class MenuController extends Controller
             'cart_total' => $cartTotal,
         ]);
     }
-    
+
     /**
      * Update cart item quantity
      */
@@ -154,25 +154,25 @@ class MenuController extends Controller
             'menu_item_id' => 'required|integer',
             'quantity' => 'required|integer|min:-10|max:10',
         ]);
-        
+
         \Log::info('Updating cart with data: ' . json_encode($request->all()));
-        
+
         $session = TableQrcode::where('session_code', $request->session_code)
             ->where('status', 'active')
             ->first();
-            
+
         if (!$session || !$session->isActive()) {
             \Log::info('Session expired during update');
             return response()->json(['error' => 'Session expired'], 400);
         }
-        
+
         $cartKey = 'qr_cart_' . $session->session_code;
         $cart = session($cartKey, []);
-        
+
         \Log::info('Current cart before update: ' . json_encode($cart));
-        
+
         $itemId = $request->menu_item_id;
-        
+
         // Special case: clear all items when itemId is 0 and quantity is 0
         if ($itemId == 0 && $request->quantity == 0) {
             $cart = [];
@@ -181,7 +181,7 @@ class MenuController extends Controller
             // Regular update
             if (isset($cart[$itemId])) {
                 $cart[$itemId]['quantity'] += $request->quantity;
-                
+
                 // Remove item if quantity is 0 or less
                 if ($cart[$itemId]['quantity'] <= 0) {
                     unset($cart[$itemId]);
@@ -191,37 +191,37 @@ class MenuController extends Controller
                 }
             }
         }
-        
+
         session([$cartKey => $cart]);
-        
+
         \Log::info('Cart after update: ' . json_encode($cart));
-        
+
         $cartTotal = $this->calculateCartTotal($cart);
-        
+
         return response()->json([
             'success' => true,
             'cart_count' => array_sum(array_column($cart, 'quantity')),
             'cart_total' => $cartTotal,
         ]);
     }
-    
+
     /**
      * Show cart contents
      */
     public function viewCart(Request $request)
     {
         $sessionCode = $request->get('session');
-        
+
         // Log the session code for debugging
         \Log::info('Viewing cart with session code: ' . $sessionCode);
-        
+
         $session = TableQrcode::where('session_code', $sessionCode)
             ->with(['table'])
             ->first();
-            
+
         // Log the session object for debugging
         \Log::info('Session object: ' . json_encode($session));
-            
+
         if (!$session || !$session->isActive()) {
             \Log::info('Session expired or not found');
             if ($request->expectsJson()) {
@@ -229,15 +229,15 @@ class MenuController extends Controller
             }
             return redirect()->route('qr.error')->with('error', 'Session expired.');
         }
-        
+
         $cartKey = 'qr_cart_' . $session->session_code;
         $cart = session($cartKey, []);
-        
+
         // Log the cart contents for debugging
         \Log::info('Cart contents: ' . json_encode($cart));
-        
+
         $cartTotal = $this->calculateCartTotal($cart);
-        
+
         // If AJAX request, return JSON data
         if ($request->expectsJson()) {
             // Convert cart to proper format
@@ -254,17 +254,17 @@ class MenuController extends Controller
                     'image_url' => $menuItem ? $menuItem->image_url : null
                 ];
             }
-            
+
             return response()->json([
                 'cart' => $cartItems,
                 'cart_total' => $cartTotal,
                 'cart_count' => array_sum(array_column($cart, 'quantity'))
             ]);
         }
-        
+
         return view('qr.cart', compact('session', 'cart', 'cartTotal'));
     }
-    
+
     /**
      * Place order from cart
      */
@@ -276,25 +276,25 @@ class MenuController extends Controller
             'guest_phone' => 'required|string|max:20',
             'special_instructions' => 'nullable|string|max:500',
         ]);
-        
+
         $session = TableQrcode::where('session_code', $request->session_code)
             ->with(['table'])
             ->where('status', 'active')
             ->first();
-            
+
         if (!$session || !$session->isActive()) {
             return response()->json(['error' => 'Session expired'], 400);
         }
-        
+
         $cartKey = 'qr_cart_' . $session->session_code;
         $cart = session($cartKey, []);
-        
+
         if (empty($cart)) {
             return response()->json(['error' => 'Cart is empty'], 400);
         }
-        
+
         $cartTotal = $this->calculateCartTotal($cart);
-        
+
         // Create order
         $order = Order::create([
             'user_id' => null, // QR orders don't have user_id
@@ -313,7 +313,7 @@ class MenuController extends Controller
             'session_token' => Str::random(32),
             'confirmation_code' => 'ORD' . strtoupper(Str::random(6)),
         ]);
-        
+
         // Create order items
         foreach ($cart as $item) {
             OrderItem::create([
@@ -325,10 +325,10 @@ class MenuController extends Controller
                 'status' => 'pending',
             ]);
         }
-        
+
         // Clear cart
         session()->forget($cartKey);
-        
+
         return response()->json([
             'success' => true,
             'order_id' => $order->id,
@@ -336,7 +336,7 @@ class MenuController extends Controller
             'session_token' => $order->session_token,
         ]);
     }
-    
+
     /**
      * Track order status
      */
@@ -346,17 +346,17 @@ class MenuController extends Controller
             'order_code' => 'required|string',
             'phone' => 'required|string',
         ]);
-        
+
         $order = Order::where('confirmation_code', $request->order_code)
             ->where('guest_phone', $request->phone)
             ->where('order_type', 'qr_table')
             ->with(['items.menuItem', 'tableQrcode.table', 'trackings'])
             ->first();
-            
+
         if (!$order) {
             return response()->json(['error' => 'Order not found'], 404);
         }
-        
+
         return response()->json([
             'order' => $order,
             'status' => $order->order_status,
@@ -366,7 +366,7 @@ class MenuController extends Controller
             'items' => $order->items,
         ]);
     }
-    
+
     /**
      * Show error page
      */
@@ -374,7 +374,7 @@ class MenuController extends Controller
     {
         return view('qr.error');
     }
-    
+
     /**
      * Call waiter (simple notification)
      */
@@ -384,15 +384,15 @@ class MenuController extends Controller
             'session_code' => 'required|exists:table_qrcodes,session_code',
             'message' => 'nullable|string|max:255',
         ]);
-        
+
         $session = TableQrcode::where('session_code', $request->session_code)
             ->with(['table'])
             ->first();
-            
+
         if (!$session || !$session->isActive()) {
             return response()->json(['error' => 'Session expired'], 400);
         }
-        
+
         // Here you would typically send notification to staff
         // For now, we'll just log it
         \Log::info('Waiter called for table ' . $session->table->table_number, [
@@ -400,22 +400,22 @@ class MenuController extends Controller
             'message' => $request->message ?? 'Customer needs assistance',
             'timestamp' => now(),
         ]);
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Waiter has been notified!',
         ]);
     }
-    
+
     /**
      * Calculate cart total
      */
     private function calculateCartTotal($cart)
     {
-        $total = array_sum(array_map(function($item) {
+        $total = array_sum(array_map(function ($item) {
             return $item['price'] * $item['quantity'];
         }, $cart));
-        
+
         // Round to 2 decimal places for currency
         return round($total, 2);
     }

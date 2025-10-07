@@ -46,11 +46,11 @@
                     <td>
                         <div class="roles-list">
                             @if($permission->roles->count() > 0)
-                                @foreach($permission->roles as $role)
-                                    <span class="role-badge">{{ ucfirst($role->name) }}</span>
-                                @endforeach
+                            @foreach($permission->roles as $role)
+                            <span class="role-badge">{{ ucfirst($role->name) }}</span>
+                            @endforeach
                             @else
-                                <span class="no-roles">No roles assigned</span>
+                            <span class="no-roles">No roles assigned</span>
                             @endif
                         </div>
                     </td>
@@ -63,24 +63,24 @@
                                 class="action-btn view-btn" title="View Details">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ route('admin.permissions.edit', $permission->id) }}" 
-                               class="action-btn edit-btn" title="Edit Permission">
+                            <a href="{{ route('admin.permissions.edit', $permission->id) }}"
+                                class="action-btn edit-btn" title="Edit Permission">
                                 <i class="fas fa-edit"></i>
                             </a>
 
                             @if(!in_array($permission->name, ['view-users', 'create-users', 'edit-users', 'delete-users', 'view-roles', 'create-roles', 'edit-roles', 'delete-roles']))
-                                <form method="POST"
-                                    action="{{ route('admin.permissions.destroy', $permission->id) }}"
-                                    style="display: inline;"
-                                    onsubmit="return confirm('Are you sure you want to delete this permission?');">
-                                    <input type="hidden" name="_method" value="DELETE">
-                                    @csrf
-                                    <button type="submit" class="action-btn delete-btn" title="Delete Permission">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
+                            <form method="POST"
+                                action="{{ route('admin.permissions.destroy', $permission->id) }}"
+                                style="display: inline;"
+                                onsubmit="return confirm('Are you sure you want to delete this permission?');">
+                                <input type="hidden" name="_method" value="DELETE">
+                                @csrf
+                                <button type="submit" class="action-btn delete-btn" title="Delete Permission">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
                             @else
-                                <span class="text-muted" style="font-size: 12px; color: #6c757d;">Core</span>
+                            <span class="text-muted" style="font-size: 12px; color: #6c757d;">Core</span>
                             @endif
                         </div>
                     </td>
@@ -173,9 +173,9 @@
             z-index: 9999;
             ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
         `;
-        
+
         document.body.appendChild(notification);
-        
+
         setTimeout(() => {
             notification.remove();
         }, 3000);

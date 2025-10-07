@@ -36,10 +36,9 @@ const AppData = {
     // ===== Daily Check-in System =====
     function initializeCheckin() {
       const track = document.getElementById('checkinTrack');
-      // Get check-in points from admin settings
       const checkinPoints = (window.rewardsData && window.rewardsData.checkinSettings && window.rewardsData.checkinSettings.daily_points)
         ? window.rewardsData.checkinSettings.daily_points
-        : [5, 5, 10, 10, 15, 20, 25]; // Default fallback
+        : [25, 5, 5, 10, 10, 15, 20];
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       
       track.innerHTML = '';
@@ -256,11 +255,9 @@ const AppData = {
             showMessage('Failed to process check-in. Please try again.', 'error');
           });
         } else {
-          // For guests, use the old localStorage method
-          // Get check-in points from admin settings
           let guestCheckinPoints = (window.rewardsData && window.rewardsData.checkinSettings && window.rewardsData.checkinSettings.daily_points)
             ? window.rewardsData.checkinSettings.daily_points
-            : [5, 5, 10, 10, 15, 20, 25]; // Default fallback
+            : [25, 5, 5, 10, 10, 15, 20];
           const earnedPoints = guestCheckinPoints[checkinStreak] || 5;
 
           // Create floating points and confetti animations

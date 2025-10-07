@@ -168,8 +168,8 @@ class RewardsController extends Controller
             $newStreak = 0;
         }
 
-        // Get points for current streak position
-        $earnedPoints = $dailyPoints[$currentStreak] ?? 5;
+        // Get points for the NEW streak position (the day they're checking in for)
+        $earnedPoints = $dailyPoints[$newStreak] ?? 5;
 
         // Update user data
         try {

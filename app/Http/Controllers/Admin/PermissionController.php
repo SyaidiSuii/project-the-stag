@@ -103,7 +103,7 @@ class PermissionController extends Controller
         }
 
         $permission->delete();
-        
+
         // Clear permission cache
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 

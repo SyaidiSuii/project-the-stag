@@ -16,7 +16,7 @@
       <div class="logo">🦌</div>
       <h1 class="header-title">The Stag - SmartDine</h1>
     </div>
-    <a href="{{ route('customer.food.index') }}" class="back-link">
+    <a href="{{ route('customer.menu.index') }}" class="back-link">
       <i class="fas fa-arrow-left"></i> Back to Menu
     </a>
   </header>
@@ -89,94 +89,79 @@
     <!-- Payment Form -->
     <section class="payment-form-container">
       <h2 class="form-title">Payment Details</h2>
-      
+
       <!-- Payment Method Selection -->
       <div class="form-section">
         <h3 class="section-title">
           <i class="fas fa-credit-card"></i> Payment Method
         </h3>
         <div class="payment-methods">
-          <div class="payment-method selected" data-method="card">
+          <div class="payment-method selected" data-method="online">
             <div class="method-icon">
-              <i class="fas fa-university"></i>
+              <i class="fas fa-globe"></i>
             </div>
-            <div class="method-name">Online Banking</div>
+            <div class="method-name">Pay Online</div>
+            <div class="method-desc" style="font-size: 0.85rem; color: #64748b; margin-top: 0.25rem;">Online Banking / E-Wallet</div>
           </div>
-          <div class="payment-method" data-method="wallet">
+          <div class="payment-method" data-method="counter">
             <div class="method-icon">
-              <i class="fas fa-wallet"></i>
+              <i class="fas fa-store"></i>
             </div>
-            <div class="method-name">E-Wallet</div>
-          </div>
-          <div class="payment-method" data-method="cash">
-            <div class="method-icon">
-              <i class="fas fa-money-bill-wave"></i>
-            </div>
-            <div class="method-name">Cash on Delivery</div>
+            <div class="method-name">Pay at Counter</div>
+            <div class="method-desc" style="font-size: 0.85rem; color: #64748b; margin-top: 0.25rem;">Cash / Card</div>
           </div>
         </div>
       </div>
-      
-      <!-- Card Payment Form (default visible) -->
+
+      <!-- Payment Form -->
       <form id="payment-form">
-        <div class="form-section" id="card-payment-section">
+        <!-- Online Payment Section (default visible) -->
+        <div class="form-section" id="online-payment-section">
           <h3 class="section-title">
-            <i class="fas fa-lock"></i> Online Banking Payment
+            <i class="fas fa-lock"></i> Secure Online Payment
           </h3>
           <div class="banking-info-card">
             <div class="banking-icon">
-              <i class="fas fa-university"></i>
+              <i class="fas fa-shield-alt"></i>
             </div>
             <div class="banking-details">
-              <h4>Secure Online Banking Payment</h4>
-              <p>You will be redirected to ToyyibPay's secure payment page where you can:</p>
+              <h4>Pay Securely Online</h4>
+              <p>You will be redirected to ToyyibPay's secure payment page where you can choose:</p>
               <ul class="banking-features">
-                <li><i class="fas fa-check"></i> Choose from all major Malaysian banks</li>
-                <li><i class="fas fa-check"></i> Login securely through your bank's official page</li>
-                <li><i class="fas fa-check"></i> Complete payment with your existing banking credentials</li>
-                <li><i class="fas fa-check"></i> Get instant payment confirmation</li>
+                <li><i class="fas fa-check"></i> <strong>Online Banking</strong> - All major Malaysian banks</li>
+                <li><i class="fas fa-check"></i> <strong>E-Wallet</strong> - Touch 'n Go, GrabPay, Boost, etc.</li>
+                <li><i class="fas fa-check"></i> Instant payment confirmation</li>
+                <li><i class="fas fa-check"></i> 100% secure and encrypted</li>
               </ul>
             </div>
           </div>
-          <div class="supported-banks">
-            <h5>Supported Banks Include:</h5>
-            <div class="bank-logos">
-              <span class="bank-name">Maybank2u</span>
-              <span class="bank-name">CIMB Clicks</span>
-              <span class="bank-name">Public Bank</span>
-              <span class="bank-name">RHB Now</span>
-              <span class="bank-name">Hong Leong</span>
-              <span class="bank-name">AmBank</span>
-              <span class="bank-name">Bank Islam</span>
-              <span class="bank-name">BSN</span>
-              <span class="bank-name">And more...</span>
+        </div>
+
+        <!-- Counter Payment Section (hidden by default) -->
+        <div class="form-section" id="counter-payment-section" style="display: none;">
+          <h3 class="section-title">
+            <i class="fas fa-store"></i> Pay at Counter
+          </h3>
+          <div class="banking-info-card" style="background: #f0fdf4; border: 2px solid #22c55e;">
+            <div class="banking-icon" style="background: #22c55e;">
+              <i class="fas fa-info-circle"></i>
+            </div>
+            <div class="banking-details">
+              <h4>Order will be prepared upon payment</h4>
+              <p><strong>How it works:</strong></p>
+              <ul class="banking-features">
+                <li><i class="fas fa-check"></i> Place your order now</li>
+                <li><i class="fas fa-check"></i> Go to the counter and make payment (Cash/Card)</li>
+                <li><i class="fas fa-check"></i> Your order will start preparing after payment</li>
+                <li><i class="fas fa-check"></i> Collect your order when ready</li>
+              </ul>
+              <p style="margin-top: 1rem; padding: 0.75rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 0.5rem;">
+                <strong>Note:</strong> Your order status will be "Pending Payment" until you pay at the counter.
+              </p>
             </div>
           </div>
         </div>
-        
-        <!-- E-Wallet Section (hidden by default) -->
-        <div class="form-section" id="wallet-payment-section" style="display: none;">
-          <h3 class="section-title">
-            <i class="fas fa-mobile-alt"></i> E-Wallet Payment
-          </h3>
-          <div class="form-group">
-            <label for="wallet-type" class="form-label">Select E-Wallet</label>
-            <select id="wallet-type" class="form-input">
-              <option value="">Select your e-wallet</option>
-              <option value="touchngo">Touch 'n Go eWallet</option>
-              <option value="grabpay">GrabPay</option>
-              <option value="boost">Boost</option>
-              <option value="maybank">Maybank QRPay</option>
-            </select>
-            <div class="error-message">Please select an e-wallet</div>
-          </div>
-          <div class="form-group">
-            <label for="phone-number" class="form-label">Phone Number</label>
-            <input type="tel" id="phone-number" class="form-input" placeholder="012-345 6789" value="{{ auth()->user()->phone_number ?? '' }}">
-            <div class="error-message">Please enter a valid phone number</div>
-          </div>
-        </div>
-        
+
         <!-- Billing Address -->
         <div class="form-section">
           <h3 class="section-title">
@@ -261,6 +246,8 @@
     </div>
   </div>
 </body>
+    <!-- Toast Notification -->
+    <script src="{{ asset('js/toast.js') }}"></script>
     <!-- Cart Manager -->
     <script src="{{ asset('js/customer/cart-manager.js') }}"></script>
     <script src="{{ asset('js/customer/payment.js') }}"></script>
