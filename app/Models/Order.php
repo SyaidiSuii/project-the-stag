@@ -52,9 +52,11 @@ class Order extends Model
         // Trigger AI model retrain when order is completed/served
         static::updated(function ($order) {
             // Check if order status changed to completed or served
-            if ($order->isDirty('order_status') && 
-                in_array($order->order_status, ['completed', 'served'])) {
-                
+            if (
+                $order->isDirty('order_status') &&
+                in_array($order->order_status, ['completed', 'served'])
+            ) {
+
                 try {
                     app(RecommendationService::class)->onOrderCompleted($order->id);
                 } catch (\Exception $e) {
@@ -139,7 +141,7 @@ class Order extends Model
         if ($this->isQROrder()) {
             return $this->guest_name;
         }
-        
+
         return $this->user ? $this->user->name : 'Unknown';
     }
 
@@ -148,7 +150,7 @@ class Order extends Model
         if ($this->isQROrder()) {
             return $this->guest_phone;
         }
-        
+
         return $this->user ? $this->user->phone : null;
     }
 
@@ -158,17 +160,17 @@ class Order extends Model
     public function calculateTotalPreparationTime()
     {
         $totalPrepTime = 0;
-        
+
         foreach ($this->items as $item) {
             if ($item->menuItem) {
                 $prepTime = $item->menuItem->preparation_time ?? 15; // Default 15 minutes
                 $totalPrepTime += ($prepTime * $item->quantity);
             }
         }
-        
+
         // Add buffer time (10% or minimum 5 minutes)  
         $bufferTime = max(5, round($totalPrepTime * 0.1));
-        
+
         return $totalPrepTime + $bufferTime;
     }
 
@@ -178,11 +180,11 @@ class Order extends Model
     public function autoCreateETA()
     {
         $totalPrepTime = $this->calculateTotalPreparationTime();
-        
+
         // Calculate estimated completion time
         $orderTime = $this->order_time ?? now();
         $estimatedTime = $orderTime->addMinutes($totalPrepTime);
-        
+
         // Create ETA record with correct fields
         $eta = $this->etas()->create([
             'initial_estimate' => $totalPrepTime,
@@ -192,12 +194,12 @@ class Order extends Model
             'customer_notified' => false,
             'last_updated' => now(),
         ]);
-        
+
         // Also update the order's estimated_completion_time field
         $this->update([
             'estimated_completion_time' => $estimatedTime
         ]);
-        
+
         return $eta;
     }
 
@@ -208,31 +210,31 @@ class Order extends Model
     {
         // Find the auto-generated ETA (first one created)
         $autoEta = $this->etas()->first();
-        
+
         if ($autoEta) {
             $totalPrepTime = $this->calculateTotalPreparationTime();
             $orderTime = $this->order_time ?? now();
             $estimatedTime = $orderTime->addMinutes($totalPrepTime);
-            
+
             // Check if there's a significant change that warrants marking as delayed
             $isDelayed = $totalPrepTime > $autoEta->initial_estimate;
             $delayDuration = $isDelayed ? ($totalPrepTime - $autoEta->initial_estimate) : 0;
-            
+
             $autoEta->update([
                 'current_estimate' => $totalPrepTime,
                 'is_delayed' => $isDelayed,
                 'delay_duration' => $delayDuration,
                 'last_updated' => now(),
             ]);
-            
+
             // Update order's estimated_completion_time
             $this->update([
                 'estimated_completion_time' => $estimatedTime
             ]);
-            
+
             return $autoEta;
         }
-        
+
         // If no auto ETA exists, create one
         return $this->autoCreateETA();
     }
@@ -247,7 +249,7 @@ class Order extends Model
             $prefix = 'STAG';
             $date = now()->format('Ymd'); // 20250917
             $random = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 4)); // 4 chars
-            
+
             $code = "{$prefix}-{$date}-{$random}";
         } while (self::where('confirmation_code', $code)->exists());
 
@@ -263,7 +265,7 @@ class Order extends Model
             $this->confirmation_code = self::generateConfirmationCode();
             $this->save();
         }
-        
+
         return $this->confirmation_code;
     }
 }

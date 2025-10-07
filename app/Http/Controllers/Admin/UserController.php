@@ -11,6 +11,7 @@ namespace App\Http\Controllers\Admin;
   use libphonenumber\PhoneNumberUtil;
   use libphonenumber\PhoneNumberFormat;
   use libphonenumber\NumberParseException;
+  use Illuminate\Validation\Rule;
 
   class UserController extends Controller
   {
@@ -127,7 +128,7 @@ namespace App\Http\Controllers\Admin;
       {
           $this->validate($request,[
               'name'=> 'required|min:5',
-              'email'=>'required|email|unique:users,email,NULL,id,deleted_at,NULL',
+              'email' => ['required', 'email', Rule::unique('users')->whereNull('deleted_at')],
               'phone_number' => 'required|string',
               'is_active' => 'boolean',
               'roles' => ['nullable', 'array'],
@@ -201,7 +202,7 @@ namespace App\Http\Controllers\Admin;
       {
           $this->validate($request,[
               'name'=> 'required|min:5',
-              'email'=>'required|email|unique:users,email,'.$user->id.',id,deleted_at,NULL',
+              'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)->whereNull('deleted_at')],
               'phone_number' => 'required|string',
               'is_active' => 'nullable|boolean',
               'roles' => ['nullable', 'array'],
@@ -282,7 +283,7 @@ namespace App\Http\Controllers\Admin;
           try {
               $this->validate($request,[
                   'name'=> 'required|min:3',
-                  'email'=>'required|email|unique:users,email,'.$user->id.',id,deleted_at,NULL',
+                  'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)->whereNull('deleted_at')],
                   'phone_number' => 'nullable|string|max:20',
                   'is_active' => 'nullable|boolean',
               ]);

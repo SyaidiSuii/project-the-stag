@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     e.target.style.backgroundColor = '';
                 }, 1500);
             } else {
-                alert('Failed to add item to cart. Please try again.');
+                Toast.error('Failed to Add', 'Could not add item to cart. Please try again.');
             }
         }
 
@@ -411,17 +411,52 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Checkout button
+        // Checkout button - show payment method modal first
         if (e.target.classList.contains('cart-modal-checkout')) {
             window.cartManager.getCart().then(cartItems => {
                 if (cartItems.length > 0) {
-                    // Store cart data for checkout
-                    sessionStorage.setItem('checkoutCart', JSON.stringify(cartItems));
-                    window.location.href = '/customer/payment';
+                    // Show payment method selection modal
+                    const paymentMethodModal = document.getElementById('payment-method-modal');
+                    if (paymentMethodModal) {
+                        paymentMethodModal.style.display = 'flex';
+                    }
                 } else {
-                    alert('Your cart is empty!');
+                    if (typeof Toast !== 'undefined') {
+                        Toast.warning('Cart Empty', 'Please add items to your cart before checkout');
+                    } else {
+                        alert('Cart Empty: Please add items to your cart before checkout');
+                    }
                 }
             });
+        }
+
+        // Payment method modal - Confirm button
+        if (e.target.id === 'confirm-payment-method-btn') {
+            const selectedMethod = document.querySelector('input[name="cart-payment-method"]:checked')?.value || 'online';
+            const selectedOrderType = document.querySelector('input[name="cart-order-type"]:checked')?.value || 'dine_in';
+
+            window.cartManager.getCart().then(cartItems => {
+                // Store cart data with selected payment method and order type
+                sessionStorage.setItem('checkoutCart', JSON.stringify(cartItems));
+                sessionStorage.setItem('selectedPaymentMethod', selectedMethod);
+                sessionStorage.setItem('selectedOrderType', selectedOrderType);
+
+                // Hide modal and redirect to payment page
+                const paymentMethodModal = document.getElementById('payment-method-modal');
+                if (paymentMethodModal) {
+                    paymentMethodModal.style.display = 'none';
+                }
+
+                window.location.href = '/customer/payment';
+            });
+        }
+
+        // Payment method modal - Cancel button
+        if (e.target.id === 'cancel-payment-method-btn') {
+            const paymentMethodModal = document.getElementById('payment-method-modal');
+            if (paymentMethodModal) {
+                paymentMethodModal.style.display = 'none';
+            }
         }
     });
 
@@ -572,7 +607,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Cancel button
-        if (e.target.id === 'order-cancel-btn') {
+        if (e.target.id === 'order-cancel-btn' || e.target.id === 'order-modal-close-x') {
             hideOrderModal();
         }
 
@@ -580,7 +615,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.id === 'order-confirm-btn') {
             if (currentOrderItem) {
                 const notes = document.getElementById('order-notes')?.value || '';
-                
+                const paymentMethod = document.querySelector('input[name="payment-method"]:checked')?.value || 'online';
+                const orderType = document.querySelector('input[name="order-type"]:checked')?.value || 'dine_in';
+
                 // Create order data
                 const orderData = {
                     item_id: currentOrderItem.id,
@@ -588,12 +625,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     item_price: currentOrderItem.price,
                     quantity: orderQuantity,
                     notes: notes,
+                    payment_method: paymentMethod,
+                    order_type: orderType,
                     total_amount: document.getElementById('order-total-amount')?.textContent || 'RM 0.00'
                 };
 
                 // Store order data in sessionStorage for payment page
                 sessionStorage.setItem('currentOrder', JSON.stringify(orderData));
-                
+
                 // Redirect to payment page
                 window.location.href = '/customer/payment';
             }
@@ -603,7 +642,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle URL parameters for cart actions (from reorder)
     if (showCart === 'true' || cartRefresh) {
         console.log('Reorder redirect detected, showing cart modal...');
-        
+
         // Wait a bit for cart manager to load
         setTimeout(() => {
             if (typeof showCartModal === 'function') {
@@ -612,7 +651,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 console.warn('showCartModal function not found');
             }
-            
+
             // Clean up URL parameters
             if (window.history && window.history.replaceState) {
                 const cleanUrl = window.location.pathname;
@@ -620,4 +659,120 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 1000);
     }
+
+    // Order type, payment method selection styling (Order Now modal)
+    document.addEventListener('change', function(e) {
+        // Order type selection styling
+        if (e.target.name === 'order-type') {
+            const allCards = document.querySelectorAll('#order-modal .order-type-card');
+            const allIcons = document.querySelectorAll('#order-modal .order-type-card i');
+
+            allCards.forEach((card, index) => {
+                card.style.borderColor = '#e5e7eb';
+                card.style.background = 'white';
+                card.style.boxShadow = 'none';
+                if (allIcons[index]) {
+                    allIcons[index].style.color = '#9ca3af';
+                }
+            });
+
+            const selectedCard = e.target.parentElement.querySelector('.order-type-card');
+            const selectedIcon = selectedCard?.querySelector('i');
+            if (selectedCard) {
+                selectedCard.style.borderColor = '#6366f1';
+                selectedCard.style.background = 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)';
+                selectedCard.style.boxShadow = '0 2px 8px rgba(99, 102, 241, 0.15)';
+                if (selectedIcon) {
+                    selectedIcon.style.color = '#6366f1';
+                }
+            }
+        }
+
+        if (e.target.name === 'payment-method') {
+            const allCards = document.querySelectorAll('#order-modal .payment-method-card');
+            const allIcons = document.querySelectorAll('#order-modal .payment-method-card i');
+
+            allCards.forEach((card, index) => {
+                card.style.borderColor = '#e5e7eb';
+                card.style.background = 'white';
+                card.style.boxShadow = 'none';
+                if (allIcons[index]) {
+                    allIcons[index].style.color = '#9ca3af';
+                }
+            });
+
+            const selectedCard = e.target.parentElement.querySelector('.payment-method-card');
+            const selectedIcon = selectedCard?.querySelector('i');
+            if (selectedCard) {
+                selectedCard.style.borderColor = '#6366f1';
+                selectedCard.style.background = 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)';
+                selectedCard.style.boxShadow = '0 2px 8px rgba(99, 102, 241, 0.15)';
+                if (selectedIcon) {
+                    selectedIcon.style.color = '#6366f1';
+                }
+            }
+        }
+
+        // Cart order type selection styling
+        if (e.target.name === 'cart-order-type') {
+            const allCards = document.querySelectorAll('#payment-method-modal .cart-order-type-card');
+            const allIcons = document.querySelectorAll('#payment-method-modal .cart-order-type-card i');
+
+            allCards.forEach((card, index) => {
+                card.style.borderColor = '#e5e7eb';
+                card.style.background = 'white';
+                card.style.boxShadow = 'none';
+                if (allIcons[index]) {
+                    allIcons[index].style.color = '#9ca3af';
+                }
+            });
+
+            const selectedCard = e.target.parentElement.querySelector('.cart-order-type-card');
+            const selectedIcon = selectedCard?.querySelector('i');
+            if (selectedCard) {
+                selectedCard.style.borderColor = '#6366f1';
+                selectedCard.style.background = 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)';
+                selectedCard.style.boxShadow = '0 2px 8px rgba(99, 102, 241, 0.15)';
+                if (selectedIcon) {
+                    selectedIcon.style.color = '#6366f1';
+                }
+            }
+        }
+
+        // Cart payment method selection styling
+        if (e.target.name === 'cart-payment-method') {
+            const allCards = document.querySelectorAll('#payment-method-modal .cart-payment-card');
+            const allIcons = document.querySelectorAll('#payment-method-modal .cart-payment-card i');
+
+            allCards.forEach((card, index) => {
+                card.style.borderColor = '#e5e7eb';
+                card.style.background = 'white';
+                card.style.boxShadow = 'none';
+                if (allIcons[index]) {
+                    allIcons[index].style.color = '#9ca3af';
+                }
+            });
+
+            const selectedCard = e.target.parentElement.querySelector('.cart-payment-card');
+            const selectedIcon = selectedCard?.querySelector('i');
+            if (selectedCard) {
+                selectedCard.style.borderColor = '#6366f1';
+                selectedCard.style.background = 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)';
+                selectedCard.style.boxShadow = '0 2px 8px rgba(99, 102, 241, 0.15)';
+                if (selectedIcon) {
+                    selectedIcon.style.color = '#6366f1';
+                }
+            }
+        }
+    });
+
+    // Handle cart modal close button
+    document.addEventListener('click', function(e) {
+        if (e.target.id === 'cart-modal-close-x') {
+            const paymentMethodModal = document.getElementById('payment-method-modal');
+            if (paymentMethodModal) {
+                paymentMethodModal.style.display = 'none';
+            }
+        }
+    });
 });

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,10 +24,10 @@
             --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
@@ -210,6 +211,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- Progress Bar -->
@@ -263,10 +265,11 @@
                     <i class="fas fa-utensils"></i> Back to Menu
                 </a>
                 {{-- <a href="{{ route('qr.track') }}" class="btn btn-secondary">
-                    <i class="fas fa-search"></i> Track Order
+                <i class="fas fa-search"></i> Track Order
                 </a> --}}
             </div>
         </div>
     </div>
 </body>
+
 </html>

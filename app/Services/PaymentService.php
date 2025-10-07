@@ -34,7 +34,7 @@ class PaymentService
         try {
             // Get the order to ensure it exists
             $order = Order::findOrFail($orderId);
-            
+
             // Generate unique transaction ID if not provided
             $transactionId = $paymentData['transaction_id'] ?? 'TXN_' . strtoupper(Str::random(10)) . '_' . time();
 
@@ -53,13 +53,13 @@ class PaymentService
             ]);
 
             // Update order payment status (map payment status to order status)
-            $orderPaymentStatus = match($payment->payment_status) {
+            $orderPaymentStatus = match ($payment->payment_status) {
                 'completed' => 'paid',
                 'failed' => 'unpaid',
                 'refunded' => 'refunded',
                 default => 'unpaid' // pending, processing -> unpaid
             };
-            
+
             $order->update([
                 'payment_status' => $orderPaymentStatus
             ]);
@@ -77,7 +77,6 @@ class PaymentService
             DB::commit();
 
             return $payment;
-
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -112,13 +111,13 @@ class PaymentService
 
             // Update related order
             if ($payment->order) {
-                $orderPaymentStatus = match($status) {
+                $orderPaymentStatus = match ($status) {
                     'completed' => 'paid',
                     'failed' => 'unpaid',
                     'refunded' => 'refunded',
                     default => 'unpaid' // pending, processing -> unpaid
                 };
-                
+
                 $payment->order->update([
                     'payment_status' => $orderPaymentStatus,
                     'order_status' => $status === 'completed' ? 'confirmed' : $payment->order->order_status
@@ -138,7 +137,6 @@ class PaymentService
             DB::commit();
 
             return $payment;
-
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -182,7 +180,6 @@ class PaymentService
             DB::commit();
 
             return $payment;
-
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -226,7 +223,7 @@ class PaymentService
         try {
             // Get the order
             $order = Order::findOrFail($orderId);
-            
+
             // Generate unique transaction ID
             $transactionId = 'TXN_' . strtoupper(Str::random(10)) . '_' . time();
 
@@ -294,7 +291,6 @@ class PaymentService
                 'redirect_url' => $billResult['bill_url'],
                 'bill_code' => $billResult['bill_code']
             ];
-
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -320,10 +316,10 @@ class PaymentService
 
             $billCode = $callbackData['billcode'];
             $statusId = $callbackData['status_id'];
-            
+
             // Find payment by bill code
             $payment = Payment::where('bill_code', $billCode)->first();
-            
+
             if (!$payment) {
                 return [
                     'success' => false,
@@ -332,7 +328,7 @@ class PaymentService
             }
 
             // Map status
-            $paymentStatus = match($statusId) {
+            $paymentStatus = match ($statusId) {
                 '1' => 'completed',
                 '2' => 'pending',
                 '3' => 'failed',
@@ -347,7 +343,6 @@ class PaymentService
                 'payment' => $payment,
                 'status' => $paymentStatus
             ];
-
         } catch (\Exception $e) {
             return [
                 'success' => false,

@@ -71,7 +71,6 @@ class ToyyibpayService
                 'error' => $result[0]['msg'] ?? 'Unknown error occurred',
                 'response' => $result
             ];
-
         } catch (\Exception $e) {
             Log::error('Toyyibpay createBill error', [
                 'error' => $e->getMessage(),
@@ -123,7 +122,6 @@ class ToyyibpayService
                 'error' => 'No transaction found',
                 'response' => $result
             ];
-
         } catch (\Exception $e) {
             Log::error('Toyyibpay getBillStatus error', [
                 'bill_code' => $billCode,
@@ -147,9 +145,9 @@ class ToyyibpayService
     {
         // Implement signature verification if Toyyibpay provides it
         // For now, basic validation
-        return isset($callbackData['billcode']) && 
-               isset($callbackData['status_id']) && 
-               isset($callbackData['order_id']);
+        return isset($callbackData['billcode']) &&
+            isset($callbackData['status_id']) &&
+            isset($callbackData['order_id']);
     }
 
     /**
@@ -160,7 +158,7 @@ class ToyyibpayService
      */
     private function mapBillStatus(string $billStatus): string
     {
-        return match($billStatus) {
+        return match ($billStatus) {
             '1' => 'completed', // Successful payment
             '2' => 'pending',   // Pending payment
             '3' => 'failed',    // Failed payment

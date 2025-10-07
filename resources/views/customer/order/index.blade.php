@@ -42,7 +42,13 @@
               <h3>Order #{{ $order->confirmation_code ?? 'ORD-' . $order->id }}</h3>
               <div class="order-date">{{ $order->created_at->format('M j, g:i A') }}</div>
             </div>
-            <div class="order-status status-{{ $order->order_status }}">{{ ucfirst($order->order_status) }}</div>
+            <div class="order-statuses">
+              <div class="payment-status status-payment-{{ $order->payment_status }}">
+                <i class="fas fa-{{ $order->payment_status === 'paid' ? 'check-circle' : 'clock' }}"></i>
+                {{ ucfirst($order->payment_status) }}
+              </div>
+              <div class="order-status status-{{ $order->order_status }}">{{ ucfirst($order->order_status) }}</div>
+            </div>
           </div>
           <div class="order-items">
             <h4>Items</h4>

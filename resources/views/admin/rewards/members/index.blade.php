@@ -44,7 +44,7 @@
                                     <span class="badge badge-secondary">No Tier</span>
                                 @endif
                             </td>
-                            <td>RM {{ number_format($member->customerProfile->total_spent ?? 0, 2) }}</td>
+                            <td>RM {{ number_format($member->orders()->where('payment_status', 'paid')->sum('total_amount'), 2) }}</td>
                             <td>{{ $member->created_at->format('d M Y') }}</td>
                         </tr>
                     @empty

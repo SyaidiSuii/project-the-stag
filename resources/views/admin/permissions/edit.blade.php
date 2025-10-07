@@ -23,19 +23,19 @@
         <!-- Basic Permission Information -->
         <div class="form-section">
             <h3 class="section-subtitle">Permission Information</h3>
-            
+
             <div class="form-group">
                 <label for="name" class="form-label">Permission Name <span class="required">*</span></label>
-                <input 
-                    type="text" 
-                    id="name" 
-                    name="name" 
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
                     class="form-control {{ $errors->get('name') ? 'is-invalid' : '' }}"
                     value="{{ old('name', $permission->name) }}"
                     placeholder="Enter permission name (e.g., view-users, create-posts)"
                     required>
                 @if($errors->get('name'))
-                    <div class="form-error">{{ implode(', ', $errors->get('name')) }}</div>
+                <div class="form-error">{{ implode(', ', $errors->get('name')) }}</div>
                 @endif
                 <div class="form-hint">Permission name should be lowercase with hyphens (e.g., view-users, edit-posts, delete-comments)</div>
             </div>
@@ -72,7 +72,7 @@
             <h3 class="section-subtitle">Currently Assigned to Roles</h3>
             <div class="assigned-roles">
                 @foreach($permission->roles as $role)
-                    <span class="assigned-role-badge">{{ ucfirst($role->name) }}</span>
+                <span class="assigned-role-badge">{{ ucfirst($role->name) }}</span>
                 @endforeach
             </div>
             <div class="form-hint">This permission is currently assigned to {{ $permission->roles->count() }} role(s)</div>
@@ -127,29 +127,29 @@
 
 @section('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Auto-format permission name input
-    const nameInput = document.getElementById('name');
-    if (nameInput) {
-        nameInput.addEventListener('input', function(e) {
-            // Convert to lowercase and replace spaces with hyphens
-            e.target.value = e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        });
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-format permission name input
+        const nameInput = document.getElementById('name');
+        if (nameInput) {
+            nameInput.addEventListener('input', function(e) {
+                // Convert to lowercase and replace spaces with hyphens
+                e.target.value = e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            });
+        }
 
-    // Handle form submission loading state
-    const permissionForm = document.querySelector('.permission-form');
-    if (permissionForm) {
-        permissionForm.addEventListener('submit', function(e) {
-            const submitBtn = this.querySelector('.btn-save');
-            
-            // Show loading state
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating Permission...';
-            submitBtn.disabled = true;
-        });
-    }
+        // Handle form submission loading state
+        const permissionForm = document.querySelector('.permission-form');
+        if (permissionForm) {
+            permissionForm.addEventListener('submit', function(e) {
+                const submitBtn = this.querySelector('.btn-save');
 
-    // Show success/error messages
+                // Show loading state
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating Permission...';
+                submitBtn.disabled = true;
+            });
+        }
+
+        // Show success/error messages
         @if(session('success'))
         showNotification('{{ session('
             success ') }}', 'success');
@@ -159,15 +159,15 @@ document.addEventListener('DOMContentLoaded', function() {
         showNotification('{{ session('
             error ') }}', 'error');
         @endif
-});
+    });
 
-// Notification function
-function showNotification(message, type) {
-    // Create a simple notification
-    const notification = document.createElement('div');
-    notification.className = 'notification ' + type;
-    notification.textContent = message;
-    notification.style.cssText = `
+    // Notification function
+    function showNotification(message, type) {
+        // Create a simple notification
+        const notification = document.createElement('div');
+        notification.className = 'notification ' + type;
+        notification.textContent = message;
+        notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
@@ -178,12 +178,12 @@ function showNotification(message, type) {
         z-index: 9999;
         ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
     `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
 </script>
 @endsection

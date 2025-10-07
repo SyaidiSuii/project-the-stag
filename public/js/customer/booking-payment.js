@@ -28,12 +28,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 cardDetails.style.display = 'block';
                 walletDetails.style.display = 'none';
                 receiptSection.style.display = 'block';
-                payNowBtn.innerHTML = `<i class="fas fa-lock"></i> <span>Pay RM ${parseFloat(window.bookingOrderData.total_amount || 0).toFixed(2)}</span>`;
+                payNowBtn.innerHTML = `<i class="fas fa-university"></i> <span>Pay via FPX - RM ${parseFloat(window.bookingOrderData.total_amount || 0).toFixed(2)}</span>`;
             } else if (selectedPaymentMethod === 'wallet') {
                 cardDetails.style.display = 'none';
                 walletDetails.style.display = 'block';
                 receiptSection.style.display = 'block';
-                payNowBtn.innerHTML = `<i class="fas fa-lock"></i> <span>Pay RM ${parseFloat(window.bookingOrderData.total_amount || 0).toFixed(2)}</span>`;
+                payNowBtn.innerHTML = `<i class="fas fa-mobile-alt"></i> <span>Pay via E-Wallet - RM ${parseFloat(window.bookingOrderData.total_amount || 0).toFixed(2)}</span>`;
             } else if (selectedPaymentMethod === 'cash') {
                 cardDetails.style.display = 'none';
                 walletDetails.style.display = 'none';
@@ -43,35 +43,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Format card number input
-    const cardNumberInput = document.getElementById('card-number');
-    if (cardNumberInput) {
-        cardNumberInput.addEventListener('input', function() {
-            let value = this.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-            let formattedValue = value.match(/.{1,4}/g)?.join(' ') ?? value;
-            this.value = formattedValue;
-        });
-    }
-
-    // Format expiry date input
-    const expiryInput = document.getElementById('expiry-date');
-    if (expiryInput) {
-        expiryInput.addEventListener('input', function() {
-            let value = this.value.replace(/\D/g, '');
-            if (value.length >= 2) {
-                value = value.substring(0, 2) + '/' + value.substring(2, 4);
-            }
-            this.value = value;
-        });
-    }
-
-    // CVV input validation
-    const cvvInput = document.getElementById('cvv');
-    if (cvvInput) {
-        cvvInput.addEventListener('input', function() {
-            this.value = this.value.replace(/\D/g, '');
-        });
-    }
+    // No card input fields needed for FPX online banking
+    // All payment processing handled by ToyyibPay gateway
 
     // Handle form submission
     paymentForm.addEventListener('submit', function(e) {
@@ -87,46 +60,25 @@ document.addEventListener('DOMContentLoaded', function() {
         // Get selected payment method
         const selectedMethod = selectedPaymentMethod;
 
-        // Basic validation for card payments
+        // For online banking (card method), no validation needed - will redirect to ToyyibPay
         if (selectedMethod === 'card') {
-            const cardNumber = document.getElementById('card-number').value;
-            const expiryDate = document.getElementById('expiry-date').value;
-            const cvv = document.getElementById('cvv').value;
-            const cardName = document.getElementById('card-name').value;
-
-            if (!cardNumber || !expiryDate || !cvv || !cardName) {
-                alert('Please fill in all card details.');
-                resetPayButton();
-                return;
-            }
-
-            // Basic card number validation (should be 16 digits)
-            const cardDigits = cardNumber.replace(/\s/g, '');
-            if (cardDigits.length < 13 || cardDigits.length > 19) {
-                alert('Please enter a valid card number.');
-                resetPayButton();
-                return;
-            }
-
-            // Basic expiry validation
-            if (expiryDate.length !== 5 || !expiryDate.includes('/')) {
-                alert('Please enter a valid expiry date (MM/YY).');
-                resetPayButton();
-                return;
-            }
-
-            // Basic CVV validation
-            if (cvv.length < 3 || cvv.length > 4) {
-                alert('Please enter a valid CVV.');
-                resetPayButton();
-                return;
-            }
+            // No card details needed - this will redirect to ToyyibPay gateway
+            console.log('Processing online banking payment via ToyyibPay...');
         }
 
         // Validation for e-wallet payments
         if (selectedMethod === 'wallet') {
-            const walletType = document.getElementById('wallet-type').value;
-            const phoneNumber = document.getElementById('phone-number').value;
+            const walletTypeEl = document.getElementById('wallet-type');
+            const phoneNumberEl = document.getElementById('phone-number');
+
+            if (!walletTypeEl || !phoneNumberEl) {
+                alert('E-wallet payment form is not properly loaded. Please refresh the page.');
+                resetPayButton();
+                return;
+            }
+
+            const walletType = walletTypeEl.value;
+            const phoneNumber = phoneNumberEl.value;
 
             if (!walletType) {
                 alert('Please select an e-wallet.');
@@ -150,28 +102,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Prepare payment data
+        const receiptEmailEl = document.getElementById('receipt-email');
         const paymentData = {
             payment_details: {
                 method: selectedMethod,
-                email: document.getElementById('receipt-email').value || null
+                email: receiptEmailEl ? receiptEmailEl.value : null
             }
         };
 
-        // Add card details if card payment
+        // For FPX online banking (card method), no card details needed - handled by ToyyibPay
         if (selectedMethod === 'card') {
-            paymentData.payment_details.card = {
-                number: document.getElementById('card-number').value,
-                expiry: document.getElementById('expiry-date').value,
-                cvv: document.getElementById('cvv').value,
-                name: document.getElementById('card-name').value
-            };
+            // No card details to send - ToyyibPay will handle FPX bank selection
+            console.log('FPX online banking payment will be handled by ToyyibPay gateway');
         }
 
         // Add wallet details if e-wallet payment
         if (selectedMethod === 'wallet') {
+            const walletTypeEl = document.getElementById('wallet-type');
+            const phoneNumberEl = document.getElementById('phone-number');
+
             paymentData.payment_details.wallet = {
-                type: document.getElementById('wallet-type').value,
-                phone: document.getElementById('phone-number').value
+                type: walletTypeEl ? walletTypeEl.value : '',
+                phone: phoneNumberEl ? phoneNumberEl.value : ''
             };
         }
 
@@ -214,7 +166,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function resetPayButton() {
         payNowBtn.disabled = false;
-        payNowBtn.innerHTML = `<i class="fas fa-lock"></i> Pay RM ${parseFloat(window.bookingOrderData.total_amount || 0).toFixed(2)}`;
+        if (selectedPaymentMethod === 'card') {
+            payNowBtn.innerHTML = `<i class="fas fa-university"></i> <span>Pay via FPX - RM ${parseFloat(window.bookingOrderData.total_amount || 0).toFixed(2)}</span>`;
+        } else if (selectedPaymentMethod === 'wallet') {
+            payNowBtn.innerHTML = `<i class="fas fa-mobile-alt"></i> <span>Pay via E-Wallet - RM ${parseFloat(window.bookingOrderData.total_amount || 0).toFixed(2)}</span>`;
+        } else {
+            payNowBtn.innerHTML = `<i class="fas fa-check"></i> <span>Order Now</span>`;
+        }
     }
 
     function showSuccessModal(data) {

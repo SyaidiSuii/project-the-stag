@@ -26,9 +26,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Logout button
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-        alert("Logout clicked!");
-        // Tambah route logout Laravel bila dah setup Auth
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+        const confirmed = await showConfirm(
+            'Logout?',
+            'Are you sure you want to logout?',
+            'warning',
+            'Logout',
+            'Cancel'
+        );
+        if (confirmed) {
+            // Tambah route logout Laravel bila dah setup Auth
+            Toast.info('Logging out...', 'Please wait');
+        }
     });
 
     // Mobile sidebar toggle
@@ -71,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
             orderSubmenu.classList.toggle("expanded");
         });
     }
-
+    
     // Bookings Menu
     const bookingsMenu = document.getElementById("bookingsMenu");
     const bookingsSubmenu = document.getElementById("bookingsSubmenu");

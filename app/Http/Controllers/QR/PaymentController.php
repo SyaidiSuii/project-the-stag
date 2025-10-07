@@ -25,26 +25,26 @@ class PaymentController extends Controller
     public function showPayment(Request $request)
     {
         $sessionCode = $request->get('session');
-        
+
         $session = TableQrcode::where('session_code', $sessionCode)
             ->with(['table'])
             ->first();
-            
+
         if (!$session || !$session->isActive()) {
             return redirect()->route('qr.error')->with('error', 'Session expired.');
         }
-        
+
         // Get cart data
         $cartKey = 'qr_cart_' . $session->session_code;
         $cart = session($cartKey, []);
-        
+
         if (empty($cart)) {
             return redirect()->route('qr.cart', ['session' => $session->session_code])
                 ->with('error', 'Your cart is empty.');
         }
-        
+
         $cartTotal = $this->calculateCartTotal($cart);
-        
+
         // Prepare order data for payment view
         $orderData = [
             'table_number' => $session->table->table_number,
@@ -60,7 +60,7 @@ class PaymentController extends Controller
                 ];
             }, $cart)),
         ];
-        
+
         return view('qr.payment', compact('session', 'orderData'));
     }
 
@@ -85,31 +85,31 @@ class PaymentController extends Controller
                 'request_data' => $request->all(),
                 'exception' => $e,
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error occurred.',
             ], 422);
         }
-        
+
         $session = TableQrcode::where('session_code', $validated['session_code'])
             ->with(['table'])
             ->where('status', 'active')
             ->first();
-            
+
         if (!$session || !$session->isActive()) {
             return response()->json(['success' => false, 'message' => 'Session expired'], 400);
         }
-        
+
         $cartKey = 'qr_cart_' . $session->session_code;
         $cart = session($cartKey, []);
-        
+
         if (empty($cart)) {
             return response()->json(['success' => false, 'message' => 'Cart is empty'], 400);
         }
-        
+
         $cartTotal = $this->calculateCartTotal($cart);
-        
+
         // Create order
         $order = Order::create([
             'user_id' => null, // QR orders don't have user_id
@@ -125,7 +125,7 @@ class PaymentController extends Controller
             'session_token' => Str::random(32),
             'confirmation_code' => 'ORD' . strtoupper(Str::random(6)),
         ]);
-        
+
         // Create order items
         foreach ($cart as $item) {
             OrderItem::create([
@@ -137,13 +137,13 @@ class PaymentController extends Controller
                 'status' => 'pending',
             ]);
         }
-        
+
         // Clear cart
         session()->forget($cartKey);
-        
+
         // Handle payment method
         $paymentMethod = $validated['payment_method'];
-        
+
         if (in_array($paymentMethod, ['card', 'wallet'])) {
             // Online payment - use gateway
             $paymentData = [
@@ -160,18 +160,18 @@ class PaymentController extends Controller
                     'order' => $order->id
                 ]),
             ];
-            
+
             try {
                 // Create payment with ToyyibPay gateway integration
                 $gatewayResult = $this->paymentService->createGatewayPayment($paymentData, $order->id);
-                
+
                 if (!$gatewayResult['success']) {
                     return response()->json([
                         'success' => false,
                         'message' => $gatewayResult['message']
                     ], 500);
                 }
-                
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Redirecting to payment gateway...',
@@ -185,7 +185,7 @@ class PaymentController extends Controller
                     'order_id' => $order->id,
                     'exception' => $e,
                 ]);
-                
+
                 return response()->json([
                     'success' => false,
                     'message' => 'Payment processing failed. Please try again.',
@@ -194,7 +194,7 @@ class PaymentController extends Controller
         } else {
             // Cash payment - mark as unpaid
             $order->update(['payment_status' => 'unpaid', 'order_status' => 'confirmed']);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Order placed successfully! Please pay at the restaurant.',
@@ -215,24 +215,24 @@ class PaymentController extends Controller
     {
         $sessionCode = $request->get('session');
         $orderId = $request->get('order');
-        
+
         $session = TableQrcode::where('session_code', $sessionCode)
             ->with(['table'])
             ->first();
-            
+
         if (!$session || !$session->isActive()) {
             return redirect()->route('qr.error')->with('error', 'Session expired.');
         }
-        
+
         $order = Order::where('id', $orderId)
             ->where('table_qrcode_id', $session->id)
             ->first();
-            
+
         if (!$order) {
             return redirect()->route('qr.menu', ['session' => $session->session_code])
                 ->with('error', 'Order not found.');
         }
-        
+
         return view('qr.confirmation', compact('session', 'order'));
     }
 
@@ -241,10 +241,10 @@ class PaymentController extends Controller
      */
     private function calculateCartTotal($cart)
     {
-        $total = array_sum(array_map(function($item) {
+        $total = array_sum(array_map(function ($item) {
             return $item['price'] * $item['quantity'];
         }, $cart));
-        
+
         // Round to 2 decimal places for currency
         return round($total, 2);
     }

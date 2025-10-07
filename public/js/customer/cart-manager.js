@@ -142,6 +142,14 @@ class CartManager {
             });
 
             console.log('Debug: Database response status:', response.status);
+
+            // Check if response is JSON before parsing
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                console.warn('Non-JSON response received, using localStorage only. Content-Type:', contentType);
+                return this.addItemToLocalStorage(itemData);
+            }
+
             const data = await response.json();
             console.log('Debug: Database response data:', data);
 
@@ -155,6 +163,7 @@ class CartManager {
             }
         } catch (error) {
             console.error('Error adding to database cart:', error);
+            // Fall back to localStorage - cart will still work
             return this.addItemToLocalStorage(itemData);
         }
     }
@@ -202,6 +211,13 @@ class CartManager {
                 },
                 body: JSON.stringify({ quantity })
             });
+
+            // Check if response is JSON before parsing
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                console.warn('Non-JSON response received for update, using localStorage only');
+                return this.updateItemInLocalStorage(itemId, quantity);
+            }
 
             const data = await response.json();
 

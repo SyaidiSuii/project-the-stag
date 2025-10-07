@@ -37,16 +37,4 @@ return [
         'base_url' => env('TOYYIBPAY_BASE_URL', 'https://dev-toyyibpay.com/index.php/api'),
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | AI Recommendation Service Configuration
-    |--------------------------------------------------------------------------
-    */
-
-    'ai_recommender' => [
-        'base_url' => env('AI_RECOMMENDER_BASE_URL', 'http://localhost:8000'),
-        'timeout' => env('AI_RECOMMENDER_TIMEOUT', 30),
-        'enabled' => env('AI_RECOMMENDER_ENABLED', true),
-    ],
-
 ];

@@ -30,7 +30,7 @@
                     <span style="font-size: 12px; color: #6b7280; font-weight: 600;">CATEGORY NAME</span>
                     <p style="font-size: 18px; font-weight: 700; margin: 4px 0 0 0;">{{ $category->name }}</p>
                 </div>
-                
+
                 <div>
                     <span style="font-size: 12px; color: #6b7280; font-weight: 600;">TYPE</span>
                     <p style="font-size: 16px; font-weight: 600; margin: 4px 0 0 0; text-transform: capitalize;">
@@ -65,15 +65,15 @@
         <div style="border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; background: #f9fafb;">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px;">
                 @foreach($category->subCategories as $subCategory)
-                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <p style="font-weight: 600; margin: 0; font-size: 14px;">{{ $subCategory->name }}</p>
-                            <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Order: {{ $subCategory->sort_order }}</p>
-                        </div>
-                        <a href="{{ route('admin.categories.show', $subCategory->id) }}" style="color: #3b82f6; text-decoration: none;">
-                            <i class="fas fa-eye"></i>
-                        </a>
+                <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="font-weight: 600; margin: 0; font-size: 14px;">{{ $subCategory->name }}</p>
+                        <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 12px;">Order: {{ $subCategory->sort_order }}</p>
                     </div>
+                    <a href="{{ route('admin.categories.show', $subCategory->id) }}" style="color: #3b82f6; text-decoration: none;">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                </div>
                 @endforeach
             </div>
         </div>
@@ -87,17 +87,17 @@
         <div style="border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; background: #f9fafb;">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px;">
                 @foreach($category->menuItems as $menuItem)
-                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px;">
-                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-                            <h4 style="margin: 0; font-size: 14px; font-weight: 600;">{{ $menuItem->name }}</h4>
-                            <span style="background: #f3f4f6; color: #374151; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">
-                                RM {{ number_format($menuItem->price, 2) }}
-                            </span>
-                        </div>
-                        @if($menuItem->description)
-                            <p style="color: #6b7280; margin: 0; font-size: 12px; line-height: 1.4;">{{ Str::limit($menuItem->description, 100) }}</p>
-                        @endif
+                <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                        <h4 style="margin: 0; font-size: 14px; font-weight: 600;">{{ $menuItem->name }}</h4>
+                        <span style="background: #f3f4f6; color: #374151; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                            RM {{ number_format($menuItem->price, 2) }}
+                        </span>
                     </div>
+                    @if($menuItem->description)
+                    <p style="color: #6b7280; margin: 0; font-size: 12px; line-height: 1.4;">{{ Str::limit($menuItem->description, 100) }}</p>
+                    @endif
+                </div>
                 @endforeach
             </div>
         </div>
@@ -145,6 +145,6 @@
 
 @section('scripts')
 <script>
-// Category management scripts can be added here
+    // Category management scripts can be added here
 </script>
 @endsection

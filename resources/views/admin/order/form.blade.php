@@ -698,9 +698,9 @@ if (!document.getElementById('estimated_completion_time').value && !@json($order
 document.getElementById('estimated_completion_time').addEventListener('change', function() {
     const estimatedTime = new Date(this.value);
     const now = new Date();
-    
+
     if (estimatedTime < now) {
-        alert('Estimated completion time should be in the future');
+        Toast.warning('Invalid Time', 'Estimated completion time should be in the future');
         this.value = '';
     }
 });
@@ -801,7 +801,7 @@ function removeOrderItem(button) {
         updateOrderTotals();
         calculateRealTimeETA();
     } else {
-        alert('At least one item is required');
+        Toast.warning('Cannot Remove', 'At least one item is required');
     }
 }
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,10 +24,10 @@
             --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
@@ -236,11 +237,11 @@
             .cart-item {
                 flex-wrap: wrap;
             }
-            
+
             .item-image {
                 margin-bottom: 10px;
             }
-            
+
             .quantity-controls {
                 width: 100%;
                 margin-top: 10px;
@@ -249,6 +250,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -261,51 +263,51 @@
         </a>
 
         @if (count($cart) > 0)
-            <div class="cart-items">
-                @foreach ($cart as $item)
-                    <div class="cart-item">
-                        <div class="item-image">
-                            @if($item['image'])
-                                <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}">
-                            @else
-                                🍽️
-                            @endif
-                        </div>
-                        <div class="item-details">
-                            <div class="item-name">{{ $item['name'] }}</div>
-                            <div class="item-price">RM {{ number_format($item['price'], 2) }}</div>
-                        </div>
-                        <div class="quantity-controls">
-                            <button class="quantity-btn" onclick="updateQuantity('{{ $item['id'] }}', -1)">−</button>
-                            <span class="quantity">{{ $item['quantity'] }}</span>
-                            <button class="quantity-btn" onclick="updateQuantity('{{ $item['id'] }}', 1)">+</button>
-                            <button class="remove-btn" onclick="removeItem('{{ $item['id'] }}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-
-            <div class="cart-summary">
-                <div class="summary-total">
-                    <span>Total:</span>
-                    <span>RM {{ number_format($cartTotal, 2) }}</span>
+        <div class="cart-items">
+            @foreach ($cart as $item)
+            <div class="cart-item">
+                <div class="item-image">
+                    @if($item['image'])
+                    <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}">
+                    @else
+                    🍽️
+                    @endif
+                </div>
+                <div class="item-details">
+                    <div class="item-name">{{ $item['name'] }}</div>
+                    <div class="item-price">RM {{ number_format($item['price'], 2) }}</div>
+                </div>
+                <div class="quantity-controls">
+                    <button class="quantity-btn" onclick="updateQuantity('{{ $item['id'] }}', -1)">−</button>
+                    <span class="quantity">{{ $item['quantity'] }}</span>
+                    <button class="quantity-btn" onclick="updateQuantity('{{ $item['id'] }}', 1)">+</button>
+                    <button class="remove-btn" onclick="removeItem('{{ $item['id'] }}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
             </div>
+            @endforeach
+        </div>
 
-            <a href="{{ route('qr.payment', ['session' => $session->session_code]) }}" class="checkout-btn">
-                <i class="fas fa-credit-card"></i> Proceed to Payment
-            </a>
-        @else
-            <div class="empty-cart">
-                <div class="empty-cart-icon">🛒</div>
-                <div class="empty-cart-text">Your cart is empty</div>
-                <p>Add some delicious items from the menu to get started!</p>
-                <a href="{{ route('qr.menu', ['session' => $session->session_code]) }}" class="checkout-btn" style="margin-top: 20px; display: inline-block;">
-                    <i class="fas fa-utensils"></i> Browse Menu
-                </a>
+        <div class="cart-summary">
+            <div class="summary-total">
+                <span>Total:</span>
+                <span>RM {{ number_format($cartTotal, 2) }}</span>
             </div>
+        </div>
+
+        <a href="{{ route('qr.payment', ['session' => $session->session_code]) }}" class="checkout-btn">
+            <i class="fas fa-credit-card"></i> Proceed to Payment
+        </a>
+        @else
+        <div class="empty-cart">
+            <div class="empty-cart-icon">🛒</div>
+            <div class="empty-cart-text">Your cart is empty</div>
+            <p>Add some delicious items from the menu to get started!</p>
+            <a href="{{ route('qr.menu', ['session' => $session->session_code]) }}" class="checkout-btn" style="margin-top: 20px; display: inline-block;">
+                <i class="fas fa-utensils"></i> Browse Menu
+            </a>
+        </div>
         @endif
     </div>
 
@@ -321,4 +323,5 @@
         }
     </script>
 </body>
+
 </html>

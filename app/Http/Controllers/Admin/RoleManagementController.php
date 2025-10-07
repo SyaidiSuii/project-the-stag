@@ -129,7 +129,7 @@ class RoleManagementController extends Controller
         }
 
         $role->delete();
-        
+
         return redirect()->route('admin.roles.index')
             ->with('success', 'Role deleted successfully!');
     }
@@ -156,7 +156,7 @@ class RoleManagementController extends Controller
         ]);
 
         $user = User::findOrFail($request->user_id);
-        
+
         if ($request->has('roles')) {
             $roles = Role::whereIn('id', $request->roles)->get();
             $user->syncRoles($roles);

@@ -85,6 +85,13 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
+    align-items: center;
+    width: 100%;
+}
+
+.category-item {
+    width: 100%;
+    max-width: 900px;
 }
 
 /* Category Item Card - Main Design */
@@ -342,6 +349,9 @@
     background: white;
     border-radius: 12px;
     box-shadow: var(--shadow);
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
 }
 
 .empty-icon {

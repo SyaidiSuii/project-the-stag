@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Menu - The Stag</title>
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
-    
+
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
         :root {
             --brand: #6366f1;
@@ -29,10 +30,10 @@
             --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
@@ -72,9 +73,14 @@
             animation: float 15s linear infinite;
         }
 
-        @keyframes float { 
-            0% { transform: translateX(0) translateY(0) rotate(0deg); } 
-            100% { transform: translateX(-50px) translateY(-50px) rotate(360deg); } 
+        @keyframes float {
+            0% {
+                transform: translateX(0) translateY(0) rotate(0deg);
+            }
+
+            100% {
+                transform: translateX(-50px) translateY(-50px) rotate(360deg);
+            }
         }
 
         .header h1 {
@@ -327,10 +333,21 @@
         }
 
         @keyframes bounce {
-            0% { transform: scale(1); }
-            40% { transform: scale(1.3); }
-            70% { transform: scale(0.9); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            40% {
+                transform: scale(1.3);
+            }
+
+            70% {
+                transform: scale(0.9);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .cart-badge {
@@ -347,14 +364,23 @@
             justify-content: center;
             font-size: 14px;
             font-weight: 800;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             animation: pulse 2s infinite;
             z-index: 2;
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-            50% { transform: scale(1.1); box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            }
         }
 
         .cart-fab::before {
@@ -446,9 +472,14 @@
             animation: cartFloat 15s linear infinite;
         }
 
-        @keyframes cartFloat { 
-            0% { transform: translateX(0) translateY(0) rotate(0deg); } 
-            100% { transform: translateX(-50px) translateY(-50px) rotate(360deg); } 
+        @keyframes cartFloat {
+            0% {
+                transform: translateX(0) translateY(0) rotate(0deg);
+            }
+
+            100% {
+                transform: translateX(-50px) translateY(-50px) rotate(360deg);
+            }
         }
 
         .cart-modal-title {
@@ -458,14 +489,14 @@
             margin-bottom: 0.5rem;
             position: relative;
             z-index: 2;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .cart-modal-close {
             position: absolute;
             top: 15px;
             right: 15px;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             border: none;
             width: 40px;
             height: 40px;
@@ -481,7 +512,7 @@
         }
 
         .cart-modal-close:hover {
-            background: rgba(255,255,255,0.3);
+            background: rgba(255, 255, 255, 0.3);
             transform: rotate(90deg);
         }
 
@@ -531,14 +562,14 @@
         }
 
         .cart-item {
-            display: flex; 
-            align-items: center; 
+            display: flex;
+            align-items: center;
             gap: 1rem;
-            background: white; 
-            border-radius: 18px; 
-            padding: 1rem; 
+            background: white;
+            border-radius: 18px;
+            padding: 1rem;
             margin-bottom: 1rem;
-            box-shadow: 0 5px 15px rgba(15, 23, 42, 0.08); 
+            box-shadow: 0 5px 15px rgba(15, 23, 42, 0.08);
             border: 1px solid rgba(226, 232, 240, 0.7);
             transition: all 0.3s ease;
             position: relative;
@@ -557,9 +588,9 @@
             transition: transform 0.3s ease;
         }
 
-        .cart-item:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15); 
+        .cart-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
         }
 
         .cart-item:hover::before {
@@ -567,13 +598,13 @@
         }
 
         .cart-item-image {
-            width: 60px; 
-            height: 60px; 
+            width: 60px;
+            height: 60px;
             background: linear-gradient(135deg, #f0f4ff, #e0e7ff);
-            border-radius: 16px; 
-            display: grid; 
-            place-items: center; 
-            font-size: 1.8rem; 
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            font-size: 1.8rem;
             border: 1px solid rgba(226, 232, 240, 0.7);
             flex-shrink: 0;
             overflow: hidden;
@@ -586,52 +617,52 @@
             border-radius: 16px;
         }
 
-        .cart-item-details { 
-            flex: 1; 
-            min-width: 0; 
+        .cart-item-details {
+            flex: 1;
+            min-width: 0;
         }
 
-        .cart-item-name { 
-            font-size: 0.9rem; 
-            font-weight: 800; 
-            color: var(--text); 
-            margin-bottom: 0.4rem; 
+        .cart-item-name {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 0.4rem;
         }
 
-        .cart-item-price { 
-            color: var(--text-2); 
-            font-size: 0.8rem; 
-            font-weight: 700; 
+        .cart-item-price {
+            color: var(--text-2);
+            font-size: 0.8rem;
+            font-weight: 700;
         }
 
-        .quantity-controls { 
-            display: grid; 
-            grid-auto-flow: column; 
-            align-items: center; 
+        .quantity-controls {
+            display: grid;
+            grid-auto-flow: column;
+            align-items: center;
             gap: 0.5rem;
             flex-shrink: 0;
         }
 
         .qty-btn {
-            width: 28px; 
-            height: 28px; 
-            border: 2px solid var(--muted); 
-            background: white; 
+            width: 28px;
+            height: 28px;
+            border: 2px solid var(--muted);
+            background: white;
             border-radius: 8px;
             cursor: pointer;
-            display: grid; 
-            place-items: center; 
+            display: grid;
+            place-items: center;
             font-size: 0.8rem;
-            font-weight: 900; 
-            transition: all 0.2s ease; 
+            font-weight: 900;
+            transition: all 0.2s ease;
             color: var(--text);
         }
 
-        .qty-btn:hover { 
-            background: var(--brand); 
-            border-color: var(--brand); 
-            color: white; 
-            transform: translateY(-2px); 
+        .qty-btn:hover {
+            background: var(--brand);
+            border-color: var(--brand);
+            color: white;
+            transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
         }
 
@@ -639,12 +670,12 @@
             transform: translateY(0);
         }
 
-        .quantity { 
-            font-size: 1.0rem; 
-            font-weight: 900; 
-            min-width: 28px; 
-            text-align: center; 
-            color: var(--text); 
+        .quantity {
+            font-size: 1.0rem;
+            font-weight: 900;
+            min-width: 28px;
+            text-align: center;
+            color: var(--text);
         }
 
         .cart-modal-footer {
@@ -704,7 +735,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
             transform: translateX(-100%);
             transition: transform 0.6s;
         }
@@ -776,24 +807,24 @@
             body {
                 padding: 15px;
             }
-            
+
             .header {
                 padding: 15px;
             }
-            
+
             .header h1 {
                 font-size: 1.5rem;
             }
-            
+
             .item-image {
                 height: 150px;
             }
-            
+
             .tab {
                 padding: 10px 15px;
                 font-size: 0.8rem;
             }
-            
+
             .cart-fab {
                 bottom: 20px;
                 right: 20px;
@@ -801,7 +832,7 @@
                 height: 60px;
                 font-size: 24px;
             }
-            
+
             .cart-modal-container {
                 max-width: 90%;
                 max-height: 85vh;
@@ -814,30 +845,31 @@
                 flex-direction: column;
                 gap: 10px;
             }
-            
+
             .item-price {
                 margin-left: 0;
             }
-            
+
             .add-to-cart {
                 flex-direction: column;
             }
-            
+
             .cart-item {
                 flex-wrap: wrap;
             }
-            
+
             .cart-item-details {
                 width: 100%;
                 margin-bottom: 0.5rem;
             }
-            
+
             .quantity-controls {
                 margin-left: auto;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -846,67 +878,67 @@
         </div>
 
         @if (session('success'))
-            <div class="alert alert-success" role="alert">
-                {{ session('success') }}
-            </div>
+        <div class="alert alert-success" role="alert">
+            {{ session('success') }}
+        </div>
         @endif
 
         <!-- Category Tabs -->
         <div class="category-tabs">
             @php $first = true; @endphp
             @foreach ($menuData as $mainCategory => $subCategories)
-                <button class="tab {{ $first ? 'active' : '' }}" data-category="{{ strtolower(str_replace(' ', '-', $mainCategory)) }}">
-                    {{ $mainCategory }}
-                </button>
-                @php $first = false; @endphp
+            <button class="tab {{ $first ? 'active' : '' }}" data-category="{{ strtolower(str_replace(' ', '-', $mainCategory)) }}">
+                {{ $mainCategory }}
+            </button>
+            @php $first = false; @endphp
             @endforeach
         </div>
 
         <!-- Menu Items by Category -->
         @php $first = true; @endphp
         @foreach ($menuData as $mainCategory => $subCategories)
-            <div id="{{ strtolower(str_replace(' ', '-', $mainCategory)) }}" class="category-section {{ $first ? 'active' : '' }}">
-                @foreach ($subCategories as $subCategoryName => $items)
-                    <h2 class="subcategory-title">{{ $subCategoryName }}</h2>
-                    <div class="menu-grid">
-                        @foreach ($items as $item)
-                            <div class="menu-item">
-                                <div class="item-image">
-                                    @if($item->image_url)
-                                        <img src="{{ $item->image_url }}" 
-                                            alt="{{ $item->name }}">
-                                    @else
-                                        <div>🍽️</div>
-                                    @endif
-                                </div>
-                                <div class="item-content">
-                                    <div class="item-header">
-                                        <div class="item-name">{{ $item->name }}</div>
-                                        <div class="item-price">RM {{ number_format($item->price, 2) }}</div>
-                                    </div>
-                                    <p class="item-description">{{ $item->description }}</p>
-                                    <form action="{{ route('qr.cart.add') }}" method="POST" class="add-to-cart">
-                                        @csrf
-                                        <input type="hidden" name="session_code" value="{{ $session->session_code }}">
-                                        <input type="hidden" name="menu_item_id" value="{{ $item->id }}">
-                                        
-                                        <div class="quantity-control">
-                                            <button type="button" class="quantity-btn" onclick="changeQuantity(this, -1)">−</button>
-                                            <input type="number" name="quantity" value="1" min="1" class="quantity-input" readonly>
-                                            <button type="button" class="quantity-btn" onclick="changeQuantity(this, 1)">+</button>
-                                        </div>
-                                        
-                                        <button type="submit" class="add-btn">
-                                            <i class="fas fa-plus"></i> Add
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        @endforeach
+        <div id="{{ strtolower(str_replace(' ', '-', $mainCategory)) }}" class="category-section {{ $first ? 'active' : '' }}">
+            @foreach ($subCategories as $subCategoryName => $items)
+            <h2 class="subcategory-title">{{ $subCategoryName }}</h2>
+            <div class="menu-grid">
+                @foreach ($items as $item)
+                <div class="menu-item">
+                    <div class="item-image">
+                        @if($item->image_url)
+                        <img src="{{ $item->image_url }}"
+                            alt="{{ $item->name }}">
+                        @else
+                        <div>🍽️</div>
+                        @endif
                     </div>
+                    <div class="item-content">
+                        <div class="item-header">
+                            <div class="item-name">{{ $item->name }}</div>
+                            <div class="item-price">RM {{ number_format($item->price, 2) }}</div>
+                        </div>
+                        <p class="item-description">{{ $item->description }}</p>
+                        <form action="{{ route('qr.cart.add') }}" method="POST" class="add-to-cart">
+                            @csrf
+                            <input type="hidden" name="session_code" value="{{ $session->session_code }}">
+                            <input type="hidden" name="menu_item_id" value="{{ $item->id }}">
+
+                            <div class="quantity-control">
+                                <button type="button" class="quantity-btn" onclick="changeQuantity(this, -1)">−</button>
+                                <input type="number" name="quantity" value="1" min="1" class="quantity-input" readonly>
+                                <button type="button" class="quantity-btn" onclick="changeQuantity(this, 1)">+</button>
+                            </div>
+
+                            <button type="submit" class="add-btn">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </form>
+                    </div>
+                </div>
                 @endforeach
             </div>
-            @php $first = false; @endphp
+            @endforeach
+        </div>
+        @php $first = false; @endphp
         @endforeach
     </div>
 
@@ -961,87 +993,87 @@
                 // Remove active class from all tabs and sections
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.category-section').forEach(s => s.classList.remove('active'));
-                
+
                 // Add active class to clicked tab
                 this.classList.add('active');
-                
+
                 // Show corresponding section
                 const categoryId = this.getAttribute('data-category');
                 document.getElementById(categoryId).classList.add('active');
             });
         });
-        
+
         function changeQuantity(button, change) {
             const container = button.closest('.quantity-control');
             const input = container.querySelector('.quantity-input');
             let value = parseInt(input.value) || 1;
             value += change;
-            
+
             if (value < 1) value = 1;
             if (value > 10) value = 10; // Limit max quantity
-            
+
             input.value = value;
         }
-        
+
         // Handle form submission with AJAX
         document.querySelectorAll('.add-to-cart').forEach(form => {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
-                
+
                 const formData = new FormData(this);
                 const submitButton = this.querySelector('.add-btn');
                 const originalText = submitButton.innerHTML;
-                
+
                 // Show loading state
                 submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
                 submitButton.disabled = true;
-                
+
                 fetch("{{ route('qr.cart.add') }}", {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Update cart badge
-                        document.getElementById('cartBadge').textContent = data.cart_count;
-                        document.getElementById('cartBadge').style.display = 'flex';
-                        
-                        // Bounce animation for FAB
-                        const fab = document.getElementById('cartFab');
-                        fab.classList.remove('bounce');
-                        void fab.offsetWidth; // Force reflow
-                        fab.classList.add('bounce');
-                        
-                        // Show success feedback
-                        submitButton.innerHTML = '<i class="fas fa-check"></i> Added!';
-                        submitButton.style.backgroundColor = '#10b981';
-                        
-                        // Reset button after delay
-                        setTimeout(() => {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update cart badge
+                            document.getElementById('cartBadge').textContent = data.cart_count;
+                            document.getElementById('cartBadge').style.display = 'flex';
+
+                            // Bounce animation for FAB
+                            const fab = document.getElementById('cartFab');
+                            fab.classList.remove('bounce');
+                            void fab.offsetWidth; // Force reflow
+                            fab.classList.add('bounce');
+
+                            // Show success feedback
+                            submitButton.innerHTML = '<i class="fas fa-check"></i> Added!';
+                            submitButton.style.backgroundColor = '#10b981';
+
+                            // Reset button after delay
+                            setTimeout(() => {
+                                submitButton.innerHTML = originalText;
+                                submitButton.style.backgroundColor = '';
+                                submitButton.disabled = false;
+                            }, 1500);
+                        } else {
+                            // Show error
+                            alert(data.error || 'Failed to add item to cart');
                             submitButton.innerHTML = originalText;
-                            submitButton.style.backgroundColor = '';
                             submitButton.disabled = false;
-                        }, 1500);
-                    } else {
-                        // Show error
-                        alert(data.error || 'Failed to add item to cart');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Failed to add item to cart. Please try again.');
                         submitButton.innerHTML = originalText;
                         submitButton.disabled = false;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Failed to add item to cart. Please try again.');
-                    submitButton.innerHTML = originalText;
-                    submitButton.disabled = false;
-                });
+                    });
             });
         });
-        
+
         // Cart Modal Functions
         const cartFab = document.getElementById('cartFab');
         const cartModal = document.getElementById('cartModal');
@@ -1050,72 +1082,72 @@
         const clearAllBtn = document.getElementById('clearAllBtn');
         const checkoutBtn = document.getElementById('checkoutBtn');
         const sessionCode = "{{ $session->session_code }}";
-        const storageUrl = "{{ asset('storage') }}/"; 
-        
+        const storageUrl = "{{ asset('storage') }}/";
+
         // Open cart modal
         cartFab.addEventListener('click', function() {
             updateCartDisplay();
             cartModal.classList.add('open');
         });
-        
+
         // Close cart modal
         function closeCartModal() {
             cartModal.classList.remove('open');
         }
-        
+
         // Close modal when clicking backdrop or close button
         cartModalBackdrop.addEventListener('click', closeCartModal);
         cartModalClose.addEventListener('click', closeCartModal);
-        
+
         // Update cart display
         function updateCartDisplay() {
             // Show loading state
             const cartItemsContainer = document.getElementById('cart-items');
             cartItemsContainer.innerHTML = '<div class="empty-cart"><div class="empty-cart-icon">🔄</div><div class="empty-cart-text">Loading cart...</div></div>';
-            
+
             // Fetch cart data from server
             fetch("{{ route('qr.cart', ['session' => '__SESSION__']) }}".replace('__SESSION__', sessionCode), {
-                method: 'GET',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Update cart count
-                const totalItems = data.cart.reduce((sum, item) => sum + item.quantity, 0);
-                document.getElementById('cart-count').textContent = totalItems;
-                document.getElementById('total-items').textContent = totalItems;
-                
-                // Calculate total amount
-                const totalAmount = data.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                document.getElementById('total-amount').textContent = 'RM ' + totalAmount.toFixed(2);
-                
-                // Update cart items display
-                const cartItemsContainer = document.getElementById('cart-items');
-                
-                if (data.cart.length === 0) {
-                    cartItemsContainer.innerHTML = `
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update cart count
+                    const totalItems = data.cart.reduce((sum, item) => sum + item.quantity, 0);
+                    document.getElementById('cart-count').textContent = totalItems;
+                    document.getElementById('total-items').textContent = totalItems;
+
+                    // Calculate total amount
+                    const totalAmount = data.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    document.getElementById('total-amount').textContent = 'RM ' + totalAmount.toFixed(2);
+
+                    // Update cart items display
+                    const cartItemsContainer = document.getElementById('cart-items');
+
+                    if (data.cart.length === 0) {
+                        cartItemsContainer.innerHTML = `
                         <div class="empty-cart" id="empty-cart">
                             <div class="empty-cart-icon">🛒</div>
                             <div class="empty-cart-text">Your cart is empty</div>
                             <div class="empty-cart-subtext">Add some delicious items to get started!</div>
                         </div>
                     `;
-                } else {
-                    cartItemsContainer.innerHTML = '';
-                    
-                    data.cart.forEach((item, index) => {
-                        const cartItemElement = document.createElement('div');
-                        cartItemElement.className = 'cart-item';
-                        cartItemElement.innerHTML = `
+                    } else {
+                        cartItemsContainer.innerHTML = '';
+
+                        data.cart.forEach((item, index) => {
+                            const cartItemElement = document.createElement('div');
+                            cartItemElement.className = 'cart-item';
+                            cartItemElement.innerHTML = `
                             <div class="cart-item-image">
                                 ${(item.image && item.image_url) ?
                                 `<img src="${item.image_url}" alt="${item.name}">` :`🍽️`
@@ -1131,13 +1163,13 @@
                                 <button class="qty-btn" onclick="updateCartItemQuantity('${item.id}', 1)">+</button>
                             </div>
                         `;
-                        cartItemsContainer.appendChild(cartItemElement);
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching cart data:', error);
-                cartItemsContainer.innerHTML = `
+                            cartItemsContainer.appendChild(cartItemElement);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching cart data:', error);
+                    cartItemsContainer.innerHTML = `
                     <div class="empty-cart">
                         <div class="empty-cart-icon">❌</div>
                         <div class="empty-cart-text">Failed to load cart</div>
@@ -1145,66 +1177,18 @@
                         <div class="empty-cart-subtext" style="font-size: 0.7rem; margin-top: 10px;">Error: ${error.message}</div>
                     </div>
                 `;
-            });
+                });
         }
-        
+
         // Update cart item quantity
         function updateCartItemQuantity(itemId, change) {
             // Show loading state
             const cartItemsContainer = document.getElementById('cart-items');
             const originalContent = cartItemsContainer.innerHTML;
             cartItemsContainer.innerHTML = '<div class="empty-cart"><div class="empty-cart-icon">🔄</div><div class="empty-cart-text">Updating cart...</div></div>';
-            
+
             // Send update request to server
             fetch("{{ route('qr.cart.update') }}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    session_code: sessionCode,
-                    menu_item_id: itemId,
-                    quantity: change
-                })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    // Update display
-                    updateCartDisplay();
-                    
-                    // Update FAB badge
-                    document.getElementById('cartBadge').textContent = data.cart_count;
-                    document.getElementById('cartBadge').style.display = data.cart_count > 0 ? 'flex' : 'none';
-                } else {
-                    // Restore original content and show error
-                    cartItemsContainer.innerHTML = originalContent;
-                    alert('Failed to update cart item. Please try again.');
-                }
-            })
-            .catch(error => {
-                console.error('Error updating cart item:', error);
-                cartItemsContainer.innerHTML = originalContent;
-                alert('Failed to update cart item. Please try again.');
-            });
-        }
-        
-        // Clear all items from cart
-        clearAllBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to clear all items from your cart?')) {
-                // Show loading state
-                const cartItemsContainer = document.getElementById('cart-items');
-                const originalContent = cartItemsContainer.innerHTML;
-                cartItemsContainer.innerHTML = '<div class="empty-cart"><div class="empty-cart-icon">🔄</div><div class="empty-cart-text">Clearing cart...</div></div>';
-                
-                // Send clear request to server (special case: itemId=0, quantity=0 to clear all)
-                fetch("{{ route('qr.cart.update') }}", {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -1212,8 +1196,8 @@
                     },
                     body: JSON.stringify({
                         session_code: sessionCode,
-                        menu_item_id: 0, // Special value to clear all
-                        quantity: 0
+                        menu_item_id: itemId,
+                        quantity: change
                     })
                 })
                 .then(response => {
@@ -1226,28 +1210,77 @@
                     if (data.success) {
                         // Update display
                         updateCartDisplay();
-                        
+
                         // Update FAB badge
-                        document.getElementById('cartBadge').textContent = '0';
-                        document.getElementById('cartBadge').style.display = 'none';
+                        document.getElementById('cartBadge').textContent = data.cart_count;
+                        document.getElementById('cartBadge').style.display = data.cart_count > 0 ? 'flex' : 'none';
                     } else {
                         // Restore original content and show error
                         cartItemsContainer.innerHTML = originalContent;
-                        alert('Failed to clear cart. Please try again.');
+                        alert('Failed to update cart item. Please try again.');
                     }
                 })
                 .catch(error => {
-                    console.error('Error clearing cart:', error);
+                    console.error('Error updating cart item:', error);
                     cartItemsContainer.innerHTML = originalContent;
-                    alert('Failed to clear cart. Please try again.');
+                    alert('Failed to update cart item. Please try again.');
                 });
+        }
+
+        // Clear all items from cart
+        clearAllBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear all items from your cart?')) {
+                // Show loading state
+                const cartItemsContainer = document.getElementById('cart-items');
+                const originalContent = cartItemsContainer.innerHTML;
+                cartItemsContainer.innerHTML = '<div class="empty-cart"><div class="empty-cart-icon">🔄</div><div class="empty-cart-text">Clearing cart...</div></div>';
+
+                // Send clear request to server (special case: itemId=0, quantity=0 to clear all)
+                fetch("{{ route('qr.cart.update') }}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            session_code: sessionCode,
+                            menu_item_id: 0, // Special value to clear all
+                            quantity: 0
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Update display
+                            updateCartDisplay();
+
+                            // Update FAB badge
+                            document.getElementById('cartBadge').textContent = '0';
+                            document.getElementById('cartBadge').style.display = 'none';
+                        } else {
+                            // Restore original content and show error
+                            cartItemsContainer.innerHTML = originalContent;
+                            alert('Failed to clear cart. Please try again.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error clearing cart:', error);
+                        cartItemsContainer.innerHTML = originalContent;
+                        alert('Failed to clear cart. Please try again.');
+                    });
             }
         });
-        
+
         // Checkout button
         checkoutBtn.addEventListener('click', function() {
             window.location.href = "{{ route('qr.cart', ['session' => '__SESSION__']) }}".replace('__SESSION__', sessionCode);
         });
     </script>
 </body>
+
 </html>

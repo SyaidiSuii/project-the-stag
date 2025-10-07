@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const guestPhone = document.getElementById('guestPhone').value;
         
         if (!bookingDate || !bookingTime || !guestCount || !guestName || !guestEmail || !guestPhone) {
-            alert('Please fill in all booking details first.');
+            Toast.warning('Incomplete Details', 'Please fill in all booking details first.');
             return;
         }
         
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Validate required fields
         if (!selectedTable || !bookingDate || !bookingTime || !guestCount || !guestName || !guestEmail || !guestPhone || !bookingType) {
-            alert('Please fill in all required fields.');
+            Toast.warning('Missing Information', 'Please fill in all required fields.');
             return;
         }
         
@@ -291,14 +291,16 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 // Show success message
-                alert(`Booking confirmed! Confirmation code: ${data.reservation.confirmation_code}`);
-                
-                // Redirect to orders page
-                window.location.href = data.redirect_url;
+                Toast.success('Booking Confirmed!', `Confirmation code: ${data.reservation.confirmation_code}`, 3000);
+
+                // Redirect to orders page after brief delay
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 1500);
             } else {
                 // Show error message
-                alert(data.message || 'Failed to create booking. Please try again.');
-                
+                Toast.error('Booking Failed', data.message || 'Failed to create booking. Please try again.');
+
                 // Re-enable confirm button
                 confirmBookingBtn.disabled = false;
                 confirmBookingBtn.textContent = 'Confirm Booking';
@@ -306,8 +308,8 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Booking submission error:', error);
-            alert('Failed to create booking. Please try again.');
-            
+            Toast.error('Booking Failed', 'Failed to create booking. Please try again.');
+
             // Re-enable confirm button
             confirmBookingBtn.disabled = false;
             confirmBookingBtn.textContent = 'Confirm Booking';

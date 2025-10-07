@@ -13,6 +13,6 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         'qr/payment/process', // QR payment for guest users
-        'payment/callback',   // Payment gateway callbacks
+        'payment/callback',
     ];
 }

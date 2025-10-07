@@ -36,9 +36,14 @@ class PaymentController extends Controller
             'cart' => 'required|array|min:1',
             'cart.*.id' => 'required|integer|exists:menu_items,id',
             'cart.*.quantity' => 'required|integer|min:1',
+            'cart.*.payment_method' => 'nullable|string|in:online,counter',
+            'is_from_cart' => 'nullable|boolean',
             'payment_details' => 'required|array',
-            'payment_details.method' => 'required|string|in:card,wallet,cash',
-            'payment_details.email' => 'nullable|email',
+            'payment_details.method' => 'required|string|in:online,counter',
+            'payment_details.order_type' => 'nullable|string|in:dine_in,takeaway',
+            'payment_details.email' => 'required|email',
+            'payment_details.name' => 'nullable|string',
+            'payment_details.phone' => 'nullable|string',
         ]);
 
         DB::beginTransaction();
@@ -55,19 +60,24 @@ class PaymentController extends Controller
                 $totalAmount += $menuItem->price * $item['quantity'];
             }
 
+            // Determine payment method and set initial status
+            $paymentMethod = $paymentDetails['method'];
+            $isCounterPayment = ($paymentMethod === 'counter');
+
             // Create the Order
             $order = Order::create([
                 'user_id' => $user ? $user->id : null, // Handle guest users
-                'guest_name' => $user ? $user->name : null,
-                'guest_phone' => $user ? $user->phone : null,
+                'guest_name' => $user ? $user->name : ($paymentDetails['name'] ?? 'Guest'),
+                'guest_phone' => $user ? $user->phone : ($paymentDetails['phone'] ?? null),
+                'guest_email' => $user ? $user->email : ($paymentDetails['email'] ?? null),
                 'total_amount' => $totalAmount,
-                'order_status' => 'pending', // Changed to confirmed since payment is processed
-                'payment_status' => 'paid', // Set as paid since payment is being processed
-                'order_type' => 'takeaway', // Fixed: use valid enum value
-                'order_source' => 'web', // Fixed: use valid enum value
+                'order_status' => 'pending',
+                'payment_status' => 'unpaid', // All orders start as unpaid
+                'payment_method' => $paymentMethod,
+                'order_type' => $paymentDetails['order_type'] ?? 'takeaway',
+                'order_source' => 'web',
                 'order_time' => now(),
-                'confirmation_code' => Order::generateConfirmationCode(), // Generate confirmation code
-                // Add other necessary fields like table_session_id if applicable
+                'confirmation_code' => Order::generateConfirmationCode(),
             ]);
 
             // Create OrderItems
@@ -85,12 +95,10 @@ class PaymentController extends Controller
             }
 
             // Handle different payment methods
-            $paymentMethod = $paymentDetails['method'];
-            
-            if (in_array($paymentMethod, ['card', 'wallet'])) {
+            if ($paymentMethod === 'online') {
                 // Online payment - use gateway
                 $paymentData = [
-                    'payment_method' => $paymentMethod,
+                    'payment_method' => 'online',
                     'amount' => $totalAmount,
                     'currency' => 'MYR',
                     'customer_name' => $user ? $user->name : 'Guest',
@@ -99,7 +107,7 @@ class PaymentController extends Controller
                 ];
 
                 $gatewayResult = $this->paymentService->createGatewayPayment($paymentData, $order->id);
-                
+
                 if (!$gatewayResult['success']) {
                     DB::rollBack();
                     return response()->json([
@@ -108,8 +116,9 @@ class PaymentController extends Controller
                     ], 400);
                 }
 
-                // Clear user's cart if logged in
-                if ($user) {
+                // Only clear user's cart if this order came from cart checkout
+                $isFromCart = $validated['is_from_cart'] ?? false;
+                if ($user && $isFromCart) {
                     UserCart::where('user_id', $user->id)->delete();
                 }
 
@@ -123,9 +132,9 @@ class PaymentController extends Controller
                 ]);
 
             } else {
-                // Manual payment (cash at restaurant)
+                // Counter payment - order placed, payment pending
                 $paymentData = [
-                    'payment_method' => $paymentMethod,
+                    'payment_method' => 'counter',
                     'amount' => $totalAmount,
                     'currency' => 'MYR',
                     'payment_status' => 'pending',
@@ -135,8 +144,9 @@ class PaymentController extends Controller
                 $payment = $this->paymentService->savePaymentData($paymentData, $order->id);
             }
 
-            // Clear user's cart if logged in
-            if ($user) {
+            // Only clear user's cart if this order came from cart checkout (not from "Order Now")
+            $isFromCart = $validated['is_from_cart'] ?? false;
+            if ($user && $isFromCart) {
                 UserCart::where('user_id', $user->id)->delete();
             }
 

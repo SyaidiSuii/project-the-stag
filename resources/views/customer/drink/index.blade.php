@@ -158,7 +158,65 @@
       </div>
     </div>
   </div>
-  
+
+  <!-- Payment Method Selection Modal -->
+  <!-- Payment Method Selection Modal (Cart Checkout) -->
+  <div id="payment-method-modal" class="addon-modal" style="display: none;" aria-modal="true" role="dialog">
+    <div class="modal-content">
+      <div class="modal-body-scrollable">
+        <h3 id="cart-modal-title">🍽️ Order Details</h3>
+
+        <div class="addon-options">
+          <h4>Order Type:</h4>
+          <div class="order-type-options" style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+            <label class="cart-order-type-option" style="flex: 1; position: relative; cursor: pointer;">
+              <input type="radio" name="cart-order-type" value="dine_in" checked style="position: absolute; opacity: 0;">
+              <div class="cart-order-type-card" data-type="dine_in" style="border: 2px solid var(--accent); border-radius: 12px; padding: 1rem; text-align: center; transition: all 0.3s ease; background: #f0f9ff;">
+                <i class="fas fa-utensils" style="font-size: 1.5rem; color: var(--accent); margin-bottom: 0.5rem; display: block;"></i>
+                <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem;">🍽️ Dine In</div>
+                <div style="font-size: 0.75rem; color: var(--text-2);">Eat at restaurant</div>
+              </div>
+            </label>
+            <label class="cart-order-type-option" style="flex: 1; position: relative; cursor: pointer;">
+              <input type="radio" name="cart-order-type" value="takeaway" style="position: absolute; opacity: 0;">
+              <div class="cart-order-type-card" data-type="takeaway" style="border: 2px solid var(--muted); border-radius: 12px; padding: 1rem; text-align: center; transition: all 0.3s ease; background: white;">
+                <i class="fas fa-shopping-bag" style="font-size: 1.5rem; color: var(--accent); margin-bottom: 0.5rem; display: block;"></i>
+                <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem;">🥡 Takeaway</div>
+                <div style="font-size: 0.75rem; color: var(--text-2);">Pick up order</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="addon-options">
+          <h4>Payment Method:</h4>
+          <div class="payment-method-options" style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+            <label class="payment-method-option" style="flex: 1; position: relative; cursor: pointer;">
+              <input type="radio" name="cart-payment-method" value="online" checked style="position: absolute; opacity: 0;">
+              <div class="payment-method-card" data-method="online" style="border: 2px solid var(--accent); border-radius: 12px; padding: 1rem; text-align: center; transition: all 0.3s ease; background: #f0f9ff;">
+                <i class="fas fa-globe" style="font-size: 1.5rem; color: var(--accent); margin-bottom: 0.5rem; display: block;"></i>
+                <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem;">Pay Online</div>
+                <div style="font-size: 0.75rem; color: var(--text-2);">Online Banking / E-Wallet</div>
+              </div>
+            </label>
+            <label class="payment-method-option" style="flex: 1; position: relative; cursor: pointer;">
+              <input type="radio" name="cart-payment-method" value="counter" style="position: absolute; opacity: 0;">
+              <div class="payment-method-card" data-method="counter" style="border: 2px solid var(--muted); border-radius: 12px; padding: 1rem; text-align: center; transition: all 0.3s ease; background: white;">
+                <i class="fas fa-store" style="font-size: 1.5rem; color: var(--accent); margin-bottom: 0.5rem; display: block;"></i>
+                <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem;">Pay at Counter</div>
+                <div style="font-size: 0.75rem; color: var(--text-2);">Cash / Card</div>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="confirm-payment-method-btn" class="btn">Continue to Checkout</button>
+        <button id="cancel-payment-method-btn" class="btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Enhanced Modal for Add-Ons -->
   <div id="addon-modal" class="addon-modal" aria-modal="true" role="dialog">
     <div class="modal-content">
@@ -203,8 +261,52 @@
         </div>
 
         <div class="addon-options">
+          <h4>Order Type:</h4>
+          <div class="order-type-options" style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+            <label class="order-type-option" style="flex: 1; position: relative; cursor: pointer;">
+              <input type="radio" name="order-type" value="dine_in" checked style="position: absolute; opacity: 0;">
+              <div class="order-type-card" data-type="dine_in" style="border: 2px solid var(--accent); border-radius: 12px; padding: 1rem; text-align: center; transition: all 0.3s ease; background: #f0f9ff;">
+                <i class="fas fa-utensils" style="font-size: 1.5rem; color: var(--accent); margin-bottom: 0.5rem; display: block;"></i>
+                <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem;">🍽️ Dine In</div>
+                <div style="font-size: 0.75rem; color: var(--text-2);">Eat at restaurant</div>
+              </div>
+            </label>
+            <label class="order-type-option" style="flex: 1; position: relative; cursor: pointer;">
+              <input type="radio" name="order-type" value="takeaway" style="position: absolute; opacity: 0;">
+              <div class="order-type-card" data-type="takeaway" style="border: 2px solid var(--muted); border-radius: 12px; padding: 1rem; text-align: center; transition: all 0.3s ease; background: white;">
+                <i class="fas fa-shopping-bag" style="font-size: 1.5rem; color: var(--accent); margin-bottom: 0.5rem; display: block;"></i>
+                <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem;">🥡 Takeaway</div>
+                <div style="font-size: 0.75rem; color: var(--text-2);">Pick up order</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="addon-options">
           <h4>Special Instructions:</h4>
-          <textarea id="order-notes" placeholder="Any special requests or notes for this order..." rows="3" style="width: 100%; padding: 0.8rem; border: 2px solid var(--muted); border-radius: 12px; font-size: 0.85rem; resize: vertical; min-height: 60px; font-family: inherit;"></textarea>
+          <textarea id="order-notes" placeholder="Any special requests or dietary requirements..." rows="3" style="width: 100%; padding: 0.8rem; border: 2px solid var(--muted); border-radius: 12px; font-size: 0.85rem; resize: vertical; min-height: 60px; font-family: inherit;"></textarea>
+        </div>
+
+        <div class="addon-options">
+          <h4>Payment Method:</h4>
+          <div class="payment-method-options" style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+            <label class="payment-method-option" style="flex: 1; position: relative; cursor: pointer;">
+              <input type="radio" name="payment-method" value="online" checked style="position: absolute; opacity: 0;">
+              <div class="payment-method-card" data-method="online" style="border: 2px solid var(--muted); border-radius: 12px; padding: 1rem; text-align: center; transition: all 0.3s ease; background: white;">
+                <i class="fas fa-globe" style="font-size: 1.5rem; color: var(--accent); margin-bottom: 0.5rem; display: block;"></i>
+                <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem;">Pay Online</div>
+                <div style="font-size: 0.75rem; color: var(--text-2);">Online Banking / E-Wallet</div>
+              </div>
+            </label>
+            <label class="payment-method-option" style="flex: 1; position: relative; cursor: pointer;">
+              <input type="radio" name="payment-method" value="counter" style="position: absolute; opacity: 0;">
+              <div class="payment-method-card" data-method="counter" style="border: 2px solid var(--muted); border-radius: 12px; padding: 1rem; text-align: center; transition: all 0.3s ease; background: white;">
+                <i class="fas fa-store" style="font-size: 1.5rem; color: var(--accent); margin-bottom: 0.5rem; display: block;"></i>
+                <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem;">Pay at Counter</div>
+                <div style="font-size: 0.75rem; color: var(--text-2);">Cash / Card</div>
+              </div>
+            </label>
+          </div>
         </div>
 
         <div class="modal-item-info" style="text-align: center;">
