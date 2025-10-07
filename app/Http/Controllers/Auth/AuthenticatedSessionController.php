@@ -29,6 +29,17 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Auto-promote first admin/manager to super admin if none exists
+        $user = auth()->user();
+        if ($user && $user->hasAnyRole(['admin', 'manager'])) {
+            $superAdminExists = \App\Models\User::where('is_super_admin', true)->exists();
+
+            if (!$superAdminExists) {
+                $user->update(['is_super_admin' => true]);
+                session()->flash('success', 'You have been automatically promoted to Super Admin as the first admin user!');
+            }
+        }
+
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 

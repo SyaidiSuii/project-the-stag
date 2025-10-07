@@ -1,164 +1,239 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Assign Roles to Users') }}
-            </h2>
-            <a href="{{ route('admin.roles.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                Back to Roles
-            </a>
-        </div>
-    </x-slot>
+@extends('layouts.admin')
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <!-- Success/Error Messages -->
-            @if (session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                    {{ session('success') }}
-                </div>
+@section('title', 'Assign Roles to Users')
+@section('page-title', 'Assign Roles to Users')
+
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/admin/role_permission.css') }}">
+@endsection
+
+@section('content')
+<div class="admin-section">
+    <div class="section-header">
+        <h2 class="section-title">Assign Roles to Users</h2>
+        <a href="{{ route('admin.roles.index') }}" class="btn-cancel">
+            <i class="fas fa-arrow-left"></i> Back to Roles
+        </a>
+    </div>
+
+    <form method="POST" action="{{ route('admin.roles.assign') }}" class="role-assign-form">
+        @csrf
+
+        <!-- User Selection -->
+        <div class="form-section">
+            <h3 class="section-subtitle">Select User</h3>
+            <div class="form-group">
+                <label for="user_id" class="form-label">User <span class="required">*</span></label>
+                <select
+                    id="user_id"
+                    name="user_id"
+                    class="form-control {{ $errors->get('user_id') ? 'is-invalid' : '' }}"
+                    required
+                    onchange="loadUserRoles(this.value)">
+                    <option value="">Select a user...</option>
+                    @foreach($users as $user)
+                    <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
+                        {{ $user->name }} ({{ $user->email }})
+                    </option>
+                    @endforeach
+                </select>
+                @if($errors->get('user_id'))
+                <div class="form-error">{{ implode(', ', $errors->get('user_id')) }}</div>
+                @endif
+            </div>
+
+            <!-- Current User Roles Display -->
+            <div id="current-roles-display" class="current-roles-section" style="display: none;">
+                <h4 class="current-roles-title">Current Roles</h4>
+                <div id="current-roles-list" class="current-roles-list"></div>
+            </div>
+        </div>
+
+        <!-- Role Assignment -->
+        <div class="form-section">
+            <h3 class="section-subtitle">Assign Roles</h3>
+
+            <div class="role-controls">
+                <button type="button"
+                    onclick="selectAllRoles()"
+                    class="btn-select-all">
+                    <i class="fas fa-check-double"></i> Select All
+                </button>
+                <button type="button"
+                    onclick="deselectAllRoles()"
+                    class="btn-deselect-all">
+                    <i class="fas fa-times"></i> Deselect All
+                </button>
+            </div>
+
+            @if($roles->count() > 0)
+            <div class="roles-container {{ $errors->get('roles') ? 'is-invalid' : '' }}">
+                @foreach($roles as $role)
+                <label class="role-item">
+                    <input type="checkbox"
+                        name="roles[]"
+                        value="{{ $role->id }}"
+                        class="role-checkbox"
+                        {{ in_array($role->id, old('roles', [])) ? 'checked' : '' }}>
+                    <span class="role-label">
+                        <strong>{{ ucfirst($role->name) }}</strong>
+                        <small class="role-permissions-count">{{ $role->permissions_count ?? 0 }} permissions</small>
+                    </span>
+                </label>
+                @endforeach
+            </div>
+            @else
+            <div class="no-roles">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>No roles available. Please create roles first.</p>
+            </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <form action="{{ route('admin.roles.assign') }}" method="POST" id="assignRoleForm">
-                        @csrf
-                        
-                        <div class="mb-6">
-                            <label for="user_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                Select User <span class="text-red-500">*</span>
-                            </label>
-                            <select name="user_id" id="user_id" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('user_id') border-red-500 @enderror"
-                                    required onchange="loadUserRoles()">
-                                <option value="">-- Select a User --</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
-                                        {{ $user->name }} ({{ $user->email }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('user_id')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
-                        </div>
+            @if($errors->get('roles'))
+            <div class="form-error">{{ implode(', ', $errors->get('roles')) }}</div>
+            @endif
+        </div>
 
-                        <div class="mb-6" id="currentRoles" style="display: none;">
-                            <h4 class="text-sm font-medium text-gray-700 mb-2">Current Roles:</h4>
-                            <div id="currentRolesList" class="text-sm text-gray-600">
-                                <!-- Will be populated by JavaScript -->
-                            </div>
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-4">
-                                Assign Roles
-                            </label>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                @foreach($roles as $role)
-                                    <label class="flex items-start p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                                        <input type="checkbox" 
-                                               name="roles[]" 
-                                               value="{{ $role->id }}"
-                                               class="mt-1 rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                                        <div class="ml-3">
-                                            <div class="text-sm font-medium text-gray-900">
-                                                {{ ucfirst($role->name) }}
-                                                @if(in_array($role->name, ['admin', 'manager', 'user']))
-                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 ml-1">
-                                                        Core
-                                                    </span>
-                                                @endif
-                                            </div>
-                                            <div class="text-xs text-gray-500 mt-1">
-                                                {{ $role->permissions()->count() }} permissions | {{ $role->users()->count() }} users
-                                            </div>
-                                        </div>
-                                    </label>
-                                @endforeach
-                            </div>
-                            
-                            @error('roles')
-                                <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <h3 class="text-sm font-medium text-blue-800">Role Assignment Info</h3>
-                                    <div class="mt-2 text-sm text-blue-700">
-                                        <ul class="list-disc pl-4 space-y-1">
-                                            <li><strong>Admin:</strong> Full system access and can manage all permissions</li>
-                                            <li><strong>Manager:</strong> Can manage users, projects, and view reports</li>
-                                            <li><strong>User:</strong> Basic access to dashboard and project viewing</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-end space-x-4">
-                            <a href="{{ route('admin.roles.index') }}" 
-                               class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                Cancel
-                            </a>
-                            <button type="submit" 
-                                    class="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                Assign Roles
-                            </button>
-                        </div>
-                    </form>
+        <!-- Important Notes -->
+        <div class="form-section">
+            <div class="info-panel">
+                <div class="info-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="info-content">
+                    <h4 class="info-title">Important Notes</h4>
+                    <ul class="info-list">
+                        <li>Selecting new roles will replace all existing roles for the user</li>
+                        <li>Users will inherit all permissions from assigned roles</li>
+                        <li>Changes take effect immediately after saving</li>
+                        <li>Users can have multiple roles assigned</li>
+                    </ul>
                 </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        const users = @json($users);
-        
-        function loadUserRoles() {
-            const userSelect = document.getElementById('user_id');
-            const selectedUserId = userSelect.value;
-            const currentRolesDiv = document.getElementById('currentRoles');
-            const currentRolesList = document.getElementById('currentRolesList');
-            
-            if (selectedUserId) {
-                const user = users.find(u => u.id == selectedUserId);
-                if (user && user.roles.length > 0) {
-                    currentRolesDiv.style.display = 'block';
-                    currentRolesList.innerHTML = user.roles.map(role => 
-                        `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-1 mb-1">${role.name}</span>`
-                    ).join('');
-                    
-                    // Check checkboxes for current roles
-                    const checkboxes = document.querySelectorAll('input[name="roles[]"]');
-                    checkboxes.forEach(checkbox => {
-                        const roleId = parseInt(checkbox.value);
-                        const hasRole = user.roles.some(role => role.id === roleId);
-                        checkbox.checked = hasRole;
-                    });
-                } else {
-                    currentRolesDiv.style.display = 'block';
-                    currentRolesList.innerHTML = '<span class="text-gray-500">No roles assigned</span>';
-                    
-                    // Uncheck all checkboxes
-                    const checkboxes = document.querySelectorAll('input[name="roles[]"]');
-                    checkboxes.forEach(checkbox => checkbox.checked = false);
-                }
-            } else {
-                currentRolesDiv.style.display = 'none';
-                
-                // Uncheck all checkboxes
-                const checkboxes = document.querySelectorAll('input[name="roles[]"]');
-                checkboxes.forEach(checkbox => checkbox.checked = false);
-            }
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn-save" id="assign-btn" disabled>
+                <i class="fas fa-user-check"></i> Assign Roles
+            </button>
+            <a href="{{ route('admin.roles.index') }}" class="btn-cancel">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+    function selectAllRoles() {
+        const checkboxes = document.querySelectorAll('input[name="roles[]"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+    }
+
+    function deselectAllRoles() {
+        const checkboxes = document.querySelectorAll('input[name="roles[]"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    }
+
+    function loadUserRoles(userId) {
+        const assignBtn = document.getElementById('assign-btn');
+        const currentRolesDisplay = document.getElementById('current-roles-display');
+        const currentRolesList = document.getElementById('current-roles-list');
+
+        if (!userId) {
+            assignBtn.disabled = true;
+            currentRolesDisplay.style.display = 'none';
+            return;
         }
-    </script>
-</x-app-layout>
+
+        assignBtn.disabled = false;
+
+        // Find user data from the users array passed to the view
+        const users = @json($users);
+        const selectedUser = users.find(user => user.id == userId);
+
+        if (selectedUser && selectedUser.roles) {
+            currentRolesDisplay.style.display = 'block';
+
+            if (selectedUser.roles.length > 0) {
+                currentRolesList.innerHTML = selectedUser.roles.map(role =>
+                    `<span class="current-role-badge">${role.name}</span>`
+                ).join('');
+
+                // Pre-select current roles
+                const roleCheckboxes = document.querySelectorAll('input[name="roles[]"]');
+                roleCheckboxes.forEach(checkbox => {
+                    const roleId = parseInt(checkbox.value);
+                    checkbox.checked = selectedUser.roles.some(role => role.id === roleId);
+                });
+            } else {
+                currentRolesList.innerHTML = '<span class="no-current-roles">No roles assigned</span>';
+            }
+        } else {
+            currentRolesDisplay.style.display = 'none';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle form submission loading state
+        const roleForm = document.querySelector('.role-assign-form');
+        if (roleForm) {
+            roleForm.addEventListener('submit', function(e) {
+                const submitBtn = this.querySelector('.btn-save');
+
+                // Show loading state
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning Roles...';
+                submitBtn.disabled = true;
+            });
+        }
+
+        // Load current user roles if user is pre-selected
+        const userSelect = document.getElementById('user_id');
+        if (userSelect.value) {
+            loadUserRoles(userSelect.value);
+        }
+
+        // Show success/error messages
+        @if(session('success'))
+        showNotification('{{ session('
+            success ') }}', 'success');
+        @endif
+
+        @if(session('error'))
+        showNotification('{{ session('
+            error ') }}', 'error');
+        @endif
+    });
+
+    // Notification function
+    function showNotification(message, type) {
+        // Create a simple notification
+        const notification = document.createElement('div');
+        notification.className = 'notification ' + type;
+        notification.textContent = message;
+        notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 9999;
+        ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
+    `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+</script>
+@endsection

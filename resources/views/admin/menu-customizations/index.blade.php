@@ -1,316 +1,396 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Menu Customizations Management') }}
-        </h2>
-    </x-slot>
+@extends('layouts.admin')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+@section('title', 'Menu Customizations Management')
+@section('page-title', 'Menu Customizations Management')
 
-            <!-- Action Buttons -->
-            <div class="pb-3 flex justify-between items-center">
-                <a href="{{ route('admin.menu-customizations.create') }}" class="items-center px-4 py-2 bg-gray-800 rounded font-semibold text-white hover:bg-gray-700">
-                    Add New Customization
-                </a>
-                <div class="flex space-x-2">
-                    <a href="{{ route('admin.menu-customizations.getStatistics') }}" class="px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700">
-                        View Statistics
-                    </a>
-                    <button onclick="showBulkActions()" class="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600">
-                        Bulk Actions
-                    </button>
-                </div>
-            </div>
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/admin/orders-management.css') }}">
+@endsection
 
-            <!-- Filters -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-4">
-                <div class="p-4 bg-gray-50">
-                    <form method="GET" action="{{ route('admin.menu-customizations.index') }}" class="grid grid-cols-1 md:grid-cols-6 gap-4">
-                        <div>
-                            <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
-                            <input type="text" name="search" id="search" value="{{ request('search') }}" 
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                   placeholder="Search customization value...">
-                        </div>
+@section('content')
+<!-- Stats Cards -->
+<div class="admin-cards">
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Total Customizations</div>
+            <div class="admin-card-icon icon-blue"><i class="fas fa-sliders-h"></i></div>
+        </div>
+        <div class="admin-card-value">{{ $customizations->total() ?? 0 }}</div>
+        <div class="admin-card-desc">All customizations</div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Customization Types</div>
+            <div class="admin-card-icon icon-green"><i class="fas fa-list"></i></div>
+        </div>
+        <div class="admin-card-value">{{ $customizationTypes->count() ?? 0 }}</div>
+        <div class="admin-card-desc">Different types</div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Avg Additional Price</div>
+            <div class="admin-card-icon icon-orange"><i class="fas fa-calculator"></i></div>
+        </div>
+        <div class="admin-card-value">RM {{ number_format($customizations->avg('additional_price') ?? 0, 2) }}</div>
+        <div class="admin-card-desc">Average extra cost</div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Total Extra Revenue</div>
+            <div class="admin-card-icon icon-red"><i class="fas fa-dollar-sign"></i></div>
+        </div>
+        <div class="admin-card-value">RM {{ number_format($customizations->sum('additional_price') ?? 0, 2) }}</div>
+        <div class="admin-card-desc">From customizations</div>
+    </div>
+</div>
 
-                        <div>
-                            <label for="customization_type" class="block text-sm font-medium text-gray-700">Customization Type</label>
-                            <select name="customization_type" id="customization_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                <option value="">All Types</option>
-                                @foreach($customizationTypes as $type)
-                                    <option value="{{ $type }}" @if(request('customization_type') == $type) selected @endif>
-                                        {{ $type }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div>
-                            <label for="min_price" class="block text-sm font-medium text-gray-700">Min Price (RM)</label>
-                            <input type="number" step="0.01" name="min_price" id="min_price" value="{{ request('min_price') }}" 
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                   placeholder="0.00">
-                        </div>
-
-                        <div>
-                            <label for="max_price" class="block text-sm font-medium text-gray-700">Max Price (RM)</label>
-                            <input type="number" step="0.01" name="max_price" id="max_price" value="{{ request('max_price') }}" 
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                   placeholder="999.99">
-                        </div>
-
-                        <div>
-                            <label for="sort_by" class="block text-sm font-medium text-gray-700">Sort By</label>
-                            <select name="sort_by" id="sort_by" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                <option value="created_at" @if(request('sort_by') == 'created_at') selected @endif>Created Date</option>
-                                <option value="customization_type" @if(request('sort_by') == 'customization_type') selected @endif>Type</option>
-                                <option value="customization_value" @if(request('sort_by') == 'customization_value') selected @endif>Value</option>
-                                <option value="additional_price" @if(request('sort_by') == 'additional_price') selected @endif>Price</option>
-                            </select>
-                        </div>
-
-                        <div class="flex items-end">
-                            <button type="submit"
-                                class="w-full px-4 py-2 bg-indigo-600 !text-white font-semibold 
-                                    rounded-md hover:bg-indigo-700 
-                                    focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                                Filter
-                            </button>
-                        </div>
-                    </form>
-
-                    @if(request()->hasAny(['search', 'customization_type', 'min_price', 'max_price', 'sort_by']))
-                        <div class="mt-3">
-                            <a href="{{ route('admin.menu-customizations.index') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
-                                Clear all filters
-                            </a>
-                        </div>
-                    @endif
-                </div>
-            </div>
-            
-            <!-- Customizations Table -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    
-                    @if(session('message'))
-                        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-                            {{ session('message') }}
-                        </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-                            {{ session('error') }}
-                        </div>
-                    @endif
-
-                    <!-- Bulk Actions (Hidden by default) -->
-                    <div id="bulk-actions" class="hidden mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-4">
-                                <label class="flex items-center">
-                                    <input type="checkbox" id="select-all" class="rounded border-gray-300">
-                                    <span class="ml-2 text-sm text-gray-600">Select All</span>
-                                </label>
-                                <span id="selected-count" class="text-sm text-gray-600">0 selected</span>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button onclick="bulkDelete()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                                    Delete Selected
-                                </button>
-                                <button onclick="hideBulkActions()" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="w-full min-w-full">
-                            <thead>
-                                <tr class="border-b">
-                                    <th class="text-left py-2" id="bulk-header" style="display: none;">
-                                        <input type="checkbox" id="header-checkbox" class="rounded border-gray-300">
-                                    </th>
-                                    <th class="text-left py-2">#</th>
-                                    <th class="text-left py-2">Order Item</th>
-                                    <th class="text-left py-2">Customization Type</th>
-                                    <th class="text-left py-2">Customization Value</th>
-                                    <th class="text-left py-2">Additional Price</th>
-                                    <th class="text-left py-2">Created</th>
-                                    <th class="text-left py-2">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($customizations as $customization)
-                                <tr class="border-b hover:bg-gray-50">
-                                    <td class="px-6 py-4 bulk-checkbox" style="display: none;">
-                                        <input type="checkbox" name="customization_ids[]" value="{{ $customization->id }}" 
-                                               class="rounded border-gray-300 customization-checkbox">
-                                    </td>
-                                    <td class="px-6 py-4">{{ ($customizations->currentPage() - 1) * $customizations->perPage() + $loop->iteration }}</td>
-                                    <td class="px-6 py-4">
-                                        <div>
-                                            <div class="font-medium">Order #{{ $customization->orderItem->order_id ?? 'N/A' }}</div>
-                                            @if($customization->orderItem && $customization->orderItem->menuItem)
-                                                <div class="text-sm text-gray-600">{{ $customization->orderItem->menuItem->name }}</div>
-                                            @endif
-                                            <div class="text-xs text-gray-500">Qty: {{ $customization->orderItem->quantity ?? 'N/A' }}</div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">
-                                            {{ $customization->customization_type }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="font-medium">{{ $customization->customization_value }}</div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="font-medium {{ $customization->additional_price > 0 ? 'text-green-600' : 'text-gray-500' }}">
-                                            @if($customization->additional_price > 0)
-                                                +RM {{ number_format($customization->additional_price, 2) }}
-                                            @else
-                                                FREE
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm">{{ $customization->created_at->format('M d, Y') }}</div>
-                                        <div class="text-sm text-gray-600">{{ $customization->created_at->format('h:i A') }}</div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex space-x-2">
-                                            <a href="{{ route('admin.menu-customizations.show', $customization->id) }}" 
-                                               class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 
-                                                border border-transparent rounded-lg font-medium text-sm text-white shadow">
-                                                View
-                                            </a>
-                                            <a href="{{ route('admin.menu-customizations.edit', $customization->id) }}" 
-                                               class="inline-flex items-center px-2 py-1 bg-gray-800 border border-transparent rounded text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                                                Edit
-                                            </a>
-                                            <form method="POST" action="{{ route('admin.menu-customizations.destroy', $customization->id) }}" 
-                                                  onsubmit="return confirm('Are you sure to delete this customization?');" class="inline">
-                                                <input type="hidden" name="_method" value="DELETE">
-                                                @csrf
-                                               <x-danger-button class="text-xs">
-                                                    Delete
-                                                </x-danger-button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="8" class="px-6 py-8 text-center text-gray-500">
-                                        <div class="flex flex-col items-center">
-                                            <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
-                                            </svg>
-                                            <p class="text-lg font-medium">No customizations found</p>
-                                            <p class="text-sm">Try adjusting your search criteria or create a new customization</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="mt-4">
-                        {{ $customizations->withQueryString()->links() }}
-                    </div>
-
-                </div>
-            </div>
+<!-- Search and Filter Section -->
+<div class="admin-section">
+    <div class="section-header">
+        <h2 class="section-title">Menu Customizations</h2>
+        <div class="section-controls">
+            <a href="{{ route('admin.menu-customizations.create') }}" class="admin-btn btn-secondary">
+                <div class="admin-nav-icon"><i class="fas fa-plus"></i></div>
+                Add Customization
+            </a>
         </div>
     </div>
+    
 
-    <script>
-        // Bulk Actions
-        function showBulkActions() {
-            document.getElementById('bulk-actions').classList.remove('hidden');
-            document.getElementById('bulk-header').style.display = 'table-cell';
-            document.querySelectorAll('.bulk-checkbox').forEach(cell => {
-                cell.style.display = 'table-cell';
-            });
-        }
+    <div class="search-filter">
+        <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search by customization value..." id="searchInput" value="{{ request('search') }}">
+        </div>
+        <div class="filter-group">
+            <select class="filter-select" id="customizationTypeFilter">
+                <option value="">All Types</option>
+                @foreach($customizationTypes as $type)
+                    <option value="{{ $type }}" {{ request('customization_type') == $type ? 'selected' : '' }}>{{ ucfirst($type) }}</option>
+                @endforeach
+            </select>
+            <input type="number" class="filter-select" id="minPriceFilter" placeholder="Min Price" value="{{ request('min_price') }}" step="0.01">
+            <input type="number" class="filter-select" id="maxPriceFilter" placeholder="Max Price" value="{{ request('max_price') }}" step="0.01">
+            <select class="filter-select" id="sortByFilter">
+                <option value="created_at" {{ request('sort_by') == 'created_at' ? 'selected' : '' }}>Sort by Date</option>
+                <option value="additional_price" {{ request('sort_by') == 'additional_price' ? 'selected' : '' }}>Sort by Price</option>
+                <option value="customization_type" {{ request('sort_by') == 'customization_type' ? 'selected' : '' }}>Sort by Type</option>
+                <option value="customization_value" {{ request('sort_by') == 'customization_value' ? 'selected' : '' }}>Sort by Value</option>
+            </select>
+            <select class="filter-select" id="sortOrderFilter">
+                <option value="desc" {{ request('sort_order') == 'desc' ? 'selected' : '' }}>Descending</option>
+                <option value="asc" {{ request('sort_order') == 'asc' ? 'selected' : '' }}>Ascending</option>
+            </select>
+        </div>
+        <div class="bulk-actions" style="display: none;">
+            <button onclick="bulkDeleteCustomizations()" class="admin-btn btn-danger" id="bulkDeleteBtn">
+                <div class="admin-nav-icon"><i class="fas fa-trash"></i></div>
+                Delete Selected (<span id="selectedCount">0</span>)
+            </button>
+        </div>
+        <a href="{{ route('admin.menu-customizations.create') }}" class="admin-btn btn-primary">
+            <div class="admin-nav-icon"><i class="fas fa-plus"></i></div>
+            Create Customization
+        </a>
+    </div>
 
-        function hideBulkActions() {
-            document.getElementById('bulk-actions').classList.add('hidden');
-            document.getElementById('bulk-header').style.display = 'none';
-            document.querySelectorAll('.bulk-checkbox').forEach(cell => {
-                cell.style.display = 'none';
-            });
-            // Uncheck all checkboxes
-            document.querySelectorAll('.customization-checkbox').forEach(checkbox => {
-                checkbox.checked = false;
-            });
-            document.getElementById('select-all').checked = false;
-            updateSelectedCount();
-        }
+    <!-- Customizations Table -->
+    <div class="table-container">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th class="th-checkbox" style="width: 50px;">
+                        <input type="checkbox" id="selectAll" title="Select All">
+                    </th>
+                    <th class="th-order">Order Item</th>
+                    <th class="th-customer">Customization Type</th>
+                    <th class="th-type">Customization Value</th>
+                    <th class="th-amount">Additional Price</th>
+                    <th class="th-status">Created</th>
+                    <th class="th-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($customizations as $customization)
+                <tr>
+                    <td class="cell-center">
+                        <input type="checkbox" class="customization-checkbox" value="{{ $customization->id }}">
+                    </td>
+                    <td>
+                        <div class="order-info">
+                            <div class="customization-id">#{{ $customization->id }}</div>
+                            @if($customization->orderItem && $customization->orderItem->menuItem)
+                                <div class="menu-item-name">{{ $customization->orderItem->menuItem->name }}</div>
+                                @if($customization->orderItem->order)
+                                    <div class="order-reference">Order #{{ $customization->orderItem->order->id }}</div>
+                                @endif
+                            @endif
+                        </div>
+                    </td>
+                    <td>
+                        <div class="customization-type">
+                            <span class="status status-type status-{{ str_replace('_', '-', $customization->customization_type) }}">
+                                {{ str_replace('_', ' ', ucfirst($customization->customization_type)) }}
+                            </span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="customization-value">
+                            <strong>{{ $customization->customization_value }}</strong>
+                        </div>
+                    </td>
+                    <td class="cell-center">
+                        <div class="amount">RM {{ number_format($customization->additional_price, 2) }}</div>
+                    </td>
+                    <td class="cell-center">
+                        <div class="time-info">
+                            <div class="order-date">{{ $customization->created_at->format('M d') }}</div>
+                            <div class="order-time">{{ $customization->created_at->format('g:i A') }}</div>
+                        </div>
+                    </td>
+                    <td class="cell-center">
+                        <div class="table-actions">
+                            <!-- Action Buttons -->
+                            <a href="{{ route('admin.menu-customizations.show', $customization->id) }}" 
+                               class="action-btn view-btn" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ route('admin.menu-customizations.edit', $customization->id) }}" 
+                               class="action-btn edit-btn" title="Edit Customization">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="POST" action="{{ route('admin.menu-customizations.destroy', $customization->id) }}" style="display: inline;"
+                                  onsubmit="return confirm('Are you sure you want to delete this customization?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="action-btn delete-btn" title="Delete Customization">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-sliders-h"></i>
+                        </div>
+                        <div class="empty-state-title">No customizations found</div>
+                        <div class="empty-state-text">
+                            @if(request()->hasAny(['search', 'customization_type', 'min_price', 'max_price']))
+                                No customizations match your current filters. Try adjusting your search criteria.
+                            @else
+                                No customizations have been created yet.
+                            @endif
+                        </div>
+                        @if(!request()->hasAny(['search', 'customization_type', 'min_price', 'max_price']))
+                            <div style="margin-top: 20px;">
+                                <a href="{{ route('admin.menu-customizations.create') }}" class="admin-btn btn-primary">
+                                    <i class="fas fa-plus"></i> Create First Customization
+                                </a>
+                            </div>
+                        @endif
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
-        // Select All functionality
-        document.getElementById('select-all').addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('.customization-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-            updateSelectedCount();
-        });
-
-        // Update selected count
-        function updateSelectedCount() {
-            const selected = document.querySelectorAll('.customization-checkbox:checked').length;
-            document.getElementById('selected-count').textContent = `${selected} selected`;
-        }
-
-        // Add event listeners to individual checkboxes
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.customization-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', updateSelectedCount);
-            });
-        });
-
-        // Bulk delete
-        function bulkDelete() {
-            const selectedCheckboxes = document.querySelectorAll('.customization-checkbox:checked');
-            if (selectedCheckboxes.length === 0) {
-                alert('Please select at least one customization to delete.');
-                return;
-            }
-
-            if (!confirm(`Are you sure you want to delete ${selectedCheckboxes.length} customization(s)?`)) {
-                return;
-            }
-
-            const customizationIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+    <!-- Pagination -->
+    @if($customizations->hasPages())
+        <div class="pagination">
+            <div style="display: flex; align-items: center; gap: 16px; margin-right: auto;">
+                <span style="font-size: 14px; color: var(--text-2);">
+                    Showing {{ $customizations->firstItem() }} to {{ $customizations->lastItem() }} of {{ $customizations->total() }} results
+                </span>
+            </div>
             
-            fetch('{{ route("admin.menu-customizations.bulkDelete") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    customization_ids: customizationIds
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('Error deleting customizations: ' + (data.message || 'Unknown error'));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error deleting customizations');
-            });
+            @if($customizations->onFirstPage())
+                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
+                    <i class="fas fa-chevron-left"></i>
+                </span>
+            @else
+                <a href="{{ $customizations->previousPageUrl() }}" class="pagination-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            @endif
+
+            @foreach($customizations->getUrlRange(1, $customizations->lastPage()) as $page => $url)
+                @if($page == $customizations->currentPage())
+                    <span class="pagination-btn active">{{ $page }}</span>
+                @else
+                    <a href="{{ $url }}" class="pagination-btn">{{ $page }}</a>
+                @endif
+            @endforeach
+
+            @if($customizations->hasMorePages())
+                <a href="{{ $customizations->nextPageUrl() }}" class="pagination-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            @else
+                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
+                    <i class="fas fa-chevron-right"></i>
+                </span>
+            @endif
+        </div>
+    @endif
+</div>
+@endsection
+
+@section('scripts')
+<script src="{{ asset('js/admin/menu-customizations.js') }}"></script>
+<script>
+// Notification function
+function showNotification(message, type) {
+    // Create a simple notification
+    const notification = document.createElement('div');
+    notification.className = 'notification ' + type;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 9999;
+        ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Check for session messages on page load
+document.addEventListener('DOMContentLoaded', function() {
+    @if(session('message'))
+        showNotification('{{ session('message') }}', 'success');
+    @endif
+    
+    @if(session('success'))
+        showNotification('{{ session('success') }}', 'success');
+    @endif
+    
+    @if(session('error'))
+        showNotification('{{ session('error') }}', 'error');
+    @endif
+
+    // Add filter event listeners
+    const searchInput = document.getElementById('searchInput');
+    const customizationTypeFilter = document.getElementById('customizationTypeFilter');
+    const minPriceFilter = document.getElementById('minPriceFilter');
+    const maxPriceFilter = document.getElementById('maxPriceFilter');
+    const sortByFilter = document.getElementById('sortByFilter');
+    const sortOrderFilter = document.getElementById('sortOrderFilter');
+
+    function applyFilters() {
+        const params = new URLSearchParams();
+        
+        if (searchInput.value) params.set('search', searchInput.value);
+        if (customizationTypeFilter.value) params.set('customization_type', customizationTypeFilter.value);
+        if (minPriceFilter.value) params.set('min_price', minPriceFilter.value);
+        if (maxPriceFilter.value) params.set('max_price', maxPriceFilter.value);
+        if (sortByFilter.value) params.set('sort_by', sortByFilter.value);
+        if (sortOrderFilter.value) params.set('sort_order', sortOrderFilter.value);
+        
+        window.location.href = '{{ route("admin.menu-customizations.index") }}?' + params.toString();
+    }
+
+    // Add event listeners with debounce for search
+    let searchTimeout;
+    searchInput?.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(applyFilters, 500);
+    });
+
+    customizationTypeFilter?.addEventListener('change', applyFilters);
+    minPriceFilter?.addEventListener('change', applyFilters);
+    maxPriceFilter?.addEventListener('change', applyFilters);
+    sortByFilter?.addEventListener('change', applyFilters);
+    sortOrderFilter?.addEventListener('change', applyFilters);
+
+    // Checkbox functionality
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const customizationCheckboxes = document.querySelectorAll('.customization-checkbox');
+    const bulkActions = document.querySelector('.bulk-actions');
+    const selectedCountSpan = document.getElementById('selectedCount');
+
+    // Select all functionality
+    selectAllCheckbox?.addEventListener('change', function() {
+        customizationCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateBulkActions();
+    });
+
+    // Individual checkbox functionality
+    customizationCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            // Update select all checkbox state
+            const checkedBoxes = document.querySelectorAll('.customization-checkbox:checked');
+            selectAllCheckbox.checked = checkedBoxes.length === customizationCheckboxes.length;
+            selectAllCheckbox.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < customizationCheckboxes.length;
+            
+            updateBulkActions();
+        });
+    });
+
+    function updateBulkActions() {
+        const checkedBoxes = document.querySelectorAll('.customization-checkbox:checked');
+        const count = checkedBoxes.length;
+        
+        if (count > 0) {
+            bulkActions.style.display = 'block';
+            selectedCountSpan.textContent = count;
+        } else {
+            bulkActions.style.display = 'none';
         }
-    </script>
-</x-app-layout>
+    }
+});
+
+// Function to bulk delete customizations
+function bulkDeleteCustomizations() {
+    const checkedBoxes = document.querySelectorAll('.customization-checkbox:checked');
+    if (checkedBoxes.length === 0) {
+        alert('Please select customizations to delete.');
+        return;
+    }
+
+    if (!confirm(`Are you sure you want to delete ${checkedBoxes.length} selected customizations?`)) {
+        return;
+    }
+
+    const customizationIds = Array.from(checkedBoxes).map(cb => cb.value);
+    
+    fetch('{{ route("admin.menu-customizations.bulkDelete") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            customization_ids: customizationIds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            location.reload();
+        } else {
+            alert('Error deleting customizations: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error deleting customizations. Please try again.');
+    });
+}
+</script>
+@endsection

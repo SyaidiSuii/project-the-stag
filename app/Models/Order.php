@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Services\RecommendationService;
 
 class Order extends Model
 {
@@ -40,6 +41,43 @@ class Order extends Model
         'special_instructions' => 'array',
         'is_rush_order' => 'boolean',
     ];
+
+    /**
+     * Boot the model and add event listeners for AI model retraining
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Trigger AI model retrain when order is completed/served
+        static::updated(function ($order) {
+            // Check if order status changed to completed or served
+            if ($order->isDirty('order_status') && 
+                in_array($order->order_status, ['completed', 'served'])) {
+                
+                try {
+                    app(RecommendationService::class)->onOrderCompleted($order->id);
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to trigger AI retrain on order completion', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+        });
+
+        // Trigger retrain when order is deleted (affects training data)
+        static::deleted(function ($order) {
+            try {
+                app(RecommendationService::class)->onOrderCompleted($order->id);
+            } catch (\Exception $e) {
+                \Log::warning('Failed to trigger AI retrain on order deletion', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        });
+    }
 
     // 🔗 Relationships
     public function user()

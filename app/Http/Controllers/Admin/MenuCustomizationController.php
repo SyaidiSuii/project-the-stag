@@ -182,42 +182,6 @@ class MenuCustomizationController extends Controller
                         ->with('message', 'Menu customization deleted successfully');
     }
 
-    /**
-     * Get customization statistics
-     */
-    public function getStatistics()
-    {
-        $stats = [
-            'total_customizations' => MenuCustomization::count(),
-            'by_type' => MenuCustomization::select('customization_type')
-                                        ->selectRaw('count(*) as count')
-                                        ->groupBy('customization_type')
-                                        ->orderBy('count', 'desc')
-                                        ->get()
-                                        ->pluck('count', 'customization_type')
-                                        ->toArray(),
-            'average_additional_price' => round(MenuCustomization::avg('additional_price') ?? 0, 2),
-            'total_additional_revenue' => MenuCustomization::sum('additional_price'),
-            'price_range' => [
-                'min' => MenuCustomization::min('additional_price') ?? 0,
-                'max' => MenuCustomization::max('additional_price') ?? 0
-            ],
-            'most_popular_customizations' => MenuCustomization::select('customization_value')
-                                                             ->selectRaw('count(*) as count')
-                                                             ->groupBy('customization_value')
-                                                             ->orderBy('count', 'desc')
-                                                             ->limit(10)
-                                                             ->get()
-                                                             ->pluck('count', 'customization_value')
-                                                             ->toArray(),
-            'recent_customizations' => MenuCustomization::with(['orderItem.menuItem'])
-                                                       ->latest()
-                                                       ->limit(5)
-                                                       ->get()
-        ];
-
-        return view('admin.menu-customizations.statistics', compact('stats'));
-    }
 
     /**
      * Get customizations by order item

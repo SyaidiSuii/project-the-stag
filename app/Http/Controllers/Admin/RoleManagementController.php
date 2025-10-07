@@ -140,7 +140,7 @@ class RoleManagementController extends Controller
     public function assignForm()
     {
         $users = User::with('roles')->orderBy('name')->get();
-        $roles = Role::orderBy('name')->get();
+        $roles = Role::withCount('permissions')->orderBy('name')->get();
         return view('admin.roles.assign', compact('users', 'roles'));
     }
 

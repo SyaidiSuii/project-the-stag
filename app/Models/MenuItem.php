@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Services\RecommendationService;
 
 class MenuItem extends Model
 {
@@ -41,6 +42,53 @@ class MenuItem extends Model
         'rating_count' => 0,
         'preparation_time' => 15,
     ];
+
+    /**
+     * Boot the model and add event listeners for AI model retraining
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Trigger AI model retrain when menu item is created
+        static::created(function ($menuItem) {
+            try {
+                app(RecommendationService::class)->onMenuUpdated('created', $menuItem->id);
+            } catch (\Exception $e) {
+                \Log::warning('Failed to trigger AI retrain on menu item creation', [
+                    'menu_item_id' => $menuItem->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        });
+
+        // Trigger AI model retrain when menu item is updated
+        static::updated(function ($menuItem) {
+            // Check if important fields changed
+            if ($menuItem->isDirty(['name', 'category_id', 'price', 'availability', 'is_featured'])) {
+                try {
+                    app(RecommendationService::class)->onMenuUpdated('updated', $menuItem->id);
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to trigger AI retrain on menu item update', [
+                        'menu_item_id' => $menuItem->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+        });
+
+        // Trigger retrain when menu item is deleted
+        static::deleted(function ($menuItem) {
+            try {
+                app(RecommendationService::class)->onMenuUpdated('deleted', $menuItem->id);
+            } catch (\Exception $e) {
+                \Log::warning('Failed to trigger AI retrain on menu item deletion', [
+                    'menu_item_id' => $menuItem->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        });
+    }
 
     /**
      * Get the category that owns the menu item

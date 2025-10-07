@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\RoleManagementController;
 use App\Http\Controllers\Admin\TableQrcodeController;
 use App\Http\Controllers\Admin\RewardsController;
 use App\Http\Controllers\QR\MenuController as QRMenuController;
+use App\Http\Controllers\QR\PaymentController as QRPaymentController;
 use App\Http\Controllers\Admin\MenuCustomizationController;
 use App\Http\Controllers\Admin\QuickReorderController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -67,6 +68,8 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/orders/{orderId}/reorder', [CustomerOrdersController::class, 'getReorderDetails'])->name('orders.reorder');
     Route::post('/orders/{orderId}/add-to-cart', [CustomerOrdersController::class, 'addToCart'])->name('orders.addToCart');
     Route::get('/rewards', [CustomerRewardsController::class, 'index'])->name('rewards.index');
+    Route::post('/rewards/redeem', [CustomerRewardsController::class, 'redeem'])->name('rewards.redeem');
+    Route::post('/rewards/checkin', [CustomerRewardsController::class, 'checkin'])->name('rewards.checkin');
     Route::get('/booking', [CustomerBookingController::class, 'index'])->name('booking.index');
     Route::post('/booking/store', [CustomerBookingController::class, 'store'])->name('booking.store');
     Route::get('/booking/history', [CustomerBookingController::class, 'history'])->name('booking.history');
@@ -162,8 +165,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // PERMISSIONS & ROLES MANAGEMENT
         // ---------------------------------------------
         Route::prefix('permissions')->name('permissions.')->group(function () {
-            Route::get('{permission}/assign', [PermissionController::class, 'assignForm'])->name('assign.form');
-            Route::post('{permission}/assign', [PermissionController::class, 'assignToRoles'])->name('assign');
             Route::get('api/list', [PermissionController::class, 'getPermissions'])->name('api.list');
         });
         Route::resource('permissions', PermissionController::class);
@@ -174,7 +175,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('{role}/permissions', [RoleManagementController::class, 'getRolePermissions'])->name('permissions');
         });
         Route::resource('roles', RoleManagementController::class);
-
+        // ---------------------------------------------
+        // SETTINGS MANAGEMENT
+        // ---------------------------------------------
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('index');
+            Route::post('admins', [\App\Http\Controllers\Admin\SettingsController::class, 'storeAdmin'])->name('admins.store');
+            Route::put('admins/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateAdmin'])->name('admins.update');
+            Route::delete('admins/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'deleteAdmin'])->name('admins.delete');
+            Route::post('admins/{id}/toggle-super-admin', [\App\Http\Controllers\Admin\SettingsController::class, 'toggleSuperAdmin'])->name('admins.toggle-super-admin');
+        });
         // ---------------------------------------------
         // TABLE MANAGEMENT
         // ---------------------------------------------
@@ -242,7 +252,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Menu Customizations
         Route::prefix('menu-customizations')->name('menu-customizations.')->group(function () {
-            Route::get('statistics', [MenuCustomizationController::class, 'getStatistics'])->name('getStatistics');
             Route::get('export', [MenuCustomizationController::class, 'export'])->name('export');
             Route::get('by-order-item/{orderItem}', [MenuCustomizationController::class, 'getByOrderItem'])->name('by-order-item');
             Route::post('bulk-delete', [MenuCustomizationController::class, 'bulkDelete'])->name('bulkDelete');
@@ -294,15 +303,128 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('trends', [SaleAnalyticsController::class, 'getTrends'])->name('trends');
         });
         Route::resource('sale-analytics', SaleAnalyticsController::class);
-
         // ---------------------------------------------
         // REWARDS MANAGEMENT
         // ---------------------------------------------
         Route::prefix('rewards')->name('rewards.')->group(function () {
-            Route::post('{reward}/toggle', [RewardsController::class, 'toggle'])->name('toggle');
-            Route::get('voucher-templates', [RewardsController::class, 'getVoucherTemplates'])->name('voucher-templates');
+            // Main rewards page - redirect to rewards list
+            Route::get('/', [RewardsController::class, 'rewardsIndex'])->name('index');
+
+            // Create/Edit Forms (Old - for backward compatibility)
+            Route::get('create', [RewardsController::class, 'create'])->name('create');
+            Route::get('{reward}/edit', [RewardsController::class, 'edit'])->name('edit');
+
+            // === NEW SECTION-BASED ROUTES ===
+            // Rewards Section
+            Route::prefix('rewards')->name('rewards.')->group(function () {
+                Route::get('/', [RewardsController::class, 'rewardsIndex'])->name('index');
+                Route::get('/create', [RewardsController::class, 'rewardsCreate'])->name('create');
+                Route::post('/', [RewardsController::class, 'rewardsStore'])->name('store');
+                Route::get('/{reward}/edit', [RewardsController::class, 'rewardsEdit'])->name('edit');
+                Route::put('/{reward}', [RewardsController::class, 'rewardsUpdate'])->name('update');
+                Route::delete('/{reward}', [RewardsController::class, 'rewardsDestroy'])->name('destroy');
+            });
+
+            // Voucher Templates Section
+            Route::prefix('voucher-templates')->name('voucher-templates.')->group(function () {
+                Route::get('/', [RewardsController::class, 'voucherTemplatesIndex'])->name('index');
+                Route::get('/create', [RewardsController::class, 'voucherTemplatesCreate'])->name('create');
+                Route::post('/', [RewardsController::class, 'voucherTemplatesStore'])->name('store');
+                Route::get('/{template}/edit', [RewardsController::class, 'voucherTemplatesEdit'])->name('edit');
+                Route::put('/{template}', [RewardsController::class, 'voucherTemplatesUpdate'])->name('update');
+                Route::delete('/{template}', [RewardsController::class, 'voucherTemplatesDestroy'])->name('destroy');
+            });
+
+            // Achievements Section
+            Route::prefix('achievements')->name('achievements.')->group(function () {
+                Route::get('/', [RewardsController::class, 'achievementsIndex'])->name('index');
+                Route::get('/create', [RewardsController::class, 'achievementsCreate'])->name('create');
+                Route::post('/', [RewardsController::class, 'achievementsStore'])->name('store');
+                Route::get('/{achievement}/edit', [RewardsController::class, 'achievementsEdit'])->name('edit');
+                Route::put('/{achievement}', [RewardsController::class, 'achievementsUpdate'])->name('update');
+                Route::delete('/{achievement}', [RewardsController::class, 'achievementsDestroy'])->name('destroy');
+            });
+
+            // Voucher Collections Section
+            Route::prefix('voucher-collections')->name('voucher-collections.')->group(function () {
+                Route::get('/', [RewardsController::class, 'voucherCollectionsIndex'])->name('index');
+                Route::get('/create', [RewardsController::class, 'voucherCollectionsCreate'])->name('create');
+                Route::post('/', [RewardsController::class, 'voucherCollectionsStore'])->name('store');
+                Route::get('/{collection}/edit', [RewardsController::class, 'voucherCollectionsEdit'])->name('edit');
+                Route::put('/{collection}', [RewardsController::class, 'voucherCollectionsUpdate'])->name('update');
+                Route::delete('/{collection}', [RewardsController::class, 'voucherCollectionsDestroy'])->name('destroy');
+            });
+
+            // Bonus Challenges Section
+            Route::prefix('bonus-challenges')->name('bonus-challenges.')->group(function () {
+                Route::get('/', [RewardsController::class, 'bonusChallengesIndex'])->name('index');
+                Route::get('/create', [RewardsController::class, 'bonusChallengesCreate'])->name('create');
+                Route::post('/', [RewardsController::class, 'bonusChallengesStore'])->name('store');
+                Route::get('/{challenge}/edit', [RewardsController::class, 'bonusChallengesEdit'])->name('edit');
+                Route::put('/{challenge}', [RewardsController::class, 'bonusChallengesUpdate'])->name('update');
+                Route::delete('/{challenge}', [RewardsController::class, 'bonusChallengesDestroy'])->name('destroy');
+            });
+
+            // Special Events Section
+            Route::prefix('special-events')->name('special-events.')->group(function () {
+                Route::get('/', [RewardsController::class, 'specialEventsIndex'])->name('index');
+                Route::get('/create', [RewardsController::class, 'specialEventsCreate'])->name('create');
+                Route::post('/', [RewardsController::class, 'specialEventsStore'])->name('store');
+                Route::get('/{event}/edit', [RewardsController::class, 'specialEventsEdit'])->name('edit');
+                Route::put('/{event}', [RewardsController::class, 'specialEventsUpdate'])->name('update');
+                Route::delete('/{event}', [RewardsController::class, 'specialEventsDestroy'])->name('destroy');
+            });
+
+            // Loyalty Tiers Section
+            Route::prefix('loyalty-tiers')->name('loyalty-tiers.')->group(function () {
+                Route::get('/', [RewardsController::class, 'loyaltyTiersIndex'])->name('index');
+                Route::get('/create', [RewardsController::class, 'loyaltyTiersCreate'])->name('create');
+                Route::post('/', [RewardsController::class, 'loyaltyTiersStore'])->name('store');
+                Route::get('/{tier}/edit', [RewardsController::class, 'loyaltyTiersEdit'])->name('edit');
+                Route::put('/{tier}', [RewardsController::class, 'loyaltyTiersUpdate'])->name('update');
+                Route::delete('/{tier}', [RewardsController::class, 'loyaltyTiersDestroy'])->name('destroy');
+            });
+
+            // === OLD API ROUTES (for backward compatibility) ===
+            // Exchange Points (Rewards) Management
+            Route::post('store', [RewardsController::class, 'storeReward'])->name('store');
+            Route::put('{reward}', [RewardsController::class, 'updateReward'])->name('update');
+            Route::delete('{reward}', [RewardsController::class, 'destroyReward'])->name('destroy');
+            Route::patch('{reward}/toggle', [RewardsController::class, 'toggleReward'])->name('toggle');
+
+            // Achievements Management
+            Route::post('achievements', [RewardsController::class, 'storeAchievement'])->name('achievements.store');
+            Route::put('achievements/{achievement}', [RewardsController::class, 'updateAchievement'])->name('achievements.update');
+            Route::delete('achievements/{achievement}', [RewardsController::class, 'destroyAchievement'])->name('achievements.destroy');
+
+            // Bonus Point Challenges Management
+            Route::post('bonus-challenges', [RewardsController::class, 'storeBonusPointChallenge'])->name('bonus-challenges.store');
+            Route::put('bonus-challenges/{bonusPointChallenge}', [RewardsController::class, 'updateBonusPointChallenge'])->name('bonus-challenges.update');
+            Route::delete('bonus-challenges/{bonusPointChallenge}', [RewardsController::class, 'destroyBonusPointChallenge'])->name('bonus-challenges.destroy');
+
+            // Voucher Collections Management
+            Route::post('vouchers', [RewardsController::class, 'storeVoucherCollection'])->name('vouchers.store');
+            Route::put('vouchers/{voucherCollection}', [RewardsController::class, 'updateVoucherCollection'])->name('vouchers.update');
+            Route::delete('vouchers/{voucherCollection}', [RewardsController::class, 'destroyVoucherCollection'])->name('vouchers.destroy');
+
+            // Check-in Settings
+            Route::get('checkin-settings', [RewardsController::class, 'checkinIndex'])->name('checkin.index');
+            Route::post('checkin-settings', [RewardsController::class, 'updateCheckinSettings'])->name('checkin.update');
+
+            // Redemptions Management
+            Route::get('redemptions', [RewardsController::class, 'redemptionsIndex'])->name('redemptions.index');
+            Route::post('redemptions/{redemption}/mark-redeemed', [RewardsController::class, 'markRedemptionAsRedeemed'])->name('redemptions.mark-redeemed');
+
+            // Members Management
+            Route::get('members', [RewardsController::class, 'membersIndex'])->name('members.index');
+
+            // Settings Management
+            Route::post('content', [RewardsController::class, 'updateRewardsContent'])->name('content.update');
+
+            // Voucher generation from templates (keeping this for backward compatibility)
+            Route::post('voucher-templates/{voucherTemplate}/generate', [RewardsController::class, 'generateVouchersFromTemplate'])->name('templates.generate');
+            Route::patch('special-events/{event}/toggle', [RewardsController::class, 'toggleSpecialEvent'])->name('events.toggle');
         });
-        Route::resource('rewards', RewardsController::class);
 
     }); // End of admin routes
 
@@ -329,6 +451,11 @@ Route::prefix('qr')->name('qr.')->group(function () {
     Route::prefix('order')->name('order.')->group(function () {
         Route::post('place', [QRMenuController::class, 'placeOrder'])->name('place');
     });
+    
+    // Payment Management
+    Route::get('payment', [QRPaymentController::class, 'showPayment'])->name('payment');
+    Route::post('payment/process', [QRPaymentController::class, 'processPayment'])->name('payment.process');
+    Route::get('payment/confirmation', [QRPaymentController::class, 'showConfirmation'])->name('payment.confirmation');
     
     // Service Requests
     Route::prefix('waiter')->name('waiter.')->group(function () {

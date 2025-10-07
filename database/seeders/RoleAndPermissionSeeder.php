@@ -22,147 +22,102 @@ class RoleAndPermissionSeeder extends Seeder
         $permissions = [
             // User Management
             'view-users',
-            'create-users', 
+            'create-users',
             'edit-users',
             'delete-users',
-            
+
             // Role Management
             'view-roles',
             'create-roles',
-            'edit-roles', 
+            'edit-roles',
             'delete-roles',
             'assign-roles',
-            
+
             // Permission Management
             'view-permissions',
             'create-permissions',
             'edit-permissions',
             'delete-permissions',
             'assign-permissions',
-            
-            // Dashboard & Reports
+
+            // Dashboard
             'view-dashboard',
-            'view-reports',
-            'manage-settings',
-            
-            // Project specific permissions
-            'manage-projects',
-            'view-projects',
-            'create-projects',
-            'edit-projects',
-            'delete-projects',
 
             // Tables
-            'view-tables', 
-            'create-tables', 
-            'edit-tables', 
+            'view-tables',
+            'create-tables',
+            'edit-tables',
             'delete-tables',
 
             // Table Reservations
-            'view-table-reservations', 
-            'create-table-reservations', 
-            'edit-table-reservations', 
-            'delete-table-reservations', 
-            'update-reservation-status',
+            'view-table-reservations',
+            'create-table-reservations',
+            'edit-table-reservations',
+            'delete-table-reservations',
 
             // Table Layout Config
-            'view-table-layouts', 
-            'create-table-layouts', 
-            'edit-table-layouts', 
-            'delete-table-layouts',
-            'toggle-table-layouts', 
-            'duplicate-table-layouts', 
-            'view-table-layout-stats',
+            'view-table-layout-config',
+            'create-table-layout-config',
+            'edit-table-layout-config',
+            'delete-table-layout-config',
 
             // Menu Items
-            'view-menu-items', 
-            'create-menu-items', 
-            'edit-menu-items', 
+            'view-menu-items',
+            'create-menu-items',
+            'edit-menu-items',
             'delete-menu-items',
-            'toggle-menu-items', 
-            'feature-menu-items', 
-            'rate-menu-items',
 
             // Orders
-            'view-orders', 
-            'create-orders', 
-            'edit-orders', 
+            'view-orders',
+            'create-orders',
+            'edit-orders',
             'delete-orders',
-            'update-order-status', 
-            'update-payment-status', 
-            'cancel-orders', 
-            'duplicate-orders',
 
             // Quick Reorders
-            'view-quick-reorders', 
-            'create-quick-reorders', 
-            'edit-quick-reorders', 
+            'view-quick-reorders',
+            'create-quick-reorders',
+            'edit-quick-reorders',
             'delete-quick-reorders',
-            'convert-quick-reorder', 
-            'duplicate-quick-reorder', 
-            'update-reorder-frequency', 
-            'bulk-delete-quick-reorder',
 
-            // Order Items
-            'view-order-items', 
-            'create-order-items', 
-            'edit-order-items', 
-            'delete-order-items',
-            'update-order-item-status', 
-            'bulk-update-order-item-status', 
-            'calculate-order-total',
-
-            // Order ETAs
-            'view-order-etas', 
-            'create-order-etas', 
-            'edit-order-etas', 
-            'delete-order-etas',
-            'update-order-eta', 
-            'mark-order-eta-completed', 
-            'notify-order-eta-customer', 
-            'view-delayed-orders',
-
-            // Order Tracking
-            'view-order-trackings', 
-            'create-order-trackings', 
-            'edit-order-trackings', 
-            'delete-order-trackings',
-            'update-order-tracking-status', 
-            'view-order-history', 
-            'view-active-orders', 
-            'view-performance-stats',
 
             // Sale Analytics
-            'view-sale-analytics', 
-            'generate-sale-analytics', 
-            'view-customer-analytics', 
-            'view-trends',
+            'view-sale-analytics',
+            'create-sale-analytics',
+            'edit-sale-analytics',
+            'delete-sale-analytics',
 
-            // Table Sessions
-            'view-table-sessions', 
-            'create-table-sessions', 
-            'edit-table-sessions', 
-            'delete-table-sessions',
-            'complete-table-sessions', 
-            'extend-table-sessions', 
-            'regenerate-qr-table-session', 
-            'expire-old-sessions',
+            // Table QR Codes
+            'view-table-qrcodes',
+            'create-table-qrcodes',
+            'edit-table-qrcodes',
+            'delete-table-qrcodes',
 
             // Menu Customizations
-            'menu-customizations.view', 
-            'menu-customizations.create', 
-            'menu-customizations.update', 
-            'menu-customizations.delete',
-            'menu-customizations.export', 
-            'menu-customizations.statistics', 
-            'menu-customizations.bulk-delete', 
-            'menu-customizations.by-order-item',
+            'view-menu-customizations',
+            'create-menu-customizations',
+            'edit-menu-customizations',
+            'delete-menu-customizations',
 
-            // Push Notifications
-            'view-notifications', 
-            'create-notifications', 
-            'send-notifications', 
-            'delete-notifications',
+
+            // Categories (missing - added based on CategoryController routes)
+            'view-categories',
+            'create-categories',
+            'edit-categories',
+            'delete-categories',
+
+            // Rewards (missing - added based on RewardsController routes)
+            'view-rewards',
+            'create-rewards',
+            'edit-rewards',
+            'delete-rewards',
+
+            // User menu permission (missing - used in web.php middleware)
+            'user.menu',
+
+            // Profile management (missing - used for profile routes)
+            'view-profile',
+            'edit-profile',
+            'delete-profile',
         ];
 
         foreach ($permissions as $permission) {
@@ -185,11 +140,25 @@ class RoleAndPermissionSeeder extends Seeder
             'edit-users',
             'view-roles',
             'view-dashboard',
-            'view-reports',
-            'manage-projects',
-            'view-projects',
-            'create-projects',
-            'edit-projects'
+            'view-tables',
+            'create-tables',
+            'edit-tables',
+            'view-table-reservations',
+            'create-table-reservations',
+            'edit-table-reservations',
+            'view-categories',
+            'create-categories',
+            'edit-categories',
+            'view-menu-items',
+            'create-menu-items',
+            'edit-menu-items',
+            'view-orders',
+            'create-orders',
+            'edit-orders',
+            'view-sale-analytics',
+            'view-rewards',
+            'create-rewards',
+            'edit-rewards'
         ]);
 
         // Customer gets ordering permissions
@@ -197,15 +166,15 @@ class RoleAndPermissionSeeder extends Seeder
             'view-menu-items',
             'create-orders',
             'view-orders',
-            'view-table-sessions',
             'create-table-reservations',
             'view-table-reservations'
         ]);
 
         // User gets basic permissions
         $userRole->syncPermissions([
-            'view-dashboard',
-            'view-projects'
+            'user.menu',
+            'view-profile',
+            'edit-profile'
         ]);
 
         $adminEmail = env('DEFAULT_ADMIN_EMAIL', 'admin@example.com');
@@ -220,7 +189,7 @@ class RoleAndPermissionSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
-        
+
         if (!$adminUser->hasRole('admin')) {
             $adminUser->assignRole('admin');
         }

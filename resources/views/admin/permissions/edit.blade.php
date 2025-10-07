@@ -1,87 +1,189 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Edit Permission: ') . $permission->name }}
-            </h2>
-            <a href="{{ route('admin.permissions.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                Back to Permissions
-            </a>
+@extends('layouts.admin')
+
+@section('title', 'Edit Permission')
+@section('page-title', 'Edit Permission')
+
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/admin/role_permission.css') }}">
+@endsection
+
+@section('content')
+<div class="admin-section">
+    <div class="section-header">
+        <h2 class="section-title">Edit Permission</h2>
+        <a href="{{ route('admin.permissions.index') }}" class="btn-cancel">
+            <i class="fas fa-arrow-left"></i> Back to Permissions
+        </a>
+    </div>
+
+    <form method="POST" action="{{ route('admin.permissions.update', $permission->id) }}" class="permission-form">
+        @csrf
+        @method('PUT')
+
+        <!-- Basic Permission Information -->
+        <div class="form-section">
+            <h3 class="section-subtitle">Permission Information</h3>
+            
+            <div class="form-group">
+                <label for="name" class="form-label">Permission Name <span class="required">*</span></label>
+                <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    class="form-control {{ $errors->get('name') ? 'is-invalid' : '' }}"
+                    value="{{ old('name', $permission->name) }}"
+                    placeholder="Enter permission name (e.g., view-users, create-posts)"
+                    required>
+                @if($errors->get('name'))
+                    <div class="form-error">{{ implode(', ', $errors->get('name')) }}</div>
+                @endif
+                <div class="form-hint">Permission name should be lowercase with hyphens (e.g., view-users, edit-posts, delete-comments)</div>
+            </div>
         </div>
-    </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <form action="{{ route('admin.permissions.update', $permission) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-                        
-                        <div class="mb-6">
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                                Permission Name <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" 
-                                   id="name" 
-                                   name="name" 
-                                   value="{{ old('name', $permission->name) }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('name') border-red-500 @enderror"
-                                   required>
-                            @error('name')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
-                        </div>
+        <!-- Current Permission Info -->
+        <div class="form-section">
+            <h3 class="section-subtitle">Current Permission Details</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Permission ID:</span>
+                    <span class="info-value">#{{ $permission->id }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Guard Name:</span>
+                    <span class="info-value">{{ $permission->guard_name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Created:</span>
+                    <span class="info-value">{{ $permission->created_at->format('M d, Y h:i A') }}</span>
+                </div>
+                @if($permission->updated_at != $permission->created_at)
+                <div class="info-item">
+                    <span class="info-label">Last Updated:</span>
+                    <span class="info-value">{{ $permission->updated_at->format('M d, Y h:i A') }}</span>
+                </div>
+                @endif
+            </div>
+        </div>
 
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Current Assignments
-                            </label>
-                            <div class="bg-gray-50 p-4 rounded-md">
-                                @if($permission->roles->count() > 0)
-                                    <p class="text-sm text-gray-700 mb-2"><strong>Assigned to roles:</strong></p>
-                                    <div class="flex flex-wrap gap-2">
-                                        @foreach($permission->roles as $role)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                {{ $role->name }}
-                                            </span>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <p class="text-sm text-gray-500">Not assigned to any roles</p>
-                                @endif
-                            </div>
-                        </div>
+        <!-- Assigned Roles Information -->
+        @if($permission->roles->count() > 0)
+        <div class="form-section">
+            <h3 class="section-subtitle">Currently Assigned to Roles</h3>
+            <div class="assigned-roles">
+                @foreach($permission->roles as $role)
+                    <span class="assigned-role-badge">{{ ucfirst($role->name) }}</span>
+                @endforeach
+            </div>
+            <div class="form-hint">This permission is currently assigned to {{ $permission->roles->count() }} role(s)</div>
+        </div>
+        @endif
 
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-6">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <h3 class="text-sm font-medium text-yellow-800">Warning</h3>
-                                    <div class="mt-2 text-sm text-yellow-700">
-                                        <p>Changing the permission name will affect all users and roles that have this permission. Please make sure you understand the implications.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-end space-x-4">
-                            <a href="{{ route('admin.permissions.index') }}" 
-                               class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                Cancel
-                            </a>
-                            <button type="submit" 
-                                    class="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                Update Permission
-                            </button>
-                        </div>
-                    </form>
+        <!-- Warning for Core Permissions -->
+        @if(in_array($permission->name, ['view-users', 'create-users', 'edit-users', 'delete-users', 'view-roles', 'create-roles', 'edit-roles', 'delete-roles']))
+        <div class="form-section">
+            <div class="warning-panel">
+                <div class="warning-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="warning-content">
+                    <h4 class="warning-title">Core System Permission</h4>
+                    <p class="warning-text">This is a core system permission. Changing its name may affect system functionality. Please proceed with caution.</p>
                 </div>
             </div>
         </div>
-    </div>
-</x-app-layout>
+        @endif
+
+        <!-- Important Notes -->
+        <div class="form-section">
+            <div class="info-panel">
+                <div class="info-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="info-content">
+                    <h4 class="info-title">Important Notes</h4>
+                    <ul class="info-list">
+                        <li>Permission names must be unique across the entire system</li>
+                        <li>Changing the permission name will affect all roles and users that have this permission</li>
+                        <li>Use descriptive, lowercase names with hyphens (kebab-case)</li>
+                        <li>Changes will be cached and may take a moment to take effect</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn-save">
+                <i class="fas fa-save"></i> Update Permission
+            </button>
+            <a href="{{ route('admin.permissions.index') }}" class="btn-cancel">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-format permission name input
+    const nameInput = document.getElementById('name');
+    if (nameInput) {
+        nameInput.addEventListener('input', function(e) {
+            // Convert to lowercase and replace spaces with hyphens
+            e.target.value = e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        });
+    }
+
+    // Handle form submission loading state
+    const permissionForm = document.querySelector('.permission-form');
+    if (permissionForm) {
+        permissionForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('.btn-save');
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating Permission...';
+            submitBtn.disabled = true;
+        });
+    }
+
+    // Show success/error messages
+        @if(session('success'))
+        showNotification('{{ session('
+            success ') }}', 'success');
+        @endif
+
+        @if(session('error'))
+        showNotification('{{ session('
+            error ') }}', 'error');
+        @endif
+});
+
+// Notification function
+function showNotification(message, type) {
+    // Create a simple notification
+    const notification = document.createElement('div');
+    notification.className = 'notification ' + type;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 9999;
+        ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+</script>
+@endsection

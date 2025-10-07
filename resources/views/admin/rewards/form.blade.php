@@ -24,14 +24,14 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label for="title">Reward Title *</label>
-                <input type="text" 
-                       id="title" 
-                       name="title" 
-                       value="{{ old('title', $reward->title ?? '') }}" 
+                <label for="name">Reward Name *</label>
+                <input type="text"
+                       id="name"
+                       name="name"
+                       value="{{ old('name', $reward->name ?? '') }}"
                        required
-                       class="@error('title') error @enderror">
-                @error('title')
+                       class="@error('name') error @enderror">
+                @error('name')
                     <span class="error-message">{{ $message }}</span>
                 @enderror
             </div>

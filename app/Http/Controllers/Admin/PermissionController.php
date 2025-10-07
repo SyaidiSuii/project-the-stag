@@ -16,7 +16,6 @@ class PermissionController extends Controller
         $this->middleware('permission:create-permissions', ['only' => ['create', 'store']]);
         $this->middleware('permission:edit-permissions', ['only' => ['edit', 'update']]);
         $this->middleware('permission:delete-permissions', ['only' => ['destroy']]);
-        $this->middleware('permission:assign-permissions', ['only' => ['assignToRole', 'revokeFromRole']]);
     }
 
     /**
@@ -112,38 +111,6 @@ class PermissionController extends Controller
             ->with('success', 'Permission deleted successfully!');
     }
 
-    /**
-     * Show assign permission to roles form
-     */
-    public function assignForm(Permission $permission)
-    {
-        $roles = Role::all();
-        $assignedRoles = $permission->roles->pluck('id')->toArray();
-        
-        return view('admin.permissions.assign', compact('permission', 'roles', 'assignedRoles'));
-    }
-
-    /**
-     * Assign permission to roles
-     */
-    public function assignToRoles(Request $request, Permission $permission)
-    {
-        $request->validate([
-            'roles' => 'array',
-            'roles.*' => 'exists:roles,id'
-        ]);
-
-        // Sync roles with permission
-        if ($request->has('roles')) {
-            $roles = Role::whereIn('id', $request->roles)->get();
-            $permission->syncRoles($roles);
-        } else {
-            $permission->syncRoles([]);
-        }
-
-        return redirect()->route('admin.permissions.index')
-            ->with('success', 'Permission assigned to roles successfully!');
-    }
 
     /**
      * Get permissions for AJAX (for role management)

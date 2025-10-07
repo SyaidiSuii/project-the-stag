@@ -1,6 +1,6 @@
 // Add CSS animations
-    const style = document.createElement('style');
-    style.textContent = `
+    const accountStyle = document.createElement('style');
+    accountStyle.textContent = `
       .account-card {
         animation: fadeInCard 0.6s ease forwards;
       }
@@ -23,4 +23,4 @@
         to { opacity: 1; transform: scale(1); }
       }
     `;
-    document.head.appendChild(style);
+    document.head.appendChild(accountStyle);

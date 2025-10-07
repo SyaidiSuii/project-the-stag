@@ -43,4 +43,9 @@ class CustomerProfile extends Model
     {
         return $this->hasMany(CustomerReward::class);
     }
+
+    public function loyaltyTier()
+    {
+        return $this->belongsTo(LoyaltyTier::class);
+    }
 }

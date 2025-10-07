@@ -9,8 +9,16 @@
 @section('content')
 <div class="main-content">
     <!-- Header Section -->
-    <div class="header-section">
+    <div class="header-section" style="display: flex; justify-content: space-between; align-items: center;">
       <h1 class="category-title">My Account</h1>
+      @if(!$isGuest && (auth()->user()->hasRole('admin') || auth()->user()->hasRole('manager')))
+        <a href="{{ route('admin.dashboard') }}" class="btn btn-primary" style="margin-left: auto;">
+          <i class="fas fa-shield-alt"></i> Admin Panel
+        </a>
+      @endif
+    </div>
+
+    <div style="margin-top: 1rem;">
       @if(session('success'))
         <div style="background: #10b981; color: white; padding: 12px; border-radius: 8px; margin: 10px 0; text-align: center;">
           {{ session('success') }}
@@ -321,38 +329,44 @@ function hideDeleteModal() {
 }
 
 // Close modal when clicking outside
-document.getElementById('deleteModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        hideDeleteModal();
-    }
-});
+const deleteModal = document.getElementById('deleteModal');
+if (deleteModal) {
+    deleteModal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideDeleteModal();
+        }
+    });
+}
 
 // Form validation for delete confirmation
-document.getElementById('deleteAccountForm').addEventListener('submit', function(e) {
-    const confirmInput = document.getElementById('confirm_delete').value;
-    const passwordInput = document.getElementById('delete_password').value;
-    
-    if (confirmInput !== 'DELETE') {
-        e.preventDefault();
-        alert('Please type "DELETE" in capital letters to confirm account deletion.');
-        return false;
-    }
-    
-    if (!passwordInput) {
-        e.preventDefault();
-        alert('Please enter your password to confirm account deletion.');
-        return false;
-    }
-    
-    if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
-        e.preventDefault();
-        return false;
-    }
-    
-    // Show loading state
-    const submitBtn = document.getElementById('confirmDeleteBtn');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting Account...';
-});
+const deleteAccountForm = document.getElementById('deleteAccountForm');
+if (deleteAccountForm) {
+    deleteAccountForm.addEventListener('submit', function(e) {
+        const confirmInput = document.getElementById('confirm_delete').value;
+        const passwordInput = document.getElementById('delete_password').value;
+
+        if (confirmInput !== 'DELETE') {
+            e.preventDefault();
+            alert('Please type "DELETE" in capital letters to confirm account deletion.');
+            return false;
+        }
+
+        if (!passwordInput) {
+            e.preventDefault();
+            alert('Please enter your password to confirm account deletion.');
+            return false;
+        }
+
+        if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
+            e.preventDefault();
+            return false;
+        }
+
+        // Show loading state
+        const submitBtn = document.getElementById('confirmDeleteBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting Account...';
+    });
+}
 </script>
 @endsection

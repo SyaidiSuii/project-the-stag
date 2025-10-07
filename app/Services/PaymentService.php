@@ -247,11 +247,11 @@ class PaymentService
                 'description' => "Payment for The Stag Restaurant - Order #{$order->confirmation_code}",
                 'amount' => $paymentData['amount'],
                 'reference_no' => $transactionId,
-                'return_url' => route('payment.return', ['payment' => $payment->id]),
+                'return_url' => $paymentData['return_url'] ?? route('payment.return', ['payment' => $payment->id]),
                 'callback_url' => route('payment.callback'),
                 'customer_name' => $paymentData['customer_name'] ?? ($order->user->name ?? 'Guest'),
-                'customer_email' => $paymentData['customer_email'] ?? ($order->user->email ?? ''),
-                'customer_phone' => $paymentData['customer_phone'] ?? ($order->user->phone_number ?? ''),
+                'customer_email' => $paymentData['customer_email'] ?: ($order->user->email ?? 'qr-order@thestag.com'),
+                'customer_phone' => $paymentData['customer_phone'] ?: ($order->user->phone_number ?? '60123456789'),
             ];
 
             // Create bill at Toyyibpay

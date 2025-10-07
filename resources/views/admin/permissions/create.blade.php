@@ -1,78 +1,182 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Create New Permission') }}
-            </h2>
-            <a href="{{ route('admin.permissions.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                Back to Permissions
-            </a>
+@extends('layouts.admin')
+
+@section('title', 'Create New Permission')
+@section('page-title', 'Create New Permission')
+
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/admin/role_permission.css') }}">
+@endsection
+
+@section('content')
+<div class="admin-section">
+    <div class="section-header">
+        <h2 class="section-title">Create New Permission</h2>
+        <a href="{{ route('admin.permissions.index') }}" class="btn-cancel">
+            <i class="fas fa-arrow-left"></i> Back to Permissions
+        </a>
+    </div>
+
+    <form method="POST" action="{{ route('admin.permissions.store') }}" class="permission-form">
+        @csrf
+
+        <!-- Basic Permission Information -->
+        <div class="form-section">
+            <h3 class="section-subtitle">Basic Permission Information</h3>
+            
+            <div class="form-group">
+                <label for="name" class="form-label">Permission Name <span class="required">*</span></label>
+                <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    class="form-control {{ $errors->get('name') ? 'is-invalid' : '' }}"
+                    value="{{ old('name') }}"
+                    placeholder="Enter permission name (e.g., view-users, create-posts)"
+                    required>
+                @if($errors->get('name'))
+                    <div class="form-error">{{ implode(', ', $errors->get('name')) }}</div>
+                @endif
+                <div class="form-hint">Permission name should be lowercase with hyphens (e.g., view-users, edit-posts, delete-comments)</div>
+            </div>
+
+            <div class="form-group">
+                <label for="description" class="form-label">Description</label>
+                <textarea 
+                    id="description" 
+                    name="description" 
+                    class="form-control {{ $errors->get('description') ? 'is-invalid' : '' }}"
+                    rows="3"
+                    placeholder="Describe what this permission allows (optional)">{{ old('description') }}</textarea>
+                @if($errors->get('description'))
+                    <div class="form-error">{{ implode(', ', $errors->get('description')) }}</div>
+                @endif
+                <div class="form-hint">Optional description to explain what this permission grants access to</div>
+            </div>
         </div>
-    </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <form action="{{ route('admin.permissions.store') }}" method="POST">
-                        @csrf
-                        
-                        <div class="mb-6">
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                                Permission Name <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" 
-                                   id="name" 
-                                   name="name" 
-                                   value="{{ old('name') }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('name') border-red-500 @enderror"
-                                   placeholder="e.g., manage-products, view-reports"
-                                   required>
-                            @error('name')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
-                            <p class="mt-1 text-sm text-gray-500">
-                                Use lowercase letters, numbers, and hyphens only. Format: action-resource (e.g., view-users, create-posts)
-                            </p>
-                        </div>
-
-                        <div class="mb-6">
-                            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-                                Description (Optional)
-                            </label>
-                            <textarea id="description" 
-                                      name="description" 
-                                      rows="3"
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('description') border-red-500 @enderror"
-                                      placeholder="Brief description of what this permission allows">{{ old('description') }}</textarea>
-                            @error('description')
-                                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
-                            <h4 class="text-sm font-medium text-blue-800 mb-2">Permission Naming Guidelines:</h4>
-                            <ul class="text-sm text-blue-700 space-y-1">
-                                <li>• Use format: <strong>action-resource</strong></li>
-                                <li>• Common actions: view, create, edit, delete, manage</li>
-                                <li>• Examples: view-users, create-posts, manage-settings</li>
-                                <li>• Use lowercase letters and hyphens only</li>
-                            </ul>
-                        </div>
-
-                        <div class="flex items-center justify-end space-x-4">
-                            <a href="{{ route('admin.permissions.index') }}" 
-                               class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                Cancel
-                            </a>
-                            <button type="submit" 
-                                    class="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                Create Permission
-                            </button>
-                        </div>
-                    </form>
+        <!-- Permission Examples -->
+        <div class="form-section">
+            <h3 class="section-subtitle">Common Permission Examples</h3>
+            <div class="examples-grid">
+                <div class="example-category">
+                    <h4 class="example-title">User Management</h4>
+                    <ul class="example-list">
+                        <li><code>view-users</code> - View user listings</li>
+                        <li><code>create-users</code> - Create new users</li>
+                        <li><code>edit-users</code> - Edit user information</li>
+                        <li><code>delete-users</code> - Delete users</li>
+                    </ul>
+                </div>
+                <div class="example-category">
+                    <h4 class="example-title">Content Management</h4>
+                    <ul class="example-list">
+                        <li><code>view-posts</code> - View all posts</li>
+                        <li><code>create-posts</code> - Create new posts</li>
+                        <li><code>edit-posts</code> - Edit existing posts</li>
+                        <li><code>publish-posts</code> - Publish/unpublish posts</li>
+                    </ul>
+                </div>
+                <div class="example-category">
+                    <h4 class="example-title">System Administration</h4>
+                    <ul class="example-list">
+                        <li><code>view-settings</code> - View system settings</li>
+                        <li><code>edit-settings</code> - Modify system settings</li>
+                        <li><code>view-logs</code> - Access system logs</li>
+                        <li><code>manage-backups</code> - Handle system backups</li>
+                    </ul>
                 </div>
             </div>
         </div>
-    </div>
-</x-app-layout>
+
+        <!-- Important Notes -->
+        <div class="form-section">
+            <div class="info-panel">
+                <div class="info-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="info-content">
+                    <h4 class="info-title">Important Notes</h4>
+                    <ul class="info-list">
+                        <li>Permission names must be unique across the entire system</li>
+                        <li>Use descriptive, lowercase names with hyphens (kebab-case)</li>
+                        <li>Follow a consistent naming pattern: action-resource (e.g., view-users)</li>
+                        <li>Once created, permissions can be assigned to roles and then to users</li>
+                        <li>Consider the security implications of each permission carefully</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn-save">
+                <i class="fas fa-save"></i> Create Permission
+            </button>
+            <a href="{{ route('admin.permissions.index') }}" class="btn-cancel">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-format permission name input
+    const nameInput = document.getElementById('name');
+    if (nameInput) {
+        nameInput.addEventListener('input', function(e) {
+            // Convert to lowercase and replace spaces with hyphens
+            e.target.value = e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        });
+    }
+
+    // Handle form submission loading state
+    const permissionForm = document.querySelector('.permission-form');
+    if (permissionForm) {
+        permissionForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('.btn-save');
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Permission...';
+            submitBtn.disabled = true;
+        });
+    }
+
+    // Show success/error messages
+    @if(session('success'))
+        showNotification('{{ session('success') }}', 'success');
+    @endif
+    
+    @if(session('error'))
+        showNotification('{{ session('error') }}', 'error');
+    @endif
+});
+
+// Notification function
+function showNotification(message, type) {
+    // Create a simple notification
+    const notification = document.createElement('div');
+    notification.className = 'notification ' + type;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 9999;
+        ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+</script>
+@endsection

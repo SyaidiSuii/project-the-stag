@@ -47,15 +47,77 @@
                     required>
                     <option value="">Select Category</option>
                     @foreach($categories as $category)
+                        @php
+                            // Determine icon for main category
+                            $mainIcon = '🍽️'; // Default food icon
+                            $lowerMainName = strtolower($category->name);
+                            
+                            // Drink keywords for main categories
+                            if (str_contains($lowerMainName, 'drink') || 
+                                str_contains($lowerMainName, 'beverage') || 
+                                str_contains($lowerMainName, 'juice') || 
+                                str_contains($lowerMainName, 'coffee') || 
+                                str_contains($lowerMainName, 'tea') || 
+                                str_contains($lowerMainName, 'soda') || 
+                                str_contains($lowerMainName, 'water') || 
+                                str_contains($lowerMainName, 'cocktail') || 
+                                str_contains($lowerMainName, 'beer') || 
+                                str_contains($lowerMainName, 'wine') || 
+                                str_contains($lowerMainName, 'alcohol') ||
+                                str_contains($lowerMainName, 'minuman')) {
+                                $mainIcon = '🍹';
+                            }
+                            elseif (str_contains($lowerMainName, 'smoothie') || 
+                                   str_contains($lowerMainName, 'shake') || 
+                                   str_contains($lowerMainName, 'milkshake')) {
+                                $mainIcon = '🥤';
+                            }
+                            elseif (str_contains($lowerMainName, 'hot') && 
+                                   (str_contains($lowerMainName, 'drink') || str_contains($lowerMainName, 'tea') || str_contains($lowerMainName, 'coffee'))) {
+                                $mainIcon = '☕';
+                            }
+                        @endphp
                         <option value="{{ $category->id }}" 
                                 {{ old('category_id', $selectedCategoryId) == $category->id ? 'selected' : '' }}>
-                            {{ $category->name }}
+                            {{ $mainIcon }} {{ $category->name }}
                         </option>
                         @if($category->subCategories->count() > 0)
                             @foreach($category->subCategories as $subCategory)
+                                @php
+                                    // Determine icon based on category name
+                                    $icon = '🍽️'; // Default food icon
+                                    $lowerName = strtolower($subCategory->name);
+                                    
+                                    // Drink keywords
+                                    if (str_contains($lowerName, 'drink') || 
+                                        str_contains($lowerName, 'beverage') || 
+                                        str_contains($lowerName, 'juice') || 
+                                        str_contains($lowerName, 'coffee') || 
+                                        str_contains($lowerName, 'tea') || 
+                                        str_contains($lowerName, 'soda') || 
+                                        str_contains($lowerName, 'water') || 
+                                        str_contains($lowerName, 'cocktail') || 
+                                        str_contains($lowerName, 'beer') || 
+                                        str_contains($lowerName, 'wine') || 
+                                        str_contains($lowerName, 'alcohol') ||
+                                        str_contains($lowerName, 'minuman')) {
+                                        $icon = '🍹';
+                                    }
+                                    // Specific drink types
+                                    elseif (str_contains($lowerName, 'smoothie') || 
+                                           str_contains($lowerName, 'shake') || 
+                                           str_contains($lowerName, 'milkshake')) {
+                                        $icon = '🥤';
+                                    }
+                                    // Hot drinks
+                                    elseif (str_contains($lowerName, 'hot') && 
+                                           (str_contains($lowerName, 'drink') || str_contains($lowerName, 'tea') || str_contains($lowerName, 'coffee'))) {
+                                        $icon = '☕';
+                                    }
+                                @endphp
                                 <option value="{{ $subCategory->id }}" 
                                         {{ old('category_id', $selectedCategoryId) == $subCategory->id ? 'selected' : '' }}>
-                                    &nbsp;&nbsp;&nbsp;└─ {{ $subCategory->name }}
+                                    &nbsp;&nbsp;&nbsp;{{ $icon }} {{ $subCategory->name }}
                                 </option>
                             @endforeach
                         @endif

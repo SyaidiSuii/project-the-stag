@@ -24,6 +24,6 @@ class VoucherTemplate extends Model
 
     public function rewards()
     {
-        return $this->hasMany(Reward::class);
+        return $this->hasMany(Reward::class, 'voucher_template_id');
     }
 }

@@ -1,33 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin Dashboard - The Stag')</title>
     @stack('head')
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/layout.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/layout.css') }}?v={{ time() }}">
     @yield('styles')
 </head>
+
 <body>
-    <!-- Sidebar -->
+    <!-- Updated Sidebar Section -->
     <div class="admin-sidebar" id="adminSidebar">
         <div class="admin-logo">
             <div class="admin-logo-icon">🦌</div>
             <div class="admin-logo-text">The Stag</div>
         </div>
         <nav class="admin-nav">
-            <a href="{{ route('admin.dashboard') }}" 
+            <a href="{{ route('admin.dashboard') }}"
                 class="admin-nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <div class="admin-nav-icon"><i class="fas fa-chart-line"></i></div>
                 <div class="admin-nav-text">Dashboard</div>
             </a>
-            <a href="#" class="admin-nav-item">
-                <div class="admin-nav-icon"><i class="fas fa-bell"></i></div>
-                <div class="admin-nav-text">Notifications</div>
-            </a>
-            <a href="{{ route('admin.user.index') }}" 
+            <a href="{{ route('admin.user.index') }}"
                 class="admin-nav-item {{ request()->routeIs('admin.user.*') ? 'active' : '' }}">
                 <div class="admin-nav-icon"><i class="fas fa-users"></i></div>
                 <div class="admin-nav-text">Users Management</div>
@@ -36,44 +34,133 @@
                 <div class="admin-nav-icon"><i class="fas fa-home"></i></div>
                 <div class="admin-nav-text">Menu Contect</div>
             </a>
-            <a href="{{ route('admin.menu-items.index') }}" 
-                class="admin-nav-item {{ request()->routeIs('admin.menu-items.*') ? 'active' : '' }}">
+            <!-- Menu Managements Menu -->
+            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.menu-items.*') || request()->routeIs('admin.categories.*') ? 'active' : '' }}" id="menuMenu">
                 <div class="admin-nav-icon"><i class="fas fa-utensils"></i></div>
                 <div class="admin-nav-text">Menu Management</div>
-            </a>
-            <a href="{{ route('admin.order.index') }}" 
-                class="admin-nav-item {{ request()->routeIs('admin.order.*') ? 'active' : '' }}">
+                <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="admin-nav-submenu" id="menuSubmenu">
+                <a href="{{ route('admin.menu-items.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.menu-items.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Menu Items</div>
+                </a>
+                <a href="{{ route('admin.categories.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Categories</div>
+                </a>
+            </div>
+            <!-- Order Managements Menu -->
+            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.order.*') || request()->routeIs('admin.menu-customizations.*') ? 'active' : '' }}" id="orderMenu">
                 <div class="admin-nav-icon"><i class="fas fa-shopping-bag"></i></div>
-                <div class="admin-nav-text">Order Management</div>
-            </a>
-            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.table-reservation.*') || request()->routeIs('admin.table.*') || request()->routeIs('admin.table-layout-config.*') || request()->routeIs('admin.table-qrcodes.*') ? 'active' : '' }}" id="tablesMenu">
+                <div class="admin-nav-text">Order Managements</div>
+                <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="admin-nav-submenu" id="orderSubmenu">
+                <a href="{{ route('admin.order.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.order.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">All Orders</div>
+                </a>
+                <a href="{{ route('admin.menu-customizations.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.menu-customizations.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Order Customizations</div>
+                </a>
+            </div>
+
+            <!-- Bookings Menu -->
+            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.table-reservation.*') || request()->routeIs('admin.table.*') || request()->routeIs('admin.table-layout-config.*') || request()->routeIs('admin.table-qrcodes.*') ? 'active' : '' }}" id="bookingsMenu">
                 <div class="admin-nav-icon"><i class="fas fa-calendar-alt"></i></div>
                 <div class="admin-nav-text">Bookings</div>
                 <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
             </div>
-            <div class="admin-nav-submenu" id="tablesSubmenu">
-                <a href="{{ route('admin.table-reservation.index') }}" 
+            <div class="admin-nav-submenu" id="bookingsSubmenu">
+                <a href="{{ route('admin.table-reservation.index') }}"
                     class="admin-nav-subitem {{ request()->routeIs('admin.table-reservation.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">All Bookings</div>
                 </a>
-                <a href="{{ route('admin.table-qrcodes.index') }}" 
+                <a href="{{ route('admin.table-qrcodes.index') }}"
                     class="admin-nav-subitem {{ request()->routeIs('admin.table-qrcodes.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">QR Codes Generate</div>
                 </a>
-                <a href="{{ route('admin.table.index') }}" 
+                <a href="{{ route('admin.table.index') }}"
                     class="admin-nav-subitem {{ request()->routeIs('admin.table.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">All Table</div>
                 </a>
-                <a href="{{ route('admin.table-layout-config.index') }}" 
+                <a href="{{ route('admin.table-layout-config.index') }}"
                     class="admin-nav-subitem {{ request()->routeIs('admin.table-layout-config.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">Table Layout</div>
                 </a>
             </div>
-            <a href="#" class="admin-nav-item">
+
+            <!-- Rewards Menu -->
+            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.rewards.*') ? 'active' : '' }}" id="rewardsMenu">
                 <div class="admin-nav-icon"><i class="fas fa-gift"></i></div>
                 <div class="admin-nav-text">Rewards</div>
-            </a>
-            <a href="#" class="admin-nav-item">
+                <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="admin-nav-submenu" id="rewardsSubmenu">
+                <a href="{{ route('admin.rewards.rewards.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.rewards.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Rewards</div>
+                </a>
+                <a href="{{ route('admin.rewards.voucher-templates.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.voucher-templates.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Voucher Templates</div>
+                </a>
+                <a href="{{ route('admin.rewards.checkin.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.checkin.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Check-in Settings</div>
+                </a>
+                <a href="{{ route('admin.rewards.special-events.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.special-events.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Special Events</div>
+                </a>
+                <a href="{{ route('admin.rewards.loyalty-tiers.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.loyalty-tiers.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Tiers & Levels</div>
+                </a>
+                <a href="{{ route('admin.rewards.redemptions.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.redemptions.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Redemptions</div>
+                </a>
+                <a href="{{ route('admin.rewards.members.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.members.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Members</div>
+                </a>
+                <a href="{{ route('admin.rewards.achievements.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.achievements.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Achievements</div>
+                </a>
+                <a href="{{ route('admin.rewards.voucher-collections.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.voucher-collections.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Voucher Collections</div>
+                </a>
+                <a href="{{ route('admin.rewards.bonus-challenges.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.bonus-challenges.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Bonus Challenges</div>
+                </a>
+            </div>
+
+            <!-- Role & Permission -->
+            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.roles.*') || request()->routeIs('admin.permissions.*') ? 'active' : '' }}" id="roleMenu">
+                <div class="admin-nav-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div class="admin-nav-text">Role & Permission</div>
+                <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="admin-nav-submenu" id="roleSubmenu">
+                <a href="{{ route('admin.permissions.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Permissions</div>
+                </a>
+                <a href="{{ route('admin.roles.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Roles</div>
+                </a>
+            </div>
+
+
+            <a href="{{ route('admin.settings.index') }}"
+                class="admin-nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                 <div class="admin-nav-icon"><i class="fas fa-cog"></i></div>
                 <div class="admin-nav-text">Settings</div>
             </a>
@@ -114,7 +201,8 @@
         @yield('content')
     </main>
 
-    <script src="{{ asset('js/admin/layout-admin.js') }}"></script>
+    <script src="{{ asset('js/admin/layout-admin.js') }}?v={{ time() }}"></script>
     @yield('scripts')
 </body>
+
 </html>

@@ -899,6 +899,7 @@
       min-height: 100vh;
       padding: 2rem;
       flex-direction: row;
+      margin-right: -450px; /* Offset the body padding-right */
     }
     
     .guest-content {
