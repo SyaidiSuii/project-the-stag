@@ -13,14 +13,12 @@ class UserPromotion extends Model
     protected $fillable = [
         'user_id',
         'promotion_id',
-        'order_id',
-        'used_at',
-        'discount_amount'
+        'status',
+        'used_at'
     ];
 
     protected $casts = [
-        'used_at' => 'datetime',
-        'discount_amount' => 'decimal:2'
+        'used_at' => 'datetime'
     ];
 
     public function user(): BelongsTo

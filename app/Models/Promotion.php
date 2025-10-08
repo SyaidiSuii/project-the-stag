@@ -12,26 +12,22 @@ class Promotion extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'title',
-        'description',
+        'name',
+        'promo_code',
         'discount_type',
         'discount_value',
-        'trigger_condition',
-        'menu_item_id',
-        'starts_at',
-        'ends_at',
-        'is_active',
-        'auto_generated',
-        'usage_count'
+        'minimum_order_value',
+        'start_date',
+        'end_date',
+        'is_active'
     ];
 
     protected $casts = [
         'discount_value' => 'decimal:2',
-        'starts_at' => 'datetime',
-        'ends_at' => 'datetime',
-        'is_active' => 'boolean',
-        'auto_generated' => 'boolean',
-        'usage_count' => 'integer'
+        'minimum_order_value' => 'decimal:2',
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'is_active' => 'boolean'
     ];
 
     public function menuItem(): BelongsTo

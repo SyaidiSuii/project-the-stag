@@ -16,6 +16,7 @@
         </a>
     </div>
 
+    @if($parentCategory)
     <div class="info-box" style="background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1rem; margin-bottom: 1.5rem; border-radius: 8px;">
         <p style="margin: 0; color: #1e40af;">
             <i class="fas fa-info-circle"></i>
@@ -23,13 +24,23 @@
             This category will be used to organize menu items within the {{ $type }} section.
         </p>
     </div>
+    @else
+    <div class="info-box" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; margin-bottom: 1.5rem; border-radius: 8px;">
+        <p style="margin: 0; color: #856404;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Warning:</strong> No parent category found for {{ $type }}. Please create a parent category first.
+        </p>
+    </div>
+    @endif
 
     <form method="post" action="{{ route('admin.categories.store') }}" class="category-form">
         @csrf
 
         <!-- Hidden fields for type and parent_id -->
         <input type="hidden" name="type" value="{{ $type }}">
+        @if($parentCategory)
         <input type="hidden" name="parent_id" value="{{ $parentCategory->id }}">
+        @endif
 
         <div class="form-row">
             <div class="form-group">

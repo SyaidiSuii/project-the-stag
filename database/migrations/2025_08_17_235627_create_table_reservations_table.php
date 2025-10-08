@@ -23,12 +23,12 @@ return new class extends Migration
                   ->constrained('tables')
                   ->nullOnDelete();
 
-            $table->date('reservation_date');
-            $table->time('reservation_time');
+            $table->date('booking_date');
+            $table->time('booking_time');
             $table->string('guest_name');
             $table->string('guest_email')->nullable();
             $table->string('guest_phone', 20);
-            $table->integer('number_of_guests');
+            $table->integer('party_size');
             $table->text('special_requests')->nullable();
 
             $table->enum('status', [
@@ -42,7 +42,6 @@ return new class extends Migration
             $table->text('notes')->nullable();
 
             $table->boolean('reminder_sent')->default(false);
-            $table->timestamp('auto_release_time')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

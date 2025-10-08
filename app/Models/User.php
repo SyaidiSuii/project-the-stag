@@ -116,19 +116,25 @@ class User extends Authenticatable implements MustVerifyEmail
       }
 
       // Voucher & Rewards Relationships
-      public function userVouchers()
+      public function customerVouchers()
       {
-          return $this->hasMany(UserVoucher::class);
+          return $this->hasManyThrough(CustomerVoucher::class, CustomerProfile::class);
       }
 
       public function availableVouchers()
       {
-          return $this->hasMany(UserVoucher::class)->available();
+          return $this->hasManyThrough(CustomerVoucher::class, CustomerProfile::class)
+                      ->where('status', 'active')
+                      ->where(function($query) {
+                          $query->whereNull('expiry_date')
+                                ->orWhere('expiry_date', '>=', now());
+                      });
       }
 
       public function usedVouchers()
       {
-          return $this->hasMany(UserVoucher::class)->used();
+          return $this->hasManyThrough(CustomerVoucher::class, CustomerProfile::class)
+                      ->where('status', 'redeemed');
       }
 
       public function userPromotions()
@@ -169,16 +175,18 @@ class User extends Authenticatable implements MustVerifyEmail
       }
 
       // Generate voucher dari template
-      public function generateVoucherFromTemplate(VoucherCollection $template)
+      public function generateVoucherFromTemplate(VoucherTemplate $template)
       {
-          return UserVoucher::create([
-              'user_id' => $this->id,
-              'voucher_collection_id' => $template->id,
-              'discount_type' => $template->voucher_type,
-              'discount_value' => $template->voucher_value,
-              'minimum_order' => $template->spending_requirement,
-              'expires_at' => $template->valid_until,
-              'status' => 'available'
+          // Ensure user has customer profile
+          if (!$this->customerProfile) {
+              throw new \Exception('User must have a customer profile to generate vouchers');
+          }
+
+          return CustomerVoucher::create([
+              'customer_profile_id' => $this->customerProfile->id,
+              'voucher_template_id' => $template->id,
+              'status' => 'active',
+              'expiry_date' => $template->expiry_days ? now()->addDays($template->expiry_days) : null
           ]);
       }
 }

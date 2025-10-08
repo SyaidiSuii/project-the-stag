@@ -44,6 +44,11 @@ class CustomerProfile extends Model
         return $this->hasMany(CustomerReward::class);
     }
 
+    public function customerVouchers()
+    {
+        return $this->hasMany(CustomerVoucher::class);
+    }
+
     public function loyaltyTier()
     {
         return $this->belongsTo(LoyaltyTier::class);

@@ -27,7 +27,7 @@ class TableReservation extends Model
         'seated_at',
         'completed_at',
         'notes',
-        'reminder_sent',
+        'reminder_sent'
     ];
 
     protected $casts = [
@@ -95,7 +95,7 @@ class TableReservation extends Model
                                 'reservation_id' => $reservation->id,
                                 'guest_name' => $reservation->guest_name,
                                 'guest_phone' => $reservation->guest_phone,
-                                'guest_count' => $reservation->number_of_guests,
+                                'guest_count' => $reservation->party_size,
                                 'notes' => 'Auto-created from reservation: ' . $reservation->confirmation_code,
                             ]);
                             

@@ -12,6 +12,7 @@ class VoucherCollection extends Model
 
     protected $fillable = [
         'name',
+        'description',
         'spending_requirement',
         'voucher_type',
         'voucher_value',

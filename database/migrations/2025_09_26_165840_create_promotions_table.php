@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('promo_code', 50)->unique()->nullable();
             $table->enum('discount_type', ['percentage', 'fixed']);
             $table->decimal('discount_value', 10, 2);
+            $table->decimal('minimum_order_value', 10, 2)->nullable();
             $table->date('start_date');
             $table->date('end_date');
             $table->boolean('is_active')->default(true);

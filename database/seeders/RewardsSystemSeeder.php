@@ -9,7 +9,7 @@ use App\Models\{
     VoucherTemplate,
     Reward,
     CustomerReward,
-    UserVoucher,
+    CustomerVoucher,
     LoyaltyTransaction,
     Promotion,
     UserPromotion,
@@ -197,28 +197,28 @@ class RewardsSystemSeeder extends Seeder
             'expiry_date' => Carbon::now()->addDays(21)
         ]);
 
-        // 6. Create User Vouchers (Issued to Customers)
-        UserVoucher::create([
-            'user_id' => $ali->id,
+        // 6. Create Customer Vouchers (Issued to Customers)
+        CustomerVoucher::create([
+            'customer_profile_id' => $ali->customerProfile->id,
             'voucher_template_id' => $tenPercentVoucher->id,
-            'voucher_code' => 'ABC123',
+            'voucher_code' => 'ALI001',
             'status' => 'active',
             'expiry_date' => Carbon::now()->addDays(30)
         ]);
 
-        UserVoucher::create([
-            'user_id' => $siti->id,
+        CustomerVoucher::create([
+            'customer_profile_id' => $siti->customerProfile->id,
             'voucher_template_id' => $freeDeliveryVoucher->id,
-            'voucher_code' => 'DEF456',
+            'voucher_code' => 'SITI002',
             'status' => 'redeemed',
             'expiry_date' => Carbon::now()->addDays(14),
             'redeemed_at' => Carbon::now()->subDays(2)
         ]);
 
-        UserVoucher::create([
-            'user_id' => $ahmad->id,
+        CustomerVoucher::create([
+            'customer_profile_id' => $ahmad->customerProfile->id,
             'voucher_template_id' => $rm20OffVoucher->id,
-            'voucher_code' => 'GHI789',
+            'voucher_code' => 'AHMAD003',
             'status' => 'active',
             'expiry_date' => Carbon::now()->addDays(21)
         ]);
@@ -267,7 +267,7 @@ class RewardsSystemSeeder extends Seeder
         // 8. Create Promotions
         $festivePromo = Promotion::create([
             'name' => 'Festive Sale',
-            'promo_code' => 'FESTIVE25',
+            'promo_code' => 'FESTIVE2025',
             'discount_type' => 'percentage',
             'discount_value' => 25.00,
             'minimum_order_value' => 80.00,
@@ -344,48 +344,66 @@ class RewardsSystemSeeder extends Seeder
         Achievement::create([
             'name' => 'First Order',
             'description' => 'Complete your first order',
-            'points_reward' => 50,
-            'is_active' => true
+            'target_type' => 'order_count',
+            'target_value' => 1,
+            'reward_points' => 50,
+            'status' => 'active'
         ]);
 
         Achievement::create([
             'name' => 'Regular Customer',
             'description' => 'Make 10 orders',
-            'points_reward' => 100,
-            'is_active' => true
+            'target_type' => 'order_count',
+            'target_value' => 10,
+            'reward_points' => 100,
+            'status' => 'active'
         ]);
 
         Achievement::create([
             'name' => 'Big Spender',
             'description' => 'Spend RM500 in total',
-            'points_reward' => 200,
-            'is_active' => true
+            'target_type' => 'total_spent',
+            'target_value' => 500,
+            'reward_points' => 200,
+            'status' => 'active'
         ]);
 
         // 13. Create Bonus Point Challenges
         BonusPointChallenge::create([
             'name' => 'Weekend Warrior',
             'description' => 'Order 3 times this weekend',
+            'condition' => 'weekend_orders_count >= 3',
             'bonus_points' => 150,
-            'is_active' => true
+            'status' => 'active'
         ]);
 
         BonusPointChallenge::create([
             'name' => 'Big Order Challenge',
             'description' => 'Place an order above RM200',
+            'condition' => 'order_total > 200',
             'bonus_points' => 100,
-            'is_active' => true
+            'status' => 'active'
         ]);
 
         // 14. Create Voucher Collections
         VoucherCollection::create([
             'name' => 'Summer Collection',
             'description' => 'Special summer vouchers for hot days',
+            'spending_requirement' => 100.00,
+            'voucher_type' => 'percentage',
+            'voucher_value' => 15.00,
+            'valid_until' => Carbon::now()->addMonths(3),
+            'status' => 'active'
         ]);
 
         VoucherCollection::create([
             'name' => 'Birthday Specials',
             'description' => 'Exclusive birthday month vouchers',
+            'spending_requirement' => 50.00,
+            'voucher_type' => 'fixed',
+            'voucher_value' => 20.00,
+            'valid_until' => Carbon::now()->addMonths(6),
+            'status' => 'active'
         ]);
 
         $this->command->info('✅ Rewards System seeded successfully with real data!');

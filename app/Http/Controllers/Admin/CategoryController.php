@@ -53,7 +53,7 @@ class CategoryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name',
+            'name' => 'required|string|max:255|unique:categories,name,NULL,id,deleted_at,NULL',
             'type' => 'required|in:food,drink,set-meal',
             'parent_id' => 'required|exists:categories,id',
             'sort_order' => 'nullable|integer|min:0'
@@ -109,7 +109,7 @@ class CategoryController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+            'name' => 'required|string|max:255|unique:categories,name,' . $category->id . ',id,deleted_at,NULL',
             'sort_order' => 'nullable|integer|min:0'
         ]);
 

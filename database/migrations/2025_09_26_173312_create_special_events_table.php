@@ -13,15 +13,14 @@ return new class extends Migration
     {
         Schema::create('special_events', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
-            $table->string('event_name');
-            $table->string('event_type', 50);
-            $table->date('event_date');
-            $table->time('event_time');
-            $table->integer('party_size');
-            $table->text('notes')->nullable();
-            $table->enum('status', ['pending', 'confirmed', 'cancelled'])->default('pending');
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->decimal('points_multiplier', 3, 2)->default(1.00);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
