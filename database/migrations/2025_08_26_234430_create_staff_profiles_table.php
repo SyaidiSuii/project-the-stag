@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('staff_profiles', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('roles_id')
-                  ->constrained('roles')
+            $table->foreignId('role_id')
+                  ->constrained(config('permission.table_names.roles'))
                   ->restrictOnDelete();
 
             $table->foreignId('user_id')

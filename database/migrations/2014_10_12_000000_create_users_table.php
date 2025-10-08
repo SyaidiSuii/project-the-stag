@@ -15,14 +15,22 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('username', 255)->unique()->nullable();
-            $table->string('email')->unique();
+            $table->string('email');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->date('dob')->nullable();
             $table->rememberToken();
             $table->string('phone_number', 20)->nullable();
             $table->boolean('is_active')->default(true);
+            $table->integer('points_balance')->default(0);
+            $table->boolean('is_super_admin')->default(false);
+            $table->date('last_checkin_date')->nullable();
+            $table->integer('checkin_streak')->default(0);
             $table->softDeletes();
             $table->timestamps();
+            
+            // Unique constraint for email with soft delete
+            $table->unique(['email', 'deleted_at']);
         });
     }
 

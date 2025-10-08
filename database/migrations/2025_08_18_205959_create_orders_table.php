@@ -14,12 +14,18 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')
+                ->nullable()
                 ->constrained('users')
                 ->onDelete('cascade');
 
             $table->foreignId('table_id')
                 ->nullable()
                 ->constrained('tables')
+                ->onDelete('set null');
+
+            $table->foreignId('table_qrcode_id')
+                ->nullable()
+                ->constrained('table_qrcodes')
                 ->onDelete('set null');
 
             $table->foreignId('reservation_id')
@@ -35,13 +41,17 @@ return new class extends Migration
             $table->string('table_number', 10)->nullable();
             $table->decimal('total_amount', 10, 2)->default(0.00);
             $table->enum('payment_status', ['unpaid', 'partial', 'paid', 'refunded'])->default('unpaid');
+            $table->enum('payment_method', ['online', 'counter'])->default('online');
             $table->json('special_instructions')->nullable();
 
             $table->timestamp('estimated_completion_time')->nullable();
             $table->timestamp('actual_completion_time')->nullable();
             $table->boolean('is_rush_order')->default(false);
 
-            $table->string('confirmation_code', 10)->unique()->nullable();
+            $table->string('confirmation_code', 20)->unique();
+            $table->string('guest_name')->nullable();
+            $table->string('guest_phone', 20)->nullable();
+            $table->string('session_token', 64)->nullable();
 
             $table->timestamps();
             $table->softDeletes();

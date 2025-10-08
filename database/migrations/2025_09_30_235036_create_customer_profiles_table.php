@@ -17,12 +17,14 @@ return new class extends Migration
             $table->foreignId('user_id')
                   ->constrained('users')
                   ->cascadeOnDelete();
-
+            
+            $table->string('name');
             $table->date('date_of_birth')->nullable();
             $table->text('address')->nullable();
             $table->integer('loyalty_points')->default(0);
+            $table->foreignId('loyalty_tier_id')->nullable()
+                  ->constrained('loyalty_tiers')->onDelete('set null');
             $table->string('photo')->nullable();
-            $table->string('phone_number', 20)->nullable();
             $table->enum('preferred_contact', ['email', 'sms', 'push'])->default('push');
             $table->json('dietary_preferences')->nullable();
             $table->timestamp('last_visit')->nullable();

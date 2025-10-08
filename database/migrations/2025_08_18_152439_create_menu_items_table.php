@@ -16,8 +16,10 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
-            $table->enum('category', ['western', 'local', 'drink', 'dessert', 'appetizer']);
-            $table->string('image_url')->nullable();
+            $table->boolean('is_available')->default(true);
+            $table->foreignId('category_id')->nullable()
+                  ->constrained('categories')->onDelete('set null');
+            $table->string('image')->nullable();
             $table->json('allergens')->nullable();
             $table->integer('preparation_time')->default(15);
             $table->boolean('availability')->default(true);

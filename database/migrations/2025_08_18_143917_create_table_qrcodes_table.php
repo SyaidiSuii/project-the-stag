@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('table_sessions', function (Blueprint $table) {
+        Schema::create('table_qrcodes', function (Blueprint $table) {
             $table->id();
             
             $table->foreignId('table_id')
@@ -25,6 +25,8 @@ return new class extends Migration
             
             $table->string('session_code', 50)->unique();
             $table->string('qr_code_url')->nullable();
+            $table->string('qr_code_png')->nullable();
+            $table->string('qr_code_svg')->nullable();
             $table->json('qr_code_data')->nullable();
             
             $table->string('guest_name')->nullable();
@@ -53,6 +55,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('table_sessions');
+        Schema::dropIfExists('table_qrcodes');
     }
 };

@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->decimal('minimum_spending', 10, 2);
+            $table->decimal('points_multiplier', 3, 2)->default(1.00);
+            $table->text('benefits')->nullable();
             $table->string('color')->nullable();
             $table->string('icon')->nullable();
             $table->integer('sort_order')->default(0);
