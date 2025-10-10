@@ -233,7 +233,7 @@
 
         
     <!-- Back to Top Button -->
-    <button class="to-top" id="toTop" aria-label="Back to top">↑</button>
+    <button class="to-top {{ Auth::check() ? '' : 'logged-out' }}" id="toTop" aria-label="Back to top">↑</button>
 @endsection
 
 @section('scripts')

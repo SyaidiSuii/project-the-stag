@@ -106,6 +106,7 @@
     </div>
 
     <!-- Orders Table -->
+    @if($orders->count() > 0)
     <div class="table-container">
         <table class="admin-table">
             <thead>
@@ -121,7 +122,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($orders as $order)
+                @foreach($orders as $order)
                 <tr>
                     <td>
                         <div class="order-info">
@@ -291,33 +292,32 @@
                         </div>
                     </td>
                 </tr>
-                @empty
-                <tr>
-                    <td colspan="8" class="empty-state">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-shopping-cart"></i>
-                        </div>
-                        <div class="empty-state-title">No orders found</div>
-                        <div class="empty-state-text">
-                            @if(request()->hasAny(['search', 'order_status', 'order_type', 'payment_status', 'date']))
-                                No orders match your current filters. Try adjusting your search criteria.
-                            @else
-                                No orders have been placed yet.
-                            @endif
-                        </div>
-                        @if(!request()->hasAny(['search', 'order_status', 'order_type', 'payment_status', 'date']))
-                            <div style="margin-top: 20px;">
-                                <a href="{{ route('admin.order.create') }}" class="admin-btn btn-primary">
-                                    <i class="fas fa-plus"></i> Create First Order
-                                </a>
-                            </div>
-                        @endif
-                    </td>
-                </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
     </div>
+    @else
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="empty-state-title">No orders found</div>
+            <div class="empty-state-text">
+                @if(request()->hasAny(['search', 'order_status', 'order_type', 'payment_status', 'date']))
+                    No orders match your current filters. Try adjusting your search criteria.
+                @else
+                    No orders have been placed yet.
+                @endif
+            </div>
+            @if(!request()->hasAny(['search', 'order_status', 'order_type', 'payment_status', 'date']))
+                <div style="margin-top: 20px;">
+                    <a href="{{ route('admin.order.create') }}" class="admin-btn btn-primary">
+                        <i class="fas fa-plus"></i> Create First Order
+                    </a>
+                </div>
+            @endif
+        </div>
+    @endif
 
     <!-- Pagination -->
     @if($orders->hasPages())

@@ -290,7 +290,7 @@
     /* ===== MODERN FLOATING ACTION BUTTON (FAB) CART ===== */
     .cart-fab {
       position: fixed;
-      bottom: 30px;
+      bottom: 110px;
       right: 30px;
       width: 70px;
       height: 70px;
@@ -307,6 +307,9 @@
       color: white;
       font-size: 30px;
       overflow: visible;
+    }
+    .cart-fab.logged-out {
+      bottom: 30px; /* Lower position when user is not logged in */
     }
     .cart-fab:hover {
       transform: scale(1.1);
@@ -969,6 +972,9 @@
         width: 60px;
         height: 60px;
         font-size: 26px;
+      }
+      .cart-fab.logged-out {
+        bottom: 20px; /* Lower position on mobile when not logged in */
       }
       .cart-modal-container {
         width: 95%;

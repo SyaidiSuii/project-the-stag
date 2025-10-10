@@ -61,6 +61,10 @@
 
     <!-- Customer Design System JavaScript -->
     <script src="{{ asset('js/customer/layout.js') }}"></script>
+
+    {{-- 🧠 Chatbot (AI Groq) --}}
+    @include('partials.chatbot')
+    
     <!-- Page Specific Scripts -->
     @yield('scripts')
 </body>
