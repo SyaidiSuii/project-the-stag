@@ -134,7 +134,7 @@
     .scroll-down {
       position: absolute;
       bottom: 2rem;
-      /* left: 50%; */
+      left: 50%;
       transform: translateX(-50%);
       border: none;
       background: rgba(255, 255, 255, 0.15);
@@ -149,10 +149,30 @@
       font-weight: 600;
     }
     .scroll-down:hover { background: rgba(255, 255, 255, 0.25); transform: translateX(-50%) translateY(-4px); }
+
+    /* Logged-in user: position to the left */
+    .scroll-down.logged-in {
+      left: 45%;
+    }
+    .scroll-down.logged-in:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateX(0) translateY(-4px);
+    }
+
     @keyframes bounce {
       0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
       40% { transform: translateX(-50%) translateY(-15px); }
       60% { transform: translateX(-50%) translateY(-8px); }
+    }
+
+    @keyframes bounceLoggedIn {
+      0%, 20%, 50%, 80%, 100% { transform: translateX(0) translateY(0); }
+      40% { transform: translateX(0) translateY(-15px); }
+      60% { transform: translateX(0) translateY(-8px); }
+    }
+
+    .scroll-down.logged-in {
+      animation: bounceLoggedIn 3s infinite;
     }
 
     /* ===== Sections ===== */

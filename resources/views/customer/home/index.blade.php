@@ -17,7 +17,7 @@
             <button class="btn-muted" data-scroll="#about" id="heroBtn2">Learn More</button>
         </div>
     </div>
-    <button class="scroll-down" data-scroll="#about" aria-label="Scroll to about section">
+    <button class="scroll-down {{ Auth::check() ? 'logged-in' : '' }}" data-scroll="#about" aria-label="Scroll to about section">
         ↓ Discover More
     </button>
 </section>
