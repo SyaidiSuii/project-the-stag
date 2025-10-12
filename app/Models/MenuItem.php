@@ -107,6 +107,44 @@ class MenuItem extends Model
     }
 
     /**
+     * Get all happy hour deals that include this menu item
+     */
+    public function happyHourDeals()
+    {
+        return $this->belongsToMany(HappyHourDeal::class, 'happy_hour_deal_items')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get all promotions that include this menu item
+     */
+    public function promotions()
+    {
+        return $this->belongsToMany(Promotion::class, 'promotion_items')
+            ->withPivot([
+                'quantity',
+                'is_free',
+                'is_required',
+                'is_customizable',
+                'custom_price',
+                'item_options',
+                'sort_order'
+            ])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get active promotions for this item
+     */
+    public function activePromotions()
+    {
+        return $this->promotions()
+            ->where('is_active', true)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now());
+    }
+
+    /**
      * Scope to get only available items
      */
     public function scopeAvailable($query)

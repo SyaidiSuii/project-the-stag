@@ -28,6 +28,10 @@
             <div class="nav-icon"><i class="fas fa-home"></i></div>
             <div class="nav-text">HOME</div>
         </a>
+        <a class="nav-item {{ Request::routeIs('customer.promotions*') ? 'active' : '' }}" href="{{ route('customer.promotions.index') }}">
+            <div class="nav-icon"><i class="fas fa-tags"></i></div>
+            <div class="nav-text">PROMOS</div>
+        </a>
         <a class="nav-item {{ Request::routeIs('customer.menu*') || Request::routeIs('customer.food*') || Request::routeIs('customer.drinks*') ? 'active' : '' }}" href="{{ route('customer.menu.index') }}">
             <div class="nav-icon"><i class="fas fa-utensils"></i></div>
             <div class="nav-text">MENU</div>

@@ -18,6 +18,20 @@
     </div>
   </div>
 
+  <!-- Promotions Banner -->
+  <div class="promotions-banner" id="promotionsBanner">
+    <div class="promo-carousel">
+      <a href="{{ route('customer.promotions.index') }}" class="promo-slide">
+        <div class="promo-icon">🎉</div>
+        <div class="promo-content">
+          <div class="promo-title">Check Out Our Promotions!</div>
+          <div class="promo-subtitle">Amazing deals and happy hour specials</div>
+        </div>
+        <div class="promo-arrow">→</div>
+      </a>
+    </div>
+  </div>
+
   <!-- Menu Type Toggle -->
   <div class="category-tabs">
     <button class="tab active" data-type="all" id="allMenuBtn">
@@ -69,14 +83,50 @@
       </div>
     </div>
     <div class="cart-modal-footer">
+      <!-- Promo Code Section -->
+      <div class="promo-code-section" id="promoCodeSection" style="padding: 16px; background: #f9fafb; border-radius: 12px; margin-bottom: 16px;">
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <input type="text" id="promoCodeInput" placeholder="Enter promo code"
+                 style="flex: 1; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; font-weight: 600; text-transform: uppercase; font-family: 'Courier New', monospace; letter-spacing: 1px; transition: all 0.3s;">
+          <button id="applyPromoBtn" onclick="applyPromoCode()"
+                  style="padding: 12px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.3s; font-size: 14px;">
+            Apply
+          </button>
+        </div>
+
+        <!-- Applied Promo Display -->
+        <div id="appliedPromo" style="display: none; background: white; border-radius: 10px; padding: 12px; border-left: 4px solid #10b981;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px;">PROMO APPLIED</div>
+              <div style="font-family: 'Courier New', monospace; font-weight: 700; color: #1f2937; font-size: 14px;" id="appliedPromoCode">—</div>
+              <div style="font-size: 12px; color: #10b981; font-weight: 600; margin-top: 4px;" id="appliedPromoName">—</div>
+            </div>
+            <button onclick="removePromoCode()"
+                    style="padding: 6px 12px; background: #fee2e2; color: #dc2626; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">
+              Remove
+            </button>
+          </div>
+        </div>
+
+        <!-- Find Best Deal Button -->
+        <button id="findBestDealBtn" onclick="findBestDeal()"
+                style="width: 100%; padding: 10px; background: white; border: 2px dashed #d1d5db; border-radius: 10px; color: #6b7280; font-weight: 600; cursor: pointer; margin-top: 8px; transition: all 0.3s; font-size: 13px;">
+          <i class="fas fa-magic"></i> Find Best Deal for Me
+        </button>
+      </div>
+
+      <!-- Cart Total -->
       <div class="cart-modal-total">
         <div>
-          <div class="cart-total-label">Total Items</div>
-          <div class="cart-total-label">Total Amount</div>
+          <div class="cart-total-label">Subtotal</div>
+          <div class="cart-total-label" id="discountLabel" style="display: none; color: #10b981;">Discount</div>
+          <div class="cart-total-label" style="font-weight: 700; color: #1f2937;">Total</div>
         </div>
         <div>
-          <div style="font-weight: bold; font-size: 1.2rem;">x<span id="total-items">0</span></div>
-          <div class="cart-total-amount" id="total-amount">RM 0.00</div>
+          <div class="cart-total-amount" id="subtotal-amount">RM 0.00</div>
+          <div class="cart-total-amount" id="discount-amount" style="display: none; color: #10b981;">- RM 0.00</div>
+          <div class="cart-total-amount" id="total-amount" style="font-size: 1.5rem; font-weight: 900;">RM 0.00</div>
         </div>
       </div>
       <button class="cart-modal-checkout">Proceed to Checkout</button>
@@ -295,6 +345,264 @@
 <script>
   // Pass menu data from server to JavaScript
   window.menuData = @json($categories ?? []);
+
+  // Promo Code Management
+  let appliedPromotion = null;
+
+  // Apply Promo Code
+  async function applyPromoCode() {
+    const promoCodeInput = document.getElementById('promoCodeInput');
+    const promoCode = promoCodeInput.value.trim().toUpperCase();
+    const applyBtn = document.getElementById('applyPromoBtn');
+
+    if (!promoCode) {
+      showToast('Please enter a promo code', 'error');
+      return;
+    }
+
+    // Get cart items from localStorage or cart manager
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    if (cart.length === 0) {
+      showToast('Your cart is empty', 'error');
+      return;
+    }
+
+    // Show loading state
+    applyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Applying...';
+    applyBtn.disabled = true;
+
+    try {
+      const response = await fetch('{{ route("customer.promotions.apply-promo") }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          promo_code: promoCode,
+          cart_items: cart.map(item => ({
+            menu_item_id: item.id,
+            quantity: item.quantity,
+            price: item.price
+          }))
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        appliedPromotion = data;
+        displayAppliedPromo(data);
+        updateCartTotals();
+        showToast('Promo code applied successfully!', 'success');
+        promoCodeInput.value = '';
+      } else {
+        showToast(data.message || 'Invalid promo code', 'error');
+      }
+    } catch (error) {
+      console.error('Error applying promo code:', error);
+      showToast('Failed to apply promo code', 'error');
+    } finally {
+      applyBtn.innerHTML = 'Apply';
+      applyBtn.disabled = false;
+    }
+  }
+
+  // Display Applied Promo
+  function displayAppliedPromo(data) {
+    const appliedPromoDiv = document.getElementById('appliedPromo');
+    const promoCodeSpan = document.getElementById('appliedPromoCode');
+    const promoNameSpan = document.getElementById('appliedPromoName');
+    const promoInput = document.getElementById('promoCodeInput');
+    const applyBtn = document.getElementById('applyPromoBtn');
+
+    appliedPromoDiv.style.display = 'block';
+    promoCodeSpan.textContent = data.promotion.code || '';
+    promoNameSpan.textContent = data.promotion.name || '';
+
+    // Hide input and apply button
+    promoInput.style.display = 'none';
+    applyBtn.style.display = 'none';
+  }
+
+  // Remove Promo Code
+  async function removePromoCode() {
+    try {
+      const response = await fetch('{{ route("customer.promotions.remove-promo") }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'Accept': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        appliedPromotion = null;
+
+        // Hide applied promo display
+        document.getElementById('appliedPromo').style.display = 'none';
+
+        // Show input and button again
+        const promoInput = document.getElementById('promoCodeInput');
+        const applyBtn = document.getElementById('applyPromoBtn');
+        promoInput.style.display = 'block';
+        applyBtn.style.display = 'block';
+        promoInput.value = '';
+
+        updateCartTotals();
+        showToast('Promo code removed', 'info');
+      }
+    } catch (error) {
+      console.error('Error removing promo code:', error);
+      showToast('Failed to remove promo code', 'error');
+    }
+  }
+
+  // Find Best Deal
+  async function findBestDeal() {
+    const findBestDealBtn = document.getElementById('findBestDealBtn');
+
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    if (cart.length === 0) {
+      showToast('Your cart is empty', 'error');
+      return;
+    }
+
+    // Show loading state
+    findBestDealBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finding Best Deal...';
+    findBestDealBtn.disabled = true;
+
+    try {
+      const response = await fetch('{{ route("customer.promotions.best-promotion") }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          cart_items: cart.map(item => ({
+            menu_item_id: item.id,
+            quantity: item.quantity,
+            price: item.price
+          }))
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.promotion) {
+        // Auto-apply the best promotion
+        appliedPromotion = {
+          success: true,
+          discount: data.promotion.discount,
+          promotion: {
+            code: data.promotion.id,
+            name: data.promotion.name
+          }
+        };
+        displayAppliedPromo(appliedPromotion);
+        updateCartTotals();
+        showToast(`Best deal found! Saving RM ${data.promotion.discount.toFixed(2)}`, 'success');
+      } else {
+        showToast(data.message || 'No applicable promotions found', 'info');
+      }
+    } catch (error) {
+      console.error('Error finding best deal:', error);
+      showToast('Failed to find best deal', 'error');
+    } finally {
+      findBestDealBtn.innerHTML = '<i class="fas fa-magic"></i> Find Best Deal for Me';
+      findBestDealBtn.disabled = false;
+    }
+  }
+
+  // Update Cart Totals with Discount
+  function updateCartTotals() {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    let discount = 0;
+    let total = subtotal;
+
+    if (appliedPromotion && appliedPromotion.discount) {
+      discount = parseFloat(appliedPromotion.discount);
+      total = subtotal - discount;
+    }
+
+    // Update display
+    const subtotalEl = document.getElementById('subtotal-amount');
+    const discountEl = document.getElementById('discount-amount');
+    const discountLabelEl = document.getElementById('discountLabel');
+    const totalEl = document.getElementById('total-amount');
+
+    if (subtotalEl) subtotalEl.textContent = `RM ${subtotal.toFixed(2)}`;
+    if (totalEl) totalEl.textContent = `RM ${total.toFixed(2)}`;
+
+    if (discount > 0) {
+      if (discountEl) {
+        discountEl.textContent = `- RM ${discount.toFixed(2)}`;
+        discountEl.style.display = 'block';
+      }
+      if (discountLabelEl) discountLabelEl.style.display = 'block';
+    } else {
+      if (discountEl) discountEl.style.display = 'none';
+      if (discountLabelEl) discountLabelEl.style.display = 'none';
+    }
+  }
+
+  // Toast Notification
+  function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    const colors = {
+      success: '#10b981',
+      error: '#ef4444',
+      info: '#3b82f6'
+    };
+
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      border-left: 4px solid ${colors[type]};
+      z-index: 10000;
+      animation: slideIn 0.3s ease-out;
+      max-width: 400px;
+      font-weight: 600;
+    `;
+
+    toast.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"
+           style="color: ${colors[type]}; font-size: 20px;"></i>
+        <span>${message}</span>
+      </div>
+    `;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.animation = 'slideOut 0.3s ease-out';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  // Auto-uppercase promo code input
+  document.getElementById('promoCodeInput')?.addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase();
+  });
+
+  // Allow Enter key to apply promo
+  document.getElementById('promoCodeInput')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      applyPromoCode();
+    }
+  });
 </script>
 <script src="{{ asset('js/customer/cart-manager.js') }}"></script>
 <script src="{{ asset('js/customer/menu.js') }}"></script>

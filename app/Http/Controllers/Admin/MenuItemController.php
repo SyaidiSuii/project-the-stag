@@ -105,7 +105,12 @@ class MenuItemController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:menu_items,name',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('menu_items', 'name')->whereNull('deleted_at')
+            ],
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'category_id' => 'required|exists:categories,id',
@@ -172,7 +177,14 @@ class MenuItemController extends Controller
     public function update(Request $request, MenuItem $menuItem)
     {
         $validated = $request->validate([
-            'name' => 'sometimes|string|max:255|unique:menu_items,name,' . $menuItem->id,
+            'name' => [
+                'sometimes',
+                'string',
+                'max:255',
+                Rule::unique('menu_items', 'name')
+                    ->ignore($menuItem->id)
+                    ->whereNull('deleted_at')
+            ],
             'description' => 'nullable|string',
             'price' => 'sometimes|numeric|min:0',
             'category_id' => 'sometimes|exists:categories,id',

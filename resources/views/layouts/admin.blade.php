@@ -99,12 +99,16 @@
             </div>
 
             <!-- Rewards Menu -->
-            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.rewards.*') ? 'active' : '' }}" id="rewardsMenu">
+            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.rewards.*') || request()->routeIs('admin.promotions.*') ? 'active' : '' }}" id="rewardsMenu">
                 <div class="admin-nav-icon"><i class="fas fa-gift"></i></div>
-                <div class="admin-nav-text">Rewards</div>
+                <div class="admin-nav-text">Rewards & Promotions</div>
                 <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
             </div>
             <div class="admin-nav-submenu" id="rewardsSubmenu">
+                <a href="{{ route('admin.promotions.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.promotions.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Promotions</div>
+                </a>
                 <a href="{{ route('admin.rewards.rewards.index') }}"
                     class="admin-nav-subitem {{ request()->routeIs('admin.rewards.rewards.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">Rewards</div>

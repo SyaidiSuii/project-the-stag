@@ -50,7 +50,7 @@
     <p class="muted" id="promotionSubtitle">Don't miss out on our limited-time offers and special deals!</p>
     <div class="cards" id="promotionGrid" role="list" aria-label="Featured promotions">
         <!-- Default promotions - will be replaced by dynamic content if available -->
-        {{-- @if(isset($promotions) && count($promotions) > 0)
+        @if(isset($promotions) && count($promotions) > 0)
             @foreach($promotions as $index => $promo)
                 <article class="card" role="listitem" style="animation-delay: {{ $index * 0.1 }}s">
                     <div class="card-img" style="display:grid;place-items:center;font-size:4rem">{{ $promo['img'] ?? '🍽️' }}</div>
@@ -127,7 +127,7 @@
                     </div>
                 </div>
             </article>
-        @endif --}}
+        @endif
     </div>
     <div class="promotion-cta">
         <a href="{{ route('customer.menu.index') }}" class="btn-primary" id="promotionBtn">See Full Menu</a>

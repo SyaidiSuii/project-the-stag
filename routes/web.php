@@ -18,6 +18,7 @@ use App\Http\Controllers\QR\PaymentController as QRPaymentController;
 use App\Http\Controllers\Admin\MenuCustomizationController;
 use App\Http\Controllers\Admin\QuickReorderController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\PromotionController as AdminPromotionController;
 use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
 use App\Http\Controllers\Customer\FoodController as CustomerFoodController;
 use App\Http\Controllers\Customer\DrinksController as CustomerDrinksController;
@@ -28,6 +29,7 @@ use App\Http\Controllers\Customer\AccountController as CustomerAccountController
 use App\Http\Controllers\Customer\PaymentController as CustomerPaymentController;
 use App\Http\Controllers\Customer\CartController as CustomerCartController;
 use App\Http\Controllers\Customer\BookingPaymentController as CustomerBookingPaymentController;
+use App\Http\Controllers\Customer\PromotionController as CustomerPromotionController;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\HappyBirthday;
@@ -102,6 +104,18 @@ Route::prefix('customer')->name('customer.')->group(function () {
         Route::delete('/remove/{menuItemId}', [CustomerCartController::class, 'removeItem'])->name('remove');
         Route::delete('/clear', [CustomerCartController::class, 'clearCart'])->name('clear');
         Route::post('/merge', [CustomerCartController::class, 'mergeCart'])->name('merge');
+    });
+
+    // Promotions routes
+    Route::prefix('promotions')->name('promotions.')->group(function () {
+        Route::get('/', [CustomerPromotionController::class, 'index'])->name('index');
+        Route::get('/type/{type}', [CustomerPromotionController::class, 'byType'])->name('by-type');
+        Route::get('/{id}', [CustomerPromotionController::class, 'show'])->name('show');
+        Route::get('/happy-hour/{id}', [CustomerPromotionController::class, 'showHappyHour'])->name('happy-hour');
+        Route::post('/apply-promo', [CustomerPromotionController::class, 'applyPromoCode'])->name('apply-promo');
+        Route::post('/remove-promo', [CustomerPromotionController::class, 'removePromoCode'])->name('remove-promo');
+        Route::post('/best-promotion', [CustomerPromotionController::class, 'getBestPromotion'])->name('best-promotion');
+        Route::get('/api/active-happy-hours', [CustomerPromotionController::class, 'activeHappyHours'])->name('api.active-happy-hours');
     });
 });
 
@@ -315,6 +329,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('trends', [SaleAnalyticsController::class, 'getTrends'])->name('trends');
         });
         Route::resource('sale-analytics', SaleAnalyticsController::class);
+
+        // ---------------------------------------------
+        // PROMOTIONS MANAGEMENT
+        // ---------------------------------------------
+        Route::prefix('promotions')->name('promotions.')->group(function () {
+            Route::get('/', [AdminPromotionController::class, 'index'])->name('index');
+            Route::get('/create', [AdminPromotionController::class, 'create'])->name('create');
+            Route::post('/', [AdminPromotionController::class, 'store'])->name('store');
+            Route::get('/{promotion}', [AdminPromotionController::class, 'show'])->name('show');
+            Route::get('/{promotion}/edit', [AdminPromotionController::class, 'edit'])->name('edit');
+            Route::put('/{promotion}', [AdminPromotionController::class, 'update'])->name('update');
+            Route::delete('/{promotion}', [AdminPromotionController::class, 'destroy'])->name('destroy');
+            Route::post('/{promotion}/toggle-status', [AdminPromotionController::class, 'toggleStatus'])->name('toggle-status');
+
+            // New promotion actions
+            Route::get('/{promotion}/stats', [AdminPromotionController::class, 'stats'])->name('stats');
+            Route::post('/{promotion}/duplicate', [AdminPromotionController::class, 'duplicate'])->name('duplicate');
+
+            // Happy Hour Deals
+            Route::get('/happy-hour/create', [AdminPromotionController::class, 'createHappyHour'])->name('happy-hour.create');
+            Route::post('/happy-hour', [AdminPromotionController::class, 'storeHappyHour'])->name('happy-hour.store');
+            Route::get('/happy-hour/{happyHourDeal}/edit', [AdminPromotionController::class, 'editHappyHour'])->name('happy-hour.edit');
+            Route::put('/happy-hour/{happyHourDeal}', [AdminPromotionController::class, 'updateHappyHour'])->name('happy-hour.update');
+            Route::delete('/happy-hour/{happyHourDeal}', [AdminPromotionController::class, 'destroyHappyHour'])->name('happy-hour.destroy');
+            Route::post('/happy-hour/{happyHourDeal}/toggle-status', [AdminPromotionController::class, 'toggleHappyHourStatus'])->name('happy-hour.toggle-status');
+        });
 
         // ---------------------------------------------
         // REWARDS MANAGEMENT
