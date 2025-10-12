@@ -80,6 +80,7 @@
     </div>
 
     <!-- Users Table -->
+    @if($users->count() > 0)
     <div class="table-container">
         <table class="admin-table">
             <thead>
@@ -162,6 +163,29 @@
             </tbody>
         </table>
     </div>
+    @else
+        <!-- Empty State Outside Table -->
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="empty-state-title">No Users found</div>
+            <div class="empty-state-text">
+                @if(request()->hasAny(['search', 'roles', 'status']))
+                    No Users match your current filters. Try adjusting your search criteria.
+                @else
+                    No Users have been generated yet.
+                @endif
+            </div>
+            @if(!request()->hasAny(['search', 'roles', 'status']))
+                <div style="margin-top: 20px;">
+                    <a href="{{ route('admin.user.create') }}" class="admin-btn btn-primary">
+                        <i class="fas fa-plus"></i> Create First Users
+                    </a>
+                </div>
+            @endif
+        </div>
+    @endif
 
     @if($users->hasPages())
     <!-- Pagination -->

@@ -58,6 +58,56 @@
       display: none; 
     }
     .clear-btn:hover { background: var(--bg); }
+
+    /* ===== Promotions Banner ===== */
+    .promotions-banner {
+      margin: 16px auto;
+      width: min(600px, 90%);
+    }
+    .promo-carousel {
+      overflow: hidden;
+      border-radius: 16px;
+    }
+    .promo-slide {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    .promo-slide:hover {
+      transform: scale(1.02);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+    .promo-icon {
+      font-size: 2.5rem;
+      flex-shrink: 0;
+    }
+    .promo-content {
+      flex: 1;
+    }
+    .promo-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .promo-subtitle {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+    .promo-arrow {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+    }
+    .promo-slide:hover .promo-arrow {
+      transform: translateX(4px);
+    }
+
     /* ===== Header Section (Scrollable) ===== */
     .header-section {
       background: var(--bg);
@@ -290,7 +340,7 @@
     /* ===== MODERN FLOATING ACTION BUTTON (FAB) CART ===== */
     .cart-fab {
       position: fixed;
-      bottom: 30px;
+      bottom: 110px;
       right: 30px;
       width: 70px;
       height: 70px;
@@ -307,6 +357,9 @@
       color: white;
       font-size: 30px;
       overflow: visible;
+    }
+    .cart-fab.logged-out {
+      bottom: 30px; /* Lower position when user is not logged in */
     }
     .cart-fab:hover {
       transform: scale(1.1);
@@ -969,6 +1022,9 @@
         width: 60px;
         height: 60px;
         font-size: 26px;
+      }
+      .cart-fab.logged-out {
+        bottom: 20px; /* Lower position on mobile when not logged in */
       }
       .cart-modal-container {
         width: 95%;

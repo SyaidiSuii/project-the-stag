@@ -117,7 +117,7 @@
 </div>
 
 <!-- Modern Floating Action Button (FAB) for Cart -->
-<button class="cart-fab" id="cartFab" aria-label="Open cart">
+<button class="cart-fab {{ Auth::check() ? '' : 'logged-out' }}" id="cartFab" aria-label="Open cart">
   🛒
   <span class="cart-badge" id="cartBadge">0</span>
 </button>

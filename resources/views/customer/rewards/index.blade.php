@@ -315,17 +315,6 @@
                 @endif
             </div>
         </div>
-
-        <!-- Points Multiplier Info -->
-        <div style="margin-top: 1.5rem; padding: 1rem; border-left: 3px solid {{ $userTierInfo['current']->color ?? '#CD7F32' }}; background: var(--muted); border-radius: 8px;">
-            <p style="color: var(--text-2); font-size: 0.9rem; margin: 0;">
-                💡 <strong>Points Multiplier:</strong> {{ number_format($userTierInfo['current']->points_multiplier ?? 1, 2) }}x
-                <span style="opacity: 0.8;">• RM1 = {{ floor(1 * ($userTierInfo['current']->points_multiplier ?? 1)) }} point(s)</span>
-                @if($userTierInfo['next'])
-                <span style="opacity: 0.8;">• Next tier: {{ number_format($userTierInfo['next']->points_multiplier, 2) }}x</span>
-                @endif
-            </p>
-        </div>
     </div>
     @endif
 </main>

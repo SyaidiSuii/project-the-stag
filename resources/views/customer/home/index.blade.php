@@ -17,7 +17,7 @@
             <button class="btn-muted" data-scroll="#about" id="heroBtn2">Learn More</button>
         </div>
     </div>
-    <button class="scroll-down" data-scroll="#about" aria-label="Scroll to about section">
+    <button class="scroll-down {{ Auth::check() ? 'logged-in' : '' }}" data-scroll="#about" aria-label="Scroll to about section">
         ↓ Discover More
     </button>
 </section>
@@ -50,7 +50,7 @@
     <p class="muted" id="promotionSubtitle">Don't miss out on our limited-time offers and special deals!</p>
     <div class="cards" id="promotionGrid" role="list" aria-label="Featured promotions">
         <!-- Default promotions - will be replaced by dynamic content if available -->
-        {{-- @if(isset($promotions) && count($promotions) > 0)
+        @if(isset($promotions) && count($promotions) > 0)
             @foreach($promotions as $index => $promo)
                 <article class="card" role="listitem" style="animation-delay: {{ $index * 0.1 }}s">
                     <div class="card-img" style="display:grid;place-items:center;font-size:4rem">{{ $promo['img'] ?? '🍽️' }}</div>
@@ -127,7 +127,7 @@
                     </div>
                 </div>
             </article>
-        @endif --}}
+        @endif
     </div>
     <div class="promotion-cta">
         <a href="{{ route('customer.menu.index') }}" class="btn-primary" id="promotionBtn">See Full Menu</a>
@@ -233,7 +233,7 @@
 
         
     <!-- Back to Top Button -->
-    <button class="to-top" id="toTop" aria-label="Back to top">↑</button>
+    <button class="to-top {{ Auth::check() ? '' : 'logged-out' }}" id="toTop" aria-label="Back to top">↑</button>
 @endsection
 
 @section('scripts')

@@ -74,122 +74,90 @@
     </div>
 
     <!-- booking Table -->
-    <div class="table-container">
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th class="th-order">Booking ID</th>
-                    <th class="th-customer">Customer</th>
-                    <th class="th-type">Date & Time</th>
-                    <th class="th-amount">Part Size</th>
-                    <th class="th-status">Table</th>
-                    <th class="th-eta">Status</th>
-                    <th class="th-time">Order Time</th>
-                    <th class="th-actions">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($reservations as $reservation)
-                <tr>
-                    <td>
-                        <div class="booking-info">
-                            <div class="booking-id">BK-{{ $reservation->id }}</div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="customer-info">
-                            <div class="customer-name">
-                                {{ $reservation->user ? $reservation->user->name : $reservation->guest_name }}
+    @if($reservations->count() > 0)
+        <div class="table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th class="th-order">Booking ID</th>
+                        <th class="th-customer">Customer</th>
+                        <th class="th-type">Date & Time</th>
+                        <th class="th-amount">Part Size</th>
+                        <th class="th-status">Table</th>
+                        <th class="th-eta">Status</th>
+                        <th class="th-time">Order Time</th>
+                        <th class="th-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($reservations as $reservation)
+                    <tr>
+                        <td>
+                            <div class="booking-info">
+                                <div class="booking-id">BK-{{ $reservation->id }}</div>
                             </div>
-                            @if($reservation->guest_phone)
-                                <div class="customer-phone">{{ $reservation->guest_phone }}</div>
-                            @endif
-                            @if(!$reservation->user && $reservation->guest_email)
-                                <div class="customer-email">{{ $reservation->guest_email }}</div>
-                            @endif
-                        </div>
-                    </td>
-                    <td>
-                        <div class="datetime-info">
-                            <div class="booking-date">
-                                @if($reservation->booking_date instanceof \Carbon\Carbon)
-                                    {{ $reservation->booking_date->format('M d, Y') }}
-                                @else
-                                    {{ \Carbon\Carbon::parse($reservation->booking_date)->format('M d, Y') }}
+                        </td>
+                        <td>
+                            <div class="customer-info">
+                                <div class="customer-name">
+                                    {{ $reservation->user ? $reservation->user->name : $reservation->guest_name }}
+                                </div>
+                                @if($reservation->guest_phone)
+                                    <div class="customer-phone">{{ $reservation->guest_phone }}</div>
+                                @endif
+                                @if(!$reservation->user && $reservation->guest_email)
+                                    <div class="customer-email">{{ $reservation->guest_email }}</div>
                                 @endif
                             </div>
-                            <div class="booking-time">
-                                @if($reservation->booking_time instanceof \Carbon\Carbon)
-                                    {{ $reservation->booking_time->format('g:i A') }}
+                        </td>
+                        <td>
+                            <div class="datetime-info">
+                                <div class="booking-date">
+                                    @if($reservation->booking_date instanceof \Carbon\Carbon)
+                                        {{ $reservation->booking_date->format('M d, Y') }}
+                                    @else
+                                        {{ \Carbon\Carbon::parse($reservation->booking_date)->format('M d, Y') }}
+                                    @endif
+                                </div>
+                                <div class="booking-time">
+                                    @if($reservation->booking_time instanceof \Carbon\Carbon)
+                                        {{ $reservation->booking_time->format('g:i A') }}
+                                    @else
+                                        {{ \Carbon\Carbon::parse($reservation->booking_time)->format('g:i A') }}
+                                    @endif
+                                </div>
+                            </div>
+                        </td>
+                        <td class="cell-center">
+                            <div class="party-size">{{ $reservation->party_size }} guests</div>
+                        </td>
+                        <td class="cell-center">
+                            <div class="table-info">
+                                @if($reservation->table)
+                                    <strong>Table {{ $reservation->table->table_number }}</strong>
+                                    <div class="table-type">{{ $reservation->table->table_type }}</div>
                                 @else
-                                    {{ \Carbon\Carbon::parse($reservation->booking_time)->format('g:i A') }}
+                                    <span class="text-muted">Not assigned</span>
                                 @endif
                             </div>
-                        </div>
-                    </td>
-                    <td class="cell-center">
-                        <div class="party-size">{{ $reservation->party_size }} guests</div>
-                    </td>
-                    <td class="cell-center">
-                        <div class="table-info">
-                            @if($reservation->table)
-                                <strong>Table {{ $reservation->table->table_number }}</strong>
-                                <div class="table-type">{{ $reservation->table->table_type }}</div>
-                            @else
-                                <span class="text-muted">Not assigned</span>
-                            @endif
-                        </div>
-                    </td>
-                    <td class="cell-center">
-                        <span class="status status-booking status-{{ str_replace('_', '-', $reservation->status) }}">
-                            {{ str_replace('_', ' ', ucfirst($reservation->status)) }}
-                        </span>
-                    </td>
-                    <td class="cell-center">
-                        <div class="time-info">
-                            <div class="order-date">{{ $reservation->created_at->format('M d') }}</div>
-                            <div class="order-time">{{ $reservation->created_at->format('g:i A') }}</div>
-                        </div>
-                    </td>
-                    <td class="cell-center">
-                        <div class="table-actions">
-                            <!-- Status Update Buttons -->
-                            @if($reservation->status === 'pending')
-                                <button class="action-btn confirm-btn" title="Confirm Booking" onclick="updateBookingStatus({{ $reservation->id }}, 'confirmed')">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button class="action-btn cancel-btn" title="Cancel Booking" onclick="updateBookingStatus({{ $reservation->id }}, 'cancelled')">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            @elseif($reservation->status === 'confirmed')
-                                <button class="action-btn ready-btn" title="Mark as Seated" onclick="updateBookingStatus({{ $reservation->id }}, 'seated')">
-                                    <i class="fas fa-chair"></i>
-                                </button>
-                                <button class="action-btn cancel-btn" title="Mark as No Show" onclick="updateBookingStatus({{ $reservation->id }}, 'no_show')">
-                                    <i class="fas fa-user-times"></i>
-                                </button>
-                            @elseif($reservation->status === 'seated')
-                                <button class="action-btn complete-btn" title="Mark as Completed" onclick="updateBookingStatus({{ $reservation->id }}, 'completed')">
-                                    <i class="fas fa-check-circle"></i>
-                                </button>
-                            @endif
-
-                            <!-- Default Action Buttons -->
-                            <a href="{{ route('admin.table-reservation.show', $reservation->id) }}" 
-                               class="action-btn view-btn" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{{ route('admin.table-reservation.edit', $reservation->id) }}" 
-                               class="action-btn edit-btn" title="Edit Booking">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            @if(!in_array($reservation->status, ['completed', 'cancelled']))
-                                <form method="POST" action="{{ route('admin.table-reservation.destroy', $reservation->id) }}" style="display: inline;"
-                                      onsubmit="return confirm('Are you sure you want to delete this booking?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="action-btn delete-btn" title="Delete Booking">
-                                        <i class="fas fa-trash"></i>
+                        </td>
+                        <td class="cell-center">
+                            <span class="status status-booking status-{{ str_replace('_', '-', $reservation->status) }}">
+                                {{ str_replace('_', ' ', ucfirst($reservation->status)) }}
+                            </span>
+                        </td>
+                        <td class="cell-center">
+                            <div class="time-info">
+                                <div class="order-date">{{ $reservation->created_at->format('M d') }}</div>
+                                <div class="order-time">{{ $reservation->created_at->format('g:i A') }}</div>
+                            </div>
+                        </td>
+                        <td class="cell-center">
+                            <div class="table-actions">
+                                <!-- Status Update Buttons -->
+                                @if($reservation->status === 'pending')
+                                    <button class="action-btn confirm-btn" title="Confirm Booking" onclick="updateBookingStatus({{ $reservation->id }}, 'confirmed')">
+                                        <i class="fas fa-check"></i>
                                     </button>
                                 </form>
                             @endif

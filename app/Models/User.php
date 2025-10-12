@@ -201,19 +201,6 @@ class User extends Authenticatable implements MustVerifyEmail
               ->sum('total_amount');
       }
 
-      /**
-       * Add points with loyalty tier multiplier applied
-       */
-      public function addPointsWithMultiplier($basePoints, $reason = null)
-      {
-          $tier = $this->getLoyaltyTier();
-          $multiplier = $tier ? $tier->points_multiplier : 1.00;
-
-          $pointsToAdd = floor($basePoints * $multiplier);
-
-          return $this->addPoints($pointsToAdd, $reason);
-      }
-
       // Generate voucher dari template
       public function generateVoucherFromTemplate(VoucherTemplate $template)
       {

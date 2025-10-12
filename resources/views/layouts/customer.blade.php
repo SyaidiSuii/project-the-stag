@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'The Stag - SmartDine')</title>
-    
+
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
-    
+
     <!-- Custom Design System CSS -->
     <link rel="stylesheet" href="{{ asset('css/customer/layout.css') }}">
 
@@ -19,6 +20,7 @@
     <!-- Page Specific Styles -->
     @yield('styles')
 </head>
+
 <body>
     <!-- Sidebar Navigation -->
     <div class="sidebar" aria-label="Primary">
@@ -27,6 +29,10 @@
         <a class="nav-item {{ Request::routeIs('customer.index') ? 'active' : '' }}" href="{{ route('customer.index') }}">
             <div class="nav-icon"><i class="fas fa-home"></i></div>
             <div class="nav-text">HOME</div>
+        </a>
+        <a class="nav-item {{ Request::routeIs('customer.promotions*') ? 'active' : '' }}" href="{{ route('customer.promotions.index') }}">
+            <div class="nav-icon"><i class="fas fa-tags"></i></div>
+            <div class="nav-text">PROMOS</div>
         </a>
         <a class="nav-item {{ Request::routeIs('customer.menu*') || Request::routeIs('customer.food*') || Request::routeIs('customer.drinks*') ? 'active' : '' }}" href="{{ route('customer.menu.index') }}">
             <div class="nav-icon"><i class="fas fa-utensils"></i></div>
@@ -71,19 +77,23 @@
             }
 
             @if(session('success'))
-                Toast.success('Success', '{{ session('success') }}');
+            Toast.success('Success', '{{ session('
+                success ') }}');
             @endif
 
             @if(session('error'))
-                Toast.error('Error', '{{ session('error') }}');
+            Toast.error('Error', '{{ session('
+                error ') }}');
             @endif
 
             @if(session('warning'))
-                Toast.warning('Warning', '{{ session('warning') }}');
+            Toast.warning('Warning', '{{ session('
+                warning ') }}');
             @endif
 
             @if(session('info'))
-                Toast.info('Info', '{{ session('info') }}');
+            Toast.info('Info', '{{ session('
+                info ') }}');
             @endif
         });
 
@@ -102,7 +112,11 @@
     <!-- Password Toggle Functionality -->
     <script src="{{ asset('js/password-toggle.js') }}"></script>
 
+    {{-- 🧠 Chatbot (AI Groq) --}}
+    @include('partials.chatbot')
+
     <!-- Page Specific Scripts -->
     @yield('scripts')
 </body>
+
 </html>

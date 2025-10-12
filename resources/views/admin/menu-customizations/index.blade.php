@@ -95,6 +95,7 @@
     </div>
 
     <!-- Customizations Table -->
+    @if($customizations->count() > 0)
     <div class="table-container">
         <table class="admin-table">
             <thead>
@@ -111,7 +112,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($customizations as $customization)
+                @foreach($customizations as $customization)
                 <tr>
                     <td class="cell-center">
                         <input type="checkbox" class="customization-checkbox" value="{{ $customization->id }}">
@@ -170,33 +171,32 @@
                         </div>
                     </td>
                 </tr>
-                @empty
-                <tr>
-                    <td colspan="7" class="empty-state">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-sliders-h"></i>
-                        </div>
-                        <div class="empty-state-title">No customizations found</div>
-                        <div class="empty-state-text">
-                            @if(request()->hasAny(['search', 'customization_type', 'min_price', 'max_price']))
-                                No customizations match your current filters. Try adjusting your search criteria.
-                            @else
-                                No customizations have been created yet.
-                            @endif
-                        </div>
-                        @if(!request()->hasAny(['search', 'customization_type', 'min_price', 'max_price']))
-                            <div style="margin-top: 20px;">
-                                <a href="{{ route('admin.menu-customizations.create') }}" class="admin-btn btn-primary">
-                                    <i class="fas fa-plus"></i> Create First Customization
-                                </a>
-                            </div>
-                        @endif
-                    </td>
-                </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
     </div>
+    @else
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-sliders-h"></i>
+            </div>
+            <div class="empty-state-title">No customizations found</div>
+            <div class="empty-state-text">
+                @if(request()->hasAny(['search', 'customization_type', 'min_price', 'max_price']))
+                    No customizations match your current filters. Try adjusting your search criteria.
+                @else
+                    No customizations have been created yet.
+                @endif
+            </div>
+            @if(!request()->hasAny(['search', 'customization_type', 'min_price', 'max_price']))
+                <div style="margin-top: 20px;">
+                    <a href="{{ route('admin.menu-customizations.create') }}" class="admin-btn btn-primary">
+                        <i class="fas fa-plus"></i> Create First Customization
+                    </a>
+                </div>
+            @endif
+        </div>
+    @endif
 
     <!-- Pagination -->
     @if($customizations->hasPages())

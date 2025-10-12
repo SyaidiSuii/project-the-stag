@@ -455,12 +455,12 @@ class PaymentService
                     // Link payment to order
                     $payment->update(['order_id' => $order->id]);
 
-                    // Award points to user if authenticated (1 point per RM1 spent, with tier multiplier)
+                    // Award points to user if authenticated (1 point per RM1 spent)
                     if ($pendingOrderData['user_id']) {
                         $user = \App\Models\User::find($pendingOrderData['user_id']);
                         if ($user) {
-                            $basePoints = floor($pendingOrderData['total_amount']); // 1 point per RM1
-                            $user->addPointsWithMultiplier($basePoints, 'Order #' . $order->confirmation_code);
+                            $points = floor($pendingOrderData['total_amount']); // 1 point per RM1
+                            $user->addPoints($points, 'Order #' . $order->confirmation_code);
                         }
                     }
 

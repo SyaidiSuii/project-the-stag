@@ -87,6 +87,7 @@
     </div>
 
     <!-- Table Table -->
+    @if($tables->count() > 0)
     <div class="table-container">
         <table class="admin-table">
             <thead>
@@ -101,7 +102,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($tables as $table)
+                @foreach($tables as $table)
                 <tr>
                     <td>
                         <div class="table-info">
@@ -207,6 +208,28 @@
             </tbody>
         </table>
     </div>
+    @else
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-chair"></i>
+            </div>
+            <div class="empty-state-title">No tables found</div>
+            <div class="empty-state-text">
+                @if(request()->hasAny(['search', 'status', 'table_type', 'active']))
+                    No tables match your current filters. Try adjusting your search criteria.
+                @else
+                    No tables have been created yet.
+                @endif
+            </div>
+            @if(!request()->hasAny(['search', 'status', 'table_type', 'active']))
+                <div style="margin-top: 20px;">
+                    <a href="{{ route('admin.table.create') }}" class="admin-btn btn-primary">
+                        <i class="fas fa-plus"></i> Create First Table
+                    </a>
+                </div>
+            @endif
+        </div>
+    @endif
 
     <!-- Pagination -->
     @if($tables->hasPages())
