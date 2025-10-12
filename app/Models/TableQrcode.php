@@ -121,32 +121,77 @@ class TableQrcode extends Model
         try {
             // Delete old QR files first
             $this->deleteOldQRFiles();
-            
+
             // Generate menu URL
             $menuUrl = config('app.url') . '/qr/menu?session=' . $this->session_code;
-            
+
             $qrData = [
                 'url' => $menuUrl,
                 'table_number' => $this->table->table_number ?? 'Unknown',
                 'session_code' => $this->session_code,
                 'expires_at' => $this->expires_at->toISOString(),
             ];
-            
+
             // Generate PNG QR code
             $pngPath = $this->createQRImage('png', $menuUrl);
-            
-            // Generate SVG QR code  
+
+            // Generate SVG QR code
             $svgPath = $this->createQRImage('svg', $menuUrl);
-            
+
             $this->update([
                 'qr_code_url' => $menuUrl,
                 'qr_code_data' => $qrData,
                 'qr_code_png' => $pngPath,
                 'qr_code_svg' => $svgPath,
             ]);
-            
+
         } catch (\Exception $e) {
             \Log::error('QR Code generation failed: ' . $e->getMessage());
+        }
+    }
+
+    public function regenerateQRCode()
+    {
+        try {
+            // Delete old QR files first
+            $this->deleteOldQRFiles();
+
+            // Generate new session code
+            $newSessionCode = $this->generateSessionCode();
+
+            // Extend expiration time - add 4 hours from now
+            $newExpiresAt = now()->addHours(4);
+
+            // Generate menu URL with new session code
+            $menuUrl = config('app.url') . '/qr/menu?session=' . $newSessionCode;
+
+            $qrData = [
+                'url' => $menuUrl,
+                'table_number' => $this->table->table_number ?? 'Unknown',
+                'session_code' => $newSessionCode,
+                'expires_at' => $newExpiresAt->toISOString(),
+            ];
+
+            // Generate PNG QR code
+            $pngPath = $this->createQRImage('png', $menuUrl, $newSessionCode);
+
+            // Generate SVG QR code
+            $svgPath = $this->createQRImage('svg', $menuUrl, $newSessionCode);
+
+            $this->update([
+                'session_code' => $newSessionCode,
+                'qr_code_url' => $menuUrl,
+                'qr_code_data' => $qrData,
+                'qr_code_png' => $pngPath,
+                'qr_code_svg' => $svgPath,
+                'expires_at' => $newExpiresAt,
+                'status' => 'active', // Reset status to active
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            \Log::error('QR Code regeneration failed: ' . $e->getMessage());
+            return false;
         }
     }
 
@@ -164,20 +209,21 @@ class TableQrcode extends Model
         }
     }
 
-    private function createQRImage($format, $url)
+    private function createQRImage($format, $url, $sessionCode = null)
     {
-        $filename = "qr_{$this->session_code}.{$format}";
+        $sessionCode = $sessionCode ?? $this->session_code;
+        $filename = "qr_{$sessionCode}.{$format}";
         $directory = 'qr-codes';
         $fullPath = $directory . '/' . $filename;
-        
+
         // Ensure directory exists
         if (!Storage::disk('public')->exists($directory)) {
             Storage::disk('public')->makeDirectory($directory);
         }
-        
+
         // Create writer based on format
         $writer = $format === 'png' ? new PngWriter() : new SvgWriter();
-        
+
         // Generate QR code using Builder API (v6)
         $builder = new Builder();
         $result = $builder->build(
@@ -188,10 +234,10 @@ class TableQrcode extends Model
             size: 300,
             margin: 10
         );
-        
+
         // Save to storage
         Storage::disk('public')->put($fullPath, $result->getString());
-        
+
         return $fullPath;
     }
 

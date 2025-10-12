@@ -617,6 +617,8 @@
       text-align: center;
       position: relative;
       overflow: hidden;
+      text-decoration: none;
+      display: inline-block;
     }
 
     .btn::before {

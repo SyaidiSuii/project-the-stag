@@ -106,7 +106,7 @@
                     <button class="btn-secondary redeem-btn"
                         data-reward-id="{{ $reward->id }}"
                         data-points-required="{{ $reward->points_required }}"
-                        onclick="redeemReward({{ $reward->id }}, {{ $reward->points_required }})">
+                        onclick="redeemReward('{{ $reward->id }}', '{{ $reward->points_required }}')">
                         Redeem
                     </button>
                     @endif
@@ -201,6 +201,13 @@
             <h3>No vouchers yet</h3>
             <p>Start collecting vouchers by spending more or completing challenges!</p>
         </div>
+
+        <!-- See All Button -->
+        <div id="seeAllVouchersBtn" style="text-align: center; margin-top: 16px; display: none;">
+            <button class="see-all-btn" onclick="showAllVouchersModal()">
+                See All <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
     </div>
 
     <!-- My Rewards -->
@@ -236,7 +243,7 @@
                         <small>✓ Already Claimed</small>
                     </div>
                     @else
-                    <div class="qr-code" onclick="showRewardQR({{ $redemption->id }}, '{{ $redemption->exchangePoint->name }}', '{{ $redemption->redemption_code }}')">
+                    <div class="qr-code" onclick="showRewardQR('{{ $redemption->id }}', '{{ $redemption->exchangePoint->name }}', '{{ $redemption->redemption_code }}')">
                         📱 Show QR
                     </div>
                     @if($redemption->exchangePoint->redemption_method === 'show_to_staff')
@@ -273,19 +280,31 @@
     <!-- Loyalty Levels -->
     <div class="card">
         <h2>👑 Loyalty Status</h2>
+        <style>
+            #loyaltyStatus .loyalty-level {
+                color: {{ $userTierInfo['current']->color ?? '#CD7F32' }};
+            }
+            #loyaltyStatus .max-level-text {
+                color: {{ $userTierInfo['current']->color ?? '#CD7F32' }};
+            }
+            #loyaltyProgress {
+                width: {{ $userTierInfo['progress'] }}%;
+            }
+        </style>
         <div id="loyaltyStatus">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <div class="loyalty-level" style="color: {{ $userTierInfo['current']->color ?? '#CD7F32' }};">
+                <div class="loyalty-level">
                     Current Level: {{ $userTierInfo['current']->name ?? 'Bronze' }} Member {{ $userTierInfo['current']->icon ?? '🥉' }}
                 </div>
                 @if($userTierInfo['next'])
                 <div style="color: var(--text-2); font-weight: 700;">Next Level: {{ $userTierInfo['next']->name }} Member {{ $userTierInfo['next']->icon }}</div>
                 @else
-                <div style="color: {{ $userTierInfo['current']->color ?? '#CD7F32' }}; font-weight: 700;">Maximum Level Reached!</div>
+                <div class="max-level-text" style="font-weight: 700;">Maximum Level Reached!</div>
                 @endif
             </div>
+
             <div class="progress-container">
-                <div class="progress-bar" style="width: {{ $userTierInfo['progress'] }}%;" id="loyaltyProgress"></div>
+                <div class="progress-bar" id="loyaltyProgress"></div>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-2); margin-top: 8px; font-weight: 700;">
                 <span>RM {{ number_format($userTierInfo['spending'], 2) }} spent</span>
@@ -295,6 +314,17 @@
                 <span>Maximum level achieved! 🎉</span>
                 @endif
             </div>
+        </div>
+
+        <!-- Points Multiplier Info -->
+        <div style="margin-top: 1.5rem; padding: 1rem; border-left: 3px solid {{ $userTierInfo['current']->color ?? '#CD7F32' }}; background: var(--muted); border-radius: 8px;">
+            <p style="color: var(--text-2); font-size: 0.9rem; margin: 0;">
+                💡 <strong>Points Multiplier:</strong> {{ number_format($userTierInfo['current']->points_multiplier ?? 1, 2) }}x
+                <span style="opacity: 0.8;">• RM1 = {{ floor(1 * ($userTierInfo['current']->points_multiplier ?? 1)) }} point(s)</span>
+                @if($userTierInfo['next'])
+                <span style="opacity: 0.8;">• Next tier: {{ number_format($userTierInfo['next']->points_multiplier, 2) }}x</span>
+                @endif
+            </p>
         </div>
     </div>
     @endif
@@ -337,7 +367,7 @@
                     <button class="btn-secondary redeem-btn"
                         data-reward-id="{{ $reward->id }}"
                         data-points-required="{{ $reward->points_required }}"
-                        onclick="redeemReward({{ $reward->id }}, {{ $reward->points_required }})">
+                        onclick="redeemReward('{{ $reward->id }}', '{{ $reward->points_required }}')">
                         Redeem
                     </button>
                     @endif
@@ -388,7 +418,7 @@
                             <small>✓ Already Claimed</small>
                         </div>
                         @else
-                        <div class="qr-code" onclick="showRewardQR({{ $redemption->id }}, '{{ $redemption->exchangePoint->name }}', '{{ $redemption->redemption_code }}')">
+                        <div class="qr-code" onclick="showRewardQR('{{ $redemption->id }}', '{{ $redemption->exchangePoint->name }}', '{{ $redemption->redemption_code }}')">
                             📱 Show QR
                         </div>
                         @if($redemption->exchangePoint->redemption_method === 'show_to_staff')
@@ -409,30 +439,43 @@
     </div>
 </div>
 @endif
+
+<!-- All Vouchers Modal -->
+<div id="allVouchersModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>🎪 All My Vouchers</h2>
+            <button class="close-btn" onclick="closeAllVouchersModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="voucher-grid">
+                <!-- All vouchers will be displayed here by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
+@php
+    $rewardsData = [
+        'checkinSettings' => $checkinSettings ?? null,
+        'isAuthenticated' => auth()->check(),
+        'user' => auth()->check() && isset($user) ? $user : null,
+        'points' => auth()->check() && isset($user) ? ($user->points_balance ?? 0) : 0,
+        'lastCheckinDate' => auth()->check() && isset($user) && $user->last_checkin_date ? $user->last_checkin_date->toDateString() : null,
+        'checkinStreak' => auth()->check() && isset($user) ? ($user->checkin_streak ?? 0) : 0,
+        'csrfToken' => csrf_token(),
+        'redeemRoute' => route('customer.rewards.redeem'),
+        'checkinRoute' => route('customer.rewards.checkin')
+    ];
+@endphp
 <script>
     // Pass all necessary data to JavaScript
-    window.rewardsData = {
-        checkinSettings: @json($checkinSettings ?? null),
-        @auth
-        isAuthenticated: true,
-        user: @json($user ?? null),
-        points: {{ $user->points_balance ?? 0 }},
-        lastCheckinDate: @if($user->last_checkin_date) '{{ $user->last_checkin_date->toDateString() }}' @else null @endif,
-        checkinStreak: {{ $user->checkin_streak ?? 0 }},
-        @else
-        isAuthenticated: false,
-        user: null,
-        points: 0,
-        lastCheckinDate: null,
-        checkinStreak: 0,
-        @endauth
-        csrfToken: '{{ csrf_token() }}',
-        redeemRoute: '{{ route("customer.rewards.redeem") }}',
-        checkinRoute: '{{ route("customer.rewards.checkin") }}'
-    };
+    window.rewardsData = @json($rewardsData);
 </script>
 <script src="{{ asset('js/customer/rewards.js') }}"></script>
 @endsection

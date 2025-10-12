@@ -14,7 +14,6 @@ class LoyaltyTier extends Model
         'name',
         'minimum_spending',
         'points_multiplier',
-        'benefits',
         'color',
         'icon',
         'sort_order',

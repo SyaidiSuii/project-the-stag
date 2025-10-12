@@ -214,7 +214,7 @@
               <input type="radio" name="cart-payment-method" value="counter" style="position: absolute; opacity: 0;">
               <div class="payment-method-card cart-payment-card" data-method="counter" style="border: 2px solid #e5e7eb; border-radius: 16px; padding: 20px 16px; text-align: center; transition: all 0.3s; background: white;">
                 <i class="fas fa-store" style="font-size: 32px; color: #9ca3af; display: block; margin-bottom: 8px;"></i>
-                <div style="font-weight: 700; font-size: 15px; color: #1f2937; margin-bottom: 4px;">Pay at Counter</div>
+                <div style="font-weight: 700; font-size: 15px; color: #1f2937; margin-bottom: 4px;">Pay at Restaurant</div>
                 <div style="font-size: 12px; color: #6b7280;">Cash / Card</div>
               </div>
             </label>
@@ -333,7 +333,7 @@
               <input type="radio" name="payment-method" value="counter" style="position: absolute; opacity: 0;">
               <div class="payment-method-card" data-method="counter" style="border: 2px solid #e5e7eb; border-radius: 16px; padding: 20px 16px; text-align: center; transition: all 0.3s; background: white;">
                 <i class="fas fa-store" style="font-size: 32px; color: #9ca3af; display: block; margin-bottom: 8px;"></i>
-                <div style="font-weight: 700; font-size: 15px; color: #1f2937; margin-bottom: 4px;">Pay at Counter</div>
+                <div style="font-weight: 700; font-size: 15px; color: #1f2937; margin-bottom: 4px;">Pay at Restaurant</div>
                 <div style="font-size: 12px; color: #6b7280;">Cash / Card</div>
               </div>
             </label>

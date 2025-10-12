@@ -48,7 +48,7 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label for="phone_number" class="form-label">Phone Number</label>
+                <label for="phone_number" class="form-label">Phone Number <small>(Optional)</small></label>
                 <input type="text" id="phone_number" name="phone_number" class="form-control" placeholder="012345678910" value="{{ old('phone_number', $user->phone_number) }}">
                 @if($errors->get('phone_number'))
                     <div class="form-error">{{ implode(', ', $errors->get('phone_number')) }}</div>
@@ -58,11 +58,35 @@
             <div class="form-group">
                 <label class="form-label">Account Status</label>
                 <select name="is_active" class="form-control">
-                    <option value="1" {{ old('is_active', $user->is_active) == 1 ? 'selected' : '' }}>Active</option>
-                    <option value="0" {{ old('is_active', $user->is_active) == 0 ? 'selected' : '' }}>Inactive</option>
+                    <option value="1" {{ old('is_active', $user->is_active ?? 1) == 1 ? 'selected' : '' }}>Active</option>
+                    <option value="0" {{ old('is_active', $user->is_active ?? 1) == 0 ? 'selected' : '' }}>Inactive</option>
                 </select>
             </div>
         </div>
+
+        @if(!$user->id)
+        <div class="form-row">
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group" style="position: relative;">
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required>
+                </div>
+                @if($errors->get('password'))
+                    <div class="form-error">{{ implode(', ', $errors->get('password')) }}</div>
+                @endif
+            </div>
+
+            <div class="form-group">
+                <label for="password_confirmation" class="form-label">Confirm Password</label>
+                <div class="input-group" style="position: relative;">
+                    <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="Confirm password" required>
+                </div>
+                @if($errors->get('password_confirmation'))
+                    <div class="form-error">{{ implode(', ', $errors->get('password_confirmation')) }}</div>
+                @endif
+            </div>
+        </div>
+        @endif
 
         <div class="form-group">
             <label class="form-label">Roles</label>

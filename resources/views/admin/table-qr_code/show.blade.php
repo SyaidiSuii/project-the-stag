@@ -383,84 +383,145 @@
 @section('scripts')
 <script>
 function completeSession() {
-    if (!confirm('Are you sure you want to complete this QR code session?')) {
-        return;
-    }
+    showConfirm(
+        'Complete Session?',
+        'This will mark the QR code session as complete and make the table available.',
+        'info',
+        'Complete',
+        'Cancel'
+    ).then(confirmed => {
+        if (!confirmed) return;
 
-    fetch(`{{ route('admin.table-qrcodes.complete', $tableQrcode) }}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Error completing session: ' + (data.message || 'Unknown error'));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error completing session');
+        fetch(`{{ route('admin.table-qrcodes.complete', $tableQrcode) }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Toast.success('Success!', 'Session completed successfully');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                Toast.error('Error', data.message || 'Failed to complete session');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Toast.error('Error', 'Failed to complete session. Please try again.');
+        });
     });
 }
 
 function extendSession() {
-    const hours = prompt('Enter number of hours to extend (1-12):', '2');
-    if (!hours || isNaN(hours) || hours < 1 || hours > 12) {
-        return;
-    }
+    // Create a custom input modal
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-modal-overlay';
+    overlay.innerHTML = `
+        <div class="confirm-modal">
+            <div class="confirm-modal-header">
+                <div class="confirm-modal-icon info">⏱</div>
+                <div class="confirm-modal-text">
+                    <h3 class="confirm-modal-title">Extend Session</h3>
+                    <p class="confirm-modal-message">Enter number of hours to extend (1-12)</p>
+                </div>
+            </div>
+            <div style="padding: 0 24px 16px;">
+                <input type="number" id="extendHours" min="1" max="12" value="2"
+                       style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;">
+            </div>
+            <div class="confirm-modal-footer">
+                <button class="confirm-modal-btn confirm-modal-btn-cancel">Cancel</button>
+                <button class="confirm-modal-btn confirm-modal-btn-confirm info">Extend</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
 
-    fetch(`{{ route('admin.table-qrcodes.extend', $tableQrcode) }}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({
-            hours: parseInt(hours)
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Error extending session: ' + (data.message || 'Unknown error'));
+    const input = overlay.querySelector('#extendHours');
+    const cancelBtn = overlay.querySelector('.confirm-modal-btn-cancel');
+    const confirmBtn = overlay.querySelector('.confirm-modal-btn-confirm');
+
+    const closeModal = () => {
+        overlay.classList.add('hiding');
+        setTimeout(() => overlay.remove(), 200);
+    };
+
+    cancelBtn.onclick = closeModal;
+    overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
+
+    confirmBtn.onclick = () => {
+        const hours = parseInt(input.value);
+        if (isNaN(hours) || hours < 1 || hours > 12) {
+            Toast.warning('Invalid Input', 'Please enter a number between 1 and 12');
+            return;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error extending session');
-    });
+
+        closeModal();
+
+        fetch(`{{ route('admin.table-qrcodes.extend', $tableQrcode) }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ hours })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Toast.success('Success!', `Session extended by ${hours} hour(s)`);
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                Toast.error('Error', data.message || 'Failed to extend session');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Toast.error('Error', 'Failed to extend session. Please try again.');
+        });
+    };
+
+    input.focus();
+    input.select();
 }
 
 function regenerateQR() {
-    if (!confirm('Are you sure you want to regenerate the QR code? The old QR code will no longer work.')) {
-        return;
-    }
+    showConfirm(
+        'Regenerate QR Code?',
+        'The old QR code will no longer work. Are you sure you want to continue?',
+        'warning',
+        'Regenerate',
+        'Cancel'
+    ).then(confirmed => {
+        if (!confirmed) return;
 
-    fetch(`{{ route('admin.table-qrcodes.regenerate-qr', $tableQrcode) }}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Error regenerating QR code: ' + (data.message || 'Unknown error'));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error regenerating QR code');
+        fetch(`{{ route('admin.table-qrcodes.regenerate-qr', $tableQrcode) }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Toast.success('Success!', 'QR code regenerated successfully');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                Toast.error('Error', data.message || 'Failed to regenerate QR code');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Toast.error('Error', 'Failed to regenerate QR code. Please try again.');
+        });
     });
 }
 </script>

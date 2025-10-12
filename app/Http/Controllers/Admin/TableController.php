@@ -188,6 +188,21 @@ class TableController extends Controller
     }
 
     /**
+     * Update the status of the specified table.
+     */
+    public function updateStatus(Request $request, Table $table)
+    {
+        $this->validate($request, [
+            'status' => 'required|in:available,occupied,reserved,maintenance',
+        ]);
+
+        $table->status = $request->status;
+        $table->save();
+
+        return redirect()->route('admin.table.index')->with('message', 'Table status has been updated successfully!');
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(Table $table)

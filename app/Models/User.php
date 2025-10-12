@@ -174,6 +174,46 @@ class User extends Authenticatable implements MustVerifyEmail
           return ($this->points_balance ?? 0) >= $points;
       }
 
+      /**
+       * Get user's current loyalty tier based on total spending
+       */
+      public function getLoyaltyTier()
+      {
+          // Calculate total spending from paid orders
+          $totalSpending = $this->orders()
+              ->where('payment_status', 'paid')
+              ->sum('total_amount');
+
+          // Get the highest tier the user qualifies for
+          return LoyaltyTier::active()
+              ->where('minimum_spending', '<=', $totalSpending)
+              ->orderBy('minimum_spending', 'desc')
+              ->first();
+      }
+
+      /**
+       * Get total spending amount
+       */
+      public function getTotalSpending()
+      {
+          return $this->orders()
+              ->where('payment_status', 'paid')
+              ->sum('total_amount');
+      }
+
+      /**
+       * Add points with loyalty tier multiplier applied
+       */
+      public function addPointsWithMultiplier($basePoints, $reason = null)
+      {
+          $tier = $this->getLoyaltyTier();
+          $multiplier = $tier ? $tier->points_multiplier : 1.00;
+
+          $pointsToAdd = floor($basePoints * $multiplier);
+
+          return $this->addPoints($pointsToAdd, $reason);
+      }
+
       // Generate voucher dari template
       public function generateVoucherFromTemplate(VoucherTemplate $template)
       {

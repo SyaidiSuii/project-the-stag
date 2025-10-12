@@ -84,10 +84,11 @@
             @elseif($order->order_status === 'cancelled')
               <button class="btn btn-primary reorder-btn" data-order-id="{{ $order->id }}">Reorder</button>
             @endif
-            @if($order->payment_status === 'unpaid' && $order->order_status !== 'cancelled')
+            @if($order->payment_status === 'unpaid' && $order->order_status !== 'cancelled' && $order->payment_method === 'online')
               <button class="btn btn-primary pay-now-btn" data-order-id="{{ $order->id }}">Pay Now</button>
-            @elseif($order->order_status !== 'cancelled')
-              <button class="btn btn-secondary view-details-btn" data-order-id="{{ $order->id }}">View Details</button>
+            @endif
+            @if($order->order_status !== 'cancelled')
+              <a href="{{ route('customer.orders.show', $order->id) }}" class="btn btn-secondary view-details-btn" style="text-decoration: none;">View Details</a>
             @endif
           </div>
         </div>
@@ -221,17 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeOrderDetailsBtn = document.getElementById('closeOrderDetailsBtn');
     const closeTrackOrderBtn = document.getElementById('closeTrackOrderBtn');
     
-    // View Details Button Click Handler
-    document.addEventListener('click', function(e) {
-        const viewDetailsBtn = e.target.closest('.view-details-btn');
-        if (viewDetailsBtn) {
-            e.preventDefault();
-            console.log('View details clicked'); // Debug log
-            const orderId = viewDetailsBtn.getAttribute('data-order-id');
-            console.log('Order ID:', orderId); // Debug log
-            showOrderDetails(orderId);
-        }
-    });
+    // View Details Button - uses link directly, no JS handler needed
     
     // Track Order Button Click Handler
     document.addEventListener('click', function(e) {

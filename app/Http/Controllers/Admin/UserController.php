@@ -129,41 +129,41 @@ namespace App\Http\Controllers\Admin;
           $this->validate($request,[
               'name'=> 'required|min:5',
               'email' => ['required', 'email', Rule::unique('users')->whereNull('deleted_at')],
-              'phone_number' => 'required|string',
+              'phone_number' => 'nullable|string',
+              'password' => 'required|min:8|confirmed',
               'is_active' => 'boolean',
               'roles' => ['nullable', 'array'],
               'roles.*' => ['exists:roles,id'],
           ]);
 
-          // SARAN: Hindari hardcoded password. Pertimbangkan untuk membuat password acak
-          // dan mengirimkannya ke email pengguna atau membuat alur pengaturan password terpisah.
-          // Contoh: 'password' => bcrypt(Str::random(10)),
+          // Phone number processing (only if provided)
+          $formattedPhone = null;
+          if ($request->filled('phone_number')) {
+              $phoneUtil = PhoneNumberUtil::getInstance();
 
-          // Phone number processing
-          $phoneUtil = PhoneNumberUtil::getInstance();
+              try {
+                  // Parse phone number (default country Malaysia)
+                  $numberProto = $phoneUtil->parse($request->phone_number, 'MY');
 
-          try {
-              // Parse phone number (default country Malaysia)
-              $numberProto = $phoneUtil->parse($request->phone_number, 'MY');
+                  // Validate if it's a valid number
+                  if (!$phoneUtil->isValidNumber($numberProto)) {
+                      return back()->withErrors(['phone_number' => 'Invalid phone number format']);
+                  }
 
-              // Validate if it's a valid number
-              if (!$phoneUtil->isValidNumber($numberProto)) {
-                  return back()->withErrors(['phone_number' => 'Invalid phone number format']);
+                  // Format to E.164 format (+60123456789)
+                  $formattedPhone = $phoneUtil->format($numberProto, PhoneNumberFormat::E164);
+
+              } catch (NumberParseException $e) {
+                  return back()->withErrors(['phone_number' => 'Invalid phone number: ' . $e->getMessage()]);
               }
-
-              // Format to E.164 format (+60123456789)
-              $formattedPhone = $phoneUtil->format($numberProto, PhoneNumberFormat::E164);
-
-          } catch (NumberParseException $e) {
-              return back()->withErrors(['phone_number' => 'Invalid phone number: ' . $e->getMessage()]);
           }
 
           $user = User::create([
               'name' => $request->name,
               'email' => $request->email,
               'phone_number' => $formattedPhone,
-              'is_active' => $request->boolean('is_active'), // Menggunakan boolean() lebih aman untuk checkbox
-              'password' => bcrypt("12345678"),
+              'is_active' => $request->has('is_active') ? $request->boolean('is_active') : true, // Default to active
+              'password' => bcrypt($request->password),
           ]);
 
           // Convert role IDs to role objects with explicit guard checking
@@ -203,29 +203,32 @@ namespace App\Http\Controllers\Admin;
           $this->validate($request,[
               'name'=> 'required|min:5',
               'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)->whereNull('deleted_at')],
-              'phone_number' => 'required|string',
+              'phone_number' => 'nullable|string',
               'is_active' => 'nullable|boolean',
               'roles' => ['nullable', 'array'],
               'roles.*' => ['exists:roles,id'],
           ]);
 
-          // Phone number processing
-          $phoneUtil = PhoneNumberUtil::getInstance();
+          // Phone number processing (only if provided)
+          $formattedPhone = null;
+          if ($request->filled('phone_number')) {
+              $phoneUtil = PhoneNumberUtil::getInstance();
 
-          try {
-              // Parse phone number (default country Malaysia)
-              $numberProto = $phoneUtil->parse($request->phone_number, 'MY');
+              try {
+                  // Parse phone number (default country Malaysia)
+                  $numberProto = $phoneUtil->parse($request->phone_number, 'MY');
 
-              // Validate if it's a valid number
-              if (!$phoneUtil->isValidNumber($numberProto)) {
-                  return back()->withErrors(['phone_number' => 'Invalid phone number format']);
+                  // Validate if it's a valid number
+                  if (!$phoneUtil->isValidNumber($numberProto)) {
+                      return back()->withErrors(['phone_number' => 'Invalid phone number format']);
+                  }
+
+                  // Format to E.164 format (+60123456789)
+                  $formattedPhone = $phoneUtil->format($numberProto, PhoneNumberFormat::E164);
+
+              } catch (NumberParseException $e) {
+                  return back()->withErrors(['phone_number' => 'Invalid phone number: ' . $e->getMessage()]);
               }
-
-              // Format to E.164 format (+60123456789)
-              $formattedPhone = $phoneUtil->format($numberProto, PhoneNumberFormat::E164);
-
-          } catch (NumberParseException $e) {
-              return back()->withErrors(['phone_number' => 'Invalid phone number: ' . $e->getMessage()]);
           }
 
           $user->update([

@@ -54,7 +54,7 @@ class PaymentService
 
             // Update order payment status (map payment status to order status)
             $orderPaymentStatus = match ($payment->payment_status) {
-                'completed' => 'paid',
+                'success' => 'paid',
                 'failed' => 'unpaid',
                 'refunded' => 'refunded',
                 default => 'unpaid' // pending, processing -> unpaid
@@ -106,21 +106,21 @@ class PaymentService
             $payment->update([
                 'payment_status' => $status,
                 'payment_gateway_response' => $gatewayResponse,
-                'paid_at' => $status === 'completed' ? now() : $payment->paid_at,
+                'paid_at' => $status === 'success' ? now() : $payment->paid_at,
             ]);
 
             // Update related order
             if ($payment->order) {
                 $orderPaymentStatus = match ($status) {
-                    'completed' => 'paid',
+                    'success' => 'paid',
                     'failed' => 'unpaid',
                     'refunded' => 'refunded',
                     default => 'unpaid' // pending, processing -> unpaid
                 };
 
+                // Only update payment_status, keep order_status as is (pending)
                 $payment->order->update([
-                    'payment_status' => $orderPaymentStatus,
-                    'order_status' => $status === 'completed' ? 'confirmed' : $payment->order->order_status
+                    'payment_status' => $orderPaymentStatus
                 ]);
             }
 
@@ -298,6 +298,77 @@ class PaymentService
     }
 
     /**
+     * Create payment with gateway integration without order (for online payments)
+     * Order will be created after successful payment
+     *
+     * @param array $paymentData
+     * @return array
+     */
+    public function createGatewayPaymentWithoutOrder(array $paymentData): array
+    {
+        DB::beginTransaction();
+
+        try {
+            // Generate unique transaction ID
+            $transactionId = 'TXN_' . strtoupper(Str::random(10)) . '_' . time();
+
+            // Create payment record without order_id
+            $payment = Payment::create([
+                'order_id' => null, // Will be updated after successful payment
+                'gateway' => 'toyyibpay',
+                'payment_method' => $paymentData['payment_method'],
+                'currency' => $paymentData['currency'] ?? 'MYR',
+                'amount' => $paymentData['amount'],
+                'transaction_id' => $transactionId,
+                'payment_status' => 'pending',
+            ]);
+
+            // Prepare bill data for Toyyibpay
+            $billData = [
+                'bill_name' => "The Stag Restaurant Order",
+                'description' => "Payment for The Stag Restaurant Order",
+                'amount' => $paymentData['amount'],
+                'reference_no' => $transactionId,
+                'return_url' => $paymentData['return_url'] ?? route('payment.return', ['payment' => $payment->id]),
+                'callback_url' => route('payment.callback'),
+                'customer_name' => $paymentData['customer_name'] ?? 'Guest',
+                'customer_email' => $paymentData['customer_email'] ?: 'order@thestag.com',
+                'customer_phone' => $paymentData['customer_phone'] ?: '60123456789',
+            ];
+
+            // Create bill at Toyyibpay
+            $billResult = $this->toyyibpayService->createBill($billData);
+
+            if (!$billResult['success']) {
+                DB::rollBack();
+                return [
+                    'success' => false,
+                    'message' => 'Failed to create payment bill: ' . $billResult['error']
+                ];
+            }
+
+            // Update payment with bill code
+            $payment->update([
+                'bill_code' => $billResult['bill_code'],
+                'payment_gateway_response' => $billResult['response'],
+            ]);
+
+            DB::commit();
+
+            return [
+                'success' => true,
+                'payment' => $payment,
+                'payment_id' => $payment->id,
+                'redirect_url' => $billResult['bill_url'],
+                'bill_code' => $billResult['bill_code']
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    /**
      * Handle payment callback from Toyyibpay
      *
      * @param array $callbackData
@@ -305,9 +376,12 @@ class PaymentService
      */
     public function handleGatewayCallback(array $callbackData): array
     {
+        DB::beginTransaction();
+
         try {
             // Verify callback
             if (!$this->toyyibpayService->verifyCallback($callbackData)) {
+                DB::rollBack();
                 return [
                     'success' => false,
                     'message' => 'Invalid callback signature'
@@ -321,6 +395,7 @@ class PaymentService
             $payment = Payment::where('bill_code', $billCode)->first();
 
             if (!$payment) {
+                DB::rollBack();
                 return [
                     'success' => false,
                     'message' => 'Payment record not found'
@@ -329,14 +404,80 @@ class PaymentService
 
             // Map status
             $paymentStatus = match ($statusId) {
-                '1' => 'completed',
+                '1' => 'success',
                 '2' => 'pending',
                 '3' => 'failed',
                 default => 'failed'
             };
 
+            // If payment successful and no order exists yet, create the order from session data
+            if ($paymentStatus === 'success' && !$payment->order_id) {
+                // Get pending order data from session using transaction_id as key
+                $pendingOrderData = session('pending_order_data');
+
+                if ($pendingOrderData) {
+                    // Create the order
+                    $order = Order::create([
+                        'user_id' => $pendingOrderData['user_id'],
+                        'guest_name' => $pendingOrderData['guest_name'],
+                        'guest_phone' => $pendingOrderData['guest_phone'],
+                        'guest_email' => $pendingOrderData['guest_email'],
+                        'total_amount' => $pendingOrderData['total_amount'],
+                        'order_status' => $pendingOrderData['order_status'],
+                        'payment_status' => 'paid', // Paid since payment was successful
+                        'payment_method' => $pendingOrderData['payment_method'],
+                        'order_type' => $pendingOrderData['order_type'],
+                        'order_source' => $pendingOrderData['order_source'],
+                        'order_time' => $pendingOrderData['order_time'],
+                        'confirmation_code' => $pendingOrderData['confirmation_code'],
+                    ]);
+
+                    // Create OrderItems
+                    foreach ($pendingOrderData['cart_items'] as $item) {
+                        $menuItem = \App\Models\MenuItem::find($item['id']);
+                        \App\Models\OrderItem::create([
+                            'order_id' => $order->id,
+                            'menu_item_id' => $item['id'],
+                            'quantity' => $item['quantity'],
+                            'unit_price' => $menuItem->price,
+                            'total_price' => $menuItem->price * $item['quantity'],
+                            'special_note' => $item['notes'] ?? null,
+                            'item_status' => 'pending',
+                        ]);
+                    }
+
+                    // Auto-create ETA
+                    $order->load('items.menuItem');
+                    if ($order->items->count() > 0) {
+                        $order->autoCreateETA();
+                    }
+
+                    // Link payment to order
+                    $payment->update(['order_id' => $order->id]);
+
+                    // Award points to user if authenticated (1 point per RM1 spent, with tier multiplier)
+                    if ($pendingOrderData['user_id']) {
+                        $user = \App\Models\User::find($pendingOrderData['user_id']);
+                        if ($user) {
+                            $basePoints = floor($pendingOrderData['total_amount']); // 1 point per RM1
+                            $user->addPointsWithMultiplier($basePoints, 'Order #' . $order->confirmation_code);
+                        }
+                    }
+
+                    // Clear user cart if this was from cart checkout
+                    if ($pendingOrderData['is_from_cart'] && $pendingOrderData['user_id']) {
+                        \App\Models\UserCart::where('user_id', $pendingOrderData['user_id'])->delete();
+                    }
+
+                    // Clear session data
+                    session()->forget(['pending_order_data', 'pending_payment_id']);
+                }
+            }
+
             // Update payment status
             $this->updatePaymentStatus($payment->transaction_id, $paymentStatus, $callbackData);
+
+            DB::commit();
 
             return [
                 'success' => true,
@@ -344,6 +485,7 @@ class PaymentService
                 'status' => $paymentStatus
             ];
         } catch (\Exception $e) {
+            DB::rollBack();
             return [
                 'success' => false,
                 'message' => 'Callback processing failed: ' . $e->getMessage()

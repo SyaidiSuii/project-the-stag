@@ -78,20 +78,19 @@ class OrderController extends Controller
         $query->orderBy('created_at', 'desc');
 
         $orders = $query->paginate(10)->appends($request->query());
-        
+
         // Get statistics for dashboard cards
         $totalOrders = Order::count();
-        $todayRevenue = Order::whereDate('order_time', today())
-            ->where('payment_status', 'paid')
+        $totalRevenue = Order::where('payment_status', 'paid')
             ->sum('total_amount');
         $pendingOrders = Order::where('order_status', 'pending')->count();
         $completedOrders = Order::where('order_status', 'completed')->count();
-        
+
         return view('admin.order.index', compact(
-            'orders', 
-            'totalOrders', 
-            'todayRevenue', 
-            'pendingOrders', 
+            'orders',
+            'totalOrders',
+            'totalRevenue',
+            'pendingOrders',
             'completedOrders'
         ));
     }
@@ -338,6 +337,19 @@ class OrderController extends Controller
         }
 
         $order->save();
+
+        // Auto-create or update ETA when status changes to preparing
+        if ($request->order_status === 'preparing') {
+            $order->load('items.menuItem');
+            if ($order->items->count() > 0) {
+                // Check if ETA already exists
+                if ($order->etas()->count() > 0) {
+                    $order->updateAutoETA();
+                } else {
+                    $order->autoCreateETA();
+                }
+            }
+        }
 
         return response()->json([
             'success' => true,

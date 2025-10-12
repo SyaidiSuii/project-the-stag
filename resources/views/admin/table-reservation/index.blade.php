@@ -198,25 +198,25 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" class="empty-state">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                        <div class="empty-state-title">No bookings found</div>
-                        <div class="empty-state-text">
-                            @if(request()->hasAny(['search', 'status', 'date']))
-                                No bookings match your current filters. Try adjusting your search criteria.
-                            @else
-                                No bookings have been made yet.
+                    <td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;">
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <i class="fas fa-calendar-check" style="font-size: 48px; opacity: 0.5; margin-bottom: 16px;"></i>
+                            <p style="font-weight: 600; margin-bottom: 8px; font-size: 16px;">No bookings found</p>
+                            <p style="font-size: 14px; margin-bottom: 0;">
+                                @if(request()->hasAny(['search', 'status', 'date']))
+                                    No bookings match your current filters. Try adjusting your search criteria.
+                                @else
+                                    No bookings have been made yet.
+                                @endif
+                            </p>
+                            @if(!request()->hasAny(['search', 'status', 'date']))
+                                <div style="margin-top: 20px;">
+                                    <a href="{{ route('admin.table-reservation.create') }}" class="admin-btn btn-primary">
+                                        <i class="fas fa-plus"></i> Create First Booking
+                                    </a>
+                                </div>
                             @endif
                         </div>
-                        @if(!request()->hasAny(['search', 'status', 'date']))
-                            <div style="margin-top: 20px;">
-                                <a href="{{ route('admin.table-reservation.create') }}" class="admin-btn btn-primary">
-                                    <i class="fas fa-plus"></i> Create First Booking
-                                </a>
-                            </div>
-                        @endif
                     </td>
                 </tr>
                 @endforelse

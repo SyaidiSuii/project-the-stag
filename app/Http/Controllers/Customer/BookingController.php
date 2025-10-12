@@ -19,13 +19,24 @@ class BookingController extends Controller
      */
     public function index()
     {
-        $tables = \App\Models\Table::where('is_active', true)->get();
-        
+        // Get all active tables with their active QR sessions
+        $tables = \App\Models\Table::where('is_active', true)
+            ->with(['currentSession'])
+            ->get()
+            ->map(function ($table) {
+                // Check if table has an active QR session
+                if ($table->currentSession && $table->currentSession->isActive()) {
+                    // Mark table as occupied if it has an active QR session
+                    $table->status = 'occupied';
+                }
+                return $table;
+            });
+
         // Get cart data if user is logged in
         $cartItems = [];
         $cartTotal = 0;
         $cartCount = 0;
-        
+
         if (auth()->check()) {
             $cartItems = \App\Models\UserCart::with('menuItem')
                 ->where('user_id', auth()->id())
@@ -33,7 +44,7 @@ class BookingController extends Controller
             $cartTotal = \App\Models\UserCart::getCartTotal(auth()->id());
             $cartCount = \App\Models\UserCart::getCartCount(auth()->id());
         }
-        
+
         return view('customer.booking.index', compact('tables', 'cartItems', 'cartTotal', 'cartCount'));
     }
 
@@ -176,10 +187,29 @@ class BookingController extends Controller
         try {
             DB::beginTransaction();
 
-            // Get the table by table_number
-            $table = Table::where('table_number', $request->table_id)->first();
+            // Get the table by table_number with its current session
+            $table = Table::where('table_number', $request->table_id)
+                ->with('currentSession')
+                ->first();
+
             if (!$table) {
                 return response()->json(['success' => false, 'message' => 'Table not found'], 404);
+            }
+
+            // Check if table has an active QR session
+            if ($table->currentSession && $table->currentSession->isActive()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This table is currently occupied with an active QR session. Please select another table.'
+                ], 400);
+            }
+
+            // Check if table is available for booking
+            if (!in_array($table->status, ['available'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This table is not available for booking. Status: ' . $table->status
+                ], 400);
             }
 
             // Get user info - use form data for guest info

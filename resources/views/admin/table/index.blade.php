@@ -173,39 +173,34 @@
                                 <i class="fas fa-edit"></i>
                             </a>
                             @if($table->status === 'available')
-                                <form method="POST" action="{{ route('admin.table.destroy', $table->id) }}" style="display: inline;"
-                                      onsubmit="return confirm('Are you sure you want to delete this table?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="action-btn delete-btn" title="Delete Table">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
+                                <button type="button" class="action-btn delete-btn" title="Delete Table" onclick="deleteTable({{ $table->id }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             @endif
                         </div>
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="empty-state">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-chair"></i>
-                        </div>
-                        <div class="empty-state-title">No tables found</div>
-                        <div class="empty-state-text">
-                            @if(request()->hasAny(['search', 'status', 'table_type', 'active']))
-                                No tables match your current filters. Try adjusting your search criteria.
-                            @else
-                                No tables have been created yet.
+                    <td colspan="7" style="text-align: center; padding: 40px; color: #94a3b8;">
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <i class="fas fa-chair" style="font-size: 48px; opacity: 0.5; margin-bottom: 16px;"></i>
+                            <p style="font-weight: 600; margin-bottom: 8px; font-size: 16px;">No tables found</p>
+                            <p style="font-size: 14px; margin-bottom: 0;">
+                                @if(request()->hasAny(['search', 'status', 'table_type', 'active']))
+                                    No tables match your current filters. Try adjusting your search criteria.
+                                @else
+                                    No tables have been created yet.
+                                @endif
+                            </p>
+                            @if(!request()->hasAny(['search', 'status', 'table_type', 'active']))
+                                <div style="margin-top: 20px;">
+                                    <a href="{{ route('admin.table.create') }}" class="admin-btn btn-primary">
+                                        <i class="fas fa-plus"></i> Create First Table
+                                    </a>
+                                </div>
                             @endif
                         </div>
-                        @if(!request()->hasAny(['search', 'status', 'table_type', 'active']))
-                            <div style="margin-top: 20px;">
-                                <a href="{{ route('admin.table.create') }}" class="admin-btn btn-primary">
-                                    <i class="fas fa-plus"></i> Create First Table
-                                </a>
-                            </div>
-                        @endif
                     </td>
                 </tr>
                 @endforelse
@@ -252,6 +247,22 @@
         </div>
     @endif
 
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirm-modal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title" id="confirm-title">Confirm Action</h3>
+        </div>
+        <div class="modal-body">
+            <p id="confirm-message"></p>
+        </div>
+        <div class="modal-footer">
+            <button class="admin-btn btn-secondary" id="confirm-cancel">Cancel</button>
+            <button class="admin-btn btn-primary" id="confirm-ok">Confirm</button>
+        </div>
+    </div>
 </div>
 
 @endsection
@@ -356,39 +367,115 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Function to update table status
 function updateTableStatus(tableId, status) {
-    if (!confirm(`Are you sure you want to change this table status to ${status}?`)) {
-        return;
-    }
+    const statusLabels = {
+        'available': 'Available',
+        'occupied': 'Occupied',
+        'reserved': 'Reserved',
+        'maintenance': 'Maintenance'
+    };
 
-    // Create a form and submit it
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `/admin/table/${tableId}/status`;
-    
-    // Add CSRF token
-    const csrfToken = document.createElement('input');
-    csrfToken.type = 'hidden';
-    csrfToken.name = '_token';
-    csrfToken.value = '{{ csrf_token() }}';
-    form.appendChild(csrfToken);
-    
-    // Add method override for PATCH
-    const methodInput = document.createElement('input');
-    methodInput.type = 'hidden';
-    methodInput.name = '_method';
-    methodInput.value = 'PATCH';
-    form.appendChild(methodInput);
-    
-    // Add status
-    const statusInput = document.createElement('input');
-    statusInput.type = 'hidden';
-    statusInput.name = 'status';
-    statusInput.value = status;
-    form.appendChild(statusInput);
-    
-    // Submit form
-    document.body.appendChild(form);
-    form.submit();
+    showConfirm(
+        'Update Table Status',
+        `Are you sure you want to change this table status to ${statusLabels[status] || status}?`,
+        function() {
+            // Create a form and submit it
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/table/${tableId}/status`;
+
+            // Add CSRF token
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = '{{ csrf_token() }}';
+            form.appendChild(csrfToken);
+
+            // Add method override for PATCH
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'PATCH';
+            form.appendChild(methodInput);
+
+            // Add status
+            const statusInput = document.createElement('input');
+            statusInput.type = 'hidden';
+            statusInput.name = 'status';
+            statusInput.value = status;
+            form.appendChild(statusInput);
+
+            // Submit form
+            document.body.appendChild(form);
+            form.submit();
+        }
+    );
+}
+
+// Function to delete table
+function deleteTable(tableId) {
+    showConfirm(
+        'Delete Table',
+        'Are you sure you want to delete this table? This action cannot be undone.',
+        function() {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/table/${tableId}`;
+
+            // Add CSRF token
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = '{{ csrf_token() }}';
+            form.appendChild(csrfToken);
+
+            // Add method override for DELETE
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+            form.appendChild(methodInput);
+
+            // Submit form
+            document.body.appendChild(form);
+            form.submit();
+        }
+    );
+}
+
+// Modern confirmation modal
+function showConfirm(title, message, onConfirm) {
+    const modal = document.getElementById('confirm-modal');
+    const titleEl = document.getElementById('confirm-title');
+    const messageEl = document.getElementById('confirm-message');
+    const confirmBtn = document.getElementById('confirm-ok');
+    const cancelBtn = document.getElementById('confirm-cancel');
+
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    modal.style.display = 'flex';
+
+    // Remove old listeners
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+    // Add new listeners
+    newConfirmBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+        onConfirm();
+    });
+
+    newCancelBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+
+    // Close on background click
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
 }
 </script>
 @endsection

@@ -216,20 +216,142 @@
 }
 
 
+/* Tables Modal Styles */
+.tables-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+}
+
+.tables-modal-overlay.active {
+    display: flex;
+}
+
+.tables-modal {
+    background: white;
+    border-radius: var(--radius);
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.3s ease;
+}
+
+.tables-modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+    color: white;
+}
+
+.tables-modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.tables-modal-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.tables-modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.tables-modal-body {
+    padding: 1.5rem;
+    max-height: calc(80vh - 80px);
+    overflow-y: auto;
+}
+
+.tables-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.modal-table-card {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: var(--radius);
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-table-card:hover {
+    border-color: var(--brand);
+    background: #f1f5f9;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.modal-table-card.selected {
+    border-color: var(--brand);
+    background: #eef2ff;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @media (max-width: 768px) {
     .qr-generator-container {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .qr-preview-section {
         position: static;
         order: -1;
     }
-    
+
     .qr-preview-placeholder {
         width: 250px;
         height: 250px;
+    }
+
+    .tables-modal {
+        width: 95%;
+        max-height: 90vh;
+    }
+
+    .tables-modal-grid {
+        grid-template-columns: 1fr;
     }
 }
 </style>
@@ -269,12 +391,19 @@
                         <i class="fas fa-table" style="margin-right: 0.5rem;"></i>
                         Select Available Table *
                     </label>
-                    
+
                     @if($tables->where('status', 'available')->count() > 0)
-                        <div class="table-selection">
-                            @foreach($tables->where('status', 'available') as $table)
-                                <div class="table-card" 
+                        @php
+                            $availableTables = $tables->where('status', 'available');
+                            $totalAvailable = $availableTables->count();
+                        @endphp
+
+                        <div class="table-selection" id="tableSelection">
+                            @foreach($availableTables->take(3) as $table)
+                                <div class="table-card"
                                      data-table-id="{{ $table->id }}"
+                                     data-table-number="{{ $table->table_number }}"
+                                     data-table-capacity="{{ $table->capacity }}"
                                      onclick="selectTable({{ $table->id }})">
                                     <div class="table-card-header">
                                         <span class="table-number">Table {{ $table->table_number }}</span>
@@ -286,14 +415,30 @@
                                 </div>
                             @endforeach
                         </div>
+
+                        @if($totalAvailable > 3)
+                            <button type="button" class="btn-secondary" onclick="showAllTablesModal()" style="width: 100%; margin-top: 1rem; padding: 0.75rem; border-radius: var(--radius); border: 2px solid var(--brand); background: white; color: var(--brand); font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                <i class="fas fa-list"></i> See All Tables ({{ $totalAvailable }} available)
+                            </button>
+                        @endif
+
                         <input type="hidden" id="table_id" name="table_id" value="{{ old('table_id') }}">
+
+                        <!-- Hidden div to store all available tables data -->
+                        <div id="allTablesData" style="display: none;">
+                            @foreach($availableTables as $table)
+                                <div data-table-id="{{ $table->id }}"
+                                     data-table-number="{{ $table->table_number }}"
+                                     data-table-capacity="{{ $table->capacity }}"></div>
+                            @endforeach
+                        </div>
                     @else
                         <div style="padding: 2rem; text-align: center; background: #fef3cd; border-radius: var(--radius); color: #92400e;">
                             <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
                             <p>No available tables found. All tables are currently occupied.</p>
                         </div>
                     @endif
-                    
+
                     @error('table_id')
                         <div class="form-error">{{ $message }}</div>
                     @enderror
@@ -442,6 +587,20 @@
     </div>
 </div>
 
+<!-- All Tables Modal -->
+<div class="tables-modal-overlay" id="tablesModal" onclick="closeTableModal(event)">
+    <div class="tables-modal" onclick="event.stopPropagation()">
+        <div class="tables-modal-header">
+            <h3><i class="fas fa-table"></i> Select a Table</h3>
+            <button class="tables-modal-close" onclick="closeTableModal()">×</button>
+        </div>
+        <div class="tables-modal-body">
+            <div class="tables-modal-grid" id="modalTablesGrid">
+                <!-- Tables will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+</div>
 
 @endsection
 
@@ -485,11 +644,134 @@ function checkFormValid() {
     const tableSelected = selectedTableId !== null && selectedTableId !== '';
     const timeSelected = document.getElementById('started_at').value !== '';
     const generateBtn = document.getElementById('generateBtn');
-    
+
     if (generateBtn) {
         generateBtn.disabled = !(tableSelected && timeSelected);
     }
 }
+
+// Show all tables modal
+function showAllTablesModal() {
+    const modal = document.getElementById('tablesModal');
+    const modalGrid = document.getElementById('modalTablesGrid');
+    const allTablesData = document.getElementById('allTablesData');
+
+    // Clear previous content
+    modalGrid.innerHTML = '';
+
+    // Get all available tables from hidden div
+    const tableElements = allTablesData.querySelectorAll('[data-table-id]');
+
+    // Populate modal with all tables
+    tableElements.forEach(tableEl => {
+        const tableId = tableEl.getAttribute('data-table-id');
+        const tableNumber = tableEl.getAttribute('data-table-number');
+        const tableCapacity = tableEl.getAttribute('data-table-capacity');
+
+        const card = document.createElement('div');
+        card.className = 'modal-table-card';
+        if (selectedTableId == tableId) {
+            card.classList.add('selected');
+        }
+        card.setAttribute('data-table-id', tableId);
+        card.onclick = () => selectTableFromModal(tableId);
+
+        card.innerHTML = `
+            <div class="table-card-header">
+                <span class="table-number">Table ${tableNumber}</span>
+                <span class="table-status available">Available</span>
+            </div>
+            <div class="table-capacity">
+                <i class="fas fa-users"></i> ${tableCapacity} seats
+            </div>
+        `;
+
+        modalGrid.appendChild(card);
+    });
+
+    // Show modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// Close modal
+function closeTableModal(event) {
+    const modal = document.getElementById('tablesModal');
+
+    // Only close if clicking overlay or close button, not modal content
+    if (event && event.target.closest('.tables-modal') && !event.target.classList.contains('tables-modal-close')) {
+        return;
+    }
+
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// Select table from modal and reorder display
+function selectTableFromModal(tableId) {
+    const allTablesData = document.getElementById('allTablesData');
+    const tableSelection = document.getElementById('tableSelection');
+    const selectedTableEl = allTablesData.querySelector(`[data-table-id="${tableId}"]`);
+
+    if (!selectedTableEl) return;
+
+    // Get selected table data
+    const tableNumber = selectedTableEl.getAttribute('data-table-number');
+    const tableCapacity = selectedTableEl.getAttribute('data-table-capacity');
+
+    // Get all available tables
+    const allTables = Array.from(allTablesData.querySelectorAll('[data-table-id]')).map(el => ({
+        id: el.getAttribute('data-table-id'),
+        number: el.getAttribute('data-table-number'),
+        capacity: el.getAttribute('data-table-capacity')
+    }));
+
+    // Move selected table to first position
+    const selectedIndex = allTables.findIndex(t => t.id == tableId);
+    if (selectedIndex > -1) {
+        const selectedTable = allTables.splice(selectedIndex, 1)[0];
+        allTables.unshift(selectedTable);
+    }
+
+    // Display first 3 tables with selected one first
+    tableSelection.innerHTML = '';
+    allTables.slice(0, 3).forEach(table => {
+        const card = document.createElement('div');
+        card.className = 'table-card';
+        if (table.id == tableId) {
+            card.classList.add('selected');
+        }
+        card.setAttribute('data-table-id', table.id);
+        card.setAttribute('data-table-number', table.number);
+        card.setAttribute('data-table-capacity', table.capacity);
+        card.onclick = () => selectTable(table.id);
+
+        card.innerHTML = `
+            <div class="table-card-header">
+                <span class="table-number">Table ${table.number}</span>
+                <span class="table-status available">Available</span>
+            </div>
+            <div class="table-capacity">
+                <i class="fas fa-users"></i> ${table.capacity} seats
+            </div>
+        `;
+
+        tableSelection.appendChild(card);
+    });
+
+    // Update selected table
+    selectTable(tableId);
+
+    // Close modal
+    closeTableModal();
+}
+
+// Close modal on ESC key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeTableModal();
+    }
+});
 
 // No existing QR management functions needed for create page
 
