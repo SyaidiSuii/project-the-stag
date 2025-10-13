@@ -34,15 +34,15 @@
             </div>
             
             <div class="flex flex-col space-y-3">
-                <button onclick="window.history.back()" 
+                <button onclick="goBack()"
                         class="w-full bg-gray-800 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-200">
                     Go Back
                 </button>
-                
-                <button onclick="window.location.reload()" 
-                        class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
-                    Try Again
-                </button>
+
+                <a href="{{ route('customer.menu.index') }}"
+                   class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200 text-center block">
+                    Browse Menu
+                </a>
             </div>
         </div>
         
@@ -51,5 +51,17 @@
             <p class="text-sm text-blue-600">Please contact our staff for assistance</p>
         </div>
     </div>
+
+    <script>
+        function goBack() {
+            // Check if there's history to go back to
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                // If no history, redirect to customer menu
+                window.location.href = "{{ route('customer.menu.index') }}";
+            }
+        }
+    </script>
 </body>
 </html>

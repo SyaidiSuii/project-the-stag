@@ -277,17 +277,12 @@
         position: relative;
     }
 
-    .password-toggle {
+    .input-icon {
         position: absolute;
-        right: 14px;
+        right: 15px;
         top: 50%;
         transform: translateY(-50%);
-        cursor: pointer;
         color: #64748b;
-    }
-
-    .password-toggle:hover {
-        color: #6366f1;
     }
 
     /* Responsive */
@@ -426,7 +421,7 @@
                         <label for="adminPassword" class="form-label">Password</label>
                         <div class="input-group">
                             <input type="password" id="adminPassword" class="form-input" placeholder="••••••••" required>
-                            <i class="fas fa-eye password-toggle" data-target="adminPassword" title="Show/Hide Password"></i>
+                            <i class="fas fa-lock input-icon"></i>
                         </div>
                         <div class="form-error" id="adminPassword-error">Password must be at least 8 characters</div>
                         <small class="form-help" id="passwordHelp">Minimum 8 characters. Admin will be required to change password on first login.</small>
@@ -436,7 +431,7 @@
                         <label for="adminPasswordConfirmation" class="form-label">Confirm Password</label>
                         <div class="input-group">
                             <input type="password" id="adminPasswordConfirmation" class="form-input" placeholder="••••••••" required>
-                            <i class="fas fa-eye password-toggle" data-target="adminPasswordConfirmation" title="Show/Hide Password"></i>
+                            <i class="fas fa-lock input-icon"></i>
                         </div>
                         <div class="form-error" id="adminPasswordConfirmation-error">Passwords must match</div>
                     </div>
@@ -469,24 +464,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const adminForm = document.getElementById('adminForm');
     const passwordHelp = document.getElementById('passwordHelp');
     const permissionNotice = document.getElementById('adminPermissionNotice');
-
-    // Password toggle functionality
-    document.querySelectorAll('.password-toggle').forEach(toggle => {
-        toggle.addEventListener('click', function() {
-            const targetId = this.dataset.target;
-            const targetInput = document.getElementById(targetId);
-
-            if (targetInput.type === 'password') {
-                targetInput.type = 'text';
-                this.classList.remove('fa-eye');
-                this.classList.add('fa-eye-slash');
-            } else {
-                targetInput.type = 'password';
-                this.classList.remove('fa-eye-slash');
-                this.classList.add('fa-eye');
-            }
-        });
-    });
 
     // Open modal for adding
     if (addUserBtn) {

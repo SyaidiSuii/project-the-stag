@@ -216,6 +216,9 @@
     <script src="{{ asset('js/confirm-modal.js') }}"></script>
     <script src="{{ asset('js/form-confirm-handler.js') }}"></script>
 
+    <!-- Password Toggle Functionality -->
+    <script src="{{ asset('js/password-toggle.js') }}"></script>
+
     <script src="{{ asset('js/admin/layout-admin.js') }}?v={{ time() }}"></script>
     @yield('scripts')
 </body>

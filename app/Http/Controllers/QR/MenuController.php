@@ -87,7 +87,12 @@ class MenuController extends Controller
         $cart = session($cartKey, []);
         $cartTotal = $this->calculateCartTotal($cart);
 
-        return view('qr.menu', compact('session', 'menuData', 'cart', 'cartTotal'));
+        // Disable caching for QR menu page
+        return response()
+            ->view('qr.menu', compact('session', 'menuData', 'cart', 'cartTotal'))
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', 'Sat, 01 Jan 2000 00:00:00 GMT');
     }
 
     /**

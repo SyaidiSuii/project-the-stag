@@ -24,8 +24,10 @@
         <div class="category-tabs" role="tablist" aria-label="Table Status">
           <button class="tab" data-filter="all" aria-current="page" role="tab">All Tables</button>
           <button class="tab" data-filter="available" role="tab">Available</button>
+          <button class="tab" data-filter="occupied" role="tab">Occupied</button>
           <button class="tab" data-filter="reserved" role="tab">Reserved</button>
           <button class="tab" data-filter="pending" role="tab">Pending</button>
+          <button class="tab" data-filter="maintenance" role="tab">Maintenance</button>
           <button class="tab" data-filter="selected" role="tab">My Selection</button>
         </div>
         <!-- Dynamic Category Title -->
@@ -46,12 +48,20 @@
             <span>Available</span>
           </div>
           <div class="legend-item">
+            <div class="legend-dot occupied"></div>
+            <span>Occupied (QR Active)</span>
+          </div>
+          <div class="legend-item">
             <div class="legend-dot reserved"></div>
             <span>Reserved</span>
           </div>
           <div class="legend-item">
             <div class="legend-dot pending"></div>
             <span>Pending</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot maintenance"></div>
+            <span>Maintenance</span>
           </div>
           <div class="legend-item">
             <div class="legend-dot selected"></div>
@@ -65,10 +75,22 @@
         
         <div class="floor-grid" id="floorGrid">
           @foreach($tables as $table)
-            <button class="table-tile {{ $table->status }} {{ $table->table_type === 'vip' ? 'vvip' : ($table->table_type === 'rectangle' ? 'rectangle' : 'square') }}" 
-                    data-id="{{ $table->table_number }}" 
-                    data-capacity="{{ $table->capacity }}" 
-                    data-status="{{ $table->status }}" 
+            @php
+              $coordinates = $table->coordinates ?? [];
+              $x = $coordinates['x'] ?? (30 + (($loop->index % 6) * 130));
+              $y = $coordinates['y'] ?? (30 + (floor($loop->index / 6) * 130));
+              $tableClass = match($table->table_type) {
+                'vip' => 'vvip',
+                'outdoor' => 'rectangle',
+                'indoor' => 'square',
+                default => 'square'
+              };
+            @endphp
+            <button class="table-tile {{ $table->status }} {{ $tableClass }}"
+                    data-id="{{ $table->table_number }}"
+                    data-capacity="{{ $table->capacity }}"
+                    data-status="{{ $table->status }}"
+                    style="left: {{ $x }}px; top: {{ $y }}px;"
                     aria-label="Table {{ $table->table_number }}, Capacity {{ $table->capacity }}, Status {{ $table->status }}">
               <div class="table-id">{{ $table->table_number }}</div>
               <div class="table-status">{{ $table->status }}</div>

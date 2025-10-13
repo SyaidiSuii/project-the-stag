@@ -87,13 +87,13 @@
 
                 <div class="form-group">
                     <label for="table_type" class="form-label">Table Type</label>
-                    <select 
-                        id="table_type" 
-                        name="table_type" 
+                    <select
+                        id="table_type"
+                        name="table_type"
                         class="form-control @error('table_type') is-invalid @enderror">
+                        <option value="outdoor" {{ old('table_type', $table->table_type ?? 'outdoor') == 'outdoor' ? 'selected' : '' }}>Outdoor</option>
                         <option value="indoor" {{ old('table_type', $table->table_type) == 'indoor' ? 'selected' : '' }}>Indoor</option>
                         <option value="vip" {{ old('table_type', $table->table_type) == 'vip' ? 'selected' : '' }}>VIP</option>
-                        <option value="outdoor" {{ old('table_type', $table->table_type) == 'outdoor' ? 'selected' : '' }}>Outdoor</option>
                     </select>
                     @if($errors->get('table_type'))
                         <div class="form-error">{{ implode(', ', $errors->get('table_type')) }}</div>

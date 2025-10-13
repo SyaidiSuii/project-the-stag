@@ -190,7 +190,12 @@ const AppData = {
               'Accept': 'application/json'
             }
           })
-          .then(response => response.json())
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
           .then(data => {
             if (data.success) {
               // Get earned points from response
@@ -481,18 +486,23 @@ const AppData = {
     function renderMyVouchers() {
       const container = document.getElementById('myVoucherList');
       const empty = document.getElementById('noVoucher');
-      
+      const seeAllBtn = document.getElementById('seeAllVouchersBtn');
+
       if (vouchers.length === 0) {
         empty.style.display = 'block';
         container.style.display = 'none';
+        if (seeAllBtn) seeAllBtn.style.display = 'none';
         return;
       }
-      
+
       empty.style.display = 'none';
       container.style.display = 'grid';
       container.innerHTML = '';
-      
-      vouchers.forEach((voucher, index) => {
+
+      // Show only first 6 vouchers
+      const displayVouchers = vouchers.slice(0, 6);
+
+      displayVouchers.forEach((voucher, index) => {
         const voucherEl = document.createElement('div');
         voucherEl.className = 'voucher-card bounce';
         voucherEl.innerHTML = `
@@ -504,10 +514,19 @@ const AppData = {
           </button>
         `;
         container.appendChild(voucherEl);
-        
+
         // Remove bounce animation after it completes
         setTimeout(() => voucherEl.classList.remove('bounce'), 1000);
       });
+
+      // Show/hide "See All" button
+      if (seeAllBtn) {
+        if (vouchers.length > 6) {
+          seeAllBtn.style.display = 'block';
+        } else {
+          seeAllBtn.style.display = 'none';
+        }
+      }
     }
 
     // ===== Use Voucher =====
@@ -901,7 +920,12 @@ const AppData = {
             },
             body: JSON.stringify({ exchange_point_id: rewardId })
           })
-          .then(response => response.json())
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
           .then(data => {
             if (data.success) {
               showMessage(data.message, 'success');
@@ -942,10 +966,53 @@ const AppData = {
       document.getElementById('myRewardsModal').style.display = 'none';
     }
 
+    // ===== All Vouchers Modal Functions =====
+    function showAllVouchersModal() {
+      const modal = document.getElementById('allVouchersModal');
+      const modalBody = modal.querySelector('.modal-body .voucher-grid');
+
+      // Clear existing content
+      modalBody.innerHTML = '';
+
+      // Render all vouchers in modal
+      vouchers.forEach((voucher, index) => {
+        const voucherEl = document.createElement('div');
+        voucherEl.className = 'voucher-card';
+        voucherEl.innerHTML = `
+          <div class="voucher-name">${voucher.name}</div>
+          <div class="voucher-description">${voucher.description || voucher.type}</div>
+          <div class="voucher-expires">Expires: ${voucher.expires}</div>
+          <button onclick="useVoucherFromModal(${index})" class="voucher-use-btn">
+            Use Now
+          </button>
+        `;
+        modalBody.appendChild(voucherEl);
+      });
+
+      modal.style.display = 'block';
+    }
+
+    function closeAllVouchersModal() {
+      document.getElementById('allVouchersModal').style.display = 'none';
+    }
+
+    function useVoucherFromModal(index) {
+      // Close modal first
+      closeAllVouchersModal();
+      // Then use the voucher
+      useVoucher(index);
+    }
+
+    // Make functions globally available
+    window.showAllVouchersModal = showAllVouchersModal;
+    window.closeAllVouchersModal = closeAllVouchersModal;
+    window.useVoucherFromModal = useVoucherFromModal;
+
     // Close modal when clicking outside
     window.onclick = function(event) {
       const exchangeModal = document.getElementById('exchangePointsModal');
       const myRewardsModal = document.getElementById('myRewardsModal');
+      const allVouchersModal = document.getElementById('allVouchersModal');
 
       if (event.target == exchangeModal) {
         exchangeModal.style.display = 'none';
@@ -953,5 +1020,9 @@ const AppData = {
 
       if (event.target == myRewardsModal) {
         myRewardsModal.style.display = 'none';
+      }
+
+      if (event.target == allVouchersModal) {
+        allVouchersModal.style.display = 'none';
       }
     }

@@ -73,6 +73,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
         return redirect()->route('customer.menu.index');
     })->name('drinks.index');
     Route::get('/orders', [CustomerOrdersController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{orderId}', [CustomerOrdersController::class, 'show'])->name('orders.show');
     Route::get('/orders/{orderId}/details', [CustomerOrdersController::class, 'getOrderDetails'])->name('orders.details');
     Route::get('/orders/{orderId}/tracking', [CustomerOrdersController::class, 'getOrderTracking'])->name('orders.tracking');
     Route::post('/orders/{orderId}/cancel', [CustomerOrdersController::class, 'cancelOrder'])->name('orders.cancel');
@@ -214,6 +215,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // ---------------------------------------------
         // TABLE MANAGEMENT
         // ---------------------------------------------
+        Route::patch('table/{table}/status', [TableController::class, 'updateStatus'])->name('table.update-status');
         Route::resource('table', TableController::class);
 
         // Table Reservations

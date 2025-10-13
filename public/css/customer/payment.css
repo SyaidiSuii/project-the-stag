@@ -104,13 +104,14 @@
       position: relative;
       max-width: 600px;
       margin: 0 auto;
+      padding: 0;
     }
     .progress-bar::before {
       content: '';
       position: absolute;
       top: 20px;
-      left: 0;
-      right: 0;
+      left: 20px;
+      right: 20px;
       height: 2px;
       background: var(--muted);
       z-index: 1;
@@ -119,8 +120,8 @@
       content: '';
       position: absolute;
       top: 20px;
-      left: 0;
-      width: 66%;
+      left: 20px;
+      width: calc(66.66% - 20px);
       height: 2px;
       background: var(--brand);
       z-index: 2;
@@ -131,6 +132,13 @@
       align-items: center;
       position: relative;
       z-index: 3;
+      flex: 1;
+    }
+    .progress-step:first-child {
+      flex: 0;
+    }
+    .progress-step:last-child {
+      flex: 0;
     }
     .step-circle {
       width: 40px;

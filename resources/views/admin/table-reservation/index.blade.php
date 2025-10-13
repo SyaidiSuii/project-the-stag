@@ -159,71 +159,38 @@
                                     <button class="action-btn confirm-btn" title="Confirm Booking" onclick="updateBookingStatus({{ $reservation->id }}, 'confirmed')">
                                         <i class="fas fa-check"></i>
                                     </button>
-                                    <button class="action-btn cancel-btn" title="Cancel Booking" onclick="updateBookingStatus({{ $reservation->id }}, 'cancelled')">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                @elseif($reservation->status === 'confirmed')
-                                    <button class="action-btn ready-btn" title="Mark as Seated" onclick="updateBookingStatus({{ $reservation->id }}, 'seated')">
-                                        <i class="fas fa-chair"></i>
-                                    </button>
-                                    <button class="action-btn cancel-btn" title="Mark as No Show" onclick="updateBookingStatus({{ $reservation->id }}, 'no_show')">
-                                        <i class="fas fa-user-times"></i>
-                                    </button>
-                                @elseif($reservation->status === 'seated')
-                                    <button class="action-btn complete-btn" title="Mark as Completed" onclick="updateBookingStatus({{ $reservation->id }}, 'completed')">
-                                        <i class="fas fa-check-circle"></i>
-                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;">
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <i class="fas fa-calendar-check" style="font-size: 48px; opacity: 0.5; margin-bottom: 16px;"></i>
+                            <p style="font-weight: 600; margin-bottom: 8px; font-size: 16px;">No bookings found</p>
+                            <p style="font-size: 14px; margin-bottom: 0;">
+                                @if(request()->hasAny(['search', 'status', 'date']))
+                                    No bookings match your current filters. Try adjusting your search criteria.
+                                @else
+                                    No bookings have been made yet.
                                 @endif
-
-                                <!-- Default Action Buttons -->
-                                <a href="{{ route('admin.table-reservation.show', $reservation->id) }}" 
-                                class="action-btn view-btn" title="View Details">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="{{ route('admin.table-reservation.edit', $reservation->id) }}" 
-                                class="action-btn edit-btn" title="Edit Booking">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                @if(!in_array($reservation->status, ['completed', 'cancelled']))
-                                    <form method="POST" action="{{ route('admin.table-reservation.destroy', $reservation->id) }}" style="display: inline;"
-                                        onsubmit="return confirm('Are you sure you want to delete this booking?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="action-btn delete-btn" title="Delete Booking">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @else
-        <!-- Empty State Outside Table -->
-        <div class="empty-state">
-            <div class="empty-state-icon">
-                <i class="fas fa-calendar-check"></i>
-            </div>
-            <div class="empty-state-title">No bookings found</div>
-            <div class="empty-state-text">
-                @if(request()->hasAny(['search', 'status', 'date']))
-                    No bookings match your current filters. Try adjusting your search criteria.
-                @else
-                    No bookings have been made yet.
-                @endif
-            </div>
-            @if(!request()->hasAny(['search', 'status', 'date']))
-                <div style="margin-top: 20px;">
-                    <a href="{{ route('admin.table-reservation.create') }}" class="admin-btn btn-primary">
-                        <i class="fas fa-plus"></i> Create First Booking
-                    </a>
-                </div>
-            @endif
-        </div>
-    @endif
+                            </p>
+                            @if(!request()->hasAny(['search', 'status', 'date']))
+                                <div style="margin-top: 20px;">
+                                    <a href="{{ route('admin.table-reservation.create') }}" class="admin-btn btn-primary">
+                                        <i class="fas fa-plus"></i> Create First Booking
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
     <!-- Pagination -->
     @if($reservations->hasPages())

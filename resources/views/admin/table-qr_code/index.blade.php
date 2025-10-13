@@ -196,43 +196,95 @@
 
 @section('scripts')
 <script>
-    // Notification function
-function showNotification(message, type) {
-    // Create a simple notification
-    const notification = document.createElement('div');
-    notification.className = 'notification ' + type;
-    notification.textContent = message;
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 10px 20px;
-        border-radius: 5px;
-        color: white;
-        font-weight: bold;
-        z-index: 9999;
-        ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
+
+// Regenerate QR Code function
+function regenerateQR(sessionId) {
+    showConfirm(
+        'Regenerate QR Code?',
+        'The old QR code will no longer work. Are you sure you want to continue?',
+        'warning',
+        'Regenerate',
+        'Cancel'
+    ).then(confirmed => {
+        if (!confirmed) return;
+
+        fetch('{{ url("admin/table-qrcodes") }}/' + sessionId + '/regenerate-qr', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Toast.success('Success!', 'QR code regenerated successfully');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                Toast.error('Error', data.message || 'Failed to regenerate QR code');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Toast.error('Error', 'Failed to regenerate QR code. Please try again.');
+        });
+    });
+}
+
+// Complete Session function
+function completeSession(sessionId) {
+    showConfirm(
+        'Complete Session?',
+        'This will mark the QR code session as complete and make the table available.',
+        'info',
+        'Complete',
+        'Cancel'
+    ).then(confirmed => {
+        if (!confirmed) return;
+
+        fetch('{{ url("admin/table-qrcodes") }}/' + sessionId + '/complete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Toast.success('Success!', 'Session completed successfully');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                Toast.error('Error', data.message || 'Failed to complete session');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Toast.error('Error', 'Failed to complete session. Please try again.');
+        });
+    });
 }
 
 // Check for session messages on page load
 document.addEventListener('DOMContentLoaded', function() {
     @if(session('message'))
-        showNotification('{{ session('message') }}', 'success');
+        Toast.success('Success', '{{ session('message') }}');
     @endif
-    
+
     @if(session('success'))
-        showNotification('{{ session('success') }}', 'success');
+        Toast.success('Success', '{{ session('success') }}');
     @endif
-    
+
     @if(session('error'))
-        showNotification('{{ session('error') }}', 'error');
+        Toast.error('Error', '{{ session('error') }}');
     @endif
 });
 </script>

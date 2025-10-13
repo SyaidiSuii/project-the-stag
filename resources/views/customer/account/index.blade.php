@@ -18,27 +18,8 @@
       @endif
     </div>
 
-    <div style="margin-top: 1rem;">
-      @if(session('success'))
-        <div style="background: #10b981; color: white; padding: 12px; border-radius: 8px; margin: 10px 0; text-align: center;">
-          {{ session('success') }}
-        </div>
-      @endif
-      @if(session('error'))
-        <div style="background: #ef4444; color: white; padding: 12px; border-radius: 8px; margin: 10px 0; text-align: center;">
-          {{ session('error') }}
-        </div>
-      @endif
-      @if($errors->any())
-        <div style="background: #ef4444; color: white; padding: 12px; border-radius: 8px; margin: 10px 0;">
-          <ul style="margin: 0; padding-left: 20px;">
-            @foreach($errors->all() as $error)
-              <li>{{ $error }}</li>
-            @endforeach
-          </ul>
-        </div>
-      @endif
-    </div>
+    <!-- Modern Toast Notifications Container -->
+    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; max-width: 400px;"></div>
 
     <!-- Profile Header -->
     <div class="profile-header">
@@ -135,7 +116,7 @@
             </div>
           </div>
           <div class="btn-group">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+            <button type="submit" class="btn btn-primary" onclick="this.innerHTML='<i class=\'fas fa-spinner fa-spin\'></i> Saving...'; this.disabled=true;"><i class="fas fa-save"></i> Save Changes</button>
           </div>
         </form>
       </div>
@@ -151,18 +132,24 @@
           @csrf
           <div class="form-group">
             <label for="current_password">Current Password</label>
-            <input type="password" id="current_password" name="current_password" required />
+            <div class="input-group" style="position: relative;">
+              <input type="password" id="current_password" name="current_password" required />
+            </div>
           </div>
           <div class="form-group">
             <label for="new_password">New Password</label>
-            <input type="password" id="new_password" name="new_password" required />
+            <div class="input-group" style="position: relative;">
+              <input type="password" id="new_password" name="new_password" required />
+            </div>
           </div>
           <div class="form-group">
             <label for="new_password_confirmation">Confirm New Password</label>
-            <input type="password" id="new_password_confirmation" name="new_password_confirmation" required />
+            <div class="input-group" style="position: relative;">
+              <input type="password" id="new_password_confirmation" name="new_password_confirmation" required />
+            </div>
           </div>
           <div class="btn-group">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update Password</button>
+            <button type="submit" class="btn btn-primary" onclick="this.innerHTML='<i class=\'fas fa-spinner fa-spin\'></i> Updating...'; this.disabled=true;"><i class="fas fa-save"></i> Update Password</button>
             <button type="button" class="btn btn-secondary" onclick="togglePasswordForm()"><i class="fas fa-times"></i> Cancel</button>
           </div>
         </form>
@@ -209,9 +196,9 @@
             @endif
           </div>
           <div class="btn-group" style="margin-top: 1rem;">
-            <form action="{{ route('logout') }}" method="POST" style="display: inline;">
+            <form action="{{ route('logout') }}" method="POST" style="display: inline;" id="logoutForm">
               @csrf
-              <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to logout?')">
+              <button type="button" class="btn btn-outline-danger" onclick="confirmLogout()">
                 <i class="fas fa-sign-out-alt"></i> Logout
               </button>
             </form>
@@ -254,8 +241,10 @@
         
         <div class="form-group" style="margin-bottom: 1rem;">
           <label for="delete_password" style="font-weight: 700; margin-bottom: 0.5rem; display: block;">Enter your password to confirm:</label>
-          <input type="password" id="delete_password" name="password" required 
-                 style="width: 100%; padding: 12px; border: 2px solid var(--muted); border-radius: 8px;">
+          <div class="input-group" style="position: relative;">
+            <input type="password" id="delete_password" name="password" required
+                   style="width: 100%; padding: 12px; border: 2px solid var(--muted); border-radius: 8px;">
+          </div>
         </div>
 
         <div class="form-group" style="margin-bottom: 1.5rem;">
@@ -282,6 +271,156 @@
 @section('scripts')
 <script src="{{ asset('js/customer/account.js') }}"></script>
 <script>
+// Modern Toast Notification System
+function showToast(message, type = 'success', duration = 5000) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+
+    // Icon based on type
+    const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+    };
+
+    // Colors based on type
+    const colors = {
+        success: { bg: '#10b981', icon: '#059669' },
+        error: { bg: '#ef4444', icon: '#dc2626' },
+        warning: { bg: '#f59e0b', icon: '#d97706' },
+        info: { bg: '#3b82f6', icon: '#2563eb' }
+    };
+
+    const color = colors[type] || colors.info;
+    const icon = icons[type] || icons.info;
+
+    toast.style.cssText = `
+        background: white;
+        border-left: 4px solid ${color.bg};
+        border-radius: 12px;
+        padding: 16px 20px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 300px;
+        max-width: 400px;
+        animation: slideInRight 0.3s ease-out, fadeOut 0.3s ease-out ${duration - 300}ms forwards;
+        position: relative;
+        overflow: hidden;
+    `;
+
+    toast.innerHTML = `
+        <div style="
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: ${color.bg}15;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        ">
+            <i class="fas ${icon}" style="color: ${color.icon}; font-size: 18px;"></i>
+        </div>
+        <div style="flex: 1; color: #1e293b; font-size: 14px; font-weight: 500; line-height: 1.5;">
+            ${message}
+        </div>
+        <button onclick="this.parentElement.remove()" style="
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        " onmouseover="this.style.background='#f1f5f9'; this.style.color='#475569';" onmouseout="this.style.background='none'; this.style.color='#94a3b8';">
+            ×
+        </button>
+        <div style="
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: ${color.bg};
+            width: 100%;
+            animation: shrink ${duration}ms linear forwards;
+        "></div>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto remove after duration
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, duration);
+}
+
+// Add animations to page
+if (!document.getElementById('toast-animations')) {
+    const style = document.createElement('style');
+    style.id = 'toast-animations';
+    style.textContent = `
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+                transform: translateX(400px);
+            }
+        }
+
+        @keyframes shrink {
+            from {
+                width: 100%;
+            }
+            to {
+                width: 0%;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Show notifications on page load
+document.addEventListener('DOMContentLoaded', function() {
+    @if(session('success'))
+        showToast("{{ session('success') }}", 'success');
+    @endif
+
+    @if(session('error'))
+        showToast("{{ session('error') }}", 'error');
+    @endif
+
+    @if($errors->any())
+        @foreach($errors->all() as $error)
+            showToast("{{ $error }}", 'error');
+        @endforeach
+    @endif
+});
+
 function togglePasswordForm() {
     const passwordForm = document.getElementById('passwordForm');
     const forgotPasswordForm = document.getElementById('forgotPasswordForm');
@@ -347,13 +486,13 @@ if (deleteAccountForm) {
 
         if (confirmInput !== 'DELETE') {
             e.preventDefault();
-            alert('Please type "DELETE" in capital letters to confirm account deletion.');
+            showToast('Please type "DELETE" in capital letters to confirm account deletion.', 'error');
             return false;
         }
 
         if (!passwordInput) {
             e.preventDefault();
-            alert('Please enter your password to confirm account deletion.');
+            showToast('Please enter your password to confirm account deletion.', 'error');
             return false;
         }
 
@@ -368,5 +507,153 @@ if (deleteAccountForm) {
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting Account...';
     });
 }
+
+// Logout confirmation with toast
+function confirmLogout() {
+    const logoutForm = document.getElementById('logoutForm');
+    const button = event.target.closest('button');
+
+    // Create custom confirmation toast
+    const container = document.getElementById('toast-container');
+    const confirmToast = document.createElement('div');
+
+    confirmToast.style.cssText = `
+        background: white;
+        border-left: 4px solid #f59e0b;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        min-width: 350px;
+        max-width: 400px;
+        animation: slideInRight 0.3s ease-out;
+    `;
+
+    confirmToast.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: #f59e0b15;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            ">
+                <i class="fas fa-sign-out-alt" style="color: #d97706; font-size: 18px;"></i>
+            </div>
+            <div style="flex: 1;">
+                <div style="font-weight: 600; color: #1e293b; margin-bottom: 4px;">Confirm Logout</div>
+                <div style="font-size: 14px; color: #64748b;">Are you sure you want to logout?</div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+            <button onclick="this.closest('div').parentElement.remove()" style="
+                padding: 8px 16px;
+                background: #e2e8f0;
+                border: none;
+                border-radius: 8px;
+                color: #475569;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.2s;
+            " onmouseover="this.style.background='#cbd5e1'" onmouseout="this.style.background='#e2e8f0'">
+                Cancel
+            </button>
+            <button onclick="document.getElementById('logoutForm').submit()" style="
+                padding: 8px 16px;
+                background: #ef4444;
+                border: none;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.2s;
+            " onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                Logout
+            </button>
+        </div>
+    `;
+
+    container.appendChild(confirmToast);
+
+    // Auto remove after 10 seconds if no action
+    setTimeout(() => {
+        if (confirmToast.parentElement) {
+            confirmToast.remove();
+        }
+    }, 10000);
+}
+
+// Custom password toggle for customer account page (eye icon only, no lock icon)
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordFields = document.querySelectorAll('#current_password, #new_password, #new_password_confirmation, #delete_password');
+
+    passwordFields.forEach(function(passwordInput) {
+        const inputGroup = passwordInput.closest('.input-group');
+
+        if (!inputGroup || inputGroup.querySelector('.password-toggle')) return;
+
+        // Create toggle button (eye icon only)
+        const toggleButton = document.createElement('button');
+        toggleButton.type = 'button';
+        toggleButton.className = 'password-toggle';
+        toggleButton.setAttribute('aria-label', 'Toggle password visibility');
+        toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
+
+        // Add styles - positioned at the end with proper spacing
+        toggleButton.style.cssText = `
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #64748b;
+            font-size: 18px;
+            padding: 4px;
+            transition: color 0.2s ease;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+
+        // Hover effect - simple color change to blue
+        toggleButton.addEventListener('mouseenter', function() {
+            this.style.color = '#6366f1';
+        });
+
+        toggleButton.addEventListener('mouseleave', function() {
+            this.style.color = '#64748b';
+        });
+
+        // Toggle functionality
+        toggleButton.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+                this.setAttribute('aria-label', 'Hide password');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+                this.setAttribute('aria-label', 'Show password');
+            }
+        });
+
+        // Add padding to input for the eye icon
+        const currentPaddingRight = window.getComputedStyle(passwordInput).paddingRight;
+        const currentPadding = parseInt(currentPaddingRight) || 12;
+        passwordInput.style.paddingRight = (currentPadding + 40) + 'px';
+
+        // Append toggle button to input group
+        inputGroup.appendChild(toggleButton);
+    });
+});
 </script>
 @endsection

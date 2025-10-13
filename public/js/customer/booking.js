@@ -13,9 +13,10 @@ document.addEventListener('DOMContentLoaded', function() {
     tableTiles.forEach(tile => {
         tile.addEventListener('click', function() {
             const status = this.dataset.status;
-            
-            // Don't allow selection if table is reserved or pending
-            if (status === 'reserved' || status === 'pending') {
+
+            // Don't allow selection if table is not available
+            // (reserved, pending, occupied, or in maintenance)
+            if (status === 'reserved' || status === 'pending' || status === 'occupied' || status === 'maintenance') {
                 return;
             }
 
@@ -119,11 +120,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     case 'available':
                         shouldShow = status === 'available';
                         break;
+                    case 'occupied':
+                        shouldShow = status === 'occupied';
+                        break;
                     case 'reserved':
                         shouldShow = status === 'reserved';
                         break;
                     case 'pending':
                         shouldShow = status === 'pending';
+                        break;
+                    case 'maintenance':
+                        shouldShow = status === 'maintenance';
                         break;
                     case 'selected':
                         shouldShow = isSelected;

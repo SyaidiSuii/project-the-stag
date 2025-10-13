@@ -71,6 +71,8 @@ class CartManager {
 
             if (response.ok) {
                 const data = await response.json();
+                console.log('Debug: Database cart fetched:', data.cart);
+                console.log('Debug: Cart items count:', data.cart ? data.cart.length : 0);
                 return data.cart || [];
             } else {
                 console.warn('Failed to fetch database cart, falling back to localStorage');
