@@ -1101,10 +1101,6 @@
       }
   }
 
-  .pulse {
-      animation: pulse 2s infinite;
-  }
-
   @keyframes slideIn {
       from {
           transform: translateX(100%);

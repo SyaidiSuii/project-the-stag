@@ -46,20 +46,43 @@ const AppData = {
         const dayEl = document.createElement('div');
         dayEl.className = 'day';
 
-        // If checked in today, current streak position should be marked as completed
-        // Otherwise, it should be marked as active (ready to check in)
-        if (checkedInToday && index <= checkinStreak) {
-          // Already checked in today, show completed up to current position
-          dayEl.classList.add('completed');
-        } else if (!checkedInToday && index === checkinStreak) {
-          // Not checked in yet, show current position as active
-          dayEl.classList.add('active');
-        } else if (!checkedInToday && index < checkinStreak) {
-          // Previous days are completed
-          dayEl.classList.add('completed');
+        // Backend logic: after check-in, checkin_streak is incremented and saved
+        // So checkin_streak represents the last completed day (0-6)
+        // Example: If streak is 1, you completed Day 2 (index 1), next is Day 3 (index 2)
+
+        if (checkedInToday) {
+          // Already checked in today - checkin_streak is the index they just completed
+          if (index <= checkinStreak) {
+            dayEl.classList.add('completed');
+          } else {
+            dayEl.classList.add('locked');
+          }
         } else {
-          // Future days are locked
-          dayEl.classList.add('locked');
+          // Haven't checked in today yet
+          // If lastCheckinDate is null (never checked in), checkin_streak will be 0, show day 0 as active
+          // If lastCheckinDate exists (checked in before), show completed days and next day as active
+
+          if (lastCheckinDate === null) {
+            // Never checked in before - show day 0 as active
+            if (index === 0) {
+              dayEl.classList.add('active');
+            } else {
+              dayEl.classList.add('locked');
+            }
+          } else {
+            // Checked in before
+            // checkin_streak is the last completed day (0-6)
+            // Next day to check in is (checkinStreak + 1)
+            const nextDayIndex = (checkinStreak + 1) % 7;
+
+            if (index <= checkinStreak) {
+              dayEl.classList.add('completed');
+            } else if (index === nextDayIndex) {
+              dayEl.classList.add('active');
+            } else {
+              dayEl.classList.add('locked');
+            }
+          }
         }
 
         dayEl.innerHTML = `

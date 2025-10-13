@@ -75,9 +75,9 @@
                 <option value="0" {{ request('active') == '0' ? 'selected' : '' }}>Inactive Only</option>
             </select>
             @if(request()->hasAny(['search', 'status', 'table_type', 'active']))
-                <button type="button" class="admin-btn btn-secondary" onclick="clearFilters()">
-                    <i class="fas fa-times"></i> Clear Filters
-                </button>
+            <button type="button" class="admin-btn btn-secondary" onclick="clearFilters()">
+                <i class="fas fa-times"></i> Clear Filters
+            </button>
             @endif
         </div>
         <a href="{{ route('admin.table.create') }}" class="admin-btn btn-primary">
@@ -108,7 +108,7 @@
                         <div class="table-info">
                             <div class="table-number">{{ $table->table_number }}</div>
                             @if($table->name)
-                                <div class="table-name">{{ $table->name }}</div>
+                            <div class="table-name">{{ $table->name }}</div>
                             @endif
                         </div>
                     </td>
@@ -141,133 +141,110 @@
                         <div class="table-actions">
                             <!-- Status Update Buttons -->
                             @if($table->status === 'available')
-                                <button class="action-btn reserve-btn" title="Reserve Table" onclick="updateTableStatus({{ $table->id }}, 'reserved')">
-                                    <i class="fas fa-calendar-plus"></i>
-                                </button>
-                                <button class="action-btn maintenance-btn" title="Set Maintenance" onclick="updateTableStatus({{ $table->id }}, 'maintenance')">
-                                    <i class="fas fa-tools"></i>
-                                </button>
+                            <button class="action-btn reserve-btn" title="Reserve Table" onclick="updateTableStatus({{ $table->id }}, 'reserved')">
+                                <i class="fas fa-calendar-plus"></i>
+                            </button>
+                            <button class="action-btn maintenance-btn" title="Set Maintenance" onclick="updateTableStatus({{ $table->id }}, 'maintenance')">
+                                <i class="fas fa-tools"></i>
+                            </button>
                             @elseif($table->status === 'occupied')
-                                <button class="action-btn available-btn" title="Mark Available" onclick="updateTableStatus({{ $table->id }}, 'available')">
-                                    <i class="fas fa-check-circle"></i>
-                                </button>
+                            <button class="action-btn available-btn" title="Mark Available" onclick="updateTableStatus({{ $table->id }}, 'available')">
+                                <i class="fas fa-check-circle"></i>
+                            </button>
                             @elseif($table->status === 'reserved')
-                                <button class="action-btn occupy-btn" title="Mark Occupied" onclick="updateTableStatus({{ $table->id }}, 'occupied')">
-                                    <i class="fas fa-user-friends"></i>
-                                </button>
-                                <button class="action-btn available-btn" title="Cancel Reservation" onclick="updateTableStatus({{ $table->id }}, 'available')">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                            <button class="action-btn occupy-btn" title="Mark Occupied" onclick="updateTableStatus({{ $table->id }}, 'occupied')">
+                                <i class="fas fa-user-friends"></i>
+                            </button>
+                            <button class="action-btn available-btn" title="Cancel Reservation" onclick="updateTableStatus({{ $table->id }}, 'available')">
+                                <i class="fas fa-times"></i>
+                            </button>
                             @elseif($table->status === 'maintenance')
-                                <button class="action-btn available-btn" title="Mark Available" onclick="updateTableStatus({{ $table->id }}, 'available')">
-                                    <i class="fas fa-check"></i>
-                                </button>
+                            <button class="action-btn available-btn" title="Mark Available" onclick="updateTableStatus({{ $table->id }}, 'available')">
+                                <i class="fas fa-check"></i>
+                            </button>
                             @endif
 
                             <!-- Default Action Buttons -->
-                            <a href="{{ route('admin.table.show', $table->id) }}" 
-                               class="action-btn view-btn" title="View Details">
+                            <a href="{{ route('admin.table.show', $table->id) }}"
+                                class="action-btn view-btn" title="View Details">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ route('admin.table.edit', $table->id) }}" 
-                               class="action-btn edit-btn" title="Edit Table">
+                            <a href="{{ route('admin.table.edit', $table->id) }}"
+                                class="action-btn edit-btn" title="Edit Table">
                                 <i class="fas fa-edit"></i>
                             </a>
                             @if($table->status === 'available')
-                                <button type="button" class="action-btn delete-btn" title="Delete Table" onclick="deleteTable({{ $table->id }})">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                            <button type="button" class="action-btn delete-btn" title="Delete Table" onclick="deleteTable({{ $table->id }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
                             @endif
                         </div>
                     </td>
                 </tr>
-                @empty
-                <tr>
-                    <td colspan="7" style="text-align: center; padding: 40px; color: #94a3b8;">
-                        <div style="display: flex; flex-direction: column; align-items: center;">
-                            <i class="fas fa-chair" style="font-size: 48px; opacity: 0.5; margin-bottom: 16px;"></i>
-                            <p style="font-weight: 600; margin-bottom: 8px; font-size: 16px;">No tables found</p>
-                            <p style="font-size: 14px; margin-bottom: 0;">
-                                @if(request()->hasAny(['search', 'status', 'table_type', 'active']))
-                                    No tables match your current filters. Try adjusting your search criteria.
-                                @else
-                                    No tables have been created yet.
-                                @endif
-                            </p>
-                            @if(!request()->hasAny(['search', 'status', 'table_type', 'active']))
-                                <div style="margin-top: 20px;">
-                                    <a href="{{ route('admin.table.create') }}" class="admin-btn btn-primary">
-                                        <i class="fas fa-plus"></i> Create First Table
-                                    </a>
-                                </div>
-                            @endif
-                        </div>
-                    </td>
-                </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
     </div>
     @else
-        <div class="empty-state">
-            <div class="empty-state-icon">
-                <i class="fas fa-chair"></i>
-            </div>
-            <div class="empty-state-title">No tables found</div>
-            <div class="empty-state-text">
-                @if(request()->hasAny(['search', 'status', 'table_type', 'active']))
-                    No tables match your current filters. Try adjusting your search criteria.
-                @else
-                    No tables have been created yet.
-                @endif
-            </div>
-            @if(!request()->hasAny(['search', 'status', 'table_type', 'active']))
-                <div style="margin-top: 20px;">
-                    <a href="{{ route('admin.table.create') }}" class="admin-btn btn-primary">
-                        <i class="fas fa-plus"></i> Create First Table
-                    </a>
-                </div>
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="fas fa-chair"></i>
+        </div>
+        <div class="empty-state-title">No tables found</div>
+        <div class="empty-state-text">
+            @if(request()->hasAny(['search', 'status', 'table_type', 'active']))
+            No tables match your current filters. Try adjusting your search criteria.
+            @else
+            No tables have been created yet.
             @endif
         </div>
+        @if(!request()->hasAny(['search', 'status', 'table_type', 'active']))
+        <div style="margin-top: 20px;">
+            <a href="{{ route('admin.table.create') }}" class="admin-btn btn-primary">
+                <i class="fas fa-plus"></i> Create First Table
+            </a>
+        </div>
+        @endif
+    </div>
     @endif
 
     <!-- Pagination -->
     @if($tables->hasPages())
-        <div class="pagination">
-            <div style="display: flex; align-items: center; gap: 16px; margin-right: auto;">
-                <span style="font-size: 14px; color: var(--text-2);">
-                    Showing {{ $tables->firstItem() }} to {{ $tables->lastItem() }} of {{ $tables->total() }} results
-                </span>
-            </div>
-            
-            @if($tables->onFirstPage())
-                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
-                    <i class="fas fa-chevron-left"></i>
-                </span>
-            @else
-                <a href="{{ $tables->previousPageUrl() }}" class="pagination-btn">
-                    <i class="fas fa-chevron-left"></i>
-                </a>
-            @endif
-
-            @foreach($tables->getUrlRange(1, $tables->lastPage()) as $page => $url)
-                @if($page == $tables->currentPage())
-                    <span class="pagination-btn active">{{ $page }}</span>
-                @else
-                    <a href="{{ $url }}" class="pagination-btn">{{ $page }}</a>
-                @endif
-            @endforeach
-
-            @if($tables->hasMorePages())
-                <a href="{{ $tables->nextPageUrl() }}" class="pagination-btn">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-            @else
-                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
-                    <i class="fas fa-chevron-right"></i>
-                </span>
-            @endif
+    <div class="pagination">
+        <div style="display: flex; align-items: center; gap: 16px; margin-right: auto;">
+            <span style="font-size: 14px; color: var(--text-2);">
+                Showing {{ $tables->firstItem() }} to {{ $tables->lastItem() }} of {{ $tables->total() }} results
+            </span>
         </div>
+
+        @if($tables->onFirstPage())
+        <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
+            <i class="fas fa-chevron-left"></i>
+        </span>
+        @else
+        <a href="{{ $tables->previousPageUrl() }}" class="pagination-btn">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        @endif
+
+        @foreach($tables->getUrlRange(1, $tables->lastPage()) as $page => $url)
+        @if($page == $tables->currentPage())
+        <span class="pagination-btn active">{{ $page }}</span>
+        @else
+        <a href="{{ $url }}" class="pagination-btn">{{ $page }}</a>
+        @endif
+        @endforeach
+
+        @if($tables->hasMorePages())
+        <a href="{{ $tables->nextPageUrl() }}" class="pagination-btn">
+            <i class="fas fa-chevron-right"></i>
+        </a>
+        @else
+        <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
+            <i class="fas fa-chevron-right"></i>
+        </span>
+        @endif
+    </div>
     @endif
 
 </div>
@@ -292,13 +269,13 @@
 
 @section('scripts')
 <script>
-// Notification function
-function showNotification(message, type) {
-    // Create a simple notification
-    const notification = document.createElement('div');
-    notification.className = 'notification ' + type;
-    notification.textContent = message;
-    notification.style.cssText = `
+    // Notification function
+    function showNotification(message, type) {
+        // Create a simple notification
+        const notification = document.createElement('div');
+        notification.className = 'notification ' + type;
+        notification.textContent = message;
+        notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
@@ -309,196 +286,199 @@ function showNotification(message, type) {
         z-index: 9999;
         ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
     `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
 
-// Check for session messages on page load
-document.addEventListener('DOMContentLoaded', function() {
-    @if(session('message'))
-        showNotification('{{ session('message') }}', 'success');
-    @endif
-    
-    @if(session('success'))
-        showNotification('{{ session('success') }}', 'success');
-    @endif
-    
-    @if(session('error'))
-        showNotification('{{ session('error') }}', 'error');
-    @endif
-});
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('tableStatusFilter');
-    const typeFilter = document.getElementById('tableTypeFilter');
-    const activeFilter = document.getElementById('tableActiveFilter');
+        document.body.appendChild(notification);
 
-    // Function to apply filters
-    function applyFilters() {
-        const params = new URLSearchParams();
-        
-        // Add search parameter
-        if (searchInput.value.trim()) {
-            params.append('search', searchInput.value.trim());
-        }
-        
-        // Add status filter
-        if (statusFilter.value) {
-            params.append('status', statusFilter.value);
-        }
-        
-        // Add table type filter
-        if (typeFilter.value) {
-            params.append('table_type', typeFilter.value);
-        }
-        
-        // Add active filter
-        if (activeFilter.value) {
-            params.append('active', activeFilter.value);
-        }
-        
-        // Redirect with parameters
-        const url = '{{ route("admin.table.index") }}' + (params.toString() ? '?' + params.toString() : '');
-        window.location.href = url;
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
     }
 
-    // Search input handler with debounce
-    let searchTimeout;
-    searchInput.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(applyFilters, 500); // 500ms delay
+    // Check for session messages on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(session('message'))
+        showNotification('{{ session('
+            message ') }}', 'success');
+        @endif
+
+        @if(session('success'))
+        showNotification('{{ session('
+            success ') }}', 'success');
+        @endif
+
+        @if(session('error'))
+        showNotification('{{ session('
+            error ') }}', 'error');
+        @endif
     });
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('tableStatusFilter');
+        const typeFilter = document.getElementById('tableTypeFilter');
+        const activeFilter = document.getElementById('tableActiveFilter');
 
-    // Filter change handlers
-    statusFilter.addEventListener('change', applyFilters);
-    typeFilter.addEventListener('change', applyFilters);
-    activeFilter.addEventListener('change', applyFilters);
+        // Function to apply filters
+        function applyFilters() {
+            const params = new URLSearchParams();
 
-    // Clear filters function
-    window.clearFilters = function() {
-        searchInput.value = '';
-        statusFilter.value = '';
-        typeFilter.value = '';
-        activeFilter.value = '';
-        window.location.href = '{{ route("admin.table.index") }}';
-    };
-});
+            // Add search parameter
+            if (searchInput.value.trim()) {
+                params.append('search', searchInput.value.trim());
+            }
 
-// Function to update table status
-function updateTableStatus(tableId, status) {
-    const statusLabels = {
-        'available': 'Available',
-        'occupied': 'Occupied',
-        'reserved': 'Reserved',
-        'maintenance': 'Maintenance'
-    };
+            // Add status filter
+            if (statusFilter.value) {
+                params.append('status', statusFilter.value);
+            }
 
-    showConfirm(
-        'Update Table Status',
-        `Are you sure you want to change this table status to ${statusLabels[status] || status}?`,
-        function() {
-            // Create a form and submit it
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/admin/table/${tableId}/status`;
+            // Add table type filter
+            if (typeFilter.value) {
+                params.append('table_type', typeFilter.value);
+            }
 
-            // Add CSRF token
-            const csrfToken = document.createElement('input');
-            csrfToken.type = 'hidden';
-            csrfToken.name = '_token';
-            csrfToken.value = '{{ csrf_token() }}';
-            form.appendChild(csrfToken);
+            // Add active filter
+            if (activeFilter.value) {
+                params.append('active', activeFilter.value);
+            }
 
-            // Add method override for PATCH
-            const methodInput = document.createElement('input');
-            methodInput.type = 'hidden';
-            methodInput.name = '_method';
-            methodInput.value = 'PATCH';
-            form.appendChild(methodInput);
-
-            // Add status
-            const statusInput = document.createElement('input');
-            statusInput.type = 'hidden';
-            statusInput.name = 'status';
-            statusInput.value = status;
-            form.appendChild(statusInput);
-
-            // Submit form
-            document.body.appendChild(form);
-            form.submit();
+            // Redirect with parameters
+            const url = '{{ route("admin.table.index") }}' + (params.toString() ? '?' + params.toString() : '');
+            window.location.href = url;
         }
-    );
-}
 
-// Function to delete table
-function deleteTable(tableId) {
-    showConfirm(
-        'Delete Table',
-        'Are you sure you want to delete this table? This action cannot be undone.',
-        function() {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/admin/table/${tableId}`;
+        // Search input handler with debounce
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(applyFilters, 500); // 500ms delay
+        });
 
-            // Add CSRF token
-            const csrfToken = document.createElement('input');
-            csrfToken.type = 'hidden';
-            csrfToken.name = '_token';
-            csrfToken.value = '{{ csrf_token() }}';
-            form.appendChild(csrfToken);
+        // Filter change handlers
+        statusFilter.addEventListener('change', applyFilters);
+        typeFilter.addEventListener('change', applyFilters);
+        activeFilter.addEventListener('change', applyFilters);
 
-            // Add method override for DELETE
-            const methodInput = document.createElement('input');
-            methodInput.type = 'hidden';
-            methodInput.name = '_method';
-            methodInput.value = 'DELETE';
-            form.appendChild(methodInput);
-
-            // Submit form
-            document.body.appendChild(form);
-            form.submit();
-        }
-    );
-}
-
-// Modern confirmation modal
-function showConfirm(title, message, onConfirm) {
-    const modal = document.getElementById('confirm-modal');
-    const titleEl = document.getElementById('confirm-title');
-    const messageEl = document.getElementById('confirm-message');
-    const confirmBtn = document.getElementById('confirm-ok');
-    const cancelBtn = document.getElementById('confirm-cancel');
-
-    titleEl.textContent = title;
-    messageEl.textContent = message;
-    modal.style.display = 'flex';
-
-    // Remove old listeners
-    const newConfirmBtn = confirmBtn.cloneNode(true);
-    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-    const newCancelBtn = cancelBtn.cloneNode(true);
-    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-
-    // Add new listeners
-    newConfirmBtn.addEventListener('click', function() {
-        modal.style.display = 'none';
-        onConfirm();
+        // Clear filters function
+        window.clearFilters = function() {
+            searchInput.value = '';
+            statusFilter.value = '';
+            typeFilter.value = '';
+            activeFilter.value = '';
+            window.location.href = '{{ route("admin.table.index") }}';
+        };
     });
 
-    newCancelBtn.addEventListener('click', function() {
-        modal.style.display = 'none';
-    });
+    // Function to update table status
+    function updateTableStatus(tableId, status) {
+        const statusLabels = {
+            'available': 'Available',
+            'occupied': 'Occupied',
+            'reserved': 'Reserved',
+            'maintenance': 'Maintenance'
+        };
 
-    // Close on background click
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
+        showConfirm(
+            'Update Table Status',
+            `Are you sure you want to change this table status to ${statusLabels[status] || status}?`,
+            function() {
+                // Create a form and submit it
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/table/${tableId}/status`;
+
+                // Add CSRF token
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+
+                // Add method override for PATCH
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'PATCH';
+                form.appendChild(methodInput);
+
+                // Add status
+                const statusInput = document.createElement('input');
+                statusInput.type = 'hidden';
+                statusInput.name = 'status';
+                statusInput.value = status;
+                form.appendChild(statusInput);
+
+                // Submit form
+                document.body.appendChild(form);
+                form.submit();
+            }
+        );
+    }
+
+    // Function to delete table
+    function deleteTable(tableId) {
+        showConfirm(
+            'Delete Table',
+            'Are you sure you want to delete this table? This action cannot be undone.',
+            function() {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/table/${tableId}`;
+
+                // Add CSRF token
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+
+                // Add method override for DELETE
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'DELETE';
+                form.appendChild(methodInput);
+
+                // Submit form
+                document.body.appendChild(form);
+                form.submit();
+            }
+        );
+    }
+
+    // Modern confirmation modal
+    function showConfirm(title, message, onConfirm) {
+        const modal = document.getElementById('confirm-modal');
+        const titleEl = document.getElementById('confirm-title');
+        const messageEl = document.getElementById('confirm-message');
+        const confirmBtn = document.getElementById('confirm-ok');
+        const cancelBtn = document.getElementById('confirm-cancel');
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        modal.style.display = 'flex';
+
+        // Remove old listeners
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+        // Add new listeners
+        newConfirmBtn.addEventListener('click', function() {
             modal.style.display = 'none';
-        }
-    });
-}
+            onConfirm();
+        });
+
+        newCancelBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        // Close on background click
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
 </script>
 @endsection
