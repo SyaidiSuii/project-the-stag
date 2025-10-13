@@ -32,24 +32,18 @@ class RewardsSystemSeeder extends Seeder
         $bronzeTier = LoyaltyTier::create([
             'name' => 'Bronze',
             'minimum_spending' => 0,
-            'points_multiplier' => 1.0,
-            'benefits' => 'Standard points earning, Birthday reward',
             'is_active' => true
         ]);
 
         $silverTier = LoyaltyTier::create([
             'name' => 'Silver',
             'minimum_spending' => 500,
-            'points_multiplier' => 1.5,
-            'benefits' => '1.5x points, Free delivery, Priority support',
             'is_active' => true
         ]);
 
         $goldTier = LoyaltyTier::create([
             'name' => 'Gold',
             'minimum_spending' => 1500,
-            'points_multiplier' => 2.0,
-            'benefits' => '2x points, Free delivery, Exclusive menu access, Monthly voucher',
             'is_active' => true
         ]);
 
