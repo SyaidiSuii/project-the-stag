@@ -159,12 +159,6 @@
             </div>
             <div class="method-name">Online Banking</div>
           </div>
-          <div class="payment-method" data-method="wallet">
-            <div class="method-icon">
-              <i class="fas fa-wallet"></i>
-            </div>
-            <div class="method-name">E-Wallet</div>
-          </div>
           <div class="payment-method" data-method="cash">
             <div class="method-icon">
               <i class="fas fa-money-bill-wave"></i>
@@ -208,29 +202,6 @@
               <span class="bank-name">BSN</span>
               <span class="bank-name">And more...</span>
             </div>
-          </div>
-        </div>
-
-        <!-- E-Wallet Payment Section -->
-        <div class="form-section" id="wallet-payment-section" style="display: none;">
-          <h3 class="section-title">
-            <i class="fas fa-mobile-alt"></i> E-Wallet Payment
-          </h3>
-          <div class="form-group">
-            <label for="wallet-type" class="form-label">Select E-Wallet</label>
-            <select id="wallet-type" class="form-input">
-              <option value="">Select your e-wallet</option>
-              <option value="touchngo">Touch 'n Go eWallet</option>
-              <option value="grabpay">GrabPay</option>
-              <option value="boost">Boost</option>
-              <option value="maybank">Maybank QRPay</option>
-            </select>
-            <div class="error-message">Please select an e-wallet</div>
-          </div>
-          <div class="form-group">
-            <label for="phone-number" class="form-label">Phone Number</label>
-            <input type="tel" id="phone-number" class="form-input" placeholder="012-345 6789">
-            <div class="error-message">Please enter a valid phone number</div>
           </div>
         </div>
 

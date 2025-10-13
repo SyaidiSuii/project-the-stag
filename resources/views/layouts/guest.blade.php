@@ -318,11 +318,14 @@
             </div>
             <p>@yield('header-subtitle', 'Welcome Back')</p>
         </div>
-        
+
         <div class="app-content">
             {{ $slot }}
         </div>
     </div>
+
+    <!-- Password Toggle Functionality -->
+    <script src="{{ asset('js/password-toggle.js') }}"></script>
 
     @stack('scripts')
 </body>

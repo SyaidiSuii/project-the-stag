@@ -190,19 +190,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add to cart functionality for both food and drink pages
     document.addEventListener('click', async function(e) {
         if (e.target.classList.contains('btn-cart')) {
+            // Check if this is the menu page (which has its own modal-based add to cart)
+            // Menu page has the 'addtocart-modal' element
+            const isMenuPage = document.getElementById('addtocart-modal') !== null;
+
+            // If it's the menu page, let menu.js handle the Add to Cart button
+            if (isMenuPage) {
+                return;
+            }
+
             const itemId = e.target.dataset.itemId;
-            
+
             // Handle both food-card and drink-card
             const itemCard = e.target.closest('.food-card') || e.target.closest('.drink-card');
             if (!itemCard) {
                 console.error('Could not find food-card or drink-card element');
                 return;
             }
-            
+
             // Get item data - works for both food and drink cards
             const itemName = itemCard.querySelector('.food-name, .drink-name').textContent;
             const itemPrice = itemCard.querySelector('.food-price, .drink-price').textContent;
-            
+
             // Check if item has image or just emoji
             const imgElement = itemCard.querySelector('.food-image img, .drink-image img');
             const itemImage = imgElement ? imgElement.src : null;
@@ -223,11 +232,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Add to cart using hybrid cart manager
             const result = await window.cartManager.addItem(itemData);
-            
+
             if (result.success) {
                 // Update badge
                 updateCartBadge();
-                
+
                 // Bounce animation for FAB
                 cartFab.classList.remove('bounce');
                 void cartFab.offsetWidth; // Force reflow
@@ -236,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Show success feedback
                 e.target.textContent = 'Added!';
                 e.target.style.backgroundColor = '#28a745';
-                
+
                 setTimeout(() => {
                     e.target.textContent = 'Add to Cart';
                     e.target.style.backgroundColor = '';

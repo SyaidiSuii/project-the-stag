@@ -258,6 +258,23 @@
         </div>
     </div>
 
+    <!-- Payment Method -->
+    <div class="form-group">
+        <label class="form-label">Payment Method</label>
+        <div style="border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; background: #f9fafb;">
+            <p style="font-size: 18px; font-weight: 600; text-transform: capitalize; margin: 0;">
+                <i class="fas fa-
+                    @if($order->payment_method == 'counter') cash-register
+                    @elseif($order->payment_method == 'online_banking') university
+                    @elseif($order->payment_method == 'credit_card') credit-card
+                    @elseif($order->payment_method == 'debit_card') credit-card
+                    @elseif($order->payment_method == 'e_wallet') wallet
+                    @else money-bill @endif" style="margin-right: 8px; color: #6b7280;"></i>
+                {{ str_replace('_', ' ', $order->payment_method) }}
+            </p>
+        </div>
+    </div>
+
     <!-- Table Information -->
     @if($order->table || $order->table_number)
     <div class="form-group">
@@ -513,7 +530,7 @@
                             <p style="font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">{{ $item->menuItem->name ?? 'Item #' . $item->id }}</p>
                             <p style="font-size: 14px; color: #6b7280; margin: 0;">
                                 <span style="background: #e5e7eb; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
-                                    Qty: {{ $item->quantity ?? 1 }}
+                                    Quantity: {{ $item->quantity ?? 1 }}
                                 </span>
                             </p>
                             @if($item->special_note)

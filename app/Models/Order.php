@@ -28,8 +28,10 @@ class Order extends Model
         'actual_completion_time',
         'is_rush_order',
         'confirmation_code',
+        'payment_method',
         // QR Order specific fields
         'guest_name',
+        'guest_email',
         'guest_phone',
         'session_token',
     ];
@@ -113,6 +115,11 @@ class Order extends Model
     public function trackings()
     {
         return $this->hasMany(OrderTracking::class);
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(\App\Models\Payment::class);
     }
 
     public function etas()

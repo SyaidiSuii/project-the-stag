@@ -30,13 +30,16 @@
             <div class="mt-6">
                 <x-input-label for="password" value="{{ __('Password') }}" class="sr-only" />
 
-                <x-text-input
-                    id="password"
-                    name="password"
-                    type="password"
-                    class="mt-1 block w-3/4"
-                    placeholder="{{ __('Password') }}"
-                />
+                <div class="input-group" style="position: relative; width: 75%;">
+                    <x-text-input
+                        id="password"
+                        name="password"
+                        type="password"
+                        class="mt-1 block w-full"
+                        placeholder="{{ __('Password') }}"
+                    />
+                    <i class="fas fa-lock input-icon" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #64748b;"></i>
+                </div>
 
                 <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
             </div>

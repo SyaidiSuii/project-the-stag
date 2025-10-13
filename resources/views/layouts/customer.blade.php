@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'The Stag - SmartDine')</title>
-    
+
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
-    
+
     <!-- Custom Design System CSS -->
     <link rel="stylesheet" href="{{ asset('css/customer/layout.css') }}">
 
@@ -19,6 +20,7 @@
     <!-- Page Specific Styles -->
     @yield('styles')
 </head>
+
 <body>
     <!-- Sidebar Navigation -->
     <div class="sidebar" aria-label="Primary">
@@ -63,13 +65,58 @@
     <script src="{{ asset('js/toast.js') }}"></script>
     <script src="{{ asset('js/confirm-modal.js') }}"></script>
 
+    <!-- Flash Messages Handler -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for logout message cookie
+            const logoutMessage = getCookie('logout_message');
+            if (logoutMessage) {
+                Toast.success('Success', logoutMessage);
+                // Delete the cookie after showing
+                document.cookie = 'logout_message=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            }
+
+            @if(session('success'))
+            Toast.success('Success', '{{ session('
+                success ') }}');
+            @endif
+
+            @if(session('error'))
+            Toast.error('Error', '{{ session('
+                error ') }}');
+            @endif
+
+            @if(session('warning'))
+            Toast.warning('Warning', '{{ session('
+                warning ') }}');
+            @endif
+
+            @if(session('info'))
+            Toast.info('Info', '{{ session('
+                info ') }}');
+            @endif
+        });
+
+        // Helper function to get cookie value
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+            return null;
+        }
+    </script>
+
     <!-- Customer Design System JavaScript -->
     <script src="{{ asset('js/customer/layout.js') }}"></script>
 
+    <!-- Password Toggle Functionality -->
+    <script src="{{ asset('js/password-toggle.js') }}"></script>
+
     {{-- 🧠 Chatbot (AI Groq) --}}
     @include('partials.chatbot')
-    
+
     <!-- Page Specific Scripts -->
     @yield('scripts')
 </body>
+
 </html>

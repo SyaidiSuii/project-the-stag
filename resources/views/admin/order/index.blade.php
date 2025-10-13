@@ -8,6 +8,12 @@
 @endsection
 
 @section('content')
+@php
+    $preparingCount = \App\Models\Order::where('order_status', 'preparing')->count();
+    $readyCount = \App\Models\Order::where('order_status', 'ready')->count();
+    $servedCount = \App\Models\Order::where('order_status', 'served')->count();
+@endphp
+
 <!-- Stats Cards -->
 <div class="admin-cards">
     <div class="admin-card">
@@ -20,11 +26,11 @@
     </div>
     <div class="admin-card">
         <div class="admin-card-header">
-            <div class="admin-card-title">Today's Revenue</div>
+            <div class="admin-card-title">Total Revenue</div>
             <div class="admin-card-icon icon-green"><i class="fas fa-dollar-sign"></i></div>
         </div>
-        <div class="admin-card-value">RM {{ number_format($todayRevenue ?? 0, 2) }}</div>
-        <div class="admin-card-desc">Today's earnings</div>
+        <div class="admin-card-value">RM {{ number_format($totalRevenue ?? 0, 2) }}</div>
+        <div class="admin-card-desc">From all paid orders</div>
     </div>
     <div class="admin-card">
         <div class="admin-card-header">
@@ -36,11 +42,27 @@
     </div>
     <div class="admin-card">
         <div class="admin-card-header">
+            <div class="admin-card-title">In Progress</div>
+            <div class="admin-card-icon icon-red"><i class="fas fa-utensils"></i></div>
+        </div>
+        <div class="admin-card-value">{{ $preparingCount + $readyCount }}</div>
+        <div class="admin-card-desc">Preparing + Ready</div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Served</div>
+            <div class="admin-card-icon icon-purple"><i class="fas fa-check-circle"></i></div>
+        </div>
+        <div class="admin-card-value">{{ $servedCount }}</div>
+        <div class="admin-card-desc">Served orders</div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
             <div class="admin-card-title">Completed</div>
-            <div class="admin-card-icon icon-red"><i class="fas fa-check-circle"></i></div>
+            <div class="admin-card-icon icon-teal"><i class="fas fa-flag-checkered"></i></div>
         </div>
         <div class="admin-card-value">{{ $completedOrders ?? 0 }}</div>
-        <div class="admin-card-desc">Successfully completed</div>
+        <div class="admin-card-desc">Finished orders</div>
     </div>
 </div>
 
@@ -109,18 +131,18 @@
     @if($orders->count() > 0)
     <div class="table-container">
         <table class="admin-table">
-            <thead>
-                <tr>
-                    <th class="th-order">Order Details</th>
-                    <th class="th-customer">Customer</th>
-                    <th class="th-type">Type/Table</th>
-                    <th class="th-amount">Amount</th>
-                    <th class="th-status">Status</th>
-                    <th class="th-eta">ETA</th>
-                    <th class="th-time">Order Time</th>
-                    <th class="th-actions">Actions</th>
-                </tr>
-            </thead>
+                <thead>
+                    <tr>
+                        <th class="th-order">Order Details</th>
+                        <th class="th-customer">Customer</th>
+                        <th class="th-type">Type/Table</th>
+                        <th class="th-amount">Amount</th>
+                        <th class="th-status" style="min-width: 180px;">Status</th>
+                        <th class="th-time">Order Time</th>
+                        <th class="th-eta" style="min-width: 100px;">ETA</th>
+                        <th class="th-actions" style="min-width: 280px;">Actions</th>
+                    </tr>
+                </thead>
             <tbody>
                 @foreach($orders as $order)
                 <tr>
@@ -154,7 +176,6 @@
                             @if($order->table)
                                 <div class="table-info">
                                     <strong>{{ $order->table->table_number }}</strong>
-                                    <span class="table-type">{{ $order->table->table_type }}</span>
                                 </div>
                             @elseif($order->table_number)
                                 <div class="table-info">
@@ -192,6 +213,12 @@
                         </div>
                     </td>
                     <td class="cell-center">
+                        <div class="time-info">
+                            <div class="order-date">{{ $order->order_time->format('M d') }}</div>
+                            <div class="order-time">{{ $order->order_time->format('g:i A') }}</div>
+                        </div>
+                    </td>
+                    <td class="cell-center">
                         <div class="eta-info">
                             @if($order->etas && $order->etas->count() > 0)
                                 @php
@@ -217,12 +244,6 @@
                             @else
                                 <span class="text-muted" style="font-size: 12px;">No ETA</span>
                             @endif
-                        </div>
-                    </td>
-                    <td class="cell-center">
-                        <div class="time-info">
-                            <div class="order-date">{{ $order->order_time->format('M d') }}</div>
-                            <div class="order-time">{{ $order->order_time->format('g:i A') }}</div>
                         </div>
                     </td>
                     <td class="cell-center">

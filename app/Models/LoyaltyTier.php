@@ -13,8 +13,6 @@ class LoyaltyTier extends Model
     protected $fillable = [
         'name',
         'minimum_spending',
-        'points_multiplier',
-        'benefits',
         'color',
         'icon',
         'sort_order',

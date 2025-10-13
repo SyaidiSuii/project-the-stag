@@ -60,6 +60,12 @@
   <span class="cart-badge" id="cartBadge">0</span>
 </button>
 
+<!-- Floating Order Type Button -->
+<button class="ordertype-fab" id="ordertypeFab" aria-label="Change order type" style="position: fixed; top: 24px; right: 24px; min-width: 140px; height: 56px; border-radius: 28px; border: none; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3); z-index: 999; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 20px; transition: all 0.3s; opacity: 0;">
+  <i class="fas fa-utensils" id="ordertypeIcon" style="font-size: 18px;"></i>
+  <span id="ordertypeText">Dine In</span>
+</button>
+
 <!-- Modern Centered Cart Modal -->
 <div class="cart-modal" id="cartModal">
   <div class="cart-modal-backdrop" id="cartModalBackdrop"></div>
@@ -134,76 +140,6 @@
   </div>
 </div>
 
-<!-- Cart Checkout Modal - Beautiful Design -->
-<div id="payment-method-modal" class="addon-modal" style="display: none;" aria-modal="true" role="dialog">
-  <div class="modal-content" style="max-width: 550px; border-radius: 24px; background: white;">
-    <!-- Modal Header -->
-    <div style="position: relative; padding: 24px 24px 16px 24px; border-bottom: 1px solid #e5e7eb;">
-      <button id="payment-modal-close-x" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 24px; color: #9ca3af; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s;">✕</button>
-      <div style="text-align: center;">
-        <div style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 16px; margin-bottom: 12px;">
-          <i class="fas fa-shopping-cart" style="font-size: 28px; color: white;"></i>
-        </div>
-        <h3 style="font-size: 24px; font-weight: 700; color: #1f2937; margin: 0;">Order Details</h3>
-      </div>
-    </div>
-
-    <div class="modal-body-scrollable" style="padding: 24px;">
-      <!-- Order Type Section -->
-      <div style="margin-bottom: 24px;">
-        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Order Type</label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <label class="cart-order-type-option" style="position: relative; cursor: pointer;">
-            <input type="radio" name="cart-order-type" value="dine_in" checked style="position: absolute; opacity: 0;">
-            <div class="cart-order-type-card" data-type="dine_in" style="border: 2px solid #6366f1; border-radius: 16px; padding: 20px 16px; text-align: center; transition: all 0.3s; background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);">
-              <i class="fas fa-utensils" style="font-size: 32px; color: #6366f1; display: block; margin-bottom: 8px;"></i>
-              <div style="font-weight: 700; font-size: 15px; color: #1f2937; margin-bottom: 4px;">🍽️ Dine In</div>
-              <div style="font-size: 12px; color: #6b7280;">Eat at restaurant</div>
-            </div>
-          </label>
-          <label class="cart-order-type-option" style="position: relative; cursor: pointer;">
-            <input type="radio" name="cart-order-type" value="takeaway" style="position: absolute; opacity: 0;">
-            <div class="cart-order-type-card" data-type="takeaway" style="border: 2px solid #e5e7eb; border-radius: 16px; padding: 20px 16px; text-align: center; transition: all 0.3s; background: white;">
-              <i class="fas fa-shopping-bag" style="font-size: 32px; color: #9ca3af; display: block; margin-bottom: 8px;"></i>
-              <div style="font-weight: 700; font-size: 15px; color: #1f2937; margin-bottom: 4px;">🥡 Takeaway</div>
-              <div style="font-size: 12px; color: #6b7280;">Pick up order</div>
-            </div>
-          </label>
-        </div>
-      </div>
-
-      <!-- Payment Method Section -->
-      <div style="margin-bottom: 24px;">
-        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Payment Method</label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <label class="payment-method-option" style="position: relative; cursor: pointer;">
-            <input type="radio" name="cart-payment-method" value="online" checked style="position: absolute; opacity: 0;">
-            <div class="payment-method-card cart-payment-card" data-method="online" style="border: 2px solid #6366f1; border-radius: 16px; padding: 20px 16px; text-align: center; transition: all 0.3s; background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);">
-              <i class="fas fa-globe" style="font-size: 32px; color: #6366f1; display: block; margin-bottom: 8px;"></i>
-              <div style="font-weight: 700; font-size: 15px; color: #1f2937; margin-bottom: 4px;">Pay Online</div>
-              <div style="font-size: 12px; color: #6b7280;">Online Banking / E-Wallet</div>
-            </div>
-          </label>
-          <label class="payment-method-option" style="position: relative; cursor: pointer;">
-            <input type="radio" name="cart-payment-method" value="counter" style="position: absolute; opacity: 0;">
-            <div class="payment-method-card cart-payment-card" data-method="counter" style="border: 2px solid #e5e7eb; border-radius: 16px; padding: 20px 16px; text-align: center; transition: all 0.3s; background: white;">
-              <i class="fas fa-store" style="font-size: 32px; color: #9ca3af; display: block; margin-bottom: 8px;"></i>
-              <div style="font-weight: 700; font-size: 15px; color: #1f2937; margin-bottom: 4px;">Pay at Counter</div>
-              <div style="font-size: 12px; color: #6b7280;">Cash / Card</div>
-            </div>
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal Footer -->
-    <div style="padding: 20px 24px 24px 24px; border-top: 1px solid #e5e7eb; display: flex; gap: 12px;">
-      <button id="cancel-payment-method-btn" style="flex: 1; padding: 14px; border-radius: 12px; border: 2px solid #e5e7eb; background: white; font-size: 15px; font-weight: 600; color: #6b7280; cursor: pointer; transition: all 0.2s;">Cancel</button>
-      <button id="confirm-payment-method-btn" style="flex: 2; padding: 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); font-size: 15px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">CONTINUE TO CHECKOUT</button>
-    </div>
-  </div>
-</div>
-
 <!-- Order Now Modal - Beautiful Design -->
 <div id="order-modal" class="addon-modal" style="display: none;" aria-modal="true" role="dialog">
   <div class="modal-content" style="max-width: 600px; border-radius: 24px; background: white;">
@@ -240,26 +176,11 @@
         </div>
       </div>
 
-      <!-- Order Type Section -->
+      <!-- Add-ons Section (Placeholder) -->
       <div style="margin-bottom: 24px;">
-        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Order Type</label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <label class="order-type-option" style="position: relative; cursor: pointer;">
-            <input type="radio" name="order-type" value="dine_in" checked style="position: absolute; opacity: 0;">
-            <div class="order-type-card" data-type="dine_in" style="border: 2px solid #6366f1; border-radius: 16px; padding: 20px 16px; text-align: center; transition: all 0.3s; background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);">
-              <i class="fas fa-utensils" style="font-size: 32px; color: #6366f1; display: block; margin-bottom: 8px;"></i>
-              <div style="font-weight: 700; font-size: 15px; color: #1f2937; margin-bottom: 4px;">🍽️ Dine In</div>
-              <div style="font-size: 12px; color: #6b7280;">Eat at restaurant</div>
-            </div>
-          </label>
-          <label class="order-type-option" style="position: relative; cursor: pointer;">
-            <input type="radio" name="order-type" value="takeaway" style="position: absolute; opacity: 0;">
-            <div class="order-type-card" data-type="takeaway" style="border: 2px solid #e5e7eb; border-radius: 16px; padding: 20px 16px; text-align: center; transition: all 0.3s; background: white;">
-              <i class="fas fa-shopping-bag" style="font-size: 32px; color: #9ca3af; display: block; margin-bottom: 8px;"></i>
-              <div style="font-weight: 700; font-size: 15px; color: #1f2937; margin-bottom: 4px;">🥡 Takeaway</div>
-              <div style="font-size: 12px; color: #6b7280;">Pick up order</div>
-            </div>
-          </label>
+        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Add-ons:</label>
+        <div style="padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; background: #f9fafb;">
+          <p style="font-size: 13px; color: #6b7280; margin: 0;">No add-ons available for this item</p>
         </div>
       </div>
 
@@ -267,29 +188,6 @@
       <div style="margin-bottom: 24px;">
         <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Special Instructions</label>
         <textarea id="order-notes" placeholder="Any special requests or dietary requirements..." rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 14px; resize: vertical; font-family: inherit; color: #1f2937;"></textarea>
-      </div>
-
-      <!-- Payment Method Section -->
-      <div style="margin-bottom: 24px;">
-        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Payment Method</label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <label class="payment-method-option" style="position: relative; cursor: pointer;">
-            <input type="radio" name="payment-method" value="online" checked style="position: absolute; opacity: 0;">
-            <div class="payment-method-card" data-method="online" style="border: 2px solid #6366f1; border-radius: 16px; padding: 20px 16px; text-align: center; transition: all 0.3s; background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);">
-              <i class="fas fa-globe" style="font-size: 32px; color: #6366f1; display: block; margin-bottom: 8px;"></i>
-              <div style="font-weight: 700; font-size: 15px; color: #1f2937; margin-bottom: 4px;">Pay Online</div>
-              <div style="font-size: 12px; color: #6b7280;">Online Banking / E-Wallet</div>
-            </div>
-          </label>
-          <label class="payment-method-option" style="position: relative; cursor: pointer;">
-            <input type="radio" name="payment-method" value="counter" style="position: absolute; opacity: 0;">
-            <div class="payment-method-card" data-method="counter" style="border: 2px solid #e5e7eb; border-radius: 16px; padding: 20px 16px; text-align: center; transition: all 0.3s; background: white;">
-              <i class="fas fa-store" style="font-size: 32px; color: #9ca3af; display: block; margin-bottom: 8px;"></i>
-              <div style="font-weight: 700; font-size: 15px; color: #1f2937; margin-bottom: 4px;">Pay at Counter</div>
-              <div style="font-size: 12px; color: #6b7280;">Cash / Card</div>
-            </div>
-          </label>
-        </div>
       </div>
 
       <!-- Total Section -->
@@ -305,6 +203,175 @@
     <div style="padding: 20px 24px 24px 24px; border-top: 1px solid #e5e7eb; display: flex; gap: 12px;">
       <button id="order-cancel-btn" style="flex: 1; padding: 14px; border-radius: 12px; border: 2px solid #e5e7eb; background: white; font-size: 15px; font-weight: 600; color: #6b7280; cursor: pointer; transition: all 0.2s;">Cancel</button>
       <button id="order-confirm-btn" style="flex: 2; padding: 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); font-size: 15px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">ORDER NOW</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add to Cart Modal - Beautiful Design -->
+<div id="addtocart-modal" class="addon-modal" style="display: none;" aria-modal="true" role="dialog">
+  <div class="modal-content" style="max-width: 600px; border-radius: 24px; background: white;">
+    <!-- Modal Header with Close Button -->
+    <div style="position: relative; padding: 24px 24px 16px 24px; border-bottom: 1px solid #e5e7eb;">
+      <button id="addtocart-modal-close-x" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 24px; color: #9ca3af; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s;">✕</button>
+      <div style="text-align: center;">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 16px; margin-bottom: 12px;">
+          <i class="fas fa-cart-plus" style="font-size: 28px; color: white;"></i>
+        </div>
+        <h3 style="font-size: 24px; font-weight: 700; color: #1f2937; margin: 0;">Add to Cart</h3>
+      </div>
+    </div>
+
+    <div class="modal-body-scrollable" style="padding: 24px; max-height: calc(90vh - 200px); overflow-y: auto;">
+      <!-- Item Info Card -->
+      <div style="background: #f9fafb; border-radius: 16px; padding: 16px; margin-bottom: 20px;">
+        <div style="display: flex; gap: 16px; align-items: center;">
+          <img id="addtocart-item-image" src="" alt="Item" style="width: 80px; height: 80px; object-fit: cover; border-radius: 12px; flex-shrink: 0;">
+          <div style="flex: 1; min-width: 0;">
+            <div id="addtocart-item-name" style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 4px;">Item Name</div>
+            <div id="addtocart-item-price" style="font-size: 18px; font-weight: 700; color: #6366f1;">RM 0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quantity Section -->
+      <div style="margin-bottom: 24px;">
+        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Quantity:</label>
+        <div style="display: flex; align-items: center; gap: 16px; justify-content: center;">
+          <button class="qty-btn" id="addtocart-qty-minus" style="width: 40px; height: 40px; border-radius: 12px; border: 2px solid #e5e7eb; background: white; font-size: 20px; font-weight: 600; color: #6b7280; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">−</button>
+          <span id="addtocart-quantity" style="font-size: 20px; font-weight: 700; color: #1f2937; min-width: 40px; text-align: center;">1</span>
+          <button class="qty-btn" id="addtocart-qty-plus" style="width: 40px; height: 40px; border-radius: 12px; border: 2px solid #e5e7eb; background: white; font-size: 20px; font-weight: 600; color: #6b7280; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">+</button>
+        </div>
+      </div>
+
+      <!-- Add-ons Section (Placeholder) -->
+      <div style="margin-bottom: 24px;">
+        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Add-ons:</label>
+        <div style="padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; background: #f9fafb;">
+          <p style="font-size: 13px; color: #6b7280; margin: 0;">No add-ons available for this item</p>
+        </div>
+      </div>
+
+      <!-- Special Instructions -->
+      <div style="margin-bottom: 24px;">
+        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Special Instructions</label>
+        <textarea id="addtocart-notes" placeholder="Any special requests or dietary requirements..." rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 14px; resize: vertical; font-family: inherit; color: #1f2937;"></textarea>
+      </div>
+
+      <!-- Total Section -->
+      <div style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-radius: 16px; padding: 20px; border: 2px solid #e5e7eb;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 16px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Total:</span>
+          <span id="addtocart-total-amount" style="font-size: 28px; font-weight: 900; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">RM 0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div style="padding: 20px 24px 24px 24px; border-top: 1px solid #e5e7eb; display: flex; gap: 12px;">
+      <button id="addtocart-cancel-btn" style="flex: 1; padding: 14px; border-radius: 12px; border: 2px solid #e5e7eb; background: white; font-size: 15px; font-weight: 600; color: #6b7280; cursor: pointer; transition: all 0.2s;">Cancel</button>
+      <button id="addtocart-confirm-btn" style="flex: 2; padding: 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); font-size: 15px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">ADD TO CART</button>
+    </div>
+  </div>
+</div>
+
+<!-- Order Type Selection Modal (First Visit) -->
+<div id="ordertype-selection-modal" class="addon-modal" style="display: none;" aria-modal="true" role="dialog">
+  <div class="modal-content" style="max-width: 500px; border-radius: 24px; background: white;">
+    <!-- Modal Header -->
+    <div style="position: relative; padding: 32px 24px 24px 24px; text-align: center; border-bottom: 1px solid #e5e7eb;">
+      <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 20px; margin-bottom: 16px;">
+        <i class="fas fa-concierge-bell" style="font-size: 32px; color: white;"></i>
+      </div>
+      <h3 style="font-size: 26px; font-weight: 700; color: #1f2937; margin: 0 0 8px 0;">Welcome to Our Menu!</h3>
+      <p style="font-size: 14px; color: #6b7280; margin: 0;">How would you like to enjoy your meal today?</p>
+    </div>
+
+    <!-- Modal Body -->
+    <div style="padding: 32px 24px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <!-- Dine In Option -->
+        <label class="ordertype-selection-option" style="cursor: pointer; position: relative;">
+          <input type="radio" name="initial-order-type" value="dine_in" checked style="position: absolute; opacity: 0;">
+          <div class="ordertype-selection-card" data-type="dine_in" style="border: 3px solid #6366f1; border-radius: 20px; padding: 32px 20px; text-align: center; transition: all 0.3s; background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);">
+            <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+              <i class="fas fa-utensils" style="font-size: 48px; color: #6366f1;"></i>
+            </div>
+            <div style="font-weight: 800; font-size: 18px; color: #1f2937; margin-bottom: 8px;">🍽️ Dine In</div>
+            <div style="font-size: 13px; color: #6b7280; line-height: 1.4;">Enjoy your meal at our restaurant</div>
+          </div>
+        </label>
+
+        <!-- Takeaway Option -->
+        <label class="ordertype-selection-option" style="cursor: pointer; position: relative;">
+          <input type="radio" name="initial-order-type" value="takeaway" style="position: absolute; opacity: 0;">
+          <div class="ordertype-selection-card" data-type="takeaway" style="border: 3px solid #e5e7eb; border-radius: 20px; padding: 32px 20px; text-align: center; transition: all 0.3s; background: white;">
+            <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+              <i class="fas fa-shopping-bag" style="font-size: 48px; color: #9ca3af;"></i>
+            </div>
+            <div style="font-weight: 800; font-size: 18px; color: #1f2937; margin-bottom: 8px;">🥡 Takeaway</div>
+            <div style="font-size: 13px; color: #6b7280; line-height: 1.4;">Pick up and enjoy anywhere</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div style="padding: 24px 24px 32px 24px;">
+      <button id="confirm-ordertype-btn" style="width: 100%; padding: 16px; border-radius: 16px; border: none; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); font-size: 16px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);">
+        Continue to Menu
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Change Order Type Modal (Floating Button) -->
+<div id="change-ordertype-modal" class="addon-modal" style="display: none;" aria-modal="true" role="dialog">
+  <div class="modal-content" style="max-width: 500px; border-radius: 24px; background: white;">
+    <!-- Modal Header -->
+    <div style="position: relative; padding: 24px 24px 16px 24px; border-bottom: 1px solid #e5e7eb;">
+      <button id="change-ordertype-close-x" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 24px; color: #9ca3af; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s;">✕</button>
+      <div style="text-align: center;">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 16px; margin-bottom: 12px;">
+          <i class="fas fa-exchange-alt" style="font-size: 28px; color: white;"></i>
+        </div>
+        <h3 style="font-size: 24px; font-weight: 700; color: #1f2937; margin: 0;">Change Order Type</h3>
+        <p style="font-size: 13px; color: #6b7280; margin: 8px 0 0 0;">Select how you'd like to enjoy your meal</p>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div style="padding: 28px 24px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <!-- Dine In Option -->
+        <label class="change-ordertype-option" style="cursor: pointer; position: relative;">
+          <input type="radio" name="change-order-type" value="dine_in" checked style="position: absolute; opacity: 0;">
+          <div class="change-ordertype-card" data-type="dine_in" style="border: 3px solid #6366f1; border-radius: 18px; padding: 28px 16px; text-align: center; transition: all 0.3s; background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);">
+            <div style="display: flex; justify-content: center; margin-bottom: 12px;">
+              <i class="fas fa-utensils" style="font-size: 40px; color: #6366f1;"></i>
+            </div>
+            <div style="font-weight: 800; font-size: 16px; color: #1f2937; margin-bottom: 6px;">🍽️ Dine In</div>
+            <div style="font-size: 12px; color: #6b7280; line-height: 1.3;">Eat at restaurant</div>
+          </div>
+        </label>
+
+        <!-- Takeaway Option -->
+        <label class="change-ordertype-option" style="cursor: pointer; position: relative;">
+          <input type="radio" name="change-order-type" value="takeaway" style="position: absolute; opacity: 0;">
+          <div class="change-ordertype-card" data-type="takeaway" style="border: 3px solid #e5e7eb; border-radius: 18px; padding: 28px 16px; text-align: center; transition: all 0.3s; background: white;">
+            <div style="display: flex; justify-content: center; margin-bottom: 12px;">
+              <i class="fas fa-shopping-bag" style="font-size: 40px; color: #9ca3af;"></i>
+            </div>
+            <div style="font-weight: 800; font-size: 16px; color: #1f2937; margin-bottom: 6px;">🥡 Takeaway</div>
+            <div style="font-size: 12px; color: #6b7280; line-height: 1.3;">Pick up order</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div style="padding: 20px 24px 24px 24px; display: flex; gap: 12px;">
+      <button id="cancel-change-ordertype-btn" style="flex: 1; padding: 14px; border-radius: 12px; border: 2px solid #e5e7eb; background: white; font-size: 15px; font-weight: 600; color: #6b7280; cursor: pointer; transition: all 0.2s;">Cancel</button>
+      <button id="confirm-change-ordertype-btn" style="flex: 2; padding: 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); font-size: 15px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">Update Order Type</button>
     </div>
   </div>
 </div>

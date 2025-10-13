@@ -50,6 +50,7 @@ return new class extends Migration
 
             $table->string('confirmation_code', 20)->unique();
             $table->string('guest_name')->nullable();
+            $table->string('guest_email')->nullable();
             $table->string('guest_phone', 20)->nullable();
             $table->string('session_token', 64)->nullable();
 

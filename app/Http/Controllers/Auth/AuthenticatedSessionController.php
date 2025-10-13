@@ -54,6 +54,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        // Use cookie to pass message across session invalidation
+        return redirect('/')
+            ->withCookie(cookie('logout_message', 'You have been successfully logged out.', 1));
     }
 }

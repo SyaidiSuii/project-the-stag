@@ -45,7 +45,7 @@ class TableQrcodeController extends Controller
         }
 
         $sessions = $query->orderBy('started_at', 'desc')
-                         ->paginate(15);
+                         ->paginate(10);
 
         $tables = Table::where('is_active', true)->get();
         $statuses = ['active', 'completed', 'expired'];
@@ -163,11 +163,19 @@ class TableQrcodeController extends Controller
     public function complete(TableQrcode $tableQrcode)
     {
         $tableQrcode->complete();
-        
+
         // Set table back to available if no other active sessions
         $table = $tableQrcode->table;
         if (!$table->hasActiveSession()) {
             $table->update(['status' => 'available']);
+        }
+
+        // Check if this is an AJAX request
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Session completed successfully!'
+            ]);
         }
 
         return redirect()->back()
@@ -185,6 +193,14 @@ class TableQrcodeController extends Controller
 
         $tableQrcode->extend($request->hours);
 
+        // Check if this is an AJAX request
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Session extended by {$request->hours} hour(s)!"
+            ]);
+        }
+
         return redirect()->back()
                         ->with('message', "Session extended by {$request->hours} hour(s)!");
     }
@@ -194,10 +210,31 @@ class TableQrcodeController extends Controller
      */
     public function regenerateQR(TableQrcode $tableQrcode)
     {
-        $tableQrcode->generateQRCode();
+        $success = $tableQrcode->regenerateQRCode();
 
-        return redirect()->back()
-                        ->with('message', 'QR code regenerated successfully!');
+        // Check if this is an AJAX request
+        if (request()->wantsJson() || request()->ajax()) {
+            if ($success) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'QR code regenerated successfully with new session code!',
+                    'new_session_code' => $tableQrcode->session_code
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to regenerate QR code. Please try again.'
+                ], 500);
+            }
+        }
+
+        if ($success) {
+            return redirect()->back()
+                            ->with('message', 'QR code regenerated successfully with new session code!');
+        } else {
+            return redirect()->back()
+                            ->with('error', 'Failed to regenerate QR code. Please try again.');
+        }
     }
 
     /**

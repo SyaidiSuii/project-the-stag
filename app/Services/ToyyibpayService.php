@@ -159,7 +159,7 @@ class ToyyibpayService
     private function mapBillStatus(string $billStatus): string
     {
         return match ($billStatus) {
-            '1' => 'completed', // Successful payment
+            '1' => 'success', // Successful payment
             '2' => 'pending',   // Pending payment
             '3' => 'failed',    // Failed payment
             default => 'pending'

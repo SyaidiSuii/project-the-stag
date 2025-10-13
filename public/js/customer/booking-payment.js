@@ -26,17 +26,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show/hide payment sections based on payment method
             if (selectedPaymentMethod === 'card') {
                 cardDetails.style.display = 'block';
-                walletDetails.style.display = 'none';
                 receiptSection.style.display = 'block';
                 payNowBtn.innerHTML = `<i class="fas fa-university"></i> <span>Pay via FPX - RM ${parseFloat(window.bookingOrderData.total_amount || 0).toFixed(2)}</span>`;
-            } else if (selectedPaymentMethod === 'wallet') {
-                cardDetails.style.display = 'none';
-                walletDetails.style.display = 'block';
-                receiptSection.style.display = 'block';
-                payNowBtn.innerHTML = `<i class="fas fa-mobile-alt"></i> <span>Pay via E-Wallet - RM ${parseFloat(window.bookingOrderData.total_amount || 0).toFixed(2)}</span>`;
             } else if (selectedPaymentMethod === 'cash') {
                 cardDetails.style.display = 'none';
-                walletDetails.style.display = 'none';
                 receiptSection.style.display = 'none';
                 payNowBtn.innerHTML = `<i class="fas fa-check"></i> <span>Order Now</span>`;
             }
@@ -66,41 +59,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Processing online banking payment via ToyyibPay...');
         }
 
-        // Validation for e-wallet payments
-        if (selectedMethod === 'wallet') {
-            const walletTypeEl = document.getElementById('wallet-type');
-            const phoneNumberEl = document.getElementById('phone-number');
-
-            if (!walletTypeEl || !phoneNumberEl) {
-                alert('E-wallet payment form is not properly loaded. Please refresh the page.');
-                resetPayButton();
-                return;
-            }
-
-            const walletType = walletTypeEl.value;
-            const phoneNumber = phoneNumberEl.value;
-
-            if (!walletType) {
-                alert('Please select an e-wallet.');
-                resetPayButton();
-                return;
-            }
-
-            if (!phoneNumber) {
-                alert('Please enter your phone number.');
-                resetPayButton();
-                return;
-            }
-
-            // Basic phone number validation (Malaysian format)
-            const phoneRegex = /^(\+?6?01)[0-46-9]-*[0-9]{7,8}$/;
-            if (!phoneRegex.test(phoneNumber.replace(/[\s-]/g, ''))) {
-                alert('Please enter a valid Malaysian phone number.');
-                resetPayButton();
-                return;
-            }
-        }
-
         // Prepare payment data
         const receiptEmailEl = document.getElementById('receipt-email');
         const paymentData = {
@@ -114,17 +72,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedMethod === 'card') {
             // No card details to send - ToyyibPay will handle FPX bank selection
             console.log('FPX online banking payment will be handled by ToyyibPay gateway');
-        }
-
-        // Add wallet details if e-wallet payment
-        if (selectedMethod === 'wallet') {
-            const walletTypeEl = document.getElementById('wallet-type');
-            const phoneNumberEl = document.getElementById('phone-number');
-
-            paymentData.payment_details.wallet = {
-                type: walletTypeEl ? walletTypeEl.value : '',
-                phone: phoneNumberEl ? phoneNumberEl.value : ''
-            };
         }
 
         // Get CSRF token
@@ -168,8 +115,6 @@ document.addEventListener('DOMContentLoaded', function() {
         payNowBtn.disabled = false;
         if (selectedPaymentMethod === 'card') {
             payNowBtn.innerHTML = `<i class="fas fa-university"></i> <span>Pay via FPX - RM ${parseFloat(window.bookingOrderData.total_amount || 0).toFixed(2)}</span>`;
-        } else if (selectedPaymentMethod === 'wallet') {
-            payNowBtn.innerHTML = `<i class="fas fa-mobile-alt"></i> <span>Pay via E-Wallet - RM ${parseFloat(window.bookingOrderData.total_amount || 0).toFixed(2)}</span>`;
         } else {
             payNowBtn.innerHTML = `<i class="fas fa-check"></i> <span>Order Now</span>`;
         }

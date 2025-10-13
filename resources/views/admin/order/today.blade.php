@@ -22,11 +22,11 @@
 <div class="admin-cards">
     <div class="admin-card">
         <div class="admin-card-header">
-            <div class="admin-card-title">Total Orders</div>
+            <div class="admin-card-title">Today's Orders</div>
             <div class="admin-card-icon icon-blue"><i class="fas fa-shopping-cart"></i></div>
         </div>
         <div class="admin-card-value">{{ $totalOrders }}</div>
-        <div class="admin-card-desc">All orders today</div>
+        <div class="admin-card-desc">Total orders today</div>
     </div>
     <div class="admin-card">
         <div class="admin-card-header">
@@ -34,11 +34,11 @@
             <div class="admin-card-icon icon-green"><i class="fas fa-dollar-sign"></i></div>
         </div>
         <div class="admin-card-value">RM {{ number_format($totalRevenue, 2) }}</div>
-        <div class="admin-card-desc">From paid orders</div>
+        <div class="admin-card-desc">Revenue earned today</div>
     </div>
     <div class="admin-card">
         <div class="admin-card-header">
-            <div class="admin-card-title">Pending Orders</div>
+            <div class="admin-card-title">Pending Today</div>
             <div class="admin-card-icon icon-orange"><i class="fas fa-clock"></i></div>
         </div>
         <div class="admin-card-value">{{ $pendingCount }}</div>
@@ -46,7 +46,7 @@
     </div>
     <div class="admin-card">
         <div class="admin-card-header">
-            <div class="admin-card-title">In Progress</div>
+            <div class="admin-card-title">In Progress Today</div>
             <div class="admin-card-icon icon-red"><i class="fas fa-utensils"></i></div>
         </div>
         <div class="admin-card-value">{{ $preparingCount + $readyCount }}</div>
@@ -54,19 +54,19 @@
     </div>
     <div class="admin-card">
         <div class="admin-card-header">
-            <div class="admin-card-title">Served</div>
+            <div class="admin-card-title">Served Today</div>
             <div class="admin-card-icon icon-purple"><i class="fas fa-check-circle"></i></div>
         </div>
         <div class="admin-card-value">{{ $servedCount }}</div>
-        <div class="admin-card-desc">Served orders</div>
+        <div class="admin-card-desc">Served orders today</div>
     </div>
     <div class="admin-card">
         <div class="admin-card-header">
-            <div class="admin-card-title">Completed</div>
+            <div class="admin-card-title">Completed Today</div>
             <div class="admin-card-icon icon-teal"><i class="fas fa-flag-checkered"></i></div>
         </div>
         <div class="admin-card-value">{{ $completedCount }}</div>
-        <div class="admin-card-desc">Finished orders</div>
+        <div class="admin-card-desc">Finished orders today</div>
     </div>
 </div>
 
@@ -74,7 +74,7 @@
 <div class="admin-section">
     <div class="section-header">
         <h2 class="section-title">Kitchen Display - Orders by Status</h2>
-        <div class="section-controls">
+        <div class="section-controls" style="display: flex; gap: 12px;">
             <a href="{{ route('admin.order.create') }}" class="admin-btn btn-primary">
                 <div class="admin-nav-icon"><i class="fas fa-plus"></i></div>
                 New Order
@@ -154,16 +154,16 @@
                         </div>
 
                         <div class="detail-row">
+                            @if($order->table || $order->table_number)
                             <div class="detail-item">
                                 <i class="fas fa-map-marker-alt"></i>
                                 @if($order->table)
                                     Table {{ $order->table->table_number }}
-                                @elseif($order->table_number)
-                                    {{ $order->table_number }}
                                 @else
-                                    {{ ucfirst($order->order_type) }}
+                                    {{ $order->table_number }}
                                 @endif
                             </div>
+                            @endif
                             <div class="detail-item">
                                 <i class="fas fa-tag"></i>
                                 {{ ucfirst(str_replace('_', ' ', $order->order_type)) }}
@@ -201,7 +201,7 @@
                     <div class="order-items-preview">
                         <strong>Items ({{ $order->items->count() }}):</strong>
                         @foreach($order->items->take(3) as $item)
-                            <div class="item-preview">{{ $item->quantity ?? 1 }}x {{ $item->name ?? 'Item' }}</div>
+                            <div class="item-preview">{{ $item->quantity ?? 1 }}x {{ $item->menuItem->name ?? 'Item' }}</div>
                         @endforeach
                         @if($order->items->count() > 3)
                             <div class="items-more">... and {{ $order->items->count() - 3 }} more items</div>
@@ -212,31 +212,39 @@
                     <div class="order-card-actions">
                         <div class="status-actions">
                             @if($status == 'pending')
-                                <button onclick="updateOrderStatus({{ $order->id }}, 'preparing')" 
+                                <button onclick="updateOrderStatus({{ $order->id }}, 'preparing')"
                                         class="action-btn btn-confirm">
                                     <i class="fas fa-check"></i> Start Preparing
                                 </button>
                             @elseif($status == 'preparing')
-                                <button onclick="updateOrderStatus({{ $order->id }}, 'ready')" 
+                                <button onclick="updateOrderStatus({{ $order->id }}, 'ready')"
                                         class="action-btn btn-ready">
                                     <i class="fas fa-bell"></i> Ready
                                 </button>
                             @elseif($status == 'ready')
                                 @if($order->order_type === 'dine_in')
-                                    <button onclick="updateOrderStatus({{ $order->id }}, 'served')" 
+                                    <button onclick="updateOrderStatus({{ $order->id }}, 'served')"
                                             class="action-btn btn-served">
                                         <i class="fas fa-utensils"></i> Served
                                     </button>
                                 @else
-                                    <button onclick="updateOrderStatus({{ $order->id }}, 'completed')" 
+                                    <button onclick="updateOrderStatus({{ $order->id }}, 'completed')"
                                             class="action-btn btn-complete">
                                         <i class="fas fa-flag-checkered"></i> Complete
                                     </button>
                                 @endif
                             @elseif($status == 'served')
-                                <button onclick="updateOrderStatus({{ $order->id }}, 'completed')" 
+                                <button onclick="updateOrderStatus({{ $order->id }}, 'completed')"
                                         class="action-btn btn-complete">
                                     <i class="fas fa-flag-checkered"></i> Complete
+                                </button>
+                            @endif
+
+                            @if($order->payment_method === 'counter' && $order->payment_status === 'unpaid')
+                                <button onclick="updatePaymentStatus({{ $order->id }}, 'paid')"
+                                        class="action-btn btn-payment"
+                                        title="Mark as Paid">
+                                    <i class="fas fa-dollar-sign"></i> Mark as Paid
                                 </button>
                             @endif
 
@@ -366,6 +374,35 @@
         .catch(error => {
             console.error('Error:', error);
             alert('Error updating order status');
+        });
+    }
+
+    function updatePaymentStatus(orderId, status) {
+        if (!confirm('Mark this order as paid?')) {
+            return;
+        }
+
+        fetch(`/admin/order/${orderId}/update-payment-status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                payment_status: status
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error updating payment status: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating payment status');
         });
     }
 
@@ -583,6 +620,11 @@
 
 .btn-complete {
     background: #059669;
+    color: white;
+}
+
+.btn-payment {
+    background: #10b981;
     color: white;
 }
 

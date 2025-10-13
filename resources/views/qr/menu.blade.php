@@ -5,7 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Menu - The Stag</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Menu - The Stag [v2.0]</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -193,26 +196,18 @@
             padding: 20px;
         }
 
-        .item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-        }
-
         .item-name {
             font-size: 1.2rem;
             font-weight: 700;
             color: var(--text);
-            flex: 1;
+            margin-bottom: 8px;
         }
 
         .item-price {
             font-size: 1.3rem;
             font-weight: 800;
             color: var(--accent);
-            white-space: nowrap;
-            margin-left: 10px;
+            margin-bottom: 10px;
         }
 
         .item-description {
@@ -875,7 +870,12 @@
         <div class="header">
             <h1>Our Menu</h1>
             <p>Welcome to Table {{ $session->table->table_number }}</p>
+            <div style="background: #ef4444; color: white; padding: 15px; margin-top: 15px; font-weight: bold; border-radius: 12px; text-align: center; font-size: 1.1rem;">
+                🔴 CACHE FIX TEST - VERSION 3.0 - {{ now()->format('H:i:s') }}
+            </div>
         </div>
+
+        <script>console.log('QR MENU VERSION: 3.0 - CACHE FIX TEST - LOADED AT: ' + new Date().toISOString());</script>
 
         @if (session('success'))
         <div class="alert alert-success" role="alert">
@@ -883,11 +883,42 @@
         </div>
         @endif
 
+        <!-- Search Bar -->
+        <div style="margin: 20px auto; max-width: 600px; background: white; padding: 10px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div style="position: relative;">
+                <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 18px;">🔎</span>
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search menu..."
+                    style="width: 100%; padding: 14px 45px 14px 50px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; background: white;"
+                    onfocus="this.style.borderColor='#6366f1'; this.style.boxShadow='0 0 0 4px rgba(99,102,241,0.1)'"
+                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'"
+                >
+                <button
+                    id="clearSearch"
+                    onclick="clearSearch()"
+                    style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); border: none; background: transparent; font-size: 18px; cursor: pointer; display: none; padding: 5px; color: #64748b;">
+                    ✕
+                </button>
+            </div>
+        </div>
+
         <!-- Category Tabs -->
         <div class="category-tabs">
+            <button class="tab active" data-category="all">
+                <i class="fas fa-list"></i> All Items
+            </button>
             @php $first = true; @endphp
             @foreach ($menuData as $mainCategory => $subCategories)
-            <button class="tab {{ $first ? 'active' : '' }}" data-category="{{ strtolower(str_replace(' ', '-', $mainCategory)) }}">
+            <button class="tab" data-category="{{ strtolower(str_replace(' ', '-', $mainCategory)) }}">
+                @if(stripos($mainCategory, 'food') !== false)
+                    <i class="fas fa-utensils"></i>
+                @elseif(stripos($mainCategory, 'drink') !== false)
+                    <i class="fas fa-cocktail"></i>
+                @else
+                    <i class="fas fa-list"></i>
+                @endif
                 {{ $mainCategory }}
             </button>
             @php $first = false; @endphp
@@ -895,27 +926,65 @@
         </div>
 
         <!-- Menu Items by Category -->
-        @php $first = true; @endphp
+        <!-- All Items Section -->
+        <div id="all" class="category-section active">
+            @foreach ($menuData as $mainCategory => $subCategories)
+                @foreach ($subCategories as $subCategoryName => $items)
+                <h2 class="subcategory-title">{{ $subCategoryName }}</h2>
+                <div class="menu-grid">
+                    @foreach ($items as $item)
+                    <div class="menu-item" data-name="{{ strtolower($item->name) }}" data-description="{{ strtolower($item->description) }}" data-category="{{ strtolower(str_replace(' ', '-', $mainCategory)) }}">
+                        <div class="item-image">
+                            @if($item->image_url)
+                            <img src="{{ $item->image_url }}" alt="{{ $item->name }}">
+                            @else
+                            <div>🍽️</div>
+                            @endif
+                        </div>
+                        <div class="item-content">
+                            <div class="item-name">{{ $item->name }}</div>
+                            <div class="item-price">RM {{ number_format($item->price, 2) }}</div>
+                            <p class="item-description">{{ $item->description }}</p>
+                            <form action="{{ route('qr.cart.add') }}" method="POST" class="add-to-cart">
+                                @csrf
+                                <input type="hidden" name="session_code" value="{{ $session->session_code }}">
+                                <input type="hidden" name="menu_item_id" value="{{ $item->id }}">
+
+                                <div class="quantity-control">
+                                    <button type="button" class="quantity-btn" onclick="changeQuantity(this, -1)">−</button>
+                                    <input type="number" name="quantity" value="1" min="1" class="quantity-input" readonly>
+                                    <button type="button" class="quantity-btn" onclick="changeQuantity(this, 1)">+</button>
+                                </div>
+
+                                <button type="submit" class="add-btn">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @endforeach
+            @endforeach
+        </div>
+
         @foreach ($menuData as $mainCategory => $subCategories)
-        <div id="{{ strtolower(str_replace(' ', '-', $mainCategory)) }}" class="category-section {{ $first ? 'active' : '' }}">
+        <div id="{{ strtolower(str_replace(' ', '-', $mainCategory)) }}" class="category-section">
             @foreach ($subCategories as $subCategoryName => $items)
             <h2 class="subcategory-title">{{ $subCategoryName }}</h2>
             <div class="menu-grid">
                 @foreach ($items as $item)
-                <div class="menu-item">
+                <div class="menu-item" data-name="{{ strtolower($item->name) }}" data-description="{{ strtolower($item->description) }}" data-category="{{ strtolower(str_replace(' ', '-', $mainCategory)) }}">
                     <div class="item-image">
                         @if($item->image_url)
-                        <img src="{{ $item->image_url }}"
-                            alt="{{ $item->name }}">
+                        <img src="{{ $item->image_url }}" alt="{{ $item->name }}">
                         @else
                         <div>🍽️</div>
                         @endif
                     </div>
                     <div class="item-content">
-                        <div class="item-header">
-                            <div class="item-name">{{ $item->name }}</div>
-                            <div class="item-price">RM {{ number_format($item->price, 2) }}</div>
-                        </div>
+                        <div class="item-name">{{ $item->name }}</div>
+                        <div class="item-price">RM {{ number_format($item->price, 2) }}</div>
                         <p class="item-description">{{ $item->description }}</p>
                         <form action="{{ route('qr.cart.add') }}" method="POST" class="add-to-cart">
                             @csrf
@@ -938,7 +1007,6 @@
             </div>
             @endforeach
         </div>
-        @php $first = false; @endphp
         @endforeach
     </div>
 
@@ -958,7 +1026,7 @@
             </div>
             <div class="cart-modal-content">
                 <div class="cart-modal-toolbar">
-                    <div class="cart-modal-count">Items: <span id="cart-count">0</span></div>
+                    <div class="cart-modal-count">Items: <span id="cart-count">0</span><span id="cart-count-total"></span></div>
                     <button class="cart-modal-clear" id="clearAllBtn">Clear All</button>
                 </div>
                 <div class="cart-modal-items" id="cart-items">
@@ -978,7 +1046,7 @@
                     </div>
                     <div>
                         <div style="font-weight: bold; font-size: 1.2rem;">x<span id="total-items">0</span></div>
-                        <div class="cart-total-amount" id="total-amount">Rp 0.00</div>
+                        <div class="cart-total-amount" id="total-amount">RM 0.00</div>
                     </div>
                 </div>
                 <button class="cart-modal-checkout" id="checkoutBtn">Proceed to Checkout</button>
@@ -987,6 +1055,52 @@
     </div>
 
     <script>
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearch');
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            clearSearchBtn.style.display = searchTerm ? 'block' : 'none';
+            filterMenuItems(searchTerm);
+        });
+
+        function clearSearch() {
+            searchInput.value = '';
+            clearSearchBtn.style.display = 'none';
+            filterMenuItems('');
+        }
+
+        function filterMenuItems(searchTerm) {
+            const activeCategory = document.querySelector('.tab.active').getAttribute('data-category');
+            const menuItems = document.querySelectorAll('.menu-item');
+            let visibleCount = 0;
+
+            menuItems.forEach(item => {
+                const name = item.getAttribute('data-name');
+                const description = item.getAttribute('data-description');
+                const category = item.getAttribute('data-category');
+
+                const matchesSearch = !searchTerm || name.includes(searchTerm) || description.includes(searchTerm);
+                const matchesCategory = activeCategory === 'all' || category === activeCategory;
+
+                if (matchesSearch && matchesCategory) {
+                    item.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // Show/hide subcategory titles based on visible items
+            document.querySelectorAll('.category-section.active .subcategory-title').forEach(title => {
+                const grid = title.nextElementSibling;
+                const visibleItems = grid.querySelectorAll('.menu-item[style="display: block;"]');
+                title.style.display = visibleItems.length > 0 ? 'block' : 'none';
+                grid.style.display = visibleItems.length > 0 ? 'grid' : 'none';
+            });
+        }
+
         // Tab switching functionality
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
@@ -1000,6 +1114,10 @@
                 // Show corresponding section
                 const categoryId = this.getAttribute('data-category');
                 document.getElementById(categoryId).classList.add('active');
+
+                // Re-apply search filter
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                filterMenuItems(searchTerm);
             });
         });
 
@@ -1276,9 +1394,9 @@
             }
         });
 
-        // Checkout button
+        // Checkout button - redirect to payment page directly
         checkoutBtn.addEventListener('click', function() {
-            window.location.href = "{{ route('qr.cart', ['session' => '__SESSION__']) }}".replace('__SESSION__', sessionCode);
+            window.location.href = "{{ route('qr.payment', ['session' => '__SESSION__']) }}".replace('__SESSION__', sessionCode);
         });
     </script>
 </body>

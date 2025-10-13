@@ -13,6 +13,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(\Illuminate\Console\Scheduling\Schedule $schedule)
     {
         $schedule->command('app:send-happy-birthday-email')->everyTwoMinutes();
+        $schedule->command('app:cleanup-abandoned-orders')->everyFiveMinutes();
     }
 
 

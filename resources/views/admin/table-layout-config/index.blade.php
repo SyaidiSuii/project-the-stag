@@ -36,9 +36,11 @@
             $coordinates = $table->coordinates ?? [];
             $x = $coordinates['x'] ?? (30 + (($loop->index % 5) * 110));
             $y = $coordinates['y'] ?? (30 + (floor($loop->index / 5) * 100));
+            // Map table_type to shape class - matches customer booking page
             $tableClass = match($table->table_type) {
               'vip' => 'vvip',
               'outdoor' => 'rectangle',
+              'indoor' => 'square',
               default => 'square'
             };
           @endphp
@@ -80,6 +82,22 @@
         <div class="panel-footer">
           <button class="panel-btn" id="save-table-btn">Apply Changes</button>
           <button class="panel-btn-danger" id="delete-table-btn">Delete Table</button>
+        </div>
+      </div>
+
+      <!-- Confirmation Modal -->
+      <div id="confirm-modal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+          <div class="modal-header">
+            <h3 class="modal-title" id="confirm-title">Confirm Action</h3>
+          </div>
+          <div class="modal-body">
+            <p id="confirm-message"></p>
+          </div>
+          <div class="modal-footer">
+            <button class="admin-btn btn-secondary" id="confirm-cancel">Cancel</button>
+            <button class="admin-btn btn-danger" id="confirm-ok">Confirm</button>
+          </div>
         </div>
       </div>
     </div>
@@ -163,6 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Set table shape based on class
         let shape = 'square';
         if (tableElement.classList.contains('rectangle')) shape = 'rectangle';
+        else if (tableElement.classList.contains('round')) shape = 'round';
         else if (tableElement.classList.contains('vvip')) shape = 'vvip';
         document.getElementById('table-shape-select').value = shape;
         
@@ -211,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({
                     table_number: tableName,
                     capacity: capacity,
-                    table_type: shape === 'vvip' ? 'vip' : (shape === 'rectangle' ? 'outdoor' : 'indoor')
+                    table_type: shape === 'vvip' ? 'vip' : (shape === 'rectangle' ? 'outdoor' : (shape === 'round' ? 'indoor' : 'indoor'))
                 })
             })
             .then(response => response.json())
@@ -226,8 +245,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 showNotification('Error updating table', 'error');
             });
         } else {
-            // Add new table
-            const tableType = shape === 'vvip' ? 'vip' : (shape === 'rectangle' ? 'outdoor' : 'indoor');
+            // Add new table - map shape to table_type
+            const tableType = shape === 'vvip' ? 'vip' : (shape === 'rectangle' ? 'outdoor' : (shape === 'round' ? 'indoor' : 'indoor'));
 
             fetch('{{ route("admin.api.table-layouts.add-table") }}', {
                 method: 'POST',
@@ -273,9 +292,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Delete table
     document.getElementById('delete-table-btn').addEventListener('click', function() {
-        if (!currentTable || !confirm('Are you sure you want to delete this table?')) return;
+        if (!currentTable) return;
 
-        const tableId = currentTable.dataset.tableId;
+        showConfirm('Delete Table', 'Are you sure you want to delete this table? This action cannot be undone.', function() {
+            const tableId = currentTable.dataset.tableId;
+            deleteTable(tableId);
+        });
+    });
+
+    function deleteTable(tableId) {
 
         fetch(`{{ route('admin.api.table-layouts.delete-table', ':id') }}`.replace(':id', tableId), {
             method: 'DELETE',
@@ -296,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             showNotification('Error deleting table', 'error');
         });
-    });
+    }
 
     // Save layout
     document.getElementById('save-layout-btn').addEventListener('click', function() {
@@ -367,8 +392,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Reset layout
     document.getElementById('reset-layout-btn').addEventListener('click', function() {
-        if (!confirm('Are you sure you want to reset the layout? This will reload the page.')) return;
-        location.reload();
+        showConfirm('Reset Layout', 'Are you sure you want to reset the layout? This will reload the page and discard any unsaved changes.', function() {
+            location.reload();
+        });
     });
 
     // Notification function
@@ -388,12 +414,48 @@ document.addEventListener('DOMContentLoaded', function() {
             z-index: 9999;
             ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
         `;
-        
+
         document.body.appendChild(notification);
-        
+
         setTimeout(() => {
             notification.remove();
         }, 3000);
+    }
+
+    // Modern confirmation modal
+    function showConfirm(title, message, onConfirm) {
+        const modal = document.getElementById('confirm-modal');
+        const titleEl = document.getElementById('confirm-title');
+        const messageEl = document.getElementById('confirm-message');
+        const confirmBtn = document.getElementById('confirm-ok');
+        const cancelBtn = document.getElementById('confirm-cancel');
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        modal.style.display = 'flex';
+
+        // Remove old listeners
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+        // Add new listeners
+        newConfirmBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+            onConfirm();
+        });
+
+        newCancelBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        // Close on background click
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
     }
 });
 </script>

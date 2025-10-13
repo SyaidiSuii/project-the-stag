@@ -18,21 +18,40 @@ class OrdersController extends Controller
     public function index()
     {
         $userId = Auth::id();
-        
+
         // Get customer's orders with related data
         $orders = Order::with(['items.menuItem', 'table'])
             ->where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         // Get customer's table reservations
         $reservations = TableReservation::with('table')
             ->where('user_id', $userId)
             ->orderBy('booking_date', 'desc')
             ->orderBy('booking_time', 'desc')
             ->get();
-        
+
         return view('customer.order.index', compact('orders', 'reservations'));
+    }
+
+    /**
+     * Show order details page.
+     */
+    public function show($orderId)
+    {
+        $userId = Auth::id();
+
+        $order = Order::with(['items.menuItem', 'table', 'user', 'payment'])
+            ->where('id', $orderId)
+            ->where('user_id', $userId) // Ensure customer can only see their own orders
+            ->first();
+
+        if (!$order) {
+            abort(404, 'Order not found');
+        }
+
+        return view('customer.order.show', compact('order'));
     }
 
     /**
