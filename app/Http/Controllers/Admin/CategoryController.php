@@ -55,15 +55,19 @@ class CategoryController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:categories,name,NULL,id,deleted_at,NULL',
             'type' => 'required|in:food,drink,set-meal',
-            'parent_id' => 'required|exists:categories,id',
+            'parent_id' => 'nullable|exists:categories,id',
             'sort_order' => 'nullable|integer|min:0'
         ]);
 
         // Set default sort_order if not provided
         if (empty($validated['sort_order'])) {
-            $maxSortOrder = Category::where('type', $validated['type'])
-                ->where('parent_id', $validated['parent_id'])
-                ->max('sort_order');
+            $query = Category::where('type', $validated['type']);
+            if (!empty($validated['parent_id'])) {
+                $query->where('parent_id', $validated['parent_id']);
+            } else {
+                $query->whereNull('parent_id');
+            }
+            $maxSortOrder = $query->max('sort_order');
             $validated['sort_order'] = ($maxSortOrder ?? 0) + 1;
         }
 

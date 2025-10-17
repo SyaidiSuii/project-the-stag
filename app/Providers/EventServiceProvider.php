@@ -5,7 +5,14 @@ namespace App\Providers;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
+use App\Events\PromotionUsedEvent;
+use App\Events\RewardRedeemedEvent;
+use App\Events\TableBookingCreatedEvent;
+use App\Events\AnalyticsRefreshEvent;
+use App\Listeners\UpdateAnalyticsOnPromotionUsed;
+use App\Listeners\UpdateAnalyticsOnRewardRedeemed;
+use App\Listeners\UpdateAnalyticsOnTableBooking;
+use App\Listeners\RefreshAnalyticsData;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -17,6 +24,19 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
+        ],
+        PromotionUsedEvent::class => [
+            UpdateAnalyticsOnPromotionUsed::class,
+        ],
+        RewardRedeemedEvent::class => [
+            UpdateAnalyticsOnRewardRedeemed::class,
+        ],
+        TableBookingCreatedEvent::class => [
+            UpdateAnalyticsOnTableBooking::class,
+        ],
+        // 🔥 GENERIC ANALYTICS REFRESH EVENT - handles all revenue-affecting scenarios
+        AnalyticsRefreshEvent::class => [
+            RefreshAnalyticsData::class,
         ],
     ];
 

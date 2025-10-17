@@ -14,6 +14,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RoleAndPermissionSeeder::class,
+            CategorySeeder::class,
+            MenuItemsSeeder::class, // Must be after CategorySeeder
             RewardsSystemSeeder::class,
         ]);
 

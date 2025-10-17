@@ -30,7 +30,7 @@
             <div class="admin-card-icon icon-green"><i class="fas fa-dollar-sign"></i></div>
         </div>
         <div class="admin-card-value">RM {{ number_format($totalRevenue ?? 0, 2) }}</div>
-        <div class="admin-card-desc">From all paid orders</div>
+        <div class="admin-card-desc">From completed & served orders</div>
     </div>
     <div class="admin-card">
         <div class="admin-card-header">
@@ -140,7 +140,7 @@
                         <th class="th-status" style="min-width: 180px;">Status</th>
                         <th class="th-time">Order Time</th>
                         <th class="th-eta" style="min-width: 100px;">ETA</th>
-                        <th class="th-actions" style="min-width: 280px;">Actions</th>
+                        <th class="th-actions" style="min-width: 130px; width: 130px;">Actions</th>
                     </tr>
                 </thead>
             <tbody>
@@ -247,17 +247,8 @@
                         </div>
                     </td>
                     <td class="cell-center">
-                        <div class="table-actions">
-                            <!-- Payment Status Button for Counter Payments -->
-                            @if($order->payment_method === 'counter' && $order->payment_status === 'unpaid')
-                                <button class="action-btn" title="Mark as Paid"
-                                        onclick="updatePaymentStatus({{ $order->id }}, 'paid')"
-                                        style="background: #10b981; color: white;">
-                                    <i class="fas fa-dollar-sign"></i>
-                                </button>
-                            @endif
-
-                            <!-- Status Update Buttons -->
+                        <div class="table-actions" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 100%; max-width: 120px;">
+                            <!-- Status Update Buttons (Top Row) -->
                             @if($order->order_status === 'pending')
                                 <button class="action-btn confirm-btn" title="Confirm Order" onclick="updateOrderStatus({{ $order->id }}, 'preparing')">
                                     <i class="fas fa-check"></i>
@@ -266,42 +257,45 @@
                                     <i class="fas fa-times"></i>
                                 </button>
                             @elseif($order->order_status === 'preparing')
-                                <button class="action-btn ready-btn" title="Mark as Ready" onclick="updateOrderStatus({{ $order->id }}, 'ready')">
+                                <button class="action-btn ready-btn" title="Mark as Ready" onclick="updateOrderStatus({{ $order->id }}, 'ready')" style="grid-column: span 2;">
                                     <i class="fas fa-bell"></i>
                                 </button>
                             @elseif($order->order_status === 'ready')
                                 @if($order->order_type === 'dine_in')
-                                    <button class="action-btn serve-btn" title="Mark as Served" onclick="updateOrderStatus({{ $order->id }}, 'served')">
+                                    <button class="action-btn serve-btn" title="Mark as Served" onclick="updateOrderStatus({{ $order->id }}, 'served')" style="grid-column: span 2;">
                                         <i class="fas fa-utensils"></i>
                                     </button>
                                 @else
-                                    <button class="action-btn complete-btn" title="Mark as Completed" onclick="updateOrderStatus({{ $order->id }}, 'completed')">
+                                    <button class="action-btn complete-btn" title="Mark as Completed" onclick="updateOrderStatus({{ $order->id }}, 'completed')" style="grid-column: span 2;">
                                         <i class="fas fa-check-circle"></i>
                                     </button>
                                 @endif
                             @elseif($order->order_status === 'served')
-                                <button class="action-btn complete-btn" title="Mark as Completed" onclick="updateOrderStatus({{ $order->id }}, 'completed')">
+                                <button class="action-btn complete-btn" title="Mark as Completed" onclick="updateOrderStatus({{ $order->id }}, 'completed')" style="grid-column: span 2;">
                                     <i class="fas fa-check-circle"></i>
                                 </button>
-                            @elseif($order->order_status === 'completed' && $order->payment_method === 'counter' && $order->payment_status === 'unpaid')
+                            @endif
+
+                            <!-- Payment Status Button (if needed) -->
+                            @if(($order->payment_method === 'counter' && $order->payment_status === 'unpaid') || ($order->order_status === 'completed' && $order->payment_method === 'counter' && $order->payment_status === 'unpaid'))
                                 <button class="action-btn" title="Mark as Paid"
                                         onclick="updatePaymentStatus({{ $order->id }}, 'paid')"
-                                        style="background: #10b981; color: white;">
+                                        style="background: #10b981; color: white; grid-column: span 2;">
                                     <i class="fas fa-dollar-sign"></i>
                                 </button>
                             @endif
 
-                            <!-- Default Action Buttons -->
-                            <a href="{{ route('admin.order.show', $order->id) }}" 
+                            <!-- Default Action Buttons (Bottom Row) -->
+                            <a href="{{ route('admin.order.show', $order->id) }}"
                                class="action-btn view-btn" title="View Details">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ route('admin.order.edit', $order->id) }}" 
+                            <a href="{{ route('admin.order.edit', $order->id) }}"
                                class="action-btn edit-btn" title="Edit Order">
                                 <i class="fas fa-edit"></i>
                             </a>
                             @if(!in_array($order->order_status, ['completed', 'cancelled']))
-                                <form method="POST" action="{{ route('admin.order.destroy', $order->id) }}" style="display: inline;"
+                                <form method="POST" action="{{ route('admin.order.destroy', $order->id) }}" style="display: contents;"
                                       onsubmit="return confirm('Are you sure you want to delete this order?');">
                                     @csrf
                                     @method('DELETE')

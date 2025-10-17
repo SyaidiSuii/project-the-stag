@@ -418,40 +418,78 @@ body {
     box-shadow: 0 12px 24px rgba(102, 126, 234, 0.3);
 }
 
-/* Notification Toast */
-.toast {
+/* Success Toast Notification */
+.copy-toast {
     position: fixed;
-    bottom: 24px;
+    top: 24px;
     right: 24px;
     background: white;
-    padding: 16px 24px;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 20px 28px;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;
-    gap: 12px;
-    z-index: 1000;
-    animation: slideIn 0.3s ease-out;
+    gap: 16px;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateX(400px);
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    border-left: 5px solid #10b981;
 }
 
-.toast.success {
-    border-left: 4px solid #10b981;
+.copy-toast.show {
+    opacity: 1;
+    transform: translateX(0);
 }
 
-.toast i {
-    color: #10b981;
-    font-size: 20px;
+.copy-toast.hide {
+    opacity: 0;
+    transform: translateX(400px);
 }
 
-@keyframes slideIn {
-    from {
-        transform: translateX(400px);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
+.copy-toast-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    animation: successPulse 0.6s ease;
+}
+
+.copy-toast-icon i {
+    color: white;
+    font-size: 24px;
+}
+
+@keyframes successPulse {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.copy-toast-content h4 {
+    margin: 0 0 4px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.copy-toast-content p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.copy-toast-code {
+    font-family: 'Courier New', monospace;
+    background: #f3f4f6;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    color: #667eea;
 }
 
 /* Responsive */
@@ -479,6 +517,30 @@ body {
     .filter-btn {
         padding: 10px 18px;
         font-size: 13px;
+    }
+
+    .copy-toast {
+        top: 16px;
+        right: 16px;
+        left: 16px;
+        padding: 16px 20px;
+    }
+
+    .copy-toast-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .copy-toast-icon i {
+        font-size: 20px;
+    }
+
+    .copy-toast-content h4 {
+        font-size: 1rem;
+    }
+
+    .copy-toast-content p {
+        font-size: 0.85rem;
     }
 }
 </style>
@@ -671,30 +733,82 @@ function filterByType(type) {
     });
 }
 
-// Copy promo code
+// Copy promo code with fallback method
 function copyPromoCode(code) {
-    navigator.clipboard.writeText(code).then(() => {
-        showToast('Promo code "' + code + '" copied to clipboard!');
-    }).catch(err => {
-        console.error('Failed to copy:', err);
-        alert('Promo code: ' + code);
-    });
+    // Try modern Clipboard API first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(() => {
+            showToast('Promo code "' + code + '" copied to clipboard!');
+        }).catch(err => {
+            console.error('Clipboard API failed:', err);
+            fallbackCopyCode(code);
+        });
+    } else {
+        // Use fallback method for older browsers or HTTP contexts
+        fallbackCopyCode(code);
+    }
 }
 
-// Show toast notification
+// Fallback method using textarea
+function fallbackCopyCode(code) {
+    const textarea = document.createElement('textarea');
+    textarea.value = code;
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-999999px';
+    textarea.style.top = '-999999px';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showToast('Promo code "' + code + '" copied to clipboard!');
+        } else {
+            alert('Promo code: ' + code + '\n\nPlease copy manually');
+        }
+    } catch (err) {
+        console.error('Fallback copy failed:', err);
+        alert('Promo code: ' + code + '\n\nPlease copy manually');
+    } finally {
+        document.body.removeChild(textarea);
+    }
+}
+
+// Show animated toast notification
 function showToast(message) {
+    // Extract promo code from message
+    const codeMatch = message.match(/"([^"]+)"/);
+    const promoCode = codeMatch ? codeMatch[1] : '';
+
+    // Create toast element
     const toast = document.createElement('div');
-    toast.className = 'toast success';
+    toast.className = 'copy-toast';
     toast.innerHTML = `
-        <i class="fas fa-check-circle"></i>
-        <span>${message}</span>
+        <div class="copy-toast-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        <div class="copy-toast-content">
+            <h4>Code Copied Successfully!</h4>
+            <p>Promo code <span class="copy-toast-code">${promoCode}</span> copied to clipboard</p>
+        </div>
     `;
+
+    // Add to body
     document.body.appendChild(toast);
 
+    // Trigger animation
     setTimeout(() => {
-        toast.style.animation = 'slideIn 0.3s ease-out reverse';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+        toast.classList.add('show');
+    }, 10);
+
+    // Remove after 4 seconds
+    setTimeout(() => {
+        toast.classList.add('hide');
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 400);
+    }, 4000);
 }
 </script>
 @endsection

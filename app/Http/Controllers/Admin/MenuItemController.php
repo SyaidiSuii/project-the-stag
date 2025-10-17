@@ -18,27 +18,57 @@ class MenuItemController extends Controller
      */
     public function index(Request $request)
     {
-        $query = MenuItem::with('category');
+        // Get all categories
+        $categories = Category::orderBy('type')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
 
-        // Filter by category
+        // Get parent categories for filtering
+        $foodCategory = $categories->where('type', 'food')->whereNull('parent_id')->first();
+        $drinkCategory = $categories->where('type', 'drink')->whereNull('parent_id')->first();
+        $setMealCategory = $categories->where('type', 'set-meal')->whereNull('parent_id')->first();
+
+        // Determine which tab is active (default to food)
+        $activeTab = $request->get('tab', 'food');
+
+        // Base query with category relationship
+        $baseQuery = MenuItem::with('category');
+
+        // Apply filters based on active tab
+        if ($activeTab === 'food' && $foodCategory) {
+            // Get all food category IDs (parent + subcategories)
+            $foodCategoryIds = $categories->where('type', 'food')->pluck('id');
+            $baseQuery->whereIn('category_id', $foodCategoryIds);
+        } elseif ($activeTab === 'drinks' && $drinkCategory) {
+            // Get all drink category IDs
+            $drinkCategoryIds = $categories->where('type', 'drink')->pluck('id');
+            $baseQuery->whereIn('category_id', $drinkCategoryIds);
+        } elseif ($activeTab === 'set-meals' && $setMealCategory) {
+            // Get all set meal category IDs
+            $setMealCategoryIds = $categories->where('type', 'set-meal')->pluck('id');
+            $baseQuery->whereIn('category_id', $setMealCategoryIds);
+        }
+
+        // Filter by specific category
         if ($request->has('category_id') && $request->category_id != '') {
-            $query->where('category_id', $request->category_id);
+            $baseQuery->where('category_id', $request->category_id);
         }
 
         // Filter by availability
         if ($request->has('availability') && $request->availability != '') {
-            $query->where('availability', $request->boolean('availability'));
+            $baseQuery->where('availability', $request->boolean('availability'));
         }
 
         // Filter featured items
         if ($request->has('is_featured') && $request->is_featured != '') {
-            $query->where('is_featured', $request->boolean('is_featured'));
+            $baseQuery->where('is_featured', $request->boolean('is_featured'));
         }
 
         // Search by name or description
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
+            $baseQuery->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
                   ->orWhere('description', 'LIKE', "%{$search}%");
             });
@@ -47,21 +77,16 @@ class MenuItemController extends Controller
         // Sort options
         $sortBy = $request->get('sort_by', 'name');
         $sortOrder = $request->get('sort_order', 'asc');
-        
+
         $allowedSortFields = ['name', 'price', 'rating_average', 'created_at'];
         if (in_array($sortBy, $allowedSortFields)) {
-            $query->orderBy($sortBy, $sortOrder);
+            $baseQuery->orderBy($sortBy, $sortOrder);
         }
 
-        $menuItems = $query->paginate(
-            $request->get('per_page', 10)
+        // Paginate results
+        $menuItems = $baseQuery->paginate(
+            $request->get('per_page', 15)
         )->appends($request->query());
-
-        // Get categories for filter dropdown
-        $categories = Category::orderBy('type')
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get();
 
         // Get statistics for dashboard cards
         $totalItems = MenuItem::count();
@@ -70,12 +95,13 @@ class MenuItemController extends Controller
         $categoriesCount = Category::count();
 
         return view('admin.menu-items.index', compact(
-            'menuItems', 
-            'categories', 
-            'totalItems', 
-            'availableItems', 
+            'menuItems',
+            'categories',
+            'totalItems',
+            'availableItems',
             'unavailableItems',
-            'categoriesCount'
+            'categoriesCount',
+            'activeTab'
         ));
     }
 
@@ -359,4 +385,50 @@ class MenuItemController extends Controller
         return trim($subfolder, '/') . '/' . $filename;
     }
 
+    /**
+     * Show the form for creating a new set meal.
+     */
+    public function createSetMeal()
+    {
+        // Ambil semua item yang BUKAN set meal untuk dijadikan komponen
+        $menuItems = MenuItem::where('is_set_meal', false)->orderBy('name')->get();
+        
+        // Ambil semua kategori untuk dropdown
+        $categories = Category::orderBy('name')->get();
+        
+        return view('admin.menu-items.create-set-meal', compact('menuItems', 'categories'));
+    }
+
+    /**
+     * Store a newly created set meal in storage.
+     */
+    public function storeSetMeal(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'category_id' => 'required|exists:categories,id',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|max:2048',
+            'components' => 'required|array|min:1',
+            'components.*' => 'exists:menu_items,id',
+            'is_set_meal' => 'required|boolean',
+        ]);
+
+        // Cipta item utama untuk set meal
+        $setMeal = MenuItem::create($request->except(['components', 'image']));
+
+        // Handle image upload jika ada
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('menu-items', 'public');
+            $setMeal->image = $path;
+            $setMeal->save();
+        }
+
+        // Attach komponen-komponen yang dipilih
+        $setMeal->components()->attach($request->components);
+
+        return redirect()->route('admin.menu-items.index')
+                         ->with('success', 'Set meal created successfully.');
+    }
 }

@@ -24,7 +24,9 @@
 <body>
     <!-- Sidebar Navigation -->
     <div class="sidebar" aria-label="Primary">
-        <div class="logo" aria-hidden="true">🦌</div>
+        <div aria-hidden="true">
+            <img src="{{ asset('images/logo.png') }}" alt="logo" class="logo">
+        </div>
 
         <a class="nav-item {{ Request::routeIs('customer.index') ? 'active' : '' }}" href="{{ route('customer.index') }}">
             <div class="nav-icon"><i class="fas fa-home"></i></div>

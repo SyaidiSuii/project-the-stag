@@ -79,8 +79,20 @@
               @endif
             @elseif($order->order_status === 'served')
               <button class="btn btn-success complete-order-btn" data-order-id="{{ $order->id }}">Mark as Completed</button>
-            @elseif($order->order_status === 'completed')
+            @elseif($order->order_status === 'completed' || $order->order_status === 'served')
+              @php
+                $hasReviews = $order->reviews()->exists();
+              @endphp
               <button class="btn btn-primary reorder-btn" data-order-id="{{ $order->id }}">Reorder</button>
+              @if(!$hasReviews)
+                <a href="{{ route('customer.reviews.create', $order->id) }}" class="btn btn-success rate-items-btn" style="text-decoration: none;">
+                  <i class="fas fa-star"></i> Rate Items
+                </a>
+              @else
+                <span class="btn btn-secondary" style="cursor: default; opacity: 0.6;" title="Already reviewed">
+                  <i class="fas fa-check"></i> Reviewed
+                </span>
+              @endif
             @elseif($order->order_status === 'cancelled')
               <button class="btn btn-primary reorder-btn" data-order-id="{{ $order->id }}">Reorder</button>
             @endif

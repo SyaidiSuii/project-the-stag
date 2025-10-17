@@ -56,11 +56,14 @@
             @endif
             
             @if(!in_array($order->order_status, ['completed', 'cancelled']))
-                <a href="{{ route('admin.order.cancel', $order->id) }}" 
-                   onclick="return confirm('Are you sure you want to cancel this order?')"
-                   class="btn-save" style="background: #ef4444;">
-                    <i class="fas fa-times"></i> Cancel Order
-                </a>
+                <form action="{{ route('admin.order.cancel', $order->id) }}" method="POST" style="display: inline;">
+                    @csrf
+                    <button type="submit"
+                            onclick="return confirm('Are you sure you want to cancel this order?')"
+                            class="btn-save" style="background: #ef4444; border: none; cursor: pointer;">
+                        <i class="fas fa-times"></i> Cancel Order
+                    </button>
+                </form>
             @endif
 
             @if($order->payment_status != 'paid')

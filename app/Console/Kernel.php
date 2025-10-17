@@ -14,6 +14,12 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('app:send-happy-birthday-email')->everyTwoMinutes();
         $schedule->command('app:cleanup-abandoned-orders')->everyFiveMinutes();
+
+        // Comprehensive analytics generation (replaces generate-sales-summary)
+        $schedule->command('analytics:generate')->dailyAt('01:00');
+
+        // Keep old command for backward compatibility (will be deprecated)
+        // $schedule->command('app:generate-sales-summary')->daily();
     }
 
 

@@ -13,6 +13,7 @@ use App\Models\Table;
 use App\Models\TableReservation;
 use App\Models\MenuItem;
 use Illuminate\Validation\Rule;
+use App\Events\AnalyticsRefreshEvent;
 
 class OrderController extends Controller
 {
@@ -81,7 +82,8 @@ class OrderController extends Controller
 
         // Get statistics for dashboard cards
         $totalOrders = Order::count();
-        $totalRevenue = Order::where('payment_status', 'paid')
+        $totalRevenue = Order::whereIn('order_status', ['completed', 'served'])
+            ->where('payment_status', 'paid')
             ->sum('total_amount');
         $pendingOrders = Order::where('order_status', 'pending')->count();
         $completedOrders = Order::where('order_status', 'completed')->count();
@@ -191,6 +193,12 @@ class OrderController extends Controller
             $order->autoCreateETA();
         }
 
+        // 🔥 DISPATCH REAL-TIME EVENT if order created with "paid" status
+        if ($request->payment_status === 'paid') {
+            // Fire generic analytics refresh event (will recalculate and broadcast)
+            event(new AnalyticsRefreshEvent(today(), [], 'order_created'));
+        }
+
         return redirect()->route('admin.order.index')->with('message', 'Order has been created successfully!');
     }
 
@@ -256,6 +264,11 @@ class OrderController extends Controller
             'confirmation_code.unique' => 'Confirmation code already exists.',
         ]);
 
+        // Store old values BEFORE updating (for detecting changes)
+        $oldPaymentStatus = $order->payment_status;
+        $oldOrderStatus = $order->order_status;
+        $oldTotalAmount = $order->total_amount;
+
         $order->fill($request->all());
 
         // Handle boolean fields
@@ -277,6 +290,32 @@ class OrderController extends Controller
         }
 
         $order->save();
+
+        // 🔥 DISPATCH ANALYTICS REFRESH EVENT if any revenue-affecting field changed
+        $needsRefresh = false;
+        $reason = [];
+
+        // Check payment status change
+        if ($oldPaymentStatus !== $request->payment_status) {
+            $needsRefresh = true;
+            $reason[] = "payment_status:{$oldPaymentStatus}→{$request->payment_status}";
+        }
+
+        // Check order status change (affects whether order counts in revenue)
+        if ($oldOrderStatus !== $request->order_status) {
+            $needsRefresh = true;
+            $reason[] = "order_status:{$oldOrderStatus}→{$request->order_status}";
+        }
+
+        // Check total amount change
+        if ($oldTotalAmount != $request->total_amount) {
+            $needsRefresh = true;
+            $reason[] = "amount:{$oldTotalAmount}→{$request->total_amount}";
+        }
+
+        if ($needsRefresh) {
+            event(new AnalyticsRefreshEvent(today(), [], 'order_updated:' . implode(',', $reason)));
+        }
 
         // Handle order items updates
         if ($request->has('items') && is_array($request->items)) {
@@ -316,7 +355,19 @@ class OrderController extends Controller
      */
     public function destroy(Order $order)
     {
+        // Store order details before deletion for event reason
+        $orderStatus = $order->order_status;
+        $paymentStatus = $order->payment_status;
+
         $order->delete();
+
+        // 🔥 DISPATCH ANALYTICS REFRESH EVENT when order is deleted
+        event(new AnalyticsRefreshEvent(
+            today(),
+            [],
+            "order_deleted:status={$orderStatus},payment={$paymentStatus}"
+        ));
+
         return redirect()->route('admin.order.index')->with('message', 'Order has been deleted successfully!');
     }
 
@@ -329,6 +380,7 @@ class OrderController extends Controller
             'order_status' => 'required|in:pending,confirmed,preparing,ready,served,completed,cancelled',
         ]);
 
+        $oldOrderStatus = $order->order_status;
         $order->order_status = $request->order_status;
 
         // Set actual completion time if status is completed
@@ -351,6 +403,15 @@ class OrderController extends Controller
             }
         }
 
+        // 🔥 DISPATCH ANALYTICS REFRESH EVENT when order status changes
+        if ($oldOrderStatus !== $request->order_status) {
+            event(new AnalyticsRefreshEvent(
+                today(),
+                [],
+                "order_status_ajax:{$oldOrderStatus}→{$request->order_status}"
+            ));
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Order status updated successfully!',
@@ -367,6 +428,7 @@ class OrderController extends Controller
             'payment_status' => 'required|in:unpaid,partial,paid,refunded',
         ]);
 
+        $oldPaymentStatus = $order->payment_status;
         $order->payment_status = $request->payment_status;
         $order->save();
 
@@ -376,6 +438,15 @@ class OrderController extends Controller
             if ($customerProfile) {
                 $customerProfile->updateLoyaltyTier();
             }
+        }
+
+        // 🔥 DISPATCH ANALYTICS REFRESH EVENT when payment status changes
+        if ($oldPaymentStatus !== $request->payment_status) {
+            event(new AnalyticsRefreshEvent(
+                today(),
+                [],
+                "payment_status_ajax:{$oldPaymentStatus}→{$request->payment_status}"
+            ));
         }
 
         return response()->json([
@@ -414,8 +485,16 @@ class OrderController extends Controller
             return redirect()->back()->with('error', 'Cannot cancel this order.');
         }
 
+        $oldOrderStatus = $order->order_status;
         $order->order_status = 'cancelled';
         $order->save();
+
+        // 🔥 DISPATCH ANALYTICS REFRESH EVENT when order is cancelled
+        event(new AnalyticsRefreshEvent(
+            today(),
+            [],
+            "order_cancelled:{$oldOrderStatus}→cancelled"
+        ));
 
         return redirect()->back()->with('message', 'Order has been cancelled successfully!');
     }

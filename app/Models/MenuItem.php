@@ -21,6 +21,7 @@ class MenuItem extends Model
         'preparation_time',
         'availability',
         'is_featured',
+        'is_set_meal', // Added for set meals
         'rating_average',
         'rating_count',
     ];
@@ -145,6 +146,55 @@ class MenuItem extends Model
     }
 
     /**
+     * Get all stock items (ingredients) used in this menu item
+     */
+    public function stockItems()
+    {
+        return $this->belongsToMany(StockItem::class, 'recipe_ingredients')
+            ->withPivot('quantity_required', 'notes')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get recipe ingredients (pivot records)
+     */
+    public function recipeIngredients()
+    {
+        return $this->hasMany(RecipeIngredient::class);
+    }
+
+    /**
+     * Check if all ingredients are available for this menu item
+     */
+    public function hasAvailableStock($quantity = 1)
+    {
+        foreach ($this->recipeIngredients as $ingredient) {
+            $requiredQty = $ingredient->quantity_required * $quantity;
+            if ($ingredient->stockItem->current_quantity < $requiredQty) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Deduct stock for this menu item (when order is placed)
+     */
+    public function deductStock($quantity, $orderId = null)
+    {
+        foreach ($this->recipeIngredients as $ingredient) {
+            $requiredQty = $ingredient->quantity_required * $quantity;
+            $ingredient->stockItem->reduceStock(
+                $requiredQty,
+                'Order',
+                $orderId,
+                "Used for {$this->name} x{$quantity}"
+            );
+        }
+        return $this;
+    }
+
+    /**
      * Scope to get only available items
      */
     public function scopeAvailable($query)
@@ -256,10 +306,101 @@ class MenuItem extends Model
     }
 
     /**
+     * Get the effective category type (from parent if subcategory doesn't have type)
+     */
+    public function getEffectiveCategoryTypeAttribute()
+    {
+        if (!$this->category) {
+            return null;
+        }
+
+        // If the category has a type, use it
+        if ($this->category->type) {
+            return $this->category->type;
+        }
+
+        // If the category is a subcategory (has a parent), get type from the parent
+        if ($this->category->parent) {
+            return $this->category->parent->type;
+        }
+
+        return $this->category->type; // Return as is
+    }
+
+    /**
      * Get the image URL for display
      */
     public function getImageUrlAttribute()
     {
         return $this->image ? \Storage::url($this->image) : null;
+    }
+
+    /**
+     * The components that make up a set meal.
+     */
+    public function components()
+    {
+        return $this->belongsToMany(MenuItem::class, 'menu_item_set_meal', 'set_meal_menu_item_id', 'component_menu_item_id')
+            ->withPivot('quantity')
+            ->withTimestamps();
+    }
+
+    /**
+     * The sets that this menu item is a part of.
+     */
+    public function partOfSets()
+    {
+        return $this->belongsToMany(MenuItem::class, 'menu_item_set_meal', 'component_menu_item_id', 'set_meal_menu_item_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get all reviews for this menu item
+     */
+    public function reviews()
+    {
+        return $this->hasMany(MenuItemReview::class);
+    }
+
+    /**
+     * Recalculate rating average based on all reviews
+     * More accurate than incremental addRating method
+     */
+    public function recalculateRating()
+    {
+        $reviews = $this->reviews()->whereNull('deleted_at')->get();
+
+        if ($reviews->count() === 0) {
+            $this->update([
+                'rating_average' => 0.00,
+                'rating_count' => 0
+            ]);
+            return $this;
+        }
+
+        $totalRating = $reviews->sum('rating');
+        $reviewCount = $reviews->count();
+        $average = $totalRating / $reviewCount;
+
+        $this->update([
+            'rating_average' => round($average, 2),
+            'rating_count' => $reviewCount
+        ]);
+
+        return $this;
+    }
+
+    /**
+     * Get star rating display (e.g., "★★★★☆")
+     */
+    public function getStarRatingAttribute()
+    {
+        $fullStars = floor($this->rating_average);
+        $halfStar = ($this->rating_average - $fullStars) >= 0.5 ? 1 : 0;
+        $emptyStars = 5 - $fullStars - $halfStar;
+
+        return str_repeat('★', $fullStars) .
+               ($halfStar ? '⯨' : '') .
+               str_repeat('☆', $emptyStars);
     }
 }

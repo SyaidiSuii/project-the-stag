@@ -8,6 +8,7 @@ use App\Models\TableReservation;
 use App\Services\ToyyibpayService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Events\AnalyticsRefreshEvent;
 
 class PaymentService
 {
@@ -471,6 +472,9 @@ class PaymentService
 
                     // Clear session data
                     session()->forget(['pending_order_data', 'pending_payment_id']);
+
+                    // 🔥 DISPATCH ANALYTICS REFRESH EVENT for new paid order from payment gateway
+                    event(new AnalyticsRefreshEvent(today(), [], 'payment_gateway_success'));
                 }
             }
 

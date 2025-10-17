@@ -36,4 +36,18 @@ class Category extends Model
         return $this->hasMany(MenuItem::class);
     }
     
+    // Method to get the effective type (from parent if this is a subcategory without a type)
+    public function getEffectiveType()
+    {
+        if ($this->type) {
+            return $this->type;
+        }
+        
+        if ($this->parent) {
+            return $this->parent->type;
+        }
+        
+        return $this->type;
+    }
+    
 }

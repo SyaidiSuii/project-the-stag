@@ -452,6 +452,46 @@
     30% { transform: translateY(-10px); }
 }
 
+/* Typing Animation Cursor */
+.typing-message::after {
+    content: '▌';
+    color: #5f48ff;
+    animation: blink-cursor 0.8s infinite;
+    margin-left: 2px;
+}
+
+@keyframes blink-cursor {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+}
+
+.typing-message {
+    cursor: pointer;
+    position: relative;
+}
+
+.typing-message:hover::before {
+    content: 'Click to show full text';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    pointer-events: none;
+    margin-bottom: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.typing-message:hover::before {
+    opacity: 1;
+}
+
 /* Chat History View */
 .chatbot-history-view {
     display: flex;
@@ -744,6 +784,9 @@ const ChatBot = {
             await this.loadSessionHistory();
             this.enableInput();
         }
+
+        // Always scroll to bottom when chatbot is opened
+        this.scrollToBottom();
     },
 
     closeWindow() {
@@ -787,11 +830,11 @@ const ChatBot = {
                 // Hide welcome screen
                 this.showWelcome(false);
 
-                // Display welcome message
+                // Display welcome message with typing effect
                 if (data.welcome_message) {
                     console.log('Showing welcome message:', data.welcome_message);
                     this.clearBody();
-                    this.addMessage(data.welcome_message, 'bot');
+                    this.addMessageWithTypingEffect(data.welcome_message, 'bot', 25);
                 } else {
                     console.warn('No welcome message received');
                     this.clearBody();
@@ -800,6 +843,9 @@ const ChatBot = {
                 this.enableInput();
                 this.updateStatus('online');
                 console.log('Chatbot ready for use');
+
+                // Scroll to bottom after session starts
+                this.scrollToBottom();
             } else {
                 const errorMsg = data.debug || data.error || 'Failed to start chat session';
                 console.error('Start session failed:', errorMsg);
@@ -858,7 +904,8 @@ const ChatBot = {
             this.removeTypingIndicator();
 
             if (data.success) {
-                this.addMessage(data.assistant_message.content, 'bot');
+                // Use typing animation for bot responses
+                this.addMessageWithTypingEffect(data.assistant_message.content, 'bot', 30);
             } else if (data.timeout) {
                 this.showError('Session timeout. Starting new session...');
                 this.sessionToken = null;
@@ -901,6 +948,61 @@ const ChatBot = {
         if (autoScroll) {
             this.scrollToBottom();
         }
+    },
+
+    addMessageWithTypingEffect(content, role, speed = 30) {
+        // Create message container
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${role}`;
+
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble typing-message';
+        bubble.textContent = ''; // Start empty
+
+        const time = document.createElement('div');
+        time.className = 'message-time';
+        time.textContent = this.formatTime(new Date());
+
+        messageDiv.appendChild(bubble);
+        messageDiv.appendChild(time);
+        this.elements.body.appendChild(messageDiv);
+
+        // Variables for typing animation
+        let charIndex = 0;
+        let isSkipped = false;
+
+        // Allow clicking to skip animation and show full text
+        bubble.addEventListener('click', () => {
+            if (!isSkipped && charIndex < content.length) {
+                isSkipped = true;
+                clearInterval(typingInterval);
+                bubble.classList.remove('typing-message');
+                bubble.innerHTML = this.formatMessageContent(content);
+                this.scrollToBottom();
+            }
+        });
+
+        // Typing animation
+        const typingInterval = setInterval(() => {
+            if (charIndex < content.length) {
+                // Add next character
+                bubble.textContent += content[charIndex];
+                charIndex++;
+
+                // Auto-scroll as text appears
+                this.scrollToBottom();
+            } else {
+                // Animation complete
+                clearInterval(typingInterval);
+                bubble.classList.remove('typing-message');
+
+                // Now apply formatting (bold, lists, etc.)
+                bubble.innerHTML = this.formatMessageContent(content);
+                this.scrollToBottom();
+            }
+        }, speed);
+
+        return messageDiv;
     },
 
     formatMessageContent(content) {
@@ -1049,9 +1151,15 @@ const ChatBot = {
     },
 
     scrollToBottom() {
+        // Use requestAnimationFrame for better timing with DOM rendering
+        requestAnimationFrame(() => {
+            this.elements.body.scrollTop = this.elements.body.scrollHeight;
+        });
+
+        // Also set a fallback timeout to ensure scroll happens
         setTimeout(() => {
             this.elements.body.scrollTop = this.elements.body.scrollHeight;
-        }, 100);
+        }, 150);
     },
 
     loadSessionFromStorage() {
@@ -1114,11 +1222,13 @@ const ChatBot = {
                         </div>
                     `;
                     this.elements.body.appendChild(infoDiv);
-                    this.scrollToBottom();
                 } else {
                     // Session active - enable input
                     this.enableInput();
                 }
+
+                // Always scroll to bottom after loading all messages
+                this.scrollToBottom();
             } else if (data.error) {
                 console.warn('Could not load history:', data.error);
                 // Start fresh session

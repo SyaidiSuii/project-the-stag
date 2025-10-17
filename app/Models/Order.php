@@ -51,6 +51,12 @@ class Order extends Model
     {
         parent::boot();
 
+        static::creating(function ($order) {
+            if (empty($order->confirmation_code)) {
+                $order->confirmation_code = self::generateConfirmationCode();
+            }
+        });
+
         // Trigger AI model retrain when order is completed/served
         static::updated(function ($order) {
             // Check if order status changed to completed or served
@@ -130,6 +136,11 @@ class Order extends Model
     public function tableQrcode()
     {
         return $this->belongsTo(TableQrcode::class, 'table_qrcode_id');
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(MenuItemReview::class);
     }
 
     // Helper methods

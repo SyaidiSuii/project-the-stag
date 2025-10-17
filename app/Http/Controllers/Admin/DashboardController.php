@@ -82,6 +82,9 @@ class DashboardController extends Controller
     /**
      * Calculate revenue growth by comparing current week with previous week
      */
+    /**
+     * Calculate revenue growth by comparing current week with previous week
+     */
     private function calculateRevenueGrowth()
     {
         $currentWeekRevenue = SaleAnalytics::whereBetween('date', [

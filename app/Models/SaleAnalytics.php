@@ -30,6 +30,17 @@ class SaleAnalytics extends Model
         'total_revenue_delivery',
         'average_preparation_time',
         'customer_satisfaction_avg',
+        // New comprehensive fields
+        'qr_session_count',
+        'qr_revenue',
+        'table_booking_count',
+        'table_utilization_rate',
+        'promotion_usage_count',
+        'promotion_discount_total',
+        'rewards_redeemed_count',
+        'cogs_total',
+        'gross_profit',
+        'profit_margin',
     ];
 
     protected $casts = [
@@ -43,5 +54,11 @@ class SaleAnalytics extends Model
         'total_revenue_delivery' => 'decimal:2',
         'average_preparation_time' => 'decimal:2',
         'customer_satisfaction_avg' => 'decimal:2',
+        'qr_revenue' => 'decimal:2',
+        'table_utilization_rate' => 'decimal:2',
+        'promotion_discount_total' => 'decimal:2',
+        'cogs_total' => 'decimal:2',
+        'gross_profit' => 'decimal:2',
+        'profit_margin' => 'decimal:2',
     ];
 }

@@ -46,13 +46,13 @@
 
 <!-- Tabs -->
 <div class="admin-tabs" style="display: flex; gap: 8px; background: white; padding: 16px; border-radius: 12px; margin-bottom: 24px;">
-    <div class="admin-tab active" data-tab="food" style="padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; background: var(--brand, #6366f1); color: white;">Food Menu</div>
-    <div class="admin-tab" data-tab="drinks" style="padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; background: var(--muted, #e2e8f0); color: var(--text-2, #64748b);">Drinks Menu</div>
-    <div class="admin-tab" data-tab="set-meals" style="padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; background: var(--muted, #e2e8f0); color: var(--text-2, #64748b);">Set Meals</div>
+    <a href="{{ route('admin.menu-items.index', ['tab' => 'food']) }}" class="admin-tab {{ $activeTab === 'food' ? 'active' : '' }}" style="padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; text-decoration: none; {{ $activeTab === 'food' ? 'background: var(--brand, #6366f1); color: white;' : 'background: var(--muted, #e2e8f0); color: var(--text-2, #64748b);' }}">Food Menu</a>
+    <a href="{{ route('admin.menu-items.index', ['tab' => 'drinks']) }}" class="admin-tab {{ $activeTab === 'drinks' ? 'active' : '' }}" style="padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; text-decoration: none; {{ $activeTab === 'drinks' ? 'background: var(--brand, #6366f1); color: white;' : 'background: var(--muted, #e2e8f0); color: var(--text-2, #64748b);' }}">Drinks Menu</a>
+    <a href="{{ route('admin.menu-items.index', ['tab' => 'set-meals']) }}" class="admin-tab {{ $activeTab === 'set-meals' ? 'active' : '' }}" style="padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; text-decoration: none; {{ $activeTab === 'set-meals' ? 'background: var(--brand, #6366f1); color: white;' : 'background: var(--muted, #e2e8f0); color: var(--text-2, #64748b);' }}">Set Meals</a>
 </div>
 
 <!-- Food Menu Section -->
-<div class="admin-section menu-section" id="food-section">
+<div class="admin-section menu-section" id="food-section" style="{{ $activeTab === 'food' ? 'display: block;' : 'display: none;' }}">
     <div class="section-header">
         <h2 class="section-title">Food Menu Items</h2>
         <div class="section-controls">
@@ -60,47 +60,27 @@
         </div>
     </div>
 
-    @if(session('message'))
-        <div class="alert alert-success">
-            {{ session('message') }}
-        </div>
-    @endif
-
     <div class="search-filter">
         <div class="search-box">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-input" placeholder="Search menu items..." id="searchInput" value="{{ request('search') }}">
+            <input type="text" class="search-input" placeholder="Search food..." id="searchInput" value="{{ request('search') }}">
         </div>
         <div class="filter-group">
-            <select class="filter-select" id="mainCategoryFilter">
-                <option value="">All Categories</option>
-                @foreach($categories->where('type', 'food') as $category)
-                    <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
-                        {{ $category->name }}
-                    </option>
+            <select class="filter-select" id="foodCategoryFilter">
+                <option value="">All Food Categories</option>
+                @foreach($categories->where('type', 'food')->whereNotNull('parent_id') as $category)
+                    <option value="{{ $category->id }}">{{ $category->name }}</option>
                 @endforeach
             </select>
-            <select class="filter-select" id="availabilityFilter">
+            <select class="filter-select" id="foodAvailabilityFilter">
                 <option value="">All Items</option>
-                <option value="1" {{ request('availability') === '1' ? 'selected' : '' }}>Available Only</option>
-                <option value="0" {{ request('availability') === '0' ? 'selected' : '' }}>Unavailable Only</option>
-            </select>
-            <select class="filter-select" id="featuredFilter">
-                <option value="">All Items</option>
-                <option value="1" {{ request('is_featured') === '1' ? 'selected' : '' }}>Featured Only</option>
-                <option value="0" {{ request('is_featured') === '0' ? 'selected' : '' }}>Not Featured</option>
-            </select>
-            <select class="filter-select" id="sortFilter">
-                <option value="name" {{ request('sort_by') === 'name' ? 'selected' : '' }}>Sort by Name</option>
-                <option value="price" {{ request('sort_by') === 'price' ? 'selected' : '' }}>Sort by Price</option>
-                <option value="category" {{ request('sort_by') === 'category' ? 'selected' : '' }}>Sort by Category</option>
-                <option value="created_at" {{ request('sort_by') === 'created_at' ? 'selected' : '' }}>Sort by Date</option>
-                <option value="rating_average" {{ request('sort_by') === 'rating_average' ? 'selected' : '' }}>Sort by Rating</option>
+                <option value="1">Available Only</option>
+                <option value="0">Unavailable Only</option>
             </select>
         </div>
         <a href="{{ route('admin.menu-items.create') }}" class="admin-btn btn-primary">
             <div class="admin-nav-icon"><i class="fas fa-plus"></i></div>
-            Add Menu Item
+            Add Food Item
         </a>
     </div>
 
@@ -245,7 +225,7 @@
             <div class="empty-state-icon">
                 <i class="fas fa-utensils"></i>
             </div>
-            <div class="empty-state-title">No menu items found</div>
+            <div class="empty-state-title">No food items found</div>
             <div class="empty-state-text">
                 @if(request()->hasAny(['search', 'category_id', 'availability', 'is_featured']))
                     No items match your current filters. Try adjusting your search criteria.
@@ -256,7 +236,7 @@
             @if(!request()->hasAny(['search', 'category_id', 'availability', 'is_featured']))
                 <div style="margin-top: 20px;">
                     <a href="{{ route('admin.menu-items.create') }}" class="admin-btn btn-primary">
-                        <i class="fas fa-plus"></i> Add Your First Menu Item
+                        <i class="fas fa-plus"></i> Add Your First Food Item
                     </a>
                 </div>
             @endif
@@ -305,19 +285,13 @@
 <!-- End Food Section -->
 
 <!-- Drinks Menu Section -->
-<div class="admin-section menu-section" id="drinks-section" style="display: none;">
+<div class="admin-section menu-section" id="drinks-section" style="{{ $activeTab === 'drinks' ? 'display: block;' : 'display: none;' }}">
     <div class="section-header">
         <h2 class="section-title">Drinks Menu Items</h2>
         <div class="section-controls">
             {{--  --}}
         </div>
     </div>
-
-    @if(session('message'))
-        <div class="alert alert-success">
-            {{ session('message') }}
-        </div>
-    @endif
 
     <div class="search-filter">
         <div class="search-box">
@@ -327,13 +301,8 @@
         <div class="filter-group">
             <select class="filter-select" id="drinkCategoryFilter">
                 <option value="">All Drink Categories</option>
-                @foreach($categories->where('type', 'drink') as $category)
+                @foreach($categories->where('type', 'drink')->whereNotNull('parent_id') as $category)
                     <option value="{{ $category->id }}">{{ $category->name }}</option>
-                    @if($category->subCategories)
-                        @foreach($category->subCategories as $subCategory)
-                            <option value="{{ $subCategory->id }}">&nbsp;&nbsp;{{ $subCategory->name }}</option>
-                        @endforeach
-                    @endif
                 @endforeach
             </select>
             <select class="filter-select" id="drinkAvailabilityFilter">
@@ -349,7 +318,7 @@
     </div>
 
     <!-- Drinks Table -->
-    @if($menuItems->where('category.type', 'drink') ->count() > 0)
+    @if($menuItems->count() > 0)
         <div class="table-container">
             <table class="admin-table">
                 <thead>
@@ -363,7 +332,7 @@
                     </tr>
                 </thead>
                 <tbody id="drinksTableBody">
-                    @foreach($menuItems->where('category.type', 'drink') as $item)
+                    @foreach($menuItems as $item)
                     <tr>
                         <td>
                             <div class="item-info">
@@ -379,6 +348,17 @@
                                     @if($item->description)
                                         <div class="item-description">{{ Str::limit($item->description, 50) }}</div>
                                     @endif
+                                    <div class="item-meta">
+                                        <span class="prep-time">
+                                            <i class="fas fa-clock"></i> {{ $item->preparation_time }}min
+                                        </span>
+                                        @if($item->allergens && count($item->allergens) > 0)
+                                            <span class="allergens-count">
+                                                <i class="fas fa-exclamation-triangle text-warning"></i>
+                                                {{ count($item->allergens) }} allergen{{ count($item->allergens) > 1 ? 's' : '' }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </td>
@@ -425,13 +405,36 @@
                         </td>
                         <td class="cell-center">
                             <div class="table-actions">
-                                <a href="{{ route('admin.menu-items.show', $item->id) }}" class="action-btn view-btn" title="View Details">
+                                <a href="{{ route('admin.menu-items.show', $item->id) }}" 
+                                class="action-btn view-btn" title="View Details">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{{ route('admin.menu-items.edit', $item->id) }}" class="action-btn edit-btn" title="Edit Item">
+                                <a href="{{ route('admin.menu-items.edit', $item->id) }}" 
+                                class="action-btn edit-btn" title="Edit Item">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form method="POST" action="{{ route('admin.menu-items.destroy', $item->id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                
+                                <!-- Quick Toggle Buttons -->
+                                <form method="POST" action="{{ route('admin.menu-items.toggle-availability', $item->id) }}" style="display: inline;">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="action-btn toggle-btn {{ $item->availability ? 'disable-action' : '' }}" 
+                                            title="{{ $item->availability ? 'Mark Unavailable' : 'Mark Available' }}">
+                                        <i class="fas fa-{{ $item->availability ? 'eye-slash' : 'eye' }}"></i>
+                                    </button>
+                                </form>
+                                
+                                <form method="POST" action="{{ route('admin.menu-items.toggle-featured', $item->id) }}" style="display: inline;">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="action-btn star-btn {{ $item->is_featured ? 'featured' : '' }}" 
+                                            title="{{ $item->is_featured ? 'Remove from Featured' : 'Add to Featured' }}">
+                                        <i class="fas fa-star"></i>
+                                    </button>
+                                </form>
+                                
+                                <form method="POST" action="{{ route('admin.menu-items.destroy', $item->id) }}" style="display: inline;"
+                                    onsubmit="return confirm('Are you sure you want to delete this menu item?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="action-btn delete-btn" title="Delete Item">
@@ -452,23 +455,56 @@
             <div class="empty-state-text">Start adding drinks to your menu.</div>
         </div>
     @endif
+
+    <!-- Pagination -->
+    @if($menuItems->hasPages())
+        <div class="pagination">
+            <div style="display: flex; align-items: center; gap: 16px; margin-right: auto;">
+                <span style="font-size: 14px; color: var(--text-2);">
+                    Showing {{ $menuItems->firstItem() }} to {{ $menuItems->lastItem() }} of {{ $menuItems->total() }} results
+                </span>
+            </div>
+
+            @if($menuItems->onFirstPage())
+                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
+                    <i class="fas fa-chevron-left"></i>
+                </span>
+            @else
+                <a href="{{ $menuItems->previousPageUrl() }}" class="pagination-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            @endif
+
+            @foreach($menuItems->getUrlRange(1, $menuItems->lastPage()) as $page => $url)
+                @if($page == $menuItems->currentPage())
+                    <span class="pagination-btn active">{{ $page }}</span>
+                @else
+                    <a href="{{ $url }}" class="pagination-btn">{{ $page }}</a>
+                @endif
+            @endforeach
+
+            @if($menuItems->hasMorePages())
+                <a href="{{ $menuItems->nextPageUrl() }}" class="pagination-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            @else
+                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
+                    <i class="fas fa-chevron-right"></i>
+                </span>
+            @endif
+        </div>
+    @endif
 </div>
 <!-- End Drinks Section -->
 
 <!-- Set Meals Section -->
-<div class="admin-section menu-section" id="set-meals-section" style="display: none;">
+<div class="admin-section menu-section" id="set-meals-section" style="{{ $activeTab === 'set-meals' ? 'display: block;' : 'display: none;' }}">
     <div class="section-header">
         <h2 class="section-title">Set Meal Items</h2>
         <div class="section-controls">
             {{--  --}}
         </div>
     </div>
-
-    @if(session('message'))
-        <div class="alert alert-success">
-            {{ session('message') }}
-        </div>
-    @endif
 
     <div class="search-filter">
         <div class="search-box">
@@ -478,13 +514,8 @@
         <div class="filter-group">
             <select class="filter-select" id="setMealCategoryFilter">
                 <option value="">All Set Meal Categories</option>
-                @foreach($categories->where('type', 'set-meal') as $category)
+                @foreach($categories->where('type', 'set-meal')->whereNotNull('parent_id') as $category)
                     <option value="{{ $category->id }}">{{ $category->name }}</option>
-                    @if($category->subCategories)
-                        @foreach($category->subCategories as $subCategory)
-                            <option value="{{ $subCategory->id }}">&nbsp;&nbsp;{{ $subCategory->name }}</option>
-                        @endforeach
-                    @endif
                 @endforeach
             </select>
             <select class="filter-select" id="setMealAvailabilityFilter">
@@ -493,14 +524,14 @@
                 <option value="0">Unavailable Only</option>
             </select>
         </div>
-        <a href="{{ route('admin.menu-items.create') }}?type=set-meal" class="admin-btn btn-primary">
+        <a href="{{ route('admin.menu-items.create-set-meal') }}" class="admin-btn btn-primary">
             <div class="admin-nav-icon"><i class="fas fa-plus"></i></div>
             Add Set Meal
         </a>
     </div>
 
     <!-- Set Meals Table -->
-    @if($menuItems->where('category.type', 'set-meal') ->count() > 0)
+    @if($menuItems->count() > 0)
         <div class="table-container">
             <table class="admin-table">
                 <thead>
@@ -514,7 +545,7 @@
                     </tr>
                 </thead>
                 <tbody id="setMealsTableBody">
-                    @foreach($menuItems->where('category.type', 'set-meal') as $item)
+                    @foreach($menuItems as $item)
                     <tr>
                         <td>
                             <div class="item-info">
@@ -530,6 +561,17 @@
                                     @if($item->description)
                                         <div class="item-description">{{ Str::limit($item->description, 50) }}</div>
                                     @endif
+                                    <div class="item-meta">
+                                        <span class="prep-time">
+                                            <i class="fas fa-clock"></i> {{ $item->preparation_time }}min
+                                        </span>
+                                        @if($item->allergens && count($item->allergens) > 0)
+                                            <span class="allergens-count">
+                                                <i class="fas fa-exclamation-triangle text-warning"></i>
+                                                {{ count($item->allergens) }} allergen{{ count($item->allergens) > 1 ? 's' : '' }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </td>
@@ -576,13 +618,36 @@
                         </td>
                         <td class="cell-center">
                             <div class="table-actions">
-                                <a href="{{ route('admin.menu-items.show', $item->id) }}" class="action-btn view-btn" title="View Details">
+                                <a href="{{ route('admin.menu-items.show', $item->id) }}" 
+                                class="action-btn view-btn" title="View Details">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{{ route('admin.menu-items.edit', $item->id) }}" class="action-btn edit-btn" title="Edit Item">
+                                <a href="{{ route('admin.menu-items.edit', $item->id) }}" 
+                                class="action-btn edit-btn" title="Edit Item">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form method="POST" action="{{ route('admin.menu-items.destroy', $item->id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                
+                                <!-- Quick Toggle Buttons -->
+                                <form method="POST" action="{{ route('admin.menu-items.toggle-availability', $item->id) }}" style="display: inline;">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="action-btn toggle-btn {{ $item->availability ? 'disable-action' : '' }}" 
+                                            title="{{ $item->availability ? 'Mark Unavailable' : 'Mark Available' }}">
+                                        <i class="fas fa-{{ $item->availability ? 'eye-slash' : 'eye' }}"></i>
+                                    </button>
+                                </form>
+                                
+                                <form method="POST" action="{{ route('admin.menu-items.toggle-featured', $item->id) }}" style="display: inline;">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="action-btn star-btn {{ $item->is_featured ? 'featured' : '' }}" 
+                                            title="{{ $item->is_featured ? 'Remove from Featured' : 'Add to Featured' }}">
+                                        <i class="fas fa-star"></i>
+                                    </button>
+                                </form>
+                                
+                                <form method="POST" action="{{ route('admin.menu-items.destroy', $item->id) }}" style="display: inline;"
+                                    onsubmit="return confirm('Are you sure you want to delete this menu item?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="action-btn delete-btn" title="Delete Item">
@@ -603,6 +668,45 @@
             <div class="empty-state-text">Start adding set meals to your menu.</div>
         </div>
     @endif
+
+    <!-- Pagination -->
+    @if($menuItems->hasPages())
+        <div class="pagination">
+            <div style="display: flex; align-items: center; gap: 16px; margin-right: auto;">
+                <span style="font-size: 14px; color: var(--text-2);">
+                    Showing {{ $menuItems->firstItem() }} to {{ $menuItems->lastItem() }} of {{ $menuItems->total() }} results
+                </span>
+            </div>
+
+            @if($menuItems->onFirstPage())
+                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
+                    <i class="fas fa-chevron-left"></i>
+                </span>
+            @else
+                <a href="{{ $menuItems->previousPageUrl() }}" class="pagination-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            @endif
+
+            @foreach($menuItems->getUrlRange(1, $menuItems->lastPage()) as $page => $url)
+                @if($page == $menuItems->currentPage())
+                    <span class="pagination-btn active">{{ $page }}</span>
+                @else
+                    <a href="{{ $url }}" class="pagination-btn">{{ $page }}</a>
+                @endif
+            @endforeach
+
+            @if($menuItems->hasMorePages())
+                <a href="{{ $menuItems->nextPageUrl() }}" class="pagination-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            @else
+                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
+                    <i class="fas fa-chevron-right"></i>
+                </span>
+            @endif
+        </div>
+    @endif
 </div>
 <!-- End Set Meals Section -->
 
@@ -611,39 +715,206 @@
 @section('scripts')
 <script src="{{ asset('js/admin/menu-management.js') }}"></script>
 <script>
-// Tab switching functionality
+// Notification function
+function showNotification(message, type) {
+    // Create a simple notification
+    const notification = document.createElement('div');
+    notification.className = 'notification ' + type;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 9999;
+        ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Handle form submission with loading state and notifications
 document.addEventListener('DOMContentLoaded', function() {
-    const tabs = document.querySelectorAll('.admin-tab');
-    const sections = document.querySelectorAll('.menu-section');
+    const userForm = document.querySelector('.user-form');
+    if (userForm) {
+        userForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('.btn-save');
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitBtn.disabled = true;
+            
+            // Let the form submit normally - don't prevent default
+        });
+    }
+    
+    // Check for success/error messages from session
+    @if(session('message'))
+        showNotification('{{ session('message') }}', 'success');
+    @endif
+    @if(session('success'))
+        showNotification('{{ session('success') }}', 'success');
+    @endif
+    @if(session('error'))
+        showNotification('{{ session('error') }}', 'error');
+    @endif
 
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            const targetTab = this.getAttribute('data-tab');
+    // === FILTER FUNCTIONALITY ===
 
-            // Remove active class from all tabs
-            tabs.forEach(t => {
-                t.style.background = 'var(--muted, #e2e8f0)';
-                t.style.color = 'var(--text-2, #64748b)';
-                t.classList.remove('active');
-            });
+    // Get current tab
+    const currentTab = '{{ $activeTab }}';
+    const currentUrl = new URL(window.location.href);
 
-            // Add active class to clicked tab
-            this.style.background = 'var(--brand, #6366f1)';
-            this.style.color = 'white';
-            this.classList.add('active');
+    // Helper function to apply filters
+    function applyFilters() {
+        const params = new URLSearchParams(window.location.search);
 
-            // Hide all sections
-            sections.forEach(section => {
-                section.style.display = 'none';
-            });
+        // Keep the tab parameter
+        params.set('tab', currentTab);
 
-            // Show target section
-            const targetSection = document.getElementById(targetTab + '-section');
-            if (targetSection) {
-                targetSection.style.display = 'block';
+        // Get filter values based on current tab
+        let searchValue, categoryValue, availabilityValue;
+
+        if (currentTab === 'food') {
+            searchValue = document.getElementById('searchInput')?.value || '';
+            categoryValue = document.getElementById('foodCategoryFilter')?.value || '';
+            availabilityValue = document.getElementById('foodAvailabilityFilter')?.value || '';
+        } else if (currentTab === 'drinks') {
+            searchValue = document.getElementById('searchInputDrinks')?.value || '';
+            categoryValue = document.getElementById('drinkCategoryFilter')?.value || '';
+            availabilityValue = document.getElementById('drinkAvailabilityFilter')?.value || '';
+        } else if (currentTab === 'set-meals') {
+            searchValue = document.getElementById('searchInputSetMeals')?.value || '';
+            categoryValue = document.getElementById('setMealCategoryFilter')?.value || '';
+            availabilityValue = document.getElementById('setMealAvailabilityFilter')?.value || '';
+        }
+
+        // Apply search parameter
+        if (searchValue && searchValue.trim() !== '') {
+            params.set('search', searchValue.trim());
+        } else {
+            params.delete('search');
+        }
+
+        // Apply category filter
+        if (categoryValue && categoryValue !== '') {
+            params.set('category_id', categoryValue);
+        } else {
+            params.delete('category_id');
+        }
+
+        // Apply availability filter
+        if (availabilityValue && availabilityValue !== '') {
+            params.set('availability', availabilityValue);
+        } else {
+            params.delete('availability');
+        }
+
+        // Redirect with new parameters
+        window.location.href = '{{ route("admin.menu-items.index") }}?' + params.toString();
+    }
+
+    // === FOOD TAB FILTERS ===
+    const searchInput = document.getElementById('searchInput');
+    const foodCategoryFilter = document.getElementById('foodCategoryFilter');
+    const foodAvailabilityFilter = document.getElementById('foodAvailabilityFilter');
+
+    if (searchInput) {
+        // Search on Enter key
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                applyFilters();
             }
         });
-    });
+
+        // Search on input (debounced)
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                applyFilters();
+            }, 500);
+        });
+    }
+
+    if (foodCategoryFilter) {
+        foodCategoryFilter.value = '{{ request("category_id") }}';
+        foodCategoryFilter.addEventListener('change', applyFilters);
+    }
+
+    if (foodAvailabilityFilter) {
+        foodAvailabilityFilter.value = '{{ request("availability") }}';
+        foodAvailabilityFilter.addEventListener('change', applyFilters);
+    }
+
+    // === DRINKS TAB FILTERS ===
+    const searchInputDrinks = document.getElementById('searchInputDrinks');
+    const drinkCategoryFilter = document.getElementById('drinkCategoryFilter');
+    const drinkAvailabilityFilter = document.getElementById('drinkAvailabilityFilter');
+
+    if (searchInputDrinks) {
+        searchInputDrinks.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                applyFilters();
+            }
+        });
+
+        let searchTimeoutDrinks;
+        searchInputDrinks.addEventListener('input', function() {
+            clearTimeout(searchTimeoutDrinks);
+            searchTimeoutDrinks = setTimeout(() => {
+                applyFilters();
+            }, 500);
+        });
+    }
+
+    if (drinkCategoryFilter) {
+        drinkCategoryFilter.value = '{{ request("category_id") }}';
+        drinkCategoryFilter.addEventListener('change', applyFilters);
+    }
+
+    if (drinkAvailabilityFilter) {
+        drinkAvailabilityFilter.value = '{{ request("availability") }}';
+        drinkAvailabilityFilter.addEventListener('change', applyFilters);
+    }
+
+    // === SET MEALS TAB FILTERS ===
+    const searchInputSetMeals = document.getElementById('searchInputSetMeals');
+    const setMealCategoryFilter = document.getElementById('setMealCategoryFilter');
+    const setMealAvailabilityFilter = document.getElementById('setMealAvailabilityFilter');
+
+    if (searchInputSetMeals) {
+        searchInputSetMeals.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                applyFilters();
+            }
+        });
+
+        let searchTimeoutSetMeals;
+        searchInputSetMeals.addEventListener('input', function() {
+            clearTimeout(searchTimeoutSetMeals);
+            searchTimeoutSetMeals = setTimeout(() => {
+                applyFilters();
+            }, 500);
+        });
+    }
+
+    if (setMealCategoryFilter) {
+        setMealCategoryFilter.value = '{{ request("category_id") }}';
+        setMealCategoryFilter.addEventListener('change', applyFilters);
+    }
+
+    if (setMealAvailabilityFilter) {
+        setMealAvailabilityFilter.value = '{{ request("availability") }}';
+        setMealAvailabilityFilter.addEventListener('change', applyFilters);
+    }
 });
 </script>
 @endsection

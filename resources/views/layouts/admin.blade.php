@@ -21,7 +21,9 @@
     <!-- Updated Sidebar Section -->
     <div class="admin-sidebar" id="adminSidebar">
         <div class="admin-logo">
-            <div class="admin-logo-icon">🦌</div>
+            <div>
+                <img src="{{ asset('images/logo.png') }}" alt="logo" class="admin-logo-icon">
+            </div>
             <div class="admin-logo-text">The Stag</div>
         </div>
         <nav class="admin-nav">
@@ -30,6 +32,13 @@
                 <div class="admin-nav-icon"><i class="fas fa-chart-line"></i></div>
                 <div class="admin-nav-text">Dashboard</div>
             </a>
+
+            <!-- Reports Menu -->
+            <a href="{{ route('admin.reports.index') }}" class="admin-nav-item {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                <div class="admin-nav-icon"><i class="fas fa-chart-pie"></i></div>
+                <div class="admin-nav-text">Reports</div>
+            </a>
+
             <a href="{{ route('admin.user.index') }}"
                 class="admin-nav-item {{ request()->routeIs('admin.user.*') ? 'active' : '' }}">
                 <div class="admin-nav-icon"><i class="fas fa-users"></i></div>
@@ -148,6 +157,31 @@
                 <a href="{{ route('admin.rewards.bonus-challenges.index') }}"
                     class="admin-nav-subitem {{ request()->routeIs('admin.rewards.bonus-challenges.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">Bonus Challenges</div>
+                </a>
+            </div>
+
+            <!-- Stock Management Menu -->
+            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.stock.*') ? 'active' : '' }}" id="stockMenu">
+                <div class="admin-nav-icon"><i class="fas fa-boxes"></i></div>
+                <div class="admin-nav-text">Stock Management</div>
+                <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="admin-nav-submenu" id="stockSubmenu">
+                <a href="{{ route('admin.stock.dashboard') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.stock.dashboard') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Dashboard</div>
+                </a>
+                <a href="{{ route('admin.stock.items.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.stock.items.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Stock Items</div>
+                </a>
+                <a href="{{ route('admin.stock.suppliers.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.stock.suppliers.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Suppliers</div>
+                </a>
+                <a href="{{ route('admin.stock.purchase-orders.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.stock.purchase-orders.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Purchase Orders</div>
                 </a>
             </div>
 

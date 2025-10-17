@@ -19,6 +19,10 @@ use App\Http\Controllers\Admin\MenuCustomizationController;
 use App\Http\Controllers\Admin\QuickReorderController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\PromotionController as AdminPromotionController;
+use App\Http\Controllers\Admin\StockDashboardController;
+use App\Http\Controllers\Admin\StockItemController;
+use App\Http\Controllers\Admin\SupplierController;
+use App\Http\Controllers\Admin\PurchaseOrderController;
 use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
 use App\Http\Controllers\Customer\FoodController as CustomerFoodController;
 use App\Http\Controllers\Customer\DrinksController as CustomerDrinksController;
@@ -30,6 +34,7 @@ use App\Http\Controllers\Customer\PaymentController as CustomerPaymentController
 use App\Http\Controllers\Customer\CartController as CustomerCartController;
 use App\Http\Controllers\Customer\BookingPaymentController as CustomerBookingPaymentController;
 use App\Http\Controllers\Customer\PromotionController as CustomerPromotionController;
+use App\Http\Controllers\Customer\ReviewController as CustomerReviewController;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\HappyBirthday;
@@ -117,6 +122,24 @@ Route::prefix('customer')->name('customer.')->group(function () {
         Route::post('/remove-promo', [CustomerPromotionController::class, 'removePromoCode'])->name('remove-promo');
         Route::post('/best-promotion', [CustomerPromotionController::class, 'getBestPromotion'])->name('best-promotion');
         Route::get('/api/active-happy-hours', [CustomerPromotionController::class, 'activeHappyHours'])->name('api.active-happy-hours');
+    });
+
+    // Reviews & Ratings routes
+    Route::prefix('reviews')->name('reviews.')->group(function () {
+        // View reviews
+        Route::get('/my-reviews', [CustomerReviewController::class, 'myReviews'])->name('my-reviews');
+        Route::get('/menu-item/{menuItemId}', [CustomerReviewController::class, 'showMenuItemReviews'])->name('menu-item');
+
+        // Create review form
+        Route::get('/create/{orderId}', [CustomerReviewController::class, 'create'])->name('create');
+
+        // Submit reviews
+        Route::post('/store', [CustomerReviewController::class, 'store'])->name('store');
+        Route::post('/store-batch', [CustomerReviewController::class, 'storeBatch'])->name('store-batch');
+
+        // Update/Delete reviews
+        Route::put('/{reviewId}', [CustomerReviewController::class, 'update'])->name('update');
+        Route::delete('/{reviewId}', [CustomerReviewController::class, 'destroy'])->name('destroy');
     });
 });
 
@@ -275,6 +298,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::patch('{menuItem}/toggle-availability', [MenuItemController::class, 'toggleAvailability'])->name('toggle-availability');
             Route::patch('{menuItem}/toggle-featured', [MenuItemController::class, 'toggleFeatured'])->name('toggle-featured');
             Route::patch('{menuItem}/rating', [MenuItemController::class, 'updateRating'])->name('rating');
+
+            // Routes for Set Meals (must be before resource route)
+            Route::get('/create-set-meal', [MenuItemController::class, 'createSetMeal'])->name('create-set-meal');
+            Route::post('/store-set-meal', [MenuItemController::class, 'storeSetMeal'])->name('store-set-meal');
         });
         Route::resource('menu-items', MenuItemController::class);
 
@@ -321,6 +348,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // ---------------------------------------------
         // ANALYTICS & REPORTING
         // ---------------------------------------------
+        Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/live-analytics', [\App\Http\Controllers\Admin\ReportController::class, 'getLiveAnalytics'])->name('reports.live-analytics');
+        Route::get('reports/chart-data', [\App\Http\Controllers\Admin\ReportController::class, 'getChartData'])->name('reports.chart-data');
+
         Route::prefix('sale-analytics')->name('sale-analytics.')->group(function () {
             Route::get('dashboard-stats', [SaleAnalyticsController::class, 'getDashboardStats'])->name('dashboard-stats');
             Route::get('date-range', [SaleAnalyticsController::class, 'getDateRangeAnalytics'])->name('date-range');
@@ -356,6 +387,56 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('/happy-hour/{happyHourDeal}', [AdminPromotionController::class, 'updateHappyHour'])->name('happy-hour.update');
             Route::delete('/happy-hour/{happyHourDeal}', [AdminPromotionController::class, 'destroyHappyHour'])->name('happy-hour.destroy');
             Route::post('/happy-hour/{happyHourDeal}/toggle-status', [AdminPromotionController::class, 'toggleHappyHourStatus'])->name('happy-hour.toggle-status');
+        });
+
+        // ---------------------------------------------
+        // STOCK MANAGEMENT
+        // ---------------------------------------------
+        Route::prefix('stock')->name('stock.')->group(function () {
+            // Stock Dashboard
+            Route::get('dashboard', [StockDashboardController::class, 'index'])->name('dashboard');
+
+            // AJAX API endpoints for dashboard
+            Route::get('api/low-stock', [StockDashboardController::class, 'lowStockAlert'])->name('api.low-stock');
+            Route::get('api/critical-alert', [StockDashboardController::class, 'criticalAlert'])->name('api.critical-alert');
+            Route::get('api/transactions', [StockDashboardController::class, 'getTransactions'])->name('api.transactions');
+
+            // Stock Items Management
+            Route::prefix('items')->name('items.')->group(function () {
+                Route::get('/', [StockItemController::class, 'index'])->name('index');
+                Route::get('create', [StockItemController::class, 'create'])->name('create');
+                Route::post('/', [StockItemController::class, 'store'])->name('store');
+                Route::get('{item}', [StockItemController::class, 'show'])->name('show');
+                Route::get('{item}/edit', [StockItemController::class, 'edit'])->name('edit');
+                Route::put('{item}', [StockItemController::class, 'update'])->name('update');
+                Route::delete('{item}', [StockItemController::class, 'destroy'])->name('destroy');
+
+                // AJAX endpoints
+                Route::post('{item}/toggle-status', [StockItemController::class, 'toggleStatus'])->name('toggle-status');
+                Route::post('{item}/adjust-stock', [StockItemController::class, 'adjustStock'])->name('adjust-stock');
+            });
+
+            // Suppliers Management
+            Route::prefix('suppliers')->name('suppliers.')->group(function () {
+                Route::get('/', [SupplierController::class, 'index'])->name('index');
+                Route::get('create', [SupplierController::class, 'create'])->name('create');
+                Route::post('/', [SupplierController::class, 'store'])->name('store');
+                Route::get('{supplier}/edit', [SupplierController::class, 'edit'])->name('edit');
+                Route::put('{supplier}', [SupplierController::class, 'update'])->name('update');
+                Route::delete('{supplier}', [SupplierController::class, 'destroy'])->name('destroy');
+
+                // AJAX endpoints
+                Route::post('{supplier}/toggle-status', [SupplierController::class, 'toggleStatus'])->name('toggle-status');
+            });
+
+            // Purchase Orders Management
+            Route::prefix('purchase-orders')->name('purchase-orders.')->group(function () {
+                Route::get('/', [PurchaseOrderController::class, 'index'])->name('index');
+                Route::get('{purchaseOrder}', [PurchaseOrderController::class, 'show'])->name('show');
+                Route::post('{purchaseOrder}/approve', [PurchaseOrderController::class, 'approve'])->name('approve');
+                Route::post('{purchaseOrder}/mark-received', [PurchaseOrderController::class, 'markAsReceived'])->name('mark-received');
+                Route::delete('{purchaseOrder}', [PurchaseOrderController::class, 'destroy'])->name('destroy');
+            });
         });
 
         // ---------------------------------------------

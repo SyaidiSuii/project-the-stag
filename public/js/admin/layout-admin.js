@@ -47,6 +47,8 @@ document.addEventListener("DOMContentLoaded", () => {
         adminSidebar.classList.toggle("open");
     });
 
+    
+
     // Menu Management Menu
     const menuMenu = document.getElementById("menuMenu");
     const menuSubmenu = document.getElementById("menuSubmenu");
@@ -112,6 +114,23 @@ document.addEventListener("DOMContentLoaded", () => {
         rewardsMenu.addEventListener("click", () => {
             rewardsMenu.classList.toggle("expanded");
             rewardsSubmenu.classList.toggle("expanded");
+        });
+    }
+
+    // Stock Management Menu
+    const stockMenu = document.getElementById("stockMenu");
+    const stockSubmenu = document.getElementById("stockSubmenu");
+
+    if (stockMenu && stockSubmenu) {
+        // Check if submenu should be expanded on page load
+        if (stockMenu.classList.contains("active")) {
+            stockMenu.classList.add("expanded");
+            stockSubmenu.classList.add("expanded");
+        }
+
+        stockMenu.addEventListener("click", () => {
+            stockMenu.classList.toggle("expanded");
+            stockSubmenu.classList.toggle("expanded");
         });
     }
 

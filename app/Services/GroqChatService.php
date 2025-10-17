@@ -86,6 +86,7 @@ class GroqChatService
     private function buildSystemPrompt(array $context): string
     {
         $menuItems = $context['menu_items'] ?? [];
+        $promotions = $context['promotions'] ?? [];
         $userProfile = $context['user_profile'] ?? [];
         $currentCart = $context['current_cart'] ?? [];
 
@@ -96,7 +97,7 @@ class GroqChatService
         $prompt .= "- Name: The Stag SmartDine\n";
         $prompt .= "- Services: Dine-in, Takeaway, QR Menu Ordering\n";
         $prompt .= "- Payment: Online payment (Toyyibpay)\n";
-        $prompt .= "- Features: AI recommendations, table reservations, order tracking\n\n";
+        $prompt .= "- Features: AI recommendations, table reservations, order tracking, Promotions & Deals\n\n";
 
         if (!empty($menuItems) && $menuItems->count() > 0) {
             $prompt .= "AVAILABLE MENU (TOP ITEMS):\n";
@@ -118,6 +119,45 @@ class GroqChatService
             $prompt .= "- DO NOT mention prices or menu names that don't exist\n\n";
         }
 
+        // Add active promotions to context
+        if (!empty($promotions) && $promotions->count() > 0) {
+            $prompt .= "🎉 ACTIVE PROMOTIONS & DEALS:\n";
+            foreach ($promotions as $promo) {
+                $badge = $promo->is_featured ? '⭐ ' : '';
+                $typeLabel = $this->getPromotionTypeLabel($promo->promotion_type);
+
+                $prompt .= "- {$badge}{$promo->name} [{$typeLabel}]";
+
+                // Add discount info
+                if ($promo->discount_type === 'percentage') {
+                    $prompt .= " - {$promo->discount_value}% OFF";
+                } else {
+                    $prompt .= " - RM{$promo->discount_value} OFF";
+                }
+
+                // Add promo code if available
+                if ($promo->promo_code) {
+                    $prompt .= " | Code: {$promo->promo_code}";
+                }
+
+                // Add minimum order if applicable
+                if ($promo->minimum_order_value && $promo->minimum_order_value > 0) {
+                    $prompt .= " | Min: RM{$promo->minimum_order_value}";
+                }
+
+                $prompt .= "\n";
+            }
+            $prompt .= "\n";
+            $prompt .= "IMPORTANT: When asked about promotions, ONLY mention these active promotions above.\n";
+            $prompt .= "DO NOT make up or suggest promotions that are not listed.\n\n";
+        } else {
+            $prompt .= "⚠️ PROMOTIONS: No active promotions at the moment.\n";
+            $prompt .= "When asked about promotions, tell customer:\n";
+            $prompt .= "- Currently no active promotions\n";
+            $prompt .= "- Check back later for new deals\n";
+            $prompt .= "- Can recommend popular items instead\n\n";
+        }
+
         if (!empty($userProfile)) {
             $prompt .= "CUSTOMER PROFILE:\n";
             $prompt .= "- Name: " . ($userProfile['name'] ?? 'Guest') . "\n";
@@ -137,8 +177,11 @@ class GroqChatService
 
         $prompt .= "⚠️ STRICT SCOPE RULES (CRITICAL - SAVE TOKENS!):\n";
         $prompt .= "You ONLY answer questions about The Stag SmartDine restaurant:\n";
-        $prompt .= "✅ ALLOWED: Menu, food, drinks, prices, orders, reservations, services, location, payment\n";
-        $prompt .= "❌ FORBIDDEN: Politics, sports, weather, news, coding, math, science, personal advice, general knowledge\n\n";
+        $prompt .= "✅ ALLOWED: Menu, food, drinks, prices, orders, reservations, services, location, payment, ";
+        $prompt .= "promotions, special offers, deals, set meals, combos, events, recommendations, suggestions, ";
+        $prompt .= "opening hours, delivery info, popular items, best sellers, allergen info, dietary options\n";
+        $prompt .= "❌ FORBIDDEN: Politics, sports, weather, news, coding, math, science, personal advice, general knowledge, ";
+        $prompt .= "health/medical advice, financial advice, legal advice, relationship advice\n\n";
 
         $prompt .= "IF OUT-OF-SCOPE QUESTION DETECTED:\n";
         $prompt .= "Respond with this exact template (short & polite):\n";
@@ -150,9 +193,10 @@ class GroqChatService
         $prompt .= "2. STRICT scope - reject all non-restaurant topics immediately\n";
         $prompt .= "3. Recommend menu based on preferences\n";
         $prompt .= "4. Help with orders & reservations\n";
-        $prompt .= "5. Keep responses SHORT (max 4-5 lines)\n";
-        $prompt .= "6. Use RM for prices\n";
-        $prompt .= "7. If unsure, ask customer to contact staff\n\n";
+        $prompt .= "5. For promotion/deals questions: Suggest popular items, set meals, or featured items\n";
+        $prompt .= "6. Keep responses SHORT (max 4-5 lines)\n";
+        $prompt .= "7. Use RM for prices\n";
+        $prompt .= "8. If unsure, ask customer to contact staff\n\n";
 
         $prompt .= "RESPONSE FORMAT (IMPORTANT!):\n";
         $prompt .= "- Use **bold** to highlight important items (example: **Nasi Lemak**, **RM12.90**)\n";
@@ -198,6 +242,7 @@ class GroqChatService
     {
         return [
             'menu_items' => $this->getAvailableMenuItems(),
+            'promotions' => $this->getActivePromotions(),
             'user_profile' => $userId ? $this->getUserProfile($userId) : [],
             'current_cart' => $userId ? $this->getCurrentCart($userId) : [],
             'operating_hours' => $this->getOperatingHours()
@@ -230,6 +275,41 @@ class GroqChatService
                 ->get();
         } catch (Exception $e) {
             Log::warning('Failed to get menu items for chat context', ['error' => $e->getMessage()]);
+            return collect([]);
+        }
+    }
+
+    /**
+     * Get active promotions for context
+     */
+    private function getActivePromotions()
+    {
+        try {
+            return DB::table('promotions')
+                ->whereNull('deleted_at')
+                ->where('is_active', true)
+                ->where('start_date', '<=', now())
+                ->where('end_date', '>=', now())
+                ->select([
+                    'id',
+                    'name',
+                    'promotion_type',
+                    'promo_code',
+                    'discount_type',
+                    'discount_value',
+                    'minimum_order_value',
+                    'badge_text',
+                    'is_featured',
+                    'terms_conditions',
+                    'start_date',
+                    'end_date'
+                ])
+                ->orderByDesc('is_featured')
+                ->orderBy('display_order')
+                ->limit(10)
+                ->get();
+        } catch (Exception $e) {
+            Log::warning('Failed to get promotions for chat context', ['error' => $e->getMessage()]);
             return collect([]);
         }
     }
@@ -320,6 +400,22 @@ class GroqChatService
             'saturday' => '09:00 - 23:00',
             'sunday' => '10:00 - 21:00'
         ];
+    }
+
+    /**
+     * Get promotion type label for display
+     */
+    private function getPromotionTypeLabel(string $type): string
+    {
+        return match($type) {
+            'combo_deal' => 'Combo Deal',
+            'item_discount' => 'Item Discount',
+            'buy_x_free_y' => 'Buy X Free Y',
+            'promo_code' => 'Promo Code',
+            'seasonal' => 'Seasonal Offer',
+            'bundle' => 'Bundle Deal',
+            default => 'Promotion'
+        };
     }
 
     /**
