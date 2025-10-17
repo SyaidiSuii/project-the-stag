@@ -29,20 +29,28 @@
             </button>
         </div>
       </div>
-      
-      <div id="layout-editor-container" role="application" aria-label="Table layout editor">
-        @foreach($tables as $table)
+
+      <div class="layout-editor-wrapper">
+        <div id="layout-editor-container" role="application" aria-label="Table layout editor" style="width: {{ $layoutSetting->container_width }}px; height: {{ $layoutSetting->container_height }}px;">
+          @foreach($tables as $table)
           @php
             $coordinates = $table->coordinates ?? [];
             $x = $coordinates['x'] ?? (30 + (($loop->index % 5) * 110));
             $y = $coordinates['y'] ?? (30 + (floor($loop->index / 5) * 100));
-            // Map table_type to shape class - matches customer booking page
-            $tableClass = match($table->table_type) {
-              'vip' => 'vvip',
-              'outdoor' => 'rectangle',
-              'indoor' => 'square',
-              default => 'square'
-            };
+
+            // Determine size class based on capacity
+            if ($table->table_type === 'vip') {
+              $sizeClass = 'vvip'; // VVIP always stays same size
+              $colorClass = '';
+            } else {
+              // Size: capacity < 5 = small (rectangle), capacity >= 5 = large (square)
+              $sizeClass = $table->capacity < 5 ? 'rectangle' : 'square';
+
+              // Color: based on table type
+              $colorClass = $table->table_type === 'outdoor' ? 'outdoor-color' : 'indoor-color';
+            }
+
+            $tableClass = trim($sizeClass . ' ' . $colorClass);
           @endphp
           <div class="layout-table {{ $tableClass }}" 
                id="table-{{ $table->id }}" 
@@ -52,8 +60,9 @@
             <span class="table-capacity-display">{{ $table->capacity }}p</span>
           </div>
         @endforeach
+        </div>
       </div>
-      
+
       <!-- Table Editor Panel -->
       <div id="table-editor-panel" role="dialog" aria-labelledby="panel-title" aria-hidden="true" style="display: none;">
         <div class="panel-header">
@@ -111,6 +120,18 @@ document.addEventListener('DOMContentLoaded', function() {
     let draggedElement = null;
     let offset = { x: 0, y: 0 };
     let currentTable = null;
+
+    // Log loaded table positions for debugging
+    console.log('=== Table Layout Loaded ===');
+    document.querySelectorAll('.layout-table').forEach(function(table) {
+        const position = {
+            id: table.dataset.tableId,
+            name: table.textContent.replace(/\d+p/, '').trim(),
+            left: table.style.left,
+            top: table.style.top
+        };
+        console.log('Table loaded:', position);
+    });
 
     // Make tables draggable
     function makeDraggable(element) {
@@ -325,15 +346,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Save layout
     document.getElementById('save-layout-btn').addEventListener('click', function() {
+        const container = document.getElementById('layout-editor-container');
         const tables = [];
+
         document.querySelectorAll('.layout-table').forEach(function(table) {
             if (table.dataset.tableId) {
-                tables.push({
+                const tableData = {
                     id: table.dataset.tableId,
-                    x: parseInt(table.style.left.replace('px', '')),
-                    y: parseInt(table.style.top.replace('px', ''))
-                });
+                    x: parseInt(table.style.left.replace('px', '')) || 0,
+                    y: parseInt(table.style.top.replace('px', '')) || 0
+                };
+                tables.push(tableData);
+                console.log('Saving table:', tableData);
             }
+        });
+
+        // Get container dimensions
+        const containerWidth = container.offsetWidth;
+        const containerHeight = container.offsetHeight;
+
+        console.log('Sending layout data:', {
+            tables: tables,
+            container_width: containerWidth,
+            container_height: containerHeight
         });
 
         fetch('{{ route("admin.api.table-layouts.save-layout") }}', {
@@ -342,17 +377,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify({ tables: tables })
+            body: JSON.stringify({
+                tables: tables,
+                container_width: containerWidth,
+                container_height: containerHeight
+            })
         })
         .then(response => response.json())
         .then(data => {
+            console.log('Save response:', data);
             if (data.success) {
-                showNotification('Layout saved successfully', 'success');
+                showNotification(`Layout saved successfully (${data.saved_count} tables, ${containerWidth}×${containerHeight}px)`, 'success');
+                // Optional: Reload page to verify save
+                // setTimeout(() => location.reload(), 1500);
             } else {
-                showNotification('Error saving layout', 'error');
+                showNotification('Error saving layout: ' + (data.message || 'Unknown error'), 'error');
             }
         })
         .catch(error => {
+            console.error('Save error:', error);
             showNotification('Error saving layout', 'error');
         });
     });
@@ -393,7 +436,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Reset layout
     document.getElementById('reset-layout-btn').addEventListener('click', function() {
         showConfirm('Reset Layout', 'Are you sure you want to reset the layout? This will reload the page and discard any unsaved changes.', function() {
-            location.reload();
+            // Reset all tables to their default grid positions
+            const tables = document.querySelectorAll('.layout-table');
+            tables.forEach(function(table, index) {
+                const x = 30 + ((index % 5) * 110);
+                const y = 30 + (Math.floor(index / 5) * 100);
+                table.style.left = x + 'px';
+                table.style.top = y + 'px';
+            });
+
+            showNotification('Layout reset to default positions. Click "Save Layout" to keep these changes.', 'success');
         });
     });
 

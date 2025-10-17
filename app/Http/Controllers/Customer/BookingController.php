@@ -8,6 +8,7 @@ use App\Models\Table;
 use App\Models\UserCart;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\TableLayoutSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +46,149 @@ class BookingController extends Controller
             $cartCount = \App\Models\UserCart::getCartCount(auth()->id());
         }
 
-        return view('customer.booking.index', compact('tables', 'cartItems', 'cartTotal', 'cartCount'));
+        // Get saved layout dimensions from admin
+        $layoutSetting = TableLayoutSetting::getOrCreate('main_layout', 1200, 600);
+
+        return view('customer.booking.index', compact('tables', 'cartItems', 'cartTotal', 'cartCount', 'layoutSetting'));
+    }
+
+    /**
+     * Check availability for a specific table at a given date/time.
+     */
+    public function checkAvailability(Request $request)
+    {
+        $request->validate([
+            'table_id' => 'required|exists:tables,table_number',
+            'booking_date' => 'required|date',
+            'booking_time' => 'required',
+            'party_size' => 'nullable|integer|min:1|max:12'
+        ]);
+
+        try {
+            $table = Table::where('table_number', $request->table_id)
+                ->with('currentSession')
+                ->first();
+
+            if (!$table) {
+                return response()->json([
+                    'available' => false,
+                    'message' => 'Table not found'
+                ]);
+            }
+
+            // Check party size vs capacity
+            if ($request->party_size && $request->party_size > $table->capacity) {
+                return response()->json([
+                    'available' => false,
+                    'message' => "Party size exceeds table capacity ({$table->capacity} guests)",
+                    'reason' => 'capacity_exceeded'
+                ]);
+            }
+
+            // Check for active QR session
+            if ($table->currentSession && $table->currentSession->isActive()) {
+                return response()->json([
+                    'available' => false,
+                    'message' => 'Table is currently occupied',
+                    'reason' => 'qr_session_active'
+                ]);
+            }
+
+            // Check table status
+            if (!in_array($table->status, ['available'])) {
+                return response()->json([
+                    'available' => false,
+                    'message' => 'Table is not available: ' . $table->status,
+                    'reason' => 'status_unavailable'
+                ]);
+            }
+
+            // Check for reservation conflicts
+            $requestedTime = \Carbon\Carbon::parse($request->booking_time);
+            $bufferMinutes = 120;
+
+            $conflictingReservation = TableReservation::where('table_id', $table->id)
+                ->where('booking_date', $request->booking_date)
+                ->whereIn('status', ['confirmed', 'pending'])
+                ->where(function ($query) use ($requestedTime, $bufferMinutes) {
+                    $query->whereRaw("ABS(TIME_TO_SEC(TIMEDIFF(booking_time, ?))) < ?", [
+                        $requestedTime->format('H:i:s'),
+                        $bufferMinutes * 60
+                    ]);
+                })
+                ->first();
+
+            if ($conflictingReservation) {
+                return response()->json([
+                    'available' => false,
+                    'message' => "Already reserved for {$conflictingReservation->booking_time}",
+                    'reason' => 'time_conflict',
+                    'conflicting_time' => $conflictingReservation->booking_time
+                ]);
+            }
+
+            // Get available time slots for this table on this date
+            $availableSlots = $this->getAvailableTimeSlots($table->id, $request->booking_date);
+
+            return response()->json([
+                'available' => true,
+                'message' => 'Table is available',
+                'table' => [
+                    'id' => $table->table_number,
+                    'capacity' => $table->capacity,
+                    'type' => $table->table_type
+                ],
+                'available_slots' => $availableSlots
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'available' => false,
+                'message' => 'Error checking availability',
+                'error' => config('app.debug') ? $e->getMessage() : 'An error occurred'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get available time slots for a table on a specific date.
+     */
+    private function getAvailableTimeSlots($tableId, $date)
+    {
+        $timeSlots = [
+            '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00',
+            '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00'
+        ];
+
+        $bookedSlots = TableReservation::where('table_id', $tableId)
+            ->where('booking_date', $date)
+            ->whereIn('status', ['confirmed', 'pending'])
+            ->pluck('booking_time')
+            ->toArray();
+
+        $availableSlots = [];
+        $bufferMinutes = 120;
+
+        foreach ($timeSlots as $slot) {
+            $slotTime = \Carbon\Carbon::parse($slot);
+            $isAvailable = true;
+
+            foreach ($bookedSlots as $bookedTime) {
+                $bookedTimeParsed = \Carbon\Carbon::parse($bookedTime);
+                $diffInMinutes = abs($slotTime->diffInMinutes($bookedTimeParsed));
+
+                if ($diffInMinutes < $bufferMinutes) {
+                    $isAvailable = false;
+                    break;
+                }
+            }
+
+            if ($isAvailable) {
+                $availableSlots[] = $slot;
+            }
+        }
+
+        return $availableSlots;
     }
 
     /**
@@ -196,6 +339,37 @@ class BookingController extends Controller
                 return response()->json(['success' => false, 'message' => 'Table not found'], 404);
             }
 
+            // Validate party size against table capacity
+            if ($request->party_size > $table->capacity) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Party size ({$request->party_size}) exceeds table capacity ({$table->capacity} guests). Please select a larger table."
+                ], 400);
+            }
+
+            // Validate booking time is within business hours (11:00 AM - 9:00 PM)
+            $bookingTime = \Carbon\Carbon::parse($request->booking_time);
+            $openingTime = \Carbon\Carbon::parse('11:00');
+            $closingTime = \Carbon\Carbon::parse('21:00');
+
+            if ($bookingTime->lt($openingTime) || $bookingTime->gt($closingTime)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Booking time must be between 11:00 AM and 9:00 PM.'
+                ], 400);
+            }
+
+            // Validate booking lead time (at least 1 hour in advance)
+            $bookingDateTime = \Carbon\Carbon::parse($request->booking_date . ' ' . $request->booking_time);
+            $minBookingTime = now()->addHour();
+
+            if ($bookingDateTime->lt($minBookingTime)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Reservations must be made at least 1 hour in advance. Please select a later time.'
+                ], 400);
+            }
+
             // Check if table has an active QR session
             if ($table->currentSession && $table->currentSession->isActive()) {
                 return response()->json([
@@ -209,6 +383,32 @@ class BookingController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'This table is not available for booking. Status: ' . $table->status
+                ], 400);
+            }
+
+            // CRITICAL: Check for reservation conflicts (prevent double booking)
+            // A table is considered booked if there's a reservation within 2 hours of the requested time
+            $conflictingReservation = TableReservation::where('table_id', $table->id)
+                ->where('booking_date', $request->booking_date)
+                ->whereIn('status', ['confirmed', 'pending'])
+                ->where(function ($query) use ($request) {
+                    $requestedTime = \Carbon\Carbon::parse($request->booking_time);
+                    $bufferMinutes = 120; // 2-hour buffer between reservations
+
+                    $query->where(function ($q) use ($requestedTime, $bufferMinutes) {
+                        // Check if existing reservation overlaps with requested time
+                        $q->whereRaw("ABS(TIME_TO_SEC(TIMEDIFF(booking_time, ?))) < ?", [
+                            $requestedTime->format('H:i:s'),
+                            $bufferMinutes * 60
+                        ]);
+                    });
+                })
+                ->first();
+
+            if ($conflictingReservation) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "This table is already reserved for {$conflictingReservation->booking_time} on this date. Please choose a different time or table."
                 ], 400);
             }
 
