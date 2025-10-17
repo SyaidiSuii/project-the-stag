@@ -6,8 +6,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectionInfoEl = document.getElementById('selectionInfo');
     const bookWithMenuBtn = document.getElementById('bookWithMenu');
     const bookTableOnlyBtn = document.getElementById('bookTableOnly');
-    
+    const bookingDateInput = document.getElementById('bookingDate');
+    const bookingTimeInput = document.getElementById('bookingTime');
+    const guestCountInput = document.getElementById('guestCount');
+
     let selectedTable = null;
+    let availabilityCheckTimeout = null;
 
     // Add click event to each table tile
     tableTiles.forEach(tile => {
@@ -17,34 +21,66 @@ document.addEventListener('DOMContentLoaded', function() {
             // Don't allow selection if table is not available
             // (reserved, pending, occupied, or in maintenance)
             if (status === 'reserved' || status === 'pending' || status === 'occupied' || status === 'maintenance') {
+                // Show tooltip why it's not available
+                if (typeof Toast !== 'undefined') {
+                    let message = '';
+                    switch(status) {
+                        case 'reserved':
+                            message = 'This table is already reserved';
+                            break;
+                        case 'pending':
+                            message = 'This table has a pending reservation';
+                            break;
+                        case 'occupied':
+                            message = 'This table is currently occupied';
+                            break;
+                        case 'maintenance':
+                            message = 'This table is under maintenance';
+                            break;
+                    }
+                    Toast.warning('Table Unavailable', message);
+                }
                 return;
             }
 
             // Remove previous selection
-            tableTiles.forEach(t => t.classList.remove('selected'));
-            
+            tableTiles.forEach(t => {
+                t.classList.remove('selected');
+                // Restore original status text
+                const statusBadge = t.querySelector('.table-status-badge');
+                if (statusBadge) {
+                    statusBadge.textContent = t.dataset.status.toUpperCase();
+                }
+            });
+
             // Add selected class to clicked table
             this.classList.add('selected');
-            
+
+            // Change status badge text to SELECTED
+            const statusBadge = this.querySelector('.table-status-badge');
+            if (statusBadge) {
+                statusBadge.textContent = 'SELECTED';
+            }
+
             // Get table data
             const tableId = this.dataset.id;
             const capacity = this.dataset.capacity;
             const isVVIP = this.classList.contains('vvip');
-            
+
             // Update selected table info
             selectedTable = {
                 id: tableId,
                 capacity: capacity,
                 isVVIP: isVVIP
             };
-            
+
             // Update sidebar display
             selectedTableEl.textContent = tableId;
             selectedCapacityEl.textContent = `Capacity: ${capacity} guests`;
-            
+
             // Add selection styling to info box
             selectionInfoEl.classList.add('has-selection');
-            
+
             // Add VVIP styling if applicable
             if (isVVIP) {
                 selectedTableEl.classList.add('vvip');
@@ -55,12 +91,179 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectedCapacityEl.classList.remove('vvip');
                 selectionInfoEl.classList.remove('vvip-selection');
             }
-            
+
+            // Check availability if date and time are selected
+            checkAvailabilityIfReady();
+
             // Enable booking buttons
-            bookWithMenuBtn.disabled = false;
-            bookTableOnlyBtn.disabled = false;
+            updateBookingButtonsState();
         });
     });
+
+    // Real-time validation for party size
+    if (guestCountInput) {
+        guestCountInput.addEventListener('change', function() {
+            if (selectedTable) {
+                const partySize = parseInt(this.value);
+                const tableCapacity = parseInt(selectedTable.capacity);
+
+                if (partySize > tableCapacity) {
+                    if (typeof Toast !== 'undefined') {
+                        Toast.warning('Party Size Exceeds Capacity',
+                            `This table can only accommodate ${tableCapacity} guests. Please select a larger table or reduce party size.`);
+                    }
+                    updateBookingButtonsState();
+                    return;
+                }
+            }
+            checkAvailabilityIfReady();
+        });
+    }
+
+    // Real-time availability checking when date/time changes
+    if (bookingDateInput) {
+        bookingDateInput.addEventListener('change', function() {
+            validateBookingDate();
+            checkAvailabilityIfReady();
+        });
+    }
+
+    if (bookingTimeInput) {
+        bookingTimeInput.addEventListener('change', function() {
+            validateBookingTime();
+            checkAvailabilityIfReady();
+        });
+    }
+
+    function validateBookingDate() {
+        const selectedDate = new Date(bookingDateInput.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (selectedDate < today) {
+            if (typeof Toast !== 'undefined') {
+                Toast.warning('Invalid Date', 'Please select a future date for your reservation.');
+            }
+            bookingDateInput.value = '';
+            return false;
+        }
+        return true;
+    }
+
+    function validateBookingTime() {
+        if (!bookingDateInput.value || !bookingTimeInput.value) return true;
+
+        const bookingDateTime = new Date(bookingDateInput.value + ' ' + bookingTimeInput.value);
+        const minBookingTime = new Date();
+        minBookingTime.setHours(minBookingTime.getHours() + 1);
+
+        if (bookingDateTime < minBookingTime) {
+            if (typeof Toast !== 'undefined') {
+                Toast.warning('Invalid Time', 'Reservations must be made at least 1 hour in advance.');
+            }
+            bookingTimeInput.value = '';
+            return false;
+        }
+        return true;
+    }
+
+    function checkAvailabilityIfReady() {
+        if (!selectedTable || !bookingDateInput.value || !bookingTimeInput.value) {
+            return;
+        }
+
+        // Debounce the availability check
+        clearTimeout(availabilityCheckTimeout);
+        availabilityCheckTimeout = setTimeout(() => {
+            checkTableAvailability();
+        }, 500);
+    }
+
+    function checkTableAvailability() {
+        const partySize = guestCountInput ? parseInt(guestCountInput.value) : null;
+
+        const formData = new FormData();
+        formData.append('table_id', selectedTable.id);
+        formData.append('booking_date', bookingDateInput.value);
+        formData.append('booking_time', bookingTimeInput.value);
+        if (partySize) {
+            formData.append('party_size', partySize);
+        }
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        if (csrfToken) {
+            formData.append('_token', csrfToken.getAttribute('content'));
+        }
+
+        fetch('/customer/booking/check-availability', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.available) {
+                // Table is available
+                updateBookingButtonsState(true);
+
+                // Update time slots dropdown if available
+                if (data.available_slots && data.available_slots.length > 0) {
+                    updateTimeSlotOptions(data.available_slots);
+                }
+            } else {
+                // Table is not available
+                updateBookingButtonsState(false);
+
+                if (typeof Toast !== 'undefined') {
+                    Toast.error('Table Not Available', data.message || 'This table is not available for the selected date/time.');
+                }
+
+                // Suggest alternative time slots if available
+                if (data.available_slots && data.available_slots.length > 0) {
+                    updateTimeSlotOptions(data.available_slots);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Availability check error:', error);
+            // Don't disable buttons on network error, let server-side validation handle it
+        });
+    }
+
+    function updateTimeSlotOptions(availableSlots) {
+        if (!bookingTimeInput) return;
+
+        const currentValue = bookingTimeInput.value;
+        const options = bookingTimeInput.querySelectorAll('option:not([value=""])');
+
+        options.forEach(option => {
+            const timeValue = option.value;
+            if (availableSlots.includes(timeValue)) {
+                option.disabled = false;
+                option.style.color = '';
+            } else {
+                option.disabled = true;
+                option.style.color = '#ccc';
+            }
+        });
+    }
+
+    function updateBookingButtonsState(isAvailable = true) {
+        const partySize = guestCountInput ? parseInt(guestCountInput.value) : 0;
+        const tableCapacity = selectedTable ? parseInt(selectedTable.capacity) : 0;
+
+        const isValid = selectedTable &&
+                       bookingDateInput.value &&
+                       bookingTimeInput.value &&
+                       partySize > 0 &&
+                       partySize <= tableCapacity &&
+                       isAvailable;
+
+        if (bookWithMenuBtn) bookWithMenuBtn.disabled = !isValid;
+        if (bookTableOnlyBtn) bookTableOnlyBtn.disabled = !isValid;
+    }
 
     // Search functionality
     const searchInput = document.getElementById('searchInput');
@@ -186,9 +389,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const guestName = document.getElementById('guestName').value;
         const guestEmail = document.getElementById('guestEmail').value;
         const guestPhone = document.getElementById('guestPhone').value;
-        
+
         if (!bookingDate || !bookingTime || !guestCount || !guestName || !guestEmail || !guestPhone) {
-            Toast.warning('Incomplete Details', 'Please fill in all booking details first.');
+            if (typeof Toast !== 'undefined') {
+                Toast.warning('Incomplete Details', 'Please fill in all booking details first.');
+            } else {
+                alert('Please fill in all booking details first.');
+            }
             return;
         }
         
@@ -244,9 +451,63 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update total
         document.getElementById('summaryTotal').textContent = `RM ${totalAmount.toFixed(2)}`;
-        
-        // Show modal
+
+        // Show modal with accessibility support
         bookingModal.style.display = 'flex';
+        bookingModal.setAttribute('aria-hidden', 'false');
+
+        // Store previously focused element
+        bookingModal.dataset.previousFocus = document.activeElement.id || '';
+
+        // Focus the confirm button
+        setTimeout(() => {
+            if (confirmBookingBtn) {
+                confirmBookingBtn.focus();
+            }
+        }, 100);
+
+        // Enable focus trap
+        enableFocusTrap();
+    }
+
+    function enableFocusTrap() {
+        const modalContent = bookingModal.querySelector('.modal-content');
+        if (!modalContent) return;
+
+        const focusableElements = modalContent.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+
+        const firstFocusable = focusableElements[0];
+        const lastFocusable = focusableElements[focusableElements.length - 1];
+
+        function handleTabKey(e) {
+            if (e.key !== 'Tab') return;
+
+            if (e.shiftKey) {
+                if (document.activeElement === firstFocusable) {
+                    lastFocusable.focus();
+                    e.preventDefault();
+                }
+            } else {
+                if (document.activeElement === lastFocusable) {
+                    firstFocusable.focus();
+                    e.preventDefault();
+                }
+            }
+        }
+
+        function handleEscapeKey(e) {
+            if (e.key === 'Escape') {
+                hideBookingModal();
+            }
+        }
+
+        bookingModal.addEventListener('keydown', handleTabKey);
+        bookingModal.addEventListener('keydown', handleEscapeKey);
+
+        // Store handlers for cleanup
+        bookingModal.dataset.tabHandler = 'attached';
     }
     
     function submitBooking() {
@@ -291,14 +552,28 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             body: formData,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            // Handle both successful and error responses
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(err.message || 'Booking failed');
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
+                // Hide modal
+                hideBookingModal();
+
                 // Show success message
-                Toast.success('Booking Confirmed!', `Confirmation code: ${data.reservation.confirmation_code}`, 3000);
+                if (typeof Toast !== 'undefined') {
+                    Toast.success('Booking Confirmed!', `Confirmation code: ${data.reservation.confirmation_code}`, 3000);
+                }
 
                 // Redirect to orders page after brief delay
                 setTimeout(() => {
@@ -306,7 +581,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 1500);
             } else {
                 // Show error message
-                Toast.error('Booking Failed', data.message || 'Failed to create booking. Please try again.');
+                if (typeof Toast !== 'undefined') {
+                    Toast.error('Booking Failed', data.message || 'Failed to create booking. Please try again.');
+                } else {
+                    alert('Booking Failed: ' + (data.message || 'Failed to create booking. Please try again.'));
+                }
 
                 // Re-enable confirm button
                 confirmBookingBtn.disabled = false;
@@ -315,7 +594,12 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Booking submission error:', error);
-            Toast.error('Booking Failed', 'Failed to create booking. Please try again.');
+
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Booking Failed', error.message || 'Network error. Please check your connection and try again.');
+            } else {
+                alert('Booking Failed: ' + (error.message || 'Network error. Please try again.'));
+            }
 
             // Re-enable confirm button
             confirmBookingBtn.disabled = false;
@@ -348,6 +632,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function hideBookingModal() {
         bookingModal.style.display = 'none';
+        bookingModal.setAttribute('aria-hidden', 'true');
+
+        // Restore focus to previously focused element
+        const previousFocusId = bookingModal.dataset.previousFocus;
+        if (previousFocusId) {
+            const previousElement = document.getElementById(previousFocusId);
+            if (previousElement) {
+                previousElement.focus();
+            }
+        }
     }
 
     // Close modal when clicking outside
@@ -365,7 +659,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (cartHeader) {
         cartHeader.addEventListener('click', function() {
             cartContent.classList.toggle('open');
-            
+
             if (cartContent.classList.contains('open')) {
                 cartToggleIcon.innerHTML = '<i class="fas fa-chevron-down"></i>';
             } else {
@@ -373,4 +667,61 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Floating booking button and sidebar toggle
+    const floatingBtn = document.getElementById('floatingBookingBtn');
+    const bookingSidebar = document.getElementById('bookingSidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const floatingBadge = document.getElementById('floatingBadge');
+
+    // Update badge when table is selected
+    function updateFloatingBadge() {
+        if (selectedTable) {
+            floatingBadge.textContent = '1';
+            floatingBadge.style.display = 'flex';
+        } else {
+            floatingBadge.style.display = 'none';
+        }
+    }
+
+    // Toggle sidebar
+    function toggleBookingSidebar() {
+        const isActive = bookingSidebar.classList.contains('active');
+
+        if (isActive) {
+            bookingSidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        } else {
+            bookingSidebar.classList.add('active');
+            sidebarOverlay.classList.add('active');
+        }
+    }
+
+    // Floating button click
+    if (floatingBtn) {
+        floatingBtn.addEventListener('click', function() {
+            toggleBookingSidebar();
+        });
+    }
+
+    // Overlay click to close
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function() {
+            toggleBookingSidebar();
+        });
+    }
+
+    // Update the table selection to also update the badge
+    const originalTableClickHandler = tableTiles.forEach;
+    tableTiles.forEach(tile => {
+        tile.addEventListener('click', function() {
+            // Wait a bit for the selection to update
+            setTimeout(() => {
+                updateFloatingBadge();
+            }, 100);
+        });
+    });
+
+    // Initialize badge state
+    updateFloatingBadge();
 });

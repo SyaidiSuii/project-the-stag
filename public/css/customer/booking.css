@@ -1,8 +1,20 @@
     /* ===== Reset & Theme ===== */
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box; 
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    /* Screen reader only class for accessibility */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
     }
     :root {
       --brand: #6366f1;
@@ -30,7 +42,7 @@
       display: flex;
       min-height: 100vh;
       padding-left: 80px;
-      padding-right: 450px; /* Added for the booking sidebar */
+      padding-right: 0; /* Removed fixed padding */
       line-height: 1.6;
     }
     /* ===== Fixed Sidebar ===== */
@@ -105,11 +117,14 @@
     .account-spacer { margin-top: auto; }
     
     /* ===== Main Content ===== */
-    .main-content { 
-      flex: 1; 
-      display: flex; 
-      flex-direction: column; 
-      padding: 20px; 
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      overflow: hidden;
+      max-width: 100%;
+      margin: 0 auto;
     }
     /* ===== Search Bar ===== */
     .search-bar-container { 
@@ -235,7 +250,7 @@
       border: 1px solid var(--muted);
       margin-bottom: 20px;
       position: relative;
-      overflow: hidden;
+      overflow: visible;
     }
     .floor-container::before {
       content: '';
@@ -248,10 +263,11 @@
     }
     .floor-legend {
       display: flex;
-      gap: 24px;
+      gap: 16px;
       justify-content: center;
       margin-bottom: 20px;
       flex-wrap: wrap;
+      padding: 0 10px;
     }
     .legend-item {
       display: flex;
@@ -271,182 +287,274 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .legend-dot.available { background: var(--success); }
+    .legend-dot.occupied { background: #64748b; }
     .legend-dot.reserved { background: var(--danger); }
     .legend-dot.selected { background: var(--brand); }
     .legend-dot.pending { background: var(--warning); }
-    .legend-dot.vvip { 
+    .legend-dot.maintenance { background: #ca8a04; }
+    .legend-dot.indoor {
+      background: #a855f7;
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+    .legend-dot.outdoor {
+      background: #4ade80;
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+    .legend-dot.vvip {
       background: var(--vvip-gradient);
       width: 16px;
       height: 16px;
       border-radius: 4px;
     }
     .floor-grid {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 18px;
-      max-width: 800px;
+      position: relative;
+      width: fit-content;
+      max-width: 100%;
+      height: auto;
+      background-color: #f0f0f0;
+      overflow: auto;
+      border-radius: 12px;
       margin: 0 auto;
     }
+    .floor-grid-inner {
+      position: relative;
+      /* Width and height now controlled by inline styles from database */
+      background-image:
+        linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    .floor-grid::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    .floor-grid::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    .floor-grid::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 10px;
+    }
+    .floor-grid::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
     .table-tile {
-      aspect-ratio: 1;
-      border-radius: 16px;
-      background: white;
+      position: absolute;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
+      font-weight: 600;
+      color: white;
       box-shadow: var(--shadow);
-      border: 2px solid var(--muted);
       cursor: pointer;
-      transition: all 0.4s ease;
-      position: relative;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
       font-size: 0.9rem;
+      border: none;
+      user-select: none;
       overflow: hidden;
     }
     .table-tile::before {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%);
       transform: translateX(-100%);
-      transition: transform 0.8s ease;
+      transition: transform 0.6s ease;
+      pointer-events: none;
+      border-radius: inherit;
     }
     .table-tile:hover::before {
       transform: translateX(100%);
     }
     .table-tile:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: var(--shadow-lg);
+    }
+    /* Base table shapes - SIZE ONLY (no color) */
+    .table-tile.square {
+      width: 260px;
+      height: 130px;
+      border-radius: 16px;
+    }
+    .table-tile.round {
+      width: 260px;
+      height: 130px;
+      border-radius: 16px;
+    }
+    .table-tile.rectangle {
+      width: 130px;
+      height: 130px;
+      border-radius: 16px;
+      padding: 10px;
+    }
+    .table-tile.vvip {
+      width: 260px;
+      height: 260px;
+      background: #fefce8;
+      border: 3px solid #d4af37;
+      border-radius: 16px;
+    }
+
+    /* Table colors - based on table type */
+    .table-tile.indoor-color {
+      background: #e9d5ff;
+      border: 3px solid #a855f7;
+    }
+    .table-tile.outdoor-color {
+      background: #d1fae5;
+      border: 3px solid #10b981;
+    }
+
+    /* Status overlays - maintain color based on table type when available */
+    .table-tile.indoor-color.available {
+      background: #e9d5ff;
+      border-color: #a855f7;
+    }
+
+    .table-tile.outdoor-color.available {
+      background: #d1fae5;
+      border-color: #10b981;
+    }
+
+    .table-tile.available:hover {
       transform: translateY(-4px);
       box-shadow: var(--shadow-lg);
     }
-    .table-tile.available {
-      border-color: var(--success);
-      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+
+    /* VVIP stays gold regardless of status if available */
+    .table-tile.vvip.available {
+      background: #fefce8;
+      border-color: #d4af37;
     }
-    .table-tile.available:hover {
-      border-color: var(--success);
-      background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-    }
+
     .table-tile.reserved {
-      border-color: var(--danger);
-      background: linear-gradient(135deg, #fef2f2, #fee2e2);
+      background: #fee2e2;
+      border-color: #ef4444;
       cursor: not-allowed;
-      opacity: 0.7;
     }
     .table-tile.pending {
-      border-color: var(--warning);
-      background: linear-gradient(135deg, #fffbeb, #fef3c7);
+      background: #fed7aa;
+      border-color: #f59e0b;
       cursor: not-allowed;
-      opacity: 0.8;
     }
+    .table-tile.occupied {
+      background: #e2e8f0;
+      border-color: #64748b;
+      cursor: not-allowed;
+    }
+    .table-tile.maintenance {
+      background: #fef9c3;
+      border-color: #ca8a04;
+      cursor: not-allowed;
+    }
+    /* Selected state - change to blue */
     .table-tile.selected {
-      border-color: var(--brand);
-      background: linear-gradient(135deg, #eef2ff, #e0e7ff);
-      box-shadow: 0 0 0 4px rgba(99,102,241,.2), var(--shadow-lg);
-      transform: translateY(-4px);
+      background: #dbeafe !important;
+      border-color: #6366f1 !important;
     }
-    
-    /* ===== Rectangle Tables ===== */
-    .table-tile.rectangle {
-      aspect-ratio: 2/1;
-      grid-column: span 2;
+
+    /* Selected badge - change to blue background with white text */
+    .table-tile.selected .table-status-badge {
+      background: #6366f1 !important;
+      color: white !important;
     }
-    
-    .table-tile.vvip {
-      border: 3px solid #d4af37;
-      background: var(--vvip-bg);
-      box-shadow: 0 8px 16px rgba(212, 175, 55, 0.2);
-      grid-column: span 2;
-      grid-row: span 2;
-      aspect-ratio: auto;
-      position: relative;
-      overflow: visible;
-    }
-    .table-tile.vvip::after {
-      content: 'VVIP';
+
+    /* Capacity badge - top right corner */
+    .table-capacity-badge {
       position: absolute;
-      top: -10px;
-      right: -10px;
-      background: var(--vvip-gradient);
-      color: #3e2723;
-      font-weight: 800;
-      font-size: 0.7rem;
-      padding: 4px 8px;
-      border-radius: 10px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      z-index: 2;
-      letter-spacing: 1px;
-    }
-    .table-tile.vvip .table-id {
-      font-size: 1.3rem;
-      background: var(--vvip-gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 8px;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
-    .table-tile.vvip .table-capacity {
-      background: linear-gradient(135deg, #d4af37, #f9e79f);
-      color: #3e2723;
-      font-weight: 800;
+      top: 8px;
+      right: 8px;
+      background: #1f2937;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
       padding: 4px 10px;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    .table-tile.vvip .table-status {
-      background: var(--vvip-gradient);
-      color: #3e2723;
-      margin-top: 8px;
-    }
-    .table-tile.vvip.selected {
-      border-color: #f9e79f;
-      background: linear-gradient(135deg, #f9f5eb, #fefcfb);
-      box-shadow: 0 0 0 6px rgba(212, 175, 55, 0.3), var(--shadow-lg);
-    }
-    .table-tile.vvip:hover {
-      transform: translateY(-6px) scale(1.02);
-      box-shadow: 0 12px 24px rgba(212, 175, 55, 0.3);
-    }
-    .table-tile.vvip::before {
-      background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.5) 50%, transparent 70%);
-    }
-    .table-id {
-      font-size: 1rem;
-      font-weight: 800;
-      color: var(--text);
-      margin-bottom: 2px;
-    }
-    .table-status {
-      font-size: 0.7rem;
-      margin-top: 4px;
-      padding: 3px 8px;
-      border-radius: 10px;
-      color: white;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-    .table-tile.available .table-status {
-      background: var(--success);
-    }
-    .table-tile.reserved .table-status {
-      background: var(--danger);
-    }
-    .table-tile.pending .table-status {
-      background: var(--warning);
-    }
-    .table-tile.selected .table-status {
-      background: var(--brand);
-    }
-    .table-capacity {
+
+    /* VVIP badge label - at top right corner where capacity badge usually is */
+    .vvip-badge-label {
       position: absolute;
-      top: 6px;
-      right: 6px;
-      background: rgba(0,0,0,0.8);
-      color: white;
-      font-size: 0.7rem;
-      padding: 3px 6px;
-      border-radius: 8px;
+      top: 8px;
+      right: 8px;
+      background: #d4af37;
+      color: #000000;
+      font-size: 10px;
       font-weight: 800;
+      padding: 5px 12px;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      z-index: 2;
+    }
+
+    /* VVIP capacity badge styling - position to the left of VVIP label */
+    .table-tile.vvip .table-capacity-badge {
+      background: #d4af37;
+      color: #000000;
+      top: 8px;
+      right: auto;
+      left: 8px;
+    }
+
+    .table-id {
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: #1f2937;
+    }
+
+    /* VVIP label styling */
+    .table-id.vvip-label {
+      color: #d4af37;
+      font-size: 1.2rem;
+      font-weight: 800;
+    }
+
+    .table-status-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 6px 18px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 8px;
+      background: white;
+      color: #1f2937;
+    }
+    /* Status badge colors - background uses status color, text is white */
+    .table-tile.available .table-status-badge {
+      background: #10b981;
+      color: white;
+    }
+    /* VVIP available badge - black text */
+    .table-tile.vvip.available .table-status-badge {
+      background: #10b981;
+      color: #000000;
+    }
+    .table-tile.occupied .table-status-badge {
+      background: #64748b;
+      color: white;
+    }
+    .table-tile.reserved .table-status-badge {
+      background: #ef4444;
+      color: white;
+    }
+    .table-tile.pending .table-status-badge {
+      background: #f59e0b;
+      color: white;
+    }
+    .table-tile.maintenance .table-status-badge {
+      background: #ca8a04;
+      color: white;
     }
     /* VVIP Special Section */
     .vvip-section {
@@ -474,21 +582,90 @@
     }
     /* ===== Booking Sidebar ===== */
     .booking-sidebar {
-      width: min(100%, 450px); /* Adjust width for better integration */
+      width: 450px;
+      min-width: 450px;
+      max-width: 450px;
       background: #ffffff;
       padding: 0;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.08); /* Softer shadow */
+      box-shadow: -4px 0 20px rgba(0, 0, 0, 0.08), -2px 0 8px rgba(0, 0, 0, 0.04);
       display: flex;
       flex-direction: column;
-      border-left: none; /* Removed border, shadow provides separation */
-      border-radius: var(--radius); /* Add border-radius for consistency */
-      border: 1px solid var(--muted); /* Add border for consistency */
+      border-left: 2px solid var(--muted);
+      border-radius: 24px 0 0 24px;
       position: fixed;
-      right: 0;
-      top: 20px;
+      right: -450px;
+      top: 0;
       height: 100vh;
       overflow-y: auto;
-      z-index: 99; /* Ensure it's below the main sidebar if any */
+      z-index: 1000;
+      transition: right 0.3s ease;
+    }
+
+    .booking-sidebar.active {
+      right: 0;
+    }
+
+    /* Floating Booking Button */
+    .floating-booking-btn {
+      position: fixed !important;
+      top: 90px !important;
+      right: 30px !important;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      color: white;
+      border: none;
+      border-radius: 50%;
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+      cursor: pointer;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      z-index: 9999 !important;
+      transition: all 0.3s ease;
+    }
+
+    .floating-booking-btn:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 35px rgba(99, 102, 241, 0.5);
+    }
+
+    .floating-booking-btn .badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid white;
+    }
+
+    /* Sidebar Overlay */
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar-overlay.active {
+      display: block;
+      opacity: 1;
     }
     .booking-header-section {
       background: linear-gradient(135deg, var(--brand), var(--brand-2)); /* Keep existing gradient */
@@ -499,6 +676,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: 24px 0 0 0;
     }
     .booking-header-section::before {
       content: '';
@@ -837,19 +1015,25 @@
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.5);
-      align-items: center;
-      justify-content: center;
       z-index: 1000;
       backdrop-filter: blur(5px);
+    }
+    .booking-modal[style*="display: flex"],
+    .booking-modal[style*="display:flex"] {
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
     }
     .modal-content {
       background: white;
       padding: 2rem;
       border-radius: 20px;
-      width: min(450px, 90vw);
+      width: min(450px, calc(100vw - 80px - 450px - 40px));
+      max-width: 450px;
       box-shadow: var(--shadow-lg);
       border: 1px solid var(--muted);
       animation: modalSlideUp 0.3s ease;
+      margin: 0 20px;
     }
     @keyframes modalSlideUp { 
       from { transform: translateY(50px); opacity: 0; } 
@@ -892,19 +1076,9 @@
     }
 
     /* ===== Guest Content ===== */
-    .main-content.guest-layout {
-      display: flex !important;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 2rem;
-      flex-direction: row;
-      margin-right: -450px; /* Offset the body padding-right */
-    }
-    
-    .guest-content {
-      max-width: 600px;
-      width: 100%;
+    body:has(.main-content:not(.main-content + .booking-sidebar)) .main-content {
+      max-width: 100%;
+      margin: 0 auto;
     }
 
     .guest-content .account-card {
