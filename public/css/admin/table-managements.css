@@ -16,10 +16,13 @@
       --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
       --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box; 
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      overflow-x: hidden;
     }
     body {
       font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -295,6 +298,8 @@
       margin-left: 260px;
       padding: 20px;
       transition: margin-left 0.3s ease;
+      max-width: calc(100vw - 260px);
+      overflow-x: hidden;
     }
     .admin-header {
       display: flex;
@@ -1180,16 +1185,25 @@
     }
     
     /* ===== LAYOUT EDITOR ===== */
+    #layout-section {
+      overflow: auto;
+    }
+    .layout-editor-wrapper {
+      width: 100%;
+      max-width: 100%;
+      max-height: 700px;
+      overflow: auto;
+      position: relative;
+      padding: 2px;
+    }
     #layout-editor-container {
       position: relative;
       width: 1200px;
-      max-width: 100%;
       min-width: 800px;
       min-height: 600px;
       height: 600px;
-      margin: 0 auto;
       background-color: #f0f0f0;
-      border: 1px solid var(--muted);
+      border: 2px solid var(--muted);
       border-radius: var(--radius);
       overflow: auto;
       resize: both;
@@ -1211,29 +1225,35 @@
       box-shadow: var(--shadow);
       transition: all 0.2s ease;
     }
+    /* Layout table shapes - SIZE ONLY */
     .layout-table.square {
-      width: 220px;
-      height: 110px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      width: 260px;
+      height: 130px;
       border-radius: 16px;
     }
     .layout-table.round {
-      width: 220px;
-      height: 110px;
-      background: linear-gradient(135deg, #06b6d4, #0891b2);
+      width: 260px;
+      height: 130px;
       border-radius: 16px;
     }
     .layout-table.rectangle {
-      width: 110px;
-      height: 110px;
-      background-color: #4ade80;
+      width: 130px;
+      height: 130px;
       border-radius: 16px;
     }
     .layout-table.vvip {
-      width: 220px;
-      height: 220px;
+      width: 260px;
+      height: 260px;
       background: linear-gradient(135deg, #f59e0b, #d97706);
       border-radius: 16px;
+    }
+
+    /* Layout table colors - based on table type */
+    .layout-table.indoor-color {
+      background: #a855f7;
+    }
+    .layout-table.outdoor-color {
+      background: #4ade80;
     }
     .layout-table.dragging {
       z-index: 10;

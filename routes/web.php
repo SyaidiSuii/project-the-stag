@@ -85,6 +85,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::post('/rewards/checkin', [CustomerRewardsController::class, 'checkin'])->name('rewards.checkin');
     Route::get('/booking', [CustomerBookingController::class, 'index'])->name('booking.index');
     Route::post('/booking/store', [CustomerBookingController::class, 'store'])->name('booking.store');
+    Route::post('/booking/check-availability', [CustomerBookingController::class, 'checkAvailability'])->name('booking.check-availability');
     Route::get('/booking/history', [CustomerBookingController::class, 'history'])->name('booking.history');
     Route::post('/booking/{reservationId}/cancel', [CustomerBookingController::class, 'cancel'])->name('booking.cancel');
     Route::get('/booking/{orderId}/payment', [CustomerBookingPaymentController::class, 'index'])->name('booking.payment.index');

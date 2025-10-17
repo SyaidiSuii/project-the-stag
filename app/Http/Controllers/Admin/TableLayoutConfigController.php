@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\TableLayoutConfig;
 use App\Models\Table;
+use App\Models\TableLayoutSetting;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -20,10 +21,13 @@ class TableLayoutConfigController extends Controller
             return redirect()->route('admin.table-layout-config.index');
         }
 
-        // Fetch all active tables with their layout positions
-        $tables = Table::where('is_active', true)->get();
+        // Fetch all active tables with their layout positions (fresh query, no cache)
+        $tables = Table::where('is_active', true)->orderBy('id')->get()->fresh();
 
-        return view('admin.table-layout-config.index', compact('tables'));
+        // Get saved layout dimensions
+        $layoutSetting = TableLayoutSetting::getOrCreate('main_layout', 1200, 600);
+
+        return view('admin.table-layout-config.index', compact('tables', 'layoutSetting'));
     }
 
     /**
@@ -354,20 +358,48 @@ class TableLayoutConfigController extends Controller
             'tables.*.id' => 'required|exists:tables,id',
             'tables.*.x' => 'required|numeric',
             'tables.*.y' => 'required|numeric',
+            'container_width' => 'nullable|integer|min:400|max:3000',
+            'container_height' => 'nullable|integer|min:300|max:2000',
         ]);
 
-        foreach ($request->tables as $tableData) {
-            $table = Table::find($tableData['id']);
-            if ($table) {
-                $coordinates = $table->coordinates ?? [];
-                $coordinates['x'] = $tableData['x'];
-                $coordinates['y'] = $tableData['y'];
-                $table->coordinates = $coordinates;
-                $table->save();
-            }
-        }
+        try {
+            foreach ($request->tables as $tableData) {
+                $table = Table::find($tableData['id']);
+                if ($table) {
+                    // Update coordinates as JSON
+                    $table->coordinates = [
+                        'x' => (int) $tableData['x'],
+                        'y' => (int) $tableData['y']
+                    ];
+                    $table->save();
 
-        return response()->json(['success' => true, 'message' => 'Layout saved successfully']);
+                    // Force a fresh query to verify save
+                    $table->refresh();
+                }
+            }
+
+            // Save container dimensions if provided
+            if ($request->has('container_width') && $request->has('container_height')) {
+                $layoutSetting = TableLayoutSetting::getOrCreate('main_layout');
+                $layoutSetting->container_width = (int) $request->container_width;
+                $layoutSetting->container_height = (int) $request->container_height;
+                $layoutSetting->save();
+            }
+
+            // Clear any caching
+            \Cache::flush();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Layout saved successfully',
+                'saved_count' => count($request->tables)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error saving layout: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
