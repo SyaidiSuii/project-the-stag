@@ -185,6 +185,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // This ensures the most recent action takes priority
     if (currentOrderData) {
         const singleOrder = JSON.parse(currentOrderData);
+
+        // Validate that the order has an item_id
+        if (!singleOrder.item_id) {
+            console.error('Error: Order data is missing item_id!', singleOrder);
+            if (orderItemsContainer) {
+                orderItemsContainer.innerHTML = `
+                    <div class="error-message" style="padding: 20px; text-align: center; background: #fee; border-radius: 10px; margin: 20px 0;">
+                        <p style="color: #c00; font-weight: bold; margin-bottom: 10px;">⚠️ Error Loading Order</p>
+                        <p style="margin-bottom: 15px;">There was a problem loading your order. The item information is incomplete.</p>
+                        <a href="/customer/menu" class="btn" style="display: inline-block; padding: 10px 20px; background: #6366f1; color: white; text-decoration: none; border-radius: 8px;">Return to Menu</a>
+                    </div>
+                `;
+            }
+            return;
+        }
+
         cart = [{
             id: singleOrder.item_id,
             name: singleOrder.item_name,

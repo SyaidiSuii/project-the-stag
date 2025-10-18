@@ -9,62 +9,10 @@ use App\Models\MenuItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ReviewController extends Controller
 {
-    /**
-     * Show review form for a specific order
-     */
-    public function create($orderId)
-    {
-        $userId = Auth::id();
-
-        // Get the order with items
-        $order = Order::with(['items.menuItem'])
-            ->where('id', $orderId)
-            ->where('user_id', $userId)
-            ->whereIn('order_status', ['completed', 'served'])
-            ->first();
-
-        if (!$order) {
-            return redirect()
-                ->route('customer.orders.index')
-                ->with('error', 'Order not found or not eligible for review.');
-        }
-
-        // Get items that haven't been reviewed yet
-        $reviewableItems = [];
-        foreach ($order->items as $orderItem) {
-            if (!$orderItem->menuItem) {
-                continue; // Skip if menu item no longer exists
-            }
-
-            // Check if already reviewed
-            $existingReview = MenuItemReview::where('user_id', $userId)
-                ->where('menu_item_id', $orderItem->menu_item_id)
-                ->where('order_id', $order->id)
-                ->first();
-
-            if (!$existingReview) {
-                $reviewableItems[] = [
-                    'order_item_id' => $orderItem->id,
-                    'menu_item_id' => $orderItem->menu_item_id,
-                    'menu_item' => $orderItem->menuItem,
-                    'quantity' => $orderItem->quantity
-                ];
-            }
-        }
-
-        // If no items to review, redirect back
-        if (empty($reviewableItems)) {
-            return redirect()
-                ->route('customer.orders.index')
-                ->with('info', 'All items from this order have already been reviewed.');
-        }
-
-        return view('customer.reviews.create', compact('order', 'reviewableItems'));
-    }
-
     /**
      * Store a new review
      */

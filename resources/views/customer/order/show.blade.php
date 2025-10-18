@@ -364,6 +364,187 @@
     margin-top: 8px;
 }
 
+/* Review Section Styles */
+.review-section {
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 2px solid #e5e7eb;
+}
+
+.review-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 24px;
+}
+
+.review-item-card {
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s;
+}
+
+.review-item-card:hover {
+    border-color: #10b981;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+.review-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.review-item-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.review-item-quantity {
+    background: white;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+}
+
+.rating-section {
+    margin-bottom: 16px;
+}
+
+.rating-label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.star-rating {
+    display: flex;
+    gap: 8px;
+    font-size: 32px;
+}
+
+.star {
+    cursor: pointer;
+    color: #d1d5db;
+    transition: all 0.2s;
+}
+
+.star:hover {
+    transform: scale(1.15);
+}
+
+.star.active {
+    color: #fbbf24;
+}
+
+.review-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 14px;
+    resize: vertical;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.review-textarea:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.anonymous-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.anonymous-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.anonymous-checkbox label {
+    font-size: 14px;
+    color: #6b7280;
+    cursor: pointer;
+    margin: 0;
+}
+
+.submit-review-section {
+    margin-top: 32px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn-submit-review {
+    padding: 14px 32px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-submit-review:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
+}
+
+.btn-submit-review:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.success-message, .error-message {
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.success-message {
+    background: #d1fae5;
+    border: 2px solid #10b981;
+    color: #065f46;
+}
+
+.error-message {
+    background: #fee2e2;
+    border: 2px solid #ef4444;
+    color: #991b1b;
+}
+
+.already-reviewed-badge {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 16px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .order-header {
@@ -386,6 +567,14 @@
 
     .step-label {
         font-size: 12px;
+    }
+
+    .submit-review-section {
+        flex-direction: column;
+    }
+
+    .btn-submit-review {
+        width: 100%;
     }
 }
 </style>
@@ -570,6 +759,113 @@
                     <span>RM {{ number_format($order->total_amount, 2) }}</span>
                 </div>
             </div>
+
+            <!-- Review Section (Only for completed/served orders) -->
+            @if(in_array($order->order_status, ['completed', 'served']))
+                <div class="review-section" id="review-section">
+                    <div class="section-title">
+                        <i class="fas fa-star"></i> Rate Your Order
+                    </div>
+
+                    @if(session('review_success'))
+                        <div class="success-message">
+                            <i class="fas fa-check-circle"></i> {{ session('review_success') }}
+                        </div>
+                    @endif
+
+                    @if(session('review_error'))
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-circle"></i> {{ session('review_error') }}
+                        </div>
+                    @endif
+
+                    @php
+                        $hasReviews = $order->reviews()->exists();
+                        $reviewableItems = [];
+
+                        if (!$hasReviews) {
+                            foreach ($order->items as $orderItem) {
+                                if (!$orderItem->menuItem) continue;
+
+                                $existingReview = $order->reviews()
+                                    ->where('menu_item_id', $orderItem->menu_item_id)
+                                    ->first();
+
+                                if (!$existingReview) {
+                                    $reviewableItems[] = [
+                                        'order_item_id' => $orderItem->id,
+                                        'menu_item_id' => $orderItem->menu_item_id,
+                                        'menu_item' => $orderItem->menuItem,
+                                        'quantity' => $orderItem->quantity
+                                    ];
+                                }
+                            }
+                        }
+                    @endphp
+
+                    @if($hasReviews)
+                        <div class="already-reviewed-badge">
+                            <i class="fas fa-check-circle"></i> Thank you! You've already reviewed this order.
+                        </div>
+                    @elseif(!empty($reviewableItems))
+                        <form id="reviewForm" method="POST" action="{{ route('customer.reviews.store-batch') }}">
+                            @csrf
+                            <input type="hidden" name="order_id" value="{{ $order->id }}">
+
+                            <div class="review-items-list">
+                                @foreach($reviewableItems as $index => $item)
+                                    <div class="review-item-card">
+                                        <div class="review-item-header">
+                                            <span class="review-item-name">{{ $item['menu_item']->name }}</span>
+                                            <span class="review-item-quantity">x{{ $item['quantity'] }}</span>
+                                        </div>
+
+                                        <input type="hidden" name="reviews[{{ $index }}][menu_item_id]" value="{{ $item['menu_item_id'] }}">
+
+                                        <div class="rating-section">
+                                            <label class="rating-label">Rating *</label>
+                                            <div class="star-rating" data-item-index="{{ $index }}">
+                                                @for($i = 1; $i <= 5; $i++)
+                                                    <span class="star" data-rating="{{ $i }}">★</span>
+                                                @endfor
+                                            </div>
+                                            <input type="hidden" name="reviews[{{ $index }}][rating]" class="rating-input" required>
+                                        </div>
+
+                                        <div>
+                                            <label for="review_text_{{ $index }}" class="rating-label">Your Review (Optional)</label>
+                                            <textarea
+                                                name="reviews[{{ $index }}][review_text]"
+                                                id="review_text_{{ $index }}"
+                                                class="review-textarea"
+                                                placeholder="Tell us about your experience with this dish..."></textarea>
+                                        </div>
+
+                                        <div class="anonymous-checkbox">
+                                            <input
+                                                type="checkbox"
+                                                name="reviews[{{ $index }}][is_anonymous]"
+                                                id="anonymous_{{ $index }}"
+                                                value="1">
+                                            <label for="anonymous_{{ $index }}">Post anonymously</label>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <div class="submit-review-section">
+                                <button type="submit" class="btn-submit-review" id="submitBtn">
+                                    <i class="fas fa-paper-plane"></i> Submit Reviews
+                                </button>
+                            </div>
+                        </form>
+                    @else
+                        <p style="text-align: center; color: #6b7280; padding: 20px;">
+                            No items available to review.
+                        </p>
+                    @endif
+                </div>
+            @endif
         </div>
     </div>
 </div>
@@ -584,6 +880,144 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             location.reload();
         }, 30000);
+    }
+
+    // Smooth scroll to review section if hash present
+    if (window.location.hash === '#review-section') {
+        setTimeout(() => {
+            const reviewSection = document.getElementById('review-section');
+            if (reviewSection) {
+                reviewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 100);
+    }
+
+    // Review form star rating functionality
+    const reviewForm = document.getElementById('reviewForm');
+    if (reviewForm) {
+        const starRatings = document.querySelectorAll('.star-rating');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Handle star rating clicks
+        starRatings.forEach(ratingContainer => {
+            const stars = ratingContainer.querySelectorAll('.star');
+            const itemIndex = ratingContainer.dataset.itemIndex;
+            const ratingInput = document.querySelector(`input[name="reviews[${itemIndex}][rating]"]`);
+
+            stars.forEach((star, index) => {
+                star.addEventListener('click', function() {
+                    const rating = this.dataset.rating;
+                    ratingInput.value = rating;
+
+                    // Update star display
+                    stars.forEach((s, i) => {
+                        if (i < rating) {
+                            s.classList.add('active');
+                        } else {
+                            s.classList.remove('active');
+                        }
+                    });
+                });
+
+                // Hover effect
+                star.addEventListener('mouseenter', function() {
+                    const rating = this.dataset.rating;
+                    stars.forEach((s, i) => {
+                        if (i < rating) {
+                            s.style.color = '#fbbf24';
+                        } else {
+                            s.style.color = '#d1d5db';
+                        }
+                    });
+                });
+            });
+
+            // Reset hover effect
+            ratingContainer.addEventListener('mouseleave', function() {
+                const currentRating = ratingInput.value;
+                stars.forEach((s, i) => {
+                    if (i < currentRating) {
+                        s.style.color = '#fbbf24';
+                    } else {
+                        s.style.color = '#d1d5db';
+                    }
+                });
+            });
+        });
+
+        // Form submission
+        reviewForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Validate that all items have ratings
+            const ratingInputs = document.querySelectorAll('.rating-input');
+            let allRated = true;
+
+            ratingInputs.forEach(input => {
+                if (!input.value) {
+                    allRated = false;
+                }
+            });
+
+            if (!allRated) {
+                alert('Please rate all items before submitting.');
+                return;
+            }
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+            // Submit via AJAX
+            const formData = new FormData(reviewForm);
+
+            // Convert to JSON structure
+            const reviews = [];
+            ratingInputs.forEach((input, index) => {
+                const reviewTextArea = document.querySelector(`textarea[name="reviews[${index}][review_text]"]`);
+                const isAnonymousCheckbox = document.querySelector(`input[name="reviews[${index}][is_anonymous]"]`);
+                const menuItemIdInput = document.querySelector(`input[name="reviews[${index}][menu_item_id]"]`);
+
+                reviews.push({
+                    menu_item_id: menuItemIdInput.value,
+                    rating: input.value,
+                    review_text: reviewTextArea.value,
+                    is_anonymous: isAnonymousCheckbox.checked ? 1 : 0
+                });
+            });
+
+            const data = {
+                order_id: document.querySelector('input[name="order_id"]').value,
+                reviews: reviews
+            };
+
+            fetch('{{ route("customer.reviews.store-batch") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    // Reload page to show "already reviewed" badge
+                    location.reload();
+                } else {
+                    alert(data.message || 'Failed to submit reviews. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Reviews';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Reviews';
+            });
+        });
     }
 });
 </script>

@@ -131,9 +131,6 @@ Route::prefix('customer')->name('customer.')->group(function () {
         Route::get('/my-reviews', [CustomerReviewController::class, 'myReviews'])->name('my-reviews');
         Route::get('/menu-item/{menuItemId}', [CustomerReviewController::class, 'showMenuItemReviews'])->name('menu-item');
 
-        // Create review form
-        Route::get('/create/{orderId}', [CustomerReviewController::class, 'create'])->name('create');
-
         // Submit reviews
         Route::post('/store', [CustomerReviewController::class, 'store'])->name('store');
         Route::post('/store-batch', [CustomerReviewController::class, 'storeBatch'])->name('store-batch');

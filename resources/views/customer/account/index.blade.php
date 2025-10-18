@@ -43,7 +43,13 @@
           <div class="stat-label">Orders</div>
         </div>
         <div class="stat-item">
-          <div class="stat-number">{{ $loyaltyPoints }}</div>
+          <div class="stat-number">
+            @if(Auth::check())
+            {{ number_format($user->points_balance ?? 0) }}
+            @else
+            0
+            @endif
+          </div>
           <div class="stat-label">Points</div>
         </div>
         <div class="stat-item">
@@ -81,6 +87,33 @@
         </div>
       </div>
     @else
+
+      <!-- Quick Actions -->
+    <div class="quick-actions">
+      <div class="card-header">
+        <div class="card-icon"><i class="fas fa-bolt"></i></div>
+        <h2 class="card-title">Quick Actions</h2>
+      </div>
+      <div class="quick-actions-grid">
+        <a href="{{ route('customer.orders.index') }}" class="quick-action">
+          <div class="quick-action-icon"><i class="fas fa-shopping-bag"></i></div>
+          <div class="quick-action-text">View Orders</div>
+        </a>
+        <a href="{{ route('customer.booking.index') }}" class="quick-action">
+          <div class="quick-action-icon"><i class="fas fa-calendar-alt"></i></div>
+          <div class="quick-action-text">Book Table</div>
+        </a>
+        <a href="{{ route('customer.rewards.index') }}" class="quick-action">
+          <div class="quick-action-icon"><i class="fas fa-gift"></i></div>
+          <div class="quick-action-text">My Rewards</div>
+        </a>
+        <a href="{{ route('customer.reviews.my-reviews') }}" class="quick-action">
+          <div class="quick-action-icon"><i class="fas fa-star"></i></div>
+          <div class="quick-action-text">My Reviews</div>
+        </a>
+      </div>
+    </div>
+
       <!-- Content Grid -->
       <div class="content-grid">
       <!-- Personal Information -->
@@ -119,6 +152,50 @@
             <button type="submit" class="btn btn-primary" onclick="this.innerHTML='<i class=\'fas fa-spinner fa-spin\'></i> Saving...'; this.disabled=true;"><i class="fas fa-save"></i> Save Changes</button>
           </div>
         </form>
+      </div>
+
+      <!-- Account Settings -->
+      <div class="account-card">
+        <div class="card-header">
+          <div class="card-icon"><i class="fas fa-cog"></i></div>
+          <h2 class="card-title">Preferences</h2>
+        </div>
+        <div class="toggle-group">
+          <div class="toggle-info">
+            <div class="toggle-label">Email Notifications</div>
+            <div class="toggle-description">Receive order updates and promotions</div>
+          </div>
+          <div class="toggle-switch active" data-toggle="email">
+            <div class="toggle-slider"></div>
+          </div>
+        </div>
+        <div class="toggle-group">
+          <div class="toggle-info">
+            <div class="toggle-label">SMS Notifications</div>
+            <div class="toggle-description">Get text updates for orders</div>
+          </div>
+          <div class="toggle-switch" data-toggle="sms">
+            <div class="toggle-slider"></div>
+          </div>
+        </div>
+        <div class="toggle-group">
+          <div class="toggle-info">
+            <div class="toggle-label">Marketing Communications</div>
+            <div class="toggle-description">Special offers and restaurant news</div>
+          </div>
+          <div class="toggle-switch active" data-toggle="marketing">
+            <div class="toggle-slider"></div>
+          </div>
+        </div>
+        <div class="toggle-group">
+          <div class="toggle-info">
+            <div class="toggle-label">Dark Mode</div>
+            <div class="toggle-description">Switch to dark theme</div>
+          </div>
+          <div class="toggle-switch" data-toggle="darkmode">
+            <div class="toggle-slider"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Security Settings -->
@@ -205,20 +282,54 @@
           </div>
         </div>
       </div>
+
+      <!-- Account Statistics -->
+      <div class="account-card">
+        <div class="card-header">
+          <div class="card-icon"><i class="fas fa-chart-bar"></i></div>
+          <h2 class="card-title">Account Overview</h2>
+        </div>
+        <ul class="info-list">
+          <li class="info-item">
+            <span class="info-label">Total Orders</span>
+            <span class="info-value">47</span>
+          </li>
+          <li class="info-item">
+            <span class="info-label">Total Spent</span>
+            <span class="info-value">RM 2,340.50</span>
+          </li>
+          <li class="info-item">
+            <span class="info-label">Favorite Dish</span>
+            <span class="info-value">Beef Steak</span>
+          </li>
+          <li class="info-item">
+            <span class="info-label">Member Level</span>
+            <span class="info-value">Gold Member</span>
+          </li>
+          <li class="info-item">
+            <span class="info-label">Loyalty Points</span>
+            <span class="info-value">1,240 pts</span>
+          </li>
+        </ul>
+        <div class="btn-group">
+          <a href="orders.html" class="btn btn-primary"><i class="fas fa-shopping-bag"></i> View All Orders</a>
+        </div>
+      </div>
     </div>
 
-    <!-- Danger Zone -->
-    <div class="account-card" style="border: 2px solid var(--danger);">
-      <div class="card-header">
-        <div class="card-icon" style="background: var(--danger);"><i class="fas fa-exclamation-triangle"></i></div>
-        <h2 class="card-title" style="color: var(--danger);">Danger Zone</h2>
-      </div>
-      <p style="color: var(--text-2); margin-bottom: 1rem;">
-        These actions are permanent and cannot be undone. Please proceed with caution.
-      </p>
-      <div class="btn-group">
-        <button class="btn btn-danger" onclick="showDeleteModal()"><i class="fas fa-trash"></i> Delete Account</button>
-        <button class="btn btn-secondary"><i class="fas fa-upload"></i> Export Data</button>
+      <!-- Danger Zone -->
+      <div class="account-card" style="border: 2px solid var(--danger); grid-column: 1 / -1; margin-top: 2rem;">
+        <div class="card-header">
+          <div class="card-icon" style="background: var(--danger);"><i class="fas fa-exclamation-triangle"></i></div>
+          <h2 class="card-title" style="color: var(--danger);">Danger Zone</h2>
+        </div>
+        <p style="color: var(--text-2); margin-bottom: 1rem;">
+          These actions are permanent and cannot be undone. Please proceed with caution.
+        </p>
+        <div class="btn-group">
+          <button class="btn btn-danger" onclick="showDeleteModal()"><i class="fas fa-trash"></i> Delete Account</button>
+          <button class="btn btn-secondary"><i class="fas fa-upload"></i> Export Data</button>
+        </div>
       </div>
     </div>
   </div>

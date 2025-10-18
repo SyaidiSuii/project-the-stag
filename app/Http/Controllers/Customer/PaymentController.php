@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\User; // Assuming you might need to create a guest user or link to an existing one
+use App\Models\User;
 use App\Models\UserCart;
 use App\Services\PaymentService;
 
@@ -254,7 +254,81 @@ class PaymentController extends Controller
                 ]);
 
                 if ($billStatus['status'] === 'success') {
-                    // Payment successful - order should exist (created in callback)
+                    // Payment successful - check if order exists
+                    if (!$payment->order_id) {
+                        // Order not created yet (callback might not have been called)
+                        // Create order from session data as fallback
+                        $pendingOrderData = session('pending_order_data');
+
+                        if ($pendingOrderData) {
+                            logger()->info('Creating order from paymentReturn (callback fallback)', [
+                                'payment_id' => $payment->id,
+                                'pending_data' => $pendingOrderData
+                            ]);
+
+                            // Create the order
+                            $order = Order::create([
+                                'user_id' => $pendingOrderData['user_id'],
+                                'guest_name' => $pendingOrderData['guest_name'],
+                                'guest_phone' => $pendingOrderData['guest_phone'],
+                                'guest_email' => $pendingOrderData['guest_email'],
+                                'total_amount' => $pendingOrderData['total_amount'],
+                                'order_status' => $pendingOrderData['order_status'],
+                                'payment_status' => 'paid',
+                                'payment_method' => $pendingOrderData['payment_method'],
+                                'order_type' => $pendingOrderData['order_type'],
+                                'order_source' => $pendingOrderData['order_source'],
+                                'order_time' => $pendingOrderData['order_time'],
+                                'confirmation_code' => $pendingOrderData['confirmation_code'],
+                            ]);
+
+                            // Create OrderItems
+                            foreach ($pendingOrderData['cart_items'] as $item) {
+                                $menuItem = \App\Models\MenuItem::find($item['id']);
+                                \App\Models\OrderItem::create([
+                                    'order_id' => $order->id,
+                                    'menu_item_id' => $item['id'],
+                                    'quantity' => $item['quantity'],
+                                    'unit_price' => $menuItem->price,
+                                    'total_price' => $menuItem->price * $item['quantity'],
+                                    'special_note' => $item['notes'] ?? null,
+                                    'item_status' => 'pending',
+                                ]);
+                            }
+
+                            // Auto-create ETA
+                            $order->load('items.menuItem');
+                            if ($order->items->count() > 0) {
+                                $order->autoCreateETA();
+                            }
+
+                            // Link payment to order
+                            $payment->update(['order_id' => $order->id]);
+
+                            // Award points to user if authenticated
+                            if ($pendingOrderData['user_id']) {
+                                $user = User::find($pendingOrderData['user_id']);
+                                if ($user) {
+                                    $points = floor($pendingOrderData['total_amount']);
+                                    $user->addPoints($points, 'Order #' . $order->confirmation_code);
+                                }
+                            }
+
+                            // Clear user cart if from cart checkout
+                            if ($pendingOrderData['is_from_cart'] && $pendingOrderData['user_id']) {
+                                \App\Models\UserCart::where('user_id', $pendingOrderData['user_id'])->delete();
+                            }
+
+                            // Clear session data
+                            session()->forget(['pending_order_data', 'pending_payment_id']);
+
+                            logger()->info('Order created successfully from paymentReturn', [
+                                'order_id' => $order->id,
+                                'confirmation_code' => $order->confirmation_code
+                            ]);
+                        }
+                    }
+
                     return redirect()->route('customer.orders.index')
                         ->with('success', 'Payment completed successfully! Your order is being prepared.');
                 } elseif ($billStatus['status'] === 'failed' || $billStatus['status'] === 'pending') {

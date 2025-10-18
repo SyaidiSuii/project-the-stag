@@ -673,5 +673,5 @@
 </script>
 <script src="{{ asset('js/customer/cart-manager.js') }}"></script>
 <script src="{{ asset('js/customer/menu.js') }}"></script>
-<script src="{{ asset('js/customer/food_and_drink.js') }}"></script>
+{{-- food_and_drink.js is NOT loaded here - menu.js handles all functionality for the unified menu page --}}
 @endsection

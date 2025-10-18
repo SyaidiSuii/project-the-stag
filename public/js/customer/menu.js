@@ -5,6 +5,10 @@ const menuData = window.menuData || [];
 let food = [], setMeals = [], drinks = [], allCategories = [];
 let currentMenuType = 'all';
 
+// Debug: Log the raw menuData from window
+console.log('Debug [menu.js init]: window.menuData =', window.menuData);
+console.log('Debug [menu.js init]: menuData length =', menuData ? menuData.length : 'null/undefined');
+
 // Helper function to safely format price
 function formatPrice(price) {
   const num = parseFloat(price);
@@ -13,9 +17,19 @@ function formatPrice(price) {
 
 // Process database data into the expected format
 if (menuData && menuData.length > 0) {
-  menuData.forEach(category => {
+  console.log('Debug [menu.js]: Processing', menuData.length, 'categories');
+
+  menuData.forEach((category, catIndex) => {
+    console.log(`Debug [menu.js]: Category ${catIndex}: ${category.name}, type: ${category.type}, items: ${category.menu_items ? category.menu_items.length : 0}`);
+
     if (category.menu_items && category.menu_items.length > 0) {
-      category.menu_items.forEach(item => {
+      category.menu_items.forEach((item, itemIndex) => {
+        // Debug first item of first category
+        if (catIndex === 0 && itemIndex === 0) {
+          console.log('Debug [menu.js]: First menu item raw data:', item);
+          console.log('Debug [menu.js]: First menu item ID:', item.id, 'Type:', typeof item.id);
+        }
+
         const menuItem = {
           id: item.id,
           name: item.name,
@@ -27,6 +41,11 @@ if (menuData && menuData.length > 0) {
           preparation_time: item.preparation_time,
           stock_quantity: item.stock_quantity
         };
+
+        // Debug first processed item
+        if (catIndex === 0 && itemIndex === 0) {
+          console.log('Debug [menu.js]: First menu item processed:', menuItem);
+        }
 
         if (category.type === 'food') {
           food.push(menuItem);
@@ -43,6 +62,11 @@ if (menuData && menuData.length > 0) {
       allCategories.push(category.name);
     }
   });
+
+  console.log('Debug [menu.js]: Processed - Food:', food.length, 'Drinks:', drinks.length, 'Set Meals:', setMeals.length);
+  if (food.length > 0) {
+    console.log('Debug [menu.js]: First food item after processing:', food[0]);
+  }
 }
 
 allCategories.sort();
@@ -136,6 +160,12 @@ function createMenuCard(item) {
   const card = document.createElement('div');
   card.className = 'food-card';
   if (item.outOfStock) card.classList.add('out-of-stock-card');
+
+  // Debug: Log item to check if ID exists
+  if (!item.id) {
+    console.error('Menu item missing ID:', item);
+  }
+
   card.dataset.id = item.id;
   card.dataset.name = item.name;
   card.dataset.price = item.price;
@@ -309,6 +339,15 @@ document.addEventListener('click', async function(e) {
     const imgElement = itemCard.querySelector('.food-image img');
     const itemImage = imgElement ? imgElement.src : null;
     const itemDescription = itemCard.querySelector('.food-description')?.textContent || '';
+
+    // Debug: Check if itemId exists
+    console.log('Debug [Order Now clicked]: itemId =', itemId, 'itemCard.dataset =', itemCard.dataset);
+
+    if (!itemId || itemId === 'undefined') {
+      console.error('Error: Menu item ID is missing! Cannot proceed with order.');
+      alert('Sorry, there was an error loading this item. Please refresh the page and try again.');
+      return;
+    }
 
     // Show order modal
     showOrderModal(itemId, itemName, itemPriceText, itemDescription, itemImage);
@@ -546,6 +585,13 @@ document.addEventListener('click', function(e) {
       console.log('Debug [menu.js]: Creating order data');
       console.log('Debug [menu.js]: currentOrderItem:', currentOrderItem);
       console.log('Debug [menu.js]: currentOrderItem.id:', currentOrderItem.id);
+
+      // Validate that currentOrderItem has an ID
+      if (!currentOrderItem || !currentOrderItem.id) {
+        console.error('Error: Cannot create order - menu item ID is missing!');
+        alert('Sorry, there was an error with this item. Please refresh the page and try again.');
+        return;
+      }
 
       // Create order data for single item (Order Now flow)
       const orderData = {
