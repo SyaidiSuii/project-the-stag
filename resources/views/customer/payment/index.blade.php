@@ -158,6 +158,38 @@
           </div>
         </div>
 
+        <!-- Pay at Restaurant Section -->
+        <div class="form-section" id="cash-payment-section" style="display: none;">
+          <h3 class="section-title">
+            <i class="fas fa-money-bill-wave"></i> Pay at Restaurant
+          </h3>
+          <div class="banking-info-card">
+            <div class="banking-icon">
+              <i class="fas fa-store"></i>
+            </div>
+            <div class="banking-details">
+              <h4>Complete Payment at Restaurant</h4>
+              <p>You can pay for your order when you arrive at the restaurant. Here's what you need to know:</p>
+              <ul class="banking-features">
+                <li><i class="fas fa-check"></i> Pay with cash or card at the counter</li>
+                <li><i class="fas fa-check"></i> Show your order confirmation to our staff</li>
+                <li><i class="fas fa-check"></i> Payment must be completed before receiving your order</li>
+                <li><i class="fas fa-check"></i> You'll receive a receipt after payment</li>
+              </ul>
+            </div>
+          </div>
+          <div class="supported-banks">
+            <h5>Accepted Payment Methods at Restaurant:</h5>
+            <div class="bank-logos">
+              <span class="bank-name">Cash (MYR)</span>
+              <span class="bank-name">Credit Card</span>
+              <span class="bank-name">Debit Card</span>
+              <span class="bank-name">E-Wallet</span>
+              <span class="bank-name">Touch 'n Go</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Email Receipt -->
         <div class="form-section" id="receipt-section">
           <h3 class="section-title">

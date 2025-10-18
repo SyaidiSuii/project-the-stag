@@ -392,7 +392,6 @@
       font-size: 14px;
       font-weight: 800;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      animation: pulse 2s infinite;
       z-index: 2;
     }
     @keyframes pulse {
