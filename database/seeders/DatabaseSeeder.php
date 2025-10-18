@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             MenuItemsSeeder::class, // Must be after CategorySeeder
             RewardsSystemSeeder::class,
+            HomepageContentSeeder::class,
         ]);
 
         // \App\Models\User::factory(10)->create();

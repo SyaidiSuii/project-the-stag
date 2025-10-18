@@ -10,11 +10,17 @@
 <!-- Hero Section -->
 <section class="hero" id="hero">
     <div class="hero-overlay">
-        <h1 class="hero-title" id="heroTitle">Welcome to <span>The Stag</span></h1>
-        <p class="hero-sub" id="heroSubtitle">Experience premium dining with our signature steaks, authentic Malaysian flavors, and exceptional service that creates unforgettable culinary memories</p>
+        <h1 class="hero-title" id="heroTitle">
+            @php
+                $title = $hero['title'] ?? 'Welcome to {The Stag}';
+                // Replace {text} with <span>text</span> for styling
+                echo preg_replace('/\{([^}]+)\}/', '<span>$1</span>', $title);
+            @endphp
+        </h1>
+        <p class="hero-sub" id="heroSubtitle">{{ $hero['subtitle'] ?? 'Experience premium dining with our signature steaks, authentic Malaysian flavors, and exceptional service that creates unforgettable culinary memories' }}</p>
         <div class="hero-cta">
-            <a href="{{ route('customer.menu.index') }}" class="btn-primary" id="heroBtn1">Explore Menu</a>
-            <button class="btn-muted" data-scroll="#about" id="heroBtn2">Learn More</button>
+            <a href="{{ route('customer.menu.index') }}" class="btn-primary" id="heroBtn1">{{ $hero['btn1_text'] ?? 'Explore Menu' }}</a>
+            <button class="btn-muted" data-scroll="#about" id="heroBtn2">{{ $hero['btn2_text'] ?? 'Learn More' }}</button>
         </div>
     </div>
     <button class="scroll-down {{ Auth::check() ? 'logged-in' : '' }}" data-scroll="#about" aria-label="Scroll to about section">
@@ -26,18 +32,18 @@
 <section class="section about" id="about">
     <div class="about-wrap">
         <div class="about-text">
-            <h2 id="aboutTitle">About The Stag</h2>
-            <p class="muted" id="aboutSubtitle">Discover the perfect blend of Western cuisine and Malaysian favorites in the heart of the city.</p>
-            <p id="aboutDescription">At The Stag, we pride ourselves on delivering exceptional dining experiences through carefully crafted dishes, premium ingredients, and warm hospitality. From our signature steaks to authentic local delicacies, every meal tells a story.</p>
+            <h2 id="aboutTitle">{{ $about['title'] ?? 'About The Stag' }}</h2>
+            <p class="muted" id="aboutSubtitle">{{ $about['subtitle'] ?? 'Discover the perfect blend of Western cuisine and Malaysian favorites in the heart of the city.' }}</p>
+            <p id="aboutDescription">{{ $about['description'] ?? 'At The Stag, we pride ourselves on delivering exceptional dining experiences through carefully crafted dishes, premium ingredients, and warm hospitality. From our signature steaks to authentic local delicacies, every meal tells a story.' }}</p>
             <ul class="about-list" id="aboutList">
-                <li>🥩 Premium beef steaks aged to perfection</li>
-                <li>🍜 Authentic Malaysian dishes with a modern twist</li>
-                <li>🍝 Fresh pasta made daily with imported Italian ingredients</li>
-                <li>🌟 Award-winning culinary team with years of expertise</li>
+                <li>🥩 {{ $about['feature1'] ?? 'Premium beef steaks aged to perfection' }}</li>
+                <li>🍜 {{ $about['feature2'] ?? 'Authentic Malaysian dishes with a modern twist' }}</li>
+                <li>🍝 {{ $about['feature3'] ?? 'Fresh pasta made daily with imported Italian ingredients' }}</li>
+                <li>🌟 {{ $about['feature4'] ?? 'Award-winning culinary team with years of expertise' }}</li>
             </ul>
             <div class="about-cta">
-                <a href="{{ route('customer.menu.index') }}" class="btn-primary" id="aboutBtn1">View Full Menu</a>
-                <button class="btn-muted" data-scroll="#contact" id="aboutBtn2">Contact Us</button>
+                <a href="{{ route('customer.menu.index') }}" class="btn-primary" id="aboutBtn1">{{ $about['btn1_text'] ?? 'View Full Menu' }}</a>
+                <button class="btn-muted" data-scroll="#contact" id="aboutBtn2">{{ $about['btn2_text'] ?? 'Contact Us' }}</button>
             </div>
         </div>
         <div class="about-media"></div>
@@ -46,8 +52,8 @@
 
 <!-- Promotion Section -->
 <section class="section promotion" id="promotion">
-    <h2 id="promotionTitle">Featured Promotions</h2>
-    <p class="muted" id="promotionSubtitle">Don't miss out on our limited-time offers and special deals!</p>
+    <h2 id="promotionTitle">{{ $promotionHeader['title'] ?? 'Featured Promotions' }}</h2>
+    <p class="muted" id="promotionSubtitle">{{ $promotionHeader['subtitle'] ?? "Don't miss out on our limited-time offers and special deals!" }}</p>
     <div class="cards" id="promotionGrid" role="list" aria-label="Featured promotions">
         <!-- Default promotions - will be replaced by dynamic content if available -->
         @if(isset($promotions) && count($promotions) > 0)
@@ -164,8 +170,8 @@
 <section class="section contact" id="contact">
     <div class="grid-two">
         <div>
-            <h2 id="contactTitle">Visit Us Today</h2>
-            <p class="muted" id="contactSubtitle">We're located in the heart of the city, ready to serve you exceptional dining experiences.</p>
+            <h2 id="contactTitle">{{ $contact['title'] ?? 'Visit Us Today' }}</h2>
+            <p class="muted" id="contactSubtitle">{{ $contact['subtitle'] ?? "We're located in the heart of the city, ready to serve you exceptional dining experiences." }}</p>
             <ul class="info-list" id="infoList">
                 <li><strong>📍 Address:</strong> {{ $contact['address'] ?? '123 Food Street, City Center, 50200 Kuala Lumpur' }}</li>
                 <li><strong>📞 Phone:</strong> {{ $contact['phone'] ?? '+60 12-345-6789' }}</li>
@@ -177,8 +183,8 @@
             </div>
         </div>
         <div class="feedback">
-            <h3 id="feedbackTitle">Share Your Feedback</h3>
-            <p class="muted" id="feedbackSubtitle">Help us improve by sharing your dining experience with us.</p>
+            <h3 id="feedbackTitle">{{ $contact['feedback_title'] ?? 'Share Your Feedback' }}</h3>
+            <p class="muted" id="feedbackSubtitle">{{ $contact['feedback_subtitle'] ?? 'Help us improve by sharing your dining experience with us.' }}</p>
             <form id="feedbackForm" action="{{ route('customer.feedback.store') }}" method="POST">
                 @csrf
                 <div class="grid-two-narrow">

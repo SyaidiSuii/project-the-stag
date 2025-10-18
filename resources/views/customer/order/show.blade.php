@@ -149,7 +149,6 @@
     border-color: #6366f1;
     color: white;
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-    animation: pulse 2s infinite;
 }
 
 .step.completed .step-circle {
@@ -684,7 +683,7 @@
                         $paymentProgress = $paymentIndex * 100;
                     @endphp
 
-                    <div class="progress-line-fill" style="width: {{ $paymentProgress === 100 ? '50%' : '0%' }};"></div>
+                    <div class="progress-line-fill" style="width: {{ $paymentProgress === 100 ? 'calc(50% - 56px)' : '0%' }};"></div>
 
                     @foreach($paymentStatuses as $index => $status)
                         <div class="step {{ $index < $paymentIndex ? 'completed' : ($index === $paymentIndex ? 'active' : '') }}">

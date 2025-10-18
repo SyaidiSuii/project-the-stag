@@ -45,9 +45,9 @@
                 <div class="admin-nav-text">Users Management</div>
             </a>
 
-            <a href="#" class="admin-nav-item">
+            <a href="{{ route('admin.homepage.index') }}" class="admin-nav-item">
                 <div class="admin-nav-icon"><i class="fas fa-home"></i></div>
-                <div class="admin-nav-text">Menu Contect</div>
+                <div class="admin-nav-text">Homepage Content</div>
             </a>
             <!-- Menu Managements Menu -->
             <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.menu-items.*') || request()->routeIs('admin.categories.*') ? 'active' : '' }}" id="menuMenu">

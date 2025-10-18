@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\StockDashboardController;
 use App\Http\Controllers\Admin\StockItemController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\PurchaseOrderController;
+use App\Http\Controllers\Admin\HomepageContentController;
 use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
 use App\Http\Controllers\Customer\FoodController as CustomerFoodController;
 use App\Http\Controllers\Customer\DrinksController as CustomerDrinksController;
@@ -231,6 +232,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('admins/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateAdmin'])->name('admins.update');
             Route::delete('admins/{id}', [\App\Http\Controllers\Admin\SettingsController::class, 'deleteAdmin'])->name('admins.delete');
             Route::post('admins/{id}/toggle-super-admin', [\App\Http\Controllers\Admin\SettingsController::class, 'toggleSuperAdmin'])->name('admins.toggle-super-admin');
+        });
+
+        // ---------------------------------------------
+        // HOMEPAGE CONTENT MANAGEMENT
+        // ---------------------------------------------
+        Route::prefix('homepage')->name('homepage.')->group(function () {
+            Route::get('/', [HomepageContentController::class, 'index'])->name('index');
+            Route::get('get-section/{sectionType}', [HomepageContentController::class, 'getSection'])->name('get-section');
+            Route::post('/', [HomepageContentController::class, 'store'])->name('store');
+            Route::post('upload-image', [HomepageContentController::class, 'uploadImage'])->name('upload-image');
+            Route::put('{id}', [HomepageContentController::class, 'update'])->name('update');
+            Route::delete('{id}', [HomepageContentController::class, 'destroy'])->name('destroy');
         });
 
         // ---------------------------------------------

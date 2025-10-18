@@ -286,6 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- PAYMENT METHOD SWITCHING LOGIC ---
     const paymentMethods = document.querySelectorAll('.payment-method');
     const cardDetails = document.getElementById('card-payment-section');
+    const cashDetails = document.getElementById('cash-payment-section');
     const receiptSection = document.getElementById('receipt-section');
 
     let selectedMethod = 'card'; // Default to card (online banking)
@@ -319,11 +320,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Show/hide payment sections based on payment method
             if (selectedMethod === 'card') {
                 cardDetails.style.display = 'block';
+                cashDetails.style.display = 'none';
                 receiptSection.style.display = 'block';
                 submitButton.innerHTML = `<i class="fas fa-university"></i> <span>Pay via FPX - RM ${total.toFixed(2)}</span>`;
             } else if (selectedMethod === 'cash') {
                 cardDetails.style.display = 'none';
-                receiptSection.style.display = 'none';
+                cashDetails.style.display = 'block';
+                receiptSection.style.display = 'block';
                 submitButton.innerHTML = `<i class="fas fa-check"></i> <span>Order Now</span>`;
             }
 
