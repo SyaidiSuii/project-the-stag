@@ -52,7 +52,7 @@
             <div class="nav-icon"><i class="fas fa-calendar-alt"></i></div>
             <div class="nav-text">BOOKING</div>
         </a>
-        <a class="nav-item account-spacer {{ Request::routeIs('customer.account*') ? 'active' : '' }}" href="{{ route('customer.account.index') }}">
+        <a class="nav-item account-spacer {{ Request::routeIs('customer.account*') || Request::routeIs('customer.reviews*') ? 'active' : '' }}" href="{{ route('customer.account.index') }}">
             <div class="nav-icon"><i class="fas fa-user"></i></div>
             <div class="nav-text">ACCOUNT</div>
         </a>
@@ -76,6 +76,10 @@
                 Toast.success('Success', logoutMessage);
                 // Delete the cookie after showing
                 document.cookie = 'logout_message=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+
+                // Clear chatbot session from localStorage on logout
+                localStorage.removeItem('chatbot_session');
+                console.log('Chatbot session cleared after logout');
             }
 
             @if(session('success'))

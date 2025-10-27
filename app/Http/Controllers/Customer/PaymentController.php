@@ -10,7 +10,9 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
 use App\Models\UserCart;
+use App\Models\Promotion;
 use App\Services\PaymentService;
+use App\Services\Promotions\PromotionService;
 
 class PaymentController extends Controller
 {
@@ -36,7 +38,14 @@ class PaymentController extends Controller
             'cart' => 'required|array|min:1',
             'cart.*.id' => 'required|exists:menu_items,id',
             'cart.*.quantity' => 'required|integer|min:1',
+            'cart.*.unit_price' => 'nullable|numeric|min:0', // For bundle/promo discounted prices
             'cart.*.payment_method' => 'nullable|string|in:online,counter',
+            'cart.*.notes' => 'nullable|string|max:500', // Special notes/instructions
+            // Promotion tracking fields
+            'cart.*.promotion_id' => 'nullable|integer|exists:promotions,id',
+            'cart.*.promotion_group_id' => 'nullable|string|max:100',
+            'cart.*.is_free_item' => 'nullable|boolean',
+            'cart.*.original_price' => 'nullable|numeric|min:0',
             'is_from_cart' => 'nullable|boolean',
             'payment_details' => 'required|array',
             'payment_details.method' => 'required|string|in:online,counter',
@@ -44,6 +53,8 @@ class PaymentController extends Controller
             'payment_details.email' => 'nullable|email',
             'payment_details.name' => 'nullable|string',
             'payment_details.phone' => 'nullable|string',
+            'promo_code' => 'nullable|string|max:50', // Promo code field
+            'voucher_discount' => 'nullable|numeric|min:0', // Voucher discount amount
         ]);
 
         DB::beginTransaction();
@@ -54,11 +65,147 @@ class PaymentController extends Controller
             $paymentDetails = $validated['payment_details'];
             $totalAmount = 0;
 
-            // Calculate total amount from the backend to prevent tampering
+            // Validate and filter unavailable items
+            $validCartItems = [];
+            $skippedItems = [];
+
             foreach ($cartItems as $item) {
                 $menuItem = \App\Models\MenuItem::find($item['id']);
-                $totalAmount += $menuItem->price * $item['quantity'];
+
+                // Check if menu item exists and is available
+                if (!$menuItem || $menuItem->trashed() || !$menuItem->availability) {
+                    $skippedItems[] = [
+                        'id' => $item['id'],
+                        'name' => $menuItem ? $menuItem->name : 'Unknown item',
+                        'reason' => !$menuItem ? 'Item tidak wujud' : ($menuItem->trashed() ? 'Item telah dikeluarkan' : 'Item tidak tersedia')
+                    ];
+                    continue;
+                }
+
+                // Item is valid, add to valid items and calculate total
+                $validCartItems[] = $item;
+
+                // Use unit_price from cart if available (for bundle/promo discounts), otherwise use menu item price
+                $itemPrice = isset($item['unit_price']) ? floatval($item['unit_price']) : $menuItem->price;
+                $totalAmount += $itemPrice * $item['quantity'];
             }
+
+            // Check if we have any valid items to checkout
+            if (empty($validCartItems)) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Tiada item yang sah untuk checkout. Semua item dalam cart tidak tersedia.',
+                    'skipped_items' => $skippedItems
+                ], 400);
+            }
+
+            // Use valid items only for order creation
+            $cartItems = $validCartItems;
+
+            // === PROMO CODE HANDLING WITH CHECKOUT PROTECTION ===
+            $appliedPromotion = null;
+            $promoDiscount = 0;
+            $promoCode = $validated['promo_code'] ?? null;
+
+            // IMPORTANT: Prevent double discount - check if cart has bundle/combo/buy1free1/item_discount items
+            $hasBundleItems = false;
+            foreach ($cartItems as $item) {
+                if (isset($item['promotion_id']) && !empty($item['promotion_id'])) {
+                    $hasBundleItems = true;
+                    break;
+                }
+            }
+
+            if ($promoCode) {
+                // VALIDATION: Cannot use promo code if cart already has bundle/combo items
+                if ($hasBundleItems) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Promo code cannot be used with bundle/combo items. Please remove bundle items first or proceed without promo code.',
+                        'error_type' => 'double_discount_prevented'
+                    ], 400);
+                }
+
+                $promotionService = app(PromotionService::class);
+                $usageLogger = app(\App\Services\Promotions\PromotionUsageLogger::class);
+
+                // Build cart items array for promotion service
+                $cartItemsForPromo = [];
+                foreach ($cartItems as $item) {
+                    $menuItem = \App\Models\MenuItem::find($item['id']);
+                    $cartItemsForPromo[$item['id']] = [
+                        'item' => $menuItem,
+                        'quantity' => $item['quantity'],
+                        'price' => $menuItem->price
+                    ];
+                }
+
+                // CRITICAL: Revalidate promo code with DB locking to prevent race conditions
+                // This ensures that if 2 users try to use the last slot simultaneously,
+                // only one will succeed
+                $promotion = Promotion::where('promo_code', $promoCode)
+                    ->lockForUpdate() // 🔒 Lock the row to prevent concurrent access
+                    ->first();
+
+                if (!$promotion) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Invalid promo code.'
+                    ], 400);
+                }
+
+                // Revalidate: Check if user can still use this promotion
+                // (limits may have been reached since they applied it in cart)
+                $canUseResult = $usageLogger->canUserUsePromotion($promotion, $user?->id);
+
+                if (!$canUseResult['can_use']) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'error' => $canUseResult['reason'],
+                        'error_type' => $canUseResult['error_type'] ?? 'validation_failed'
+                    ], 400);
+                }
+
+                // Validate and apply promo code
+                $appliedPromotion = $promotionService->validatePromoCode($promoCode, $cartItemsForPromo, $user);
+
+                if ($appliedPromotion) {
+                    $discountResult = $promotionService->calculatePromotionDiscount($appliedPromotion, $cartItemsForPromo);
+                    $promoDiscount = $discountResult['discount'];
+
+                    logger()->info('Promo code applied at checkout', [
+                        'promo_code' => $promoCode,
+                        'discount' => $promoDiscount,
+                        'promotion_id' => $appliedPromotion->id,
+                        'remaining_uses' => $canUseResult['remaining_uses'] ?? 'unlimited'
+                    ]);
+                } else {
+                    logger()->warning('Invalid promo code provided', ['promo_code' => $promoCode]);
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Promo code is invalid or does not meet requirements.'
+                    ], 400);
+                }
+            }
+
+            // Get voucher discount from request (applied in cart)
+            $voucherDiscount = floatval($validated['voucher_discount'] ?? 0);
+
+            // Calculate final total amount (after promo and voucher discounts)
+            $subtotal = $totalAmount;
+            $finalTotal = max(0, $totalAmount - $promoDiscount - $voucherDiscount);
+
+            logger()->info('Order total calculation', [
+                'subtotal' => $subtotal,
+                'promo_discount' => $promoDiscount,
+                'voucher_discount' => $voucherDiscount,
+                'final_total' => $finalTotal
+            ]);
 
             // Determine payment method and set initial status
             $paymentMethod = $paymentDetails['method'];
@@ -73,7 +220,7 @@ class PaymentController extends Controller
                     'guest_name' => $user ? $user->name : ($paymentDetails['name'] ?? 'Guest'),
                     'guest_phone' => $user ? $user->phone : ($paymentDetails['phone'] ?? null),
                     'guest_email' => $user ? $user->email : ($paymentDetails['email'] ?? null),
-                    'total_amount' => $totalAmount,
+                    'total_amount' => $finalTotal, // Use final total after discount
                     'order_status' => 'pending',
                     'payment_status' => 'unpaid',
                     'payment_method' => $paymentMethod,
@@ -88,17 +235,68 @@ class PaymentController extends Controller
                 // Create the Order
                 $order = Order::create($orderData);
 
-                // Create OrderItems
+                // DEBUG: Log cart items data before creating order items
+                \Log::info('Payment Checkout - Cart Items Data', [
+                    'order_id' => $order->id,
+                    'total_items' => count($cartItems),
+                    'cart_items' => collect($cartItems)->map(fn($item) => [
+                        'id' => $item['id'],
+                        'name' => $item['name'] ?? 'Unknown',
+                        'quantity' => $item['quantity'],
+                        'promotion_id' => $item['promotion_id'] ?? null,
+                        'promotion_group_id' => $item['promotion_group_id'] ?? null,
+                        'is_free_item' => $item['is_free_item'] ?? false,
+                    ])
+                ]);
+
+                // Create OrderItems with promotion info
                 foreach ($cartItems as $item) {
                     $menuItem = \App\Models\MenuItem::find($item['id']);
+
+                    // Use unit_price from cart if available (for bundle/promo discounts), otherwise use menu item price
+                    $itemPrice = isset($item['unit_price']) ? floatval($item['unit_price']) : $menuItem->price;
+                    $itemTotal = $itemPrice * $item['quantity'];
+
+                    // Calculate discount if unit_price is lower than original price
+                    $discountAmount = ($menuItem->price - $itemPrice) * $item['quantity'];
+
+                    // Check if item is part of promotion group (bundle/combo)
+                    $promotionGroupId = isset($item['promotion_group_id']) ? $item['promotion_group_id'] : null;
+                    $itemPromotionId = isset($item['promotion_id']) ? $item['promotion_id'] : ($appliedPromotion ? $appliedPromotion->id : null);
+                    $isFreeItem = isset($item['is_free_item']) ? $item['is_free_item'] : false;
+
                     OrderItem::create([
                         'order_id' => $order->id,
                         'menu_item_id' => $item['id'],
                         'quantity' => $item['quantity'],
-                        'unit_price' => $menuItem->price,
-                        'total_price' => $menuItem->price * $item['quantity'],
+                        'unit_price' => $isFreeItem ? 0 : $itemPrice, // Free items get 0 price
+                        'original_price' => $menuItem->price, // Always store original price
+                        'total_price' => $isFreeItem ? 0 : $itemTotal,
                         'special_note' => $item['notes'] ?? null,
                         'item_status' => 'pending',
+                        'promotion_id' => $itemPromotionId,
+                        'is_combo_item' => $promotionGroupId ? true : false,  // Mark if part of combo
+                        'combo_group_id' => $promotionGroupId, // Store promotion group ID as combo group ID
+                        'discount_amount' => max(0, $discountAmount), // Discount from bundle/promo
+                    ]);
+                }
+
+                // Log promotion usage if applied
+                if ($appliedPromotion && $promoDiscount > 0) {
+                    $promotionService = app(PromotionService::class);
+                    $promotionService->applyPromotionToOrder(
+                        $appliedPromotion,
+                        $order->id,
+                        $user ? $user->id : null,
+                        $promoDiscount,
+                        $subtotal,
+                        $finalTotal
+                    );
+
+                    logger()->info('Promotion logged for order', [
+                        'order_id' => $order->id,
+                        'promotion_id' => $appliedPromotion->id,
+                        'discount' => $promoDiscount
                     ]);
                 }
 
@@ -111,7 +309,7 @@ class PaymentController extends Controller
                 // Create counter payment record
                 $paymentData = [
                     'payment_method' => 'counter',
-                    'amount' => $totalAmount,
+                    'amount' => $finalTotal, // Use final total after discount
                     'currency' => 'MYR',
                     'payment_status' => 'pending',
                     'gateway' => 'manual',
@@ -125,21 +323,74 @@ class PaymentController extends Controller
                     UserCart::where('user_id', $user->id)->delete();
                 }
 
+                // Mark voucher as redeemed if used
+                if ($user && $voucherDiscount > 0) {
+                    $appliedVoucher = session('applied_voucher');
+                    if ($appliedVoucher && isset($appliedVoucher['id'])) {
+                        $voucher = \App\Models\CustomerVoucher::find($appliedVoucher['id']);
+                        if ($voucher) {
+                            $voucher->status = 'redeemed';
+                            $voucher->used_at = now();
+                            $voucher->order_id = $order->id;
+                            $voucher->save();
+
+                            logger()->info('Voucher marked as redeemed', [
+                                'voucher_id' => $voucher->id,
+                                'order_id' => $order->id,
+                                'discount' => $voucherDiscount
+                            ]);
+
+                            // Clear applied voucher from session
+                            session()->forget('applied_voucher');
+                        }
+                    }
+                }
+
+                // Clear promo code from session if guest
+                if (!$user) {
+                    session()->forget(['guest_promo_code', 'guest_promo_discount']);
+                }
+
                 DB::commit();
 
                 // Generate a unique order ID for display
                 $displayOrderId = 'STG-' . $order->created_at->format('Ymd') . '-' . $order->id;
 
-                return response()->json([
+                $response = [
                     'success' => true,
                     'message' => 'Order placed successfully!',
                     'order_id' => $displayOrderId,
-                    'amount' => $totalAmount
-                ]);
+                    'amount' => $finalTotal,
+                    'subtotal' => $subtotal,
+                    'discount' => $promoDiscount,
+                    'voucher_discount' => $voucherDiscount,
+                    'promo_code' => $promoCode
+                ];
+
+                // Include info about skipped items if any
+                if (!empty($skippedItems)) {
+                    $response['warning'] = count($skippedItems) . ' item(s) tidak tersedia dan telah dikecualikan dari pesanan';
+                    $response['skipped_items'] = $skippedItems;
+                }
+
+                return response()->json($response);
 
             } else {
                 // Online payment - DO NOT create order yet, only create gateway payment
                 // Order will be created in paymentCallback after successful payment
+
+                // DEBUG: Log cart items before saving to session
+                \Log::info('Saving cart items to session', [
+                    'cart_items_count' => count($cartItems),
+                    'cart_items' => $cartItems,
+                    'has_promotion_fields' => collect($cartItems)->map(fn($item) => [
+                        'id' => $item['id'],
+                        'has_promotion_id' => isset($item['promotion_id']),
+                        'has_promotion_group_id' => isset($item['promotion_group_id']),
+                        'promotion_id' => $item['promotion_id'] ?? null,
+                        'promotion_group_id' => $item['promotion_group_id'] ?? null,
+                    ])
+                ]);
 
                 // Store order data in session for later use after successful payment
                 session([
@@ -148,7 +399,12 @@ class PaymentController extends Controller
                         'guest_name' => $user ? $user->name : ($paymentDetails['name'] ?? 'Guest'),
                         'guest_phone' => $user ? $user->phone : ($paymentDetails['phone'] ?? null),
                         'guest_email' => $user ? $user->email : ($paymentDetails['email'] ?? null),
-                        'total_amount' => $totalAmount,
+                        'total_amount' => $finalTotal, // Use final total after discount
+                        'subtotal' => $subtotal,
+                        'promo_discount' => $promoDiscount,
+                        'voucher_discount' => $voucherDiscount, // Store voucher discount
+                        'promo_code' => $promoCode,
+                        'promotion_id' => $appliedPromotion ? $appliedPromotion->id : null,
                         'order_status' => 'pending',
                         'payment_status' => 'paid',
                         'payment_method' => $paymentMethod,
@@ -164,7 +420,7 @@ class PaymentController extends Controller
                 // Create gateway payment with temporary order reference
                 $paymentData = [
                     'payment_method' => 'online',
-                    'amount' => $totalAmount,
+                    'amount' => $finalTotal, // Use final total after discount
                     'currency' => 'MYR',
                     'customer_name' => $user ? $user->name : 'Guest',
                     'customer_email' => $paymentDetails['email'] ?? ($user ? $user->email : ''),
@@ -283,17 +539,52 @@ class PaymentController extends Controller
                             ]);
 
                             // Create OrderItems
+                            $hasPromotion = !empty($pendingOrderData['promotion_id']);
                             foreach ($pendingOrderData['cart_items'] as $item) {
                                 $menuItem = \App\Models\MenuItem::find($item['id']);
+
+                                // Use unit_price from cart if available (for bundle/promo pricing)
+                                $itemPrice = isset($item['unit_price']) ? floatval($item['unit_price']) : $menuItem->price;
+                                $itemTotal = $itemPrice * $item['quantity'];
+
+                                // Get promotion tracking fields from cart item
+                                $promotionGroupId = isset($item['promotion_group_id']) ? $item['promotion_group_id'] : null;
+                                $itemPromotionId = isset($item['promotion_id']) ? $item['promotion_id'] : ($pendingOrderData['promotion_id'] ?? null);
+                                $isFreeItem = isset($item['is_free_item']) ? $item['is_free_item'] : false;
+
+                                // Calculate discount
+                                $discountAmount = ($menuItem->price - $itemPrice) * $item['quantity'];
+
                                 \App\Models\OrderItem::create([
                                     'order_id' => $order->id,
                                     'menu_item_id' => $item['id'],
                                     'quantity' => $item['quantity'],
-                                    'unit_price' => $menuItem->price,
-                                    'total_price' => $menuItem->price * $item['quantity'],
+                                    'unit_price' => $isFreeItem ? 0 : $itemPrice, // Free items get 0 price
+                                    'original_price' => $menuItem->price,
+                                    'total_price' => $isFreeItem ? 0 : $itemTotal,
                                     'special_note' => $item['notes'] ?? null,
                                     'item_status' => 'pending',
+                                    'promotion_id' => $itemPromotionId,
+                                    'is_combo_item' => $promotionGroupId ? true : false,  // Mark if part of combo
+                                    'combo_group_id' => $promotionGroupId, // Store promotion group ID as combo group ID
+                                    'discount_amount' => max(0, $discountAmount),
                                 ]);
+                            }
+
+                            // Log promotion usage if applied
+                            if ($hasPromotion && $pendingOrderData['promo_discount'] > 0) {
+                                $promotion = Promotion::find($pendingOrderData['promotion_id']);
+                                if ($promotion) {
+                                    $promotionService = app(PromotionService::class);
+                                    $promotionService->applyPromotionToOrder(
+                                        $promotion,
+                                        $order->id,
+                                        $pendingOrderData['user_id'],
+                                        $pendingOrderData['promo_discount'],
+                                        $pendingOrderData['subtotal'],
+                                        $pendingOrderData['total_amount']
+                                    );
+                                }
                             }
 
                             // Auto-create ETA
@@ -319,8 +610,29 @@ class PaymentController extends Controller
                                 \App\Models\UserCart::where('user_id', $pendingOrderData['user_id'])->delete();
                             }
 
+                            // Mark voucher as redeemed if used (for online payment)
+                            if ($pendingOrderData['user_id'] && isset($pendingOrderData['voucher_discount']) && $pendingOrderData['voucher_discount'] > 0) {
+                                $appliedVoucher = session('applied_voucher');
+                                if ($appliedVoucher && isset($appliedVoucher['id'])) {
+                                    $voucher = \App\Models\CustomerVoucher::find($appliedVoucher['id']);
+                                    if ($voucher) {
+                                        $voucher->status = 'redeemed';
+                                        $voucher->used_at = now();
+                                        $voucher->redeemed_at = now();
+                                        $voucher->order_id = $order->id;
+                                        $voucher->save();
+
+                                        logger()->info('Voucher marked as redeemed (online payment)', [
+                                            'voucher_id' => $voucher->id,
+                                            'order_id' => $order->id,
+                                            'discount' => $pendingOrderData['voucher_discount']
+                                        ]);
+                                    }
+                                }
+                            }
+
                             // Clear session data
-                            session()->forget(['pending_order_data', 'pending_payment_id']);
+                            session()->forget(['pending_order_data', 'pending_payment_id', 'applied_voucher']);
 
                             logger()->info('Order created successfully from paymentReturn', [
                                 'order_id' => $order->id,

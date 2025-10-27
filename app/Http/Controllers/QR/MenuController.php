@@ -335,6 +335,39 @@ class MenuController extends Controller
             return response()->json(['error' => 'Cart is empty'], 400);
         }
 
+        // Validate and filter unavailable items from cart
+        $validCart = [];
+        $skippedItems = [];
+
+        foreach ($cart as $item) {
+            $menuItem = MenuItem::find($item['id']);
+
+            // Check if menu item exists and is available
+            if (!$menuItem || $menuItem->trashed() || !$menuItem->availability) {
+                $skippedItems[] = [
+                    'id' => $item['id'],
+                    'name' => $item['name'],
+                    'reason' => !$menuItem ? 'Item tidak wujud' : ($menuItem->trashed() ? 'Item telah dikeluarkan' : 'Item tidak tersedia')
+                ];
+                continue;
+            }
+
+            // Update price from current menu item (in case price changed)
+            $item['price'] = $menuItem->price;
+            $validCart[$item['id']] = $item;
+        }
+
+        // Check if we have any valid items to checkout
+        if (empty($validCart)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Tiada item yang sah untuk checkout. Semua item dalam cart tidak tersedia.',
+                'skipped_items' => $skippedItems
+            ], 400);
+        }
+
+        // Use valid cart items only
+        $cart = $validCart;
         $cartTotal = $this->calculateCartTotal($cart);
 
         // Create order
@@ -388,12 +421,20 @@ class MenuController extends Controller
         // Clear cart
         session()->forget($cartKey);
 
-        return response()->json([
+        $response = [
             'success' => true,
             'order_id' => $order->id,
             'confirmation_code' => $order->confirmation_code,
             'session_token' => $order->session_token,
-        ]);
+        ];
+
+        // Include info about skipped items if any
+        if (!empty($skippedItems)) {
+            $response['warning'] = count($skippedItems) . ' item(s) tidak tersedia dan telah dikecualikan dari pesanan';
+            $response['skipped_items'] = $skippedItems;
+        }
+
+        return response()->json($response);
     }
 
     /**

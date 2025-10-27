@@ -176,13 +176,23 @@
                 <textarea id="description" name="description" class="form-control" rows="3" placeholder="Describe this promotion">{{ old('description') }}</textarea>
             </div>
 
-            <!-- Promotion Image -->
-            <div class="form-group">
-                <label for="image" class="form-label">Promotion Banner/Image</label>
-                <input type="file" id="image" name="image" class="form-control" accept="image/*" onchange="previewImage(event)">
+            <!-- Promotion Image (legacy for promo code type) -->
+            <div class="form-group" id="legacyImageField" style="display: none;">
+                <label for="image" class="form-label">Promotion Image</label>
+                <input type="file" id="image" name="image" class="form-control" accept="image/*" onchange="previewImage(event, 'preview')">
                 <small style="color: #6b7280; font-size: 0.85rem; display: block; margin-top: 4px;">Maximum file size: 2MB</small>
                 <div id="imagePreview" style="display: none; margin-top: 10px;">
                     <img id="preview" src="" alt="Preview" style="max-width: 300px; max-height: 200px; border-radius: 8px;">
+                </div>
+            </div>
+
+            <!-- Banner Image (for combo, seasonal, bundle) -->
+            <div class="form-group" id="bannerImageField" style="display: none;">
+                <label for="banner_image" class="form-label">Banner Image</label>
+                <input type="file" id="banner_image" name="banner_image" class="form-control" accept="image/*" onchange="previewImage(event, 'bannerPreview')">
+                <small style="color: #6b7280; font-size: 0.85rem; display: block; margin-top: 4px;">Large banner for combo deals (Maximum: 2MB)</small>
+                <div id="bannerImagePreview" style="display: none; margin-top: 10px;">
+                    <img id="bannerPreview" src="" alt="Preview" style="max-width: 300px; max-height: 200px; border-radius: 8px;">
                 </div>
             </div>
 
@@ -243,36 +253,107 @@
             </div>
         </div>
 
-        {{-- Type-Specific Fields: Combo Deal / Bundle / Seasonal --}}
+        {{-- Type-Specific Fields: Combo Deal --}}
         <div class="field-group" id="comboFields">
             <h3 style="margin-bottom: 16px; color: var(--text);">Combo Deal Settings</h3>
 
+            <div class="form-group">
+                <label for="combo_price" class="form-label">Combo Price (RM) *</label>
+                <input type="number" id="combo_price" name="promotion_data[combo_price]" class="form-control" value="{{ old('promotion_data.combo_price') }}" step="0.01" min="0" placeholder="e.g., 25.00">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Select Menu Items for Combo * (at least 2 items)</label>
+                <div id="comboItemsContainer">
+                    <div class="combo-item-row" style="display: flex; gap: 12px; margin-bottom: 8px;">
+                        <select name="promotion_data[combo_items][0][item_id]" class="form-control" style="flex: 1;">
+                            <option value="">Select item...</option>
+                            @foreach($menuItems as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }} (RM {{ number_format($item->price, 2) }})</option>
+                            @endforeach
+                        </select>
+                        <input type="number" name="promotion_data[combo_items][0][quantity]" class="form-control" style="width: 100px;" placeholder="Qty" min="1" value="1">
+                    </div>
+                    <div class="combo-item-row" style="display: flex; gap: 12px; margin-bottom: 8px;">
+                        <select name="promotion_data[combo_items][1][item_id]" class="form-control" style="flex: 1;">
+                            <option value="">Select item...</option>
+                            @foreach($menuItems as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }} (RM {{ number_format($item->price, 2) }})</option>
+                            @endforeach
+                        </select>
+                        <input type="number" name="promotion_data[combo_items][1][quantity]" class="form-control" style="width: 100px;" placeholder="Qty" min="1" value="1">
+                    </div>
+                </div>
+                <button type="button" onclick="addComboItem()" class="btn-cancel" style="margin-top: 8px;">
+                    <i class="fas fa-plus"></i> Add Another Item
+                </button>
+            </div>
+        </div>
+
+        {{-- Type-Specific Fields: Bundle --}}
+        <div class="field-group" id="bundleFields">
+            <h3 style="margin-bottom: 16px; color: var(--text);">Bundle Settings</h3>
+
+            <div class="form-group">
+                <label for="bundle_price" class="form-label">Bundle Price (RM) *</label>
+                <input type="number" id="bundle_price" name="promotion_data[bundle_price]" class="form-control" value="{{ old('promotion_data.bundle_price') }}" step="0.01" min="0" placeholder="e.g., 40.00">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Select Menu Items for Bundle * (at least 2 items)</label>
+                <div id="bundleItemsContainer">
+                    <div class="bundle-item-row" style="display: flex; gap: 12px; margin-bottom: 8px;">
+                        <select name="promotion_data[bundle_items][0][item_id]" class="form-control" style="flex: 1;">
+                            <option value="">Select item...</option>
+                            @foreach($menuItems as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }} (RM {{ number_format($item->price, 2) }})</option>
+                            @endforeach
+                        </select>
+                        <input type="number" name="promotion_data[bundle_items][0][quantity]" class="form-control" style="width: 100px;" placeholder="Qty" min="1" value="1">
+                    </div>
+                    <div class="bundle-item-row" style="display: flex; gap: 12px; margin-bottom: 8px;">
+                        <select name="promotion_data[bundle_items][1][item_id]" class="form-control" style="flex: 1;">
+                            <option value="">Select item...</option>
+                            @foreach($menuItems as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }} (RM {{ number_format($item->price, 2) }})</option>
+                            @endforeach
+                        </select>
+                        <input type="number" name="promotion_data[bundle_items][1][quantity]" class="form-control" style="width: 100px;" placeholder="Qty" min="1" value="1">
+                    </div>
+                </div>
+                <button type="button" onclick="addBundleItem()" class="btn-cancel" style="margin-top: 8px;">
+                    <i class="fas fa-plus"></i> Add Another Item
+                </button>
+            </div>
+        </div>
+
+        {{-- Type-Specific Fields: Seasonal --}}
+        <div class="field-group" id="seasonalFields">
+            <h3 style="margin-bottom: 16px; color: var(--text);">Seasonal Promotion Settings</h3>
+
+            <div class="form-group">
+                <label for="seasonal_promo_code" class="form-label">Promo Code (Optional)</label>
+                <input type="text" id="seasonal_promo_code" name="promo_code" class="form-control" value="{{ old('promo_code') }}" placeholder="e.g., SUMMER2025" style="text-transform: uppercase;">
+                <small style="color: #6b7280; font-size: 0.85rem;">Leave empty if no code required</small>
+            </div>
+
             <div class="form-row">
                 <div class="form-group">
-                    <label for="combo_price" class="form-label">Combo Price (RM) *</label>
-                    <input type="number" id="combo_price" name="combo_price" class="form-control" value="{{ old('combo_price') }}" step="0.01" min="0" placeholder="e.g., 25.00">
+                    <label for="seasonal_discount_type" class="form-label">Discount Type *</label>
+                    <select id="seasonal_discount_type" name="discount_type" class="form-control">
+                        <option value="percentage">Percentage (%)</option>
+                        <option value="fixed">Fixed Amount (RM)</option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label for="original_price" class="form-label">Original Price (RM)</label>
-                    <input type="number" id="original_price" name="original_price" class="form-control" value="{{ old('original_price') }}" step="0.01" min="0" placeholder="e.g., 35.00">
+                    <label for="seasonal_discount_value" class="form-label">Discount Value *</label>
+                    <input type="number" id="seasonal_discount_value" name="discount_value" class="form-control" value="{{ old('discount_value') }}" step="0.01" min="0" placeholder="e.g., 15">
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Select Menu Items for Combo *</label>
-                <div class="item-selector">
-                    @foreach($menuItems->groupBy('category.name') as $categoryName => $items)
-                        <div style="margin-bottom: 12px;">
-                            <strong style="color: var(--text-2); font-size: 13px;">{{ $categoryName ?? 'Uncategorized' }}</strong>
-                            @foreach($items as $item)
-                                <div class="item-checkbox">
-                                    <input type="checkbox" name="menu_items[]" value="{{ $item->id }}" id="combo_item_{{ $item->id }}">
-                                    <label for="combo_item_{{ $item->id }}">{{ $item->name }} (RM {{ number_format($item->price, 2) }})</label>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endforeach
-                </div>
+                <label for="seasonal_minimum_order" class="form-label">Minimum Order Value (RM)</label>
+                <input type="number" id="seasonal_minimum_order" name="minimum_order_value" class="form-control" value="{{ old('minimum_order_value') }}" step="0.01" min="0" placeholder="e.g., 30.00">
             </div>
         </div>
 
@@ -295,38 +376,17 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Apply Discount To</label>
-                <select id="apply_to" name="apply_to" class="form-control" onchange="toggleDiscountTargets()">
-                    <option value="all">All Menu Items</option>
-                    <option value="specific_items">Specific Items</option>
-                    <option value="categories">Categories</option>
-                </select>
-            </div>
-
-            <div class="form-group" id="specificItemsSelector" style="display: none;">
-                <label class="form-label">Select Specific Items</label>
+                <label class="form-label">Select Items to Apply Discount * (at least 1 item)</label>
                 <div class="item-selector">
                     @foreach($menuItems->groupBy('category.name') as $categoryName => $items)
                         <div style="margin-bottom: 12px;">
                             <strong style="color: var(--text-2); font-size: 13px;">{{ $categoryName ?? 'Uncategorized' }}</strong>
                             @foreach($items as $item)
                                 <div class="item-checkbox">
-                                    <input type="checkbox" name="discount_items[]" value="{{ $item->id }}" id="discount_item_{{ $item->id }}">
+                                    <input type="checkbox" name="promotion_data[item_ids][]" value="{{ $item->id }}" id="discount_item_{{ $item->id }}">
                                     <label for="discount_item_{{ $item->id }}">{{ $item->name }} (RM {{ number_format($item->price, 2) }})</label>
                                 </div>
                             @endforeach
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-
-            <div class="form-group" id="categoriesSelector" style="display: none;">
-                <label class="form-label">Select Categories</label>
-                <div class="item-selector">
-                    @foreach($categories as $category)
-                        <div class="item-checkbox">
-                            <input type="checkbox" name="discount_categories[]" value="{{ $category->id }}" id="discount_cat_{{ $category->id }}">
-                            <label for="discount_cat_{{ $category->id }}">{{ $category->name }}</label>
                         </div>
                     @endforeach
                 </div>
@@ -340,55 +400,40 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="buy_quantity" class="form-label">Buy Quantity *</label>
-                    <input type="number" id="buy_quantity" name="buy_quantity" class="form-control" value="{{ old('buy_quantity', 1) }}" min="1" placeholder="e.g., 1">
+                    <input type="number" id="buy_quantity" name="promotion_data[buy_quantity]" class="form-control" value="{{ old('promotion_data.buy_quantity', 1) }}" min="1" placeholder="e.g., 2">
                 </div>
                 <div class="form-group">
                     <label for="free_quantity" class="form-label">Free Quantity *</label>
-                    <input type="number" id="free_quantity" name="free_quantity" class="form-control" value="{{ old('free_quantity', 1) }}" min="1" placeholder="e.g., 1">
+                    <input type="number" id="free_quantity" name="promotion_data[get_quantity]" class="form-control" value="{{ old('promotion_data.get_quantity', 1) }}" min="1" placeholder="e.g., 1">
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Select Items to Buy *</label>
-                <div class="item-selector">
-                    @foreach($menuItems->groupBy('category.name') as $categoryName => $items)
-                        <div style="margin-bottom: 12px;">
-                            <strong style="color: var(--text-2); font-size: 13px;">{{ $categoryName ?? 'Uncategorized' }}</strong>
-                            @foreach($items as $item)
-                                <div class="item-checkbox">
-                                    <input type="checkbox" name="buy_items[]" value="{{ $item->id }}" id="buy_item_{{ $item->id }}">
-                                    <label for="buy_item_{{ $item->id }}">{{ $item->name }} (RM {{ number_format($item->price, 2) }})</label>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endforeach
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="buy_item_id" class="form-label">Buy Item *</label>
+                    <select id="buy_item_id" name="promotion_data[buy_item_id]" class="form-control">
+                        <option value="">Select item to buy...</option>
+                        @foreach($menuItems as $item)
+                            <option value="{{ $item->id }}">{{ $item->name }} (RM {{ number_format($item->price, 2) }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="free_item_id" class="form-label">Free Item *</label>
+                    <select id="free_item_id" name="promotion_data[get_item_id]" class="form-control">
+                        <option value="">Select free item...</option>
+                        @foreach($menuItems as $item)
+                            <option value="{{ $item->id }}">{{ $item->name }} (RM {{ number_format($item->price, 2) }})</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
 
-            <div class="form-group">
-                <div class="role-checkbox">
-                    <input type="checkbox" id="same_item" name="same_item" value="1" checked onchange="toggleFreeItems()">
-                    <label for="same_item">Free item is same as buy item</label>
-                </div>
-            </div>
-
-            <div class="form-group" id="freeItemsSelector" style="display: none;">
-                <label class="form-label">Select Free Items</label>
-                <div class="item-selector">
-                    @foreach($menuItems->groupBy('category.name') as $categoryName => $items)
-                        <div style="margin-bottom: 12px;">
-                            <strong style="color: var(--text-2); font-size: 13px;">{{ $categoryName ?? 'Uncategorized' }}</strong>
-                            @foreach($items as $item)
-                                <div class="item-checkbox">
-                                    <input type="checkbox" name="free_items[]" value="{{ $item->id }}" id="free_item_{{ $item->id }}">
-                                    <label for="free_item_{{ $item->id }}">{{ $item->name }} (RM {{ number_format($item->price, 2) }})</label>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endforeach
-                </div>
-            </div>
+            <small style="color: #6b7280; font-size: 0.85rem;">Example: Buy 2 Burgers, Get 1 Fries Free</small>
         </div>
+
+        {{-- Usage Limits & Restrictions --}}
+        @include('admin.promotions.partials.usage-limits', ['promotion' => null])
 
         <!-- Form Actions -->
         <div class="form-actions">
@@ -427,12 +472,28 @@ document.querySelectorAll('.type-card').forEach(card => {
         // Show relevant fields
         if (selectedType === 'promo_code') {
             document.getElementById('promoCodeFields').classList.add('active');
-        } else if (['combo_deal', 'bundle', 'seasonal'].includes(selectedType)) {
+            document.getElementById('legacyImageField').style.display = 'block';
+            document.getElementById('bannerImageField').style.display = 'none';
+        } else if (selectedType === 'combo_deal') {
             document.getElementById('comboFields').classList.add('active');
+            document.getElementById('legacyImageField').style.display = 'none';
+            document.getElementById('bannerImageField').style.display = 'block';
+        } else if (selectedType === 'bundle') {
+            document.getElementById('bundleFields').classList.add('active');
+            document.getElementById('legacyImageField').style.display = 'none';
+            document.getElementById('bannerImageField').style.display = 'block';
+        } else if (selectedType === 'seasonal') {
+            document.getElementById('seasonalFields').classList.add('active');
+            document.getElementById('legacyImageField').style.display = 'none';
+            document.getElementById('bannerImageField').style.display = 'block';
         } else if (selectedType === 'item_discount') {
             document.getElementById('itemDiscountFields').classList.add('active');
+            document.getElementById('legacyImageField').style.display = 'block';
+            document.getElementById('bannerImageField').style.display = 'none';
         } else if (selectedType === 'buy_x_free_y') {
             document.getElementById('buyXFreeYFields').classList.add('active');
+            document.getElementById('legacyImageField').style.display = 'block';
+            document.getElementById('bannerImageField').style.display = 'none';
         }
 
         // Scroll to basic fields
@@ -441,29 +502,62 @@ document.querySelectorAll('.type-card').forEach(card => {
 });
 
 // Preview image
-function previewImage(event) {
+function previewImage(event, previewId) {
     const file = event.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            document.getElementById('preview').src = e.target.result;
-            document.getElementById('imagePreview').style.display = 'block';
+            document.getElementById(previewId).src = e.target.result;
+            document.getElementById(previewId).parentElement.style.display = 'block';
         };
         reader.readAsDataURL(file);
     }
 }
 
-// Toggle discount targets
-function toggleDiscountTargets() {
-    const applyTo = document.getElementById('apply_to').value;
-    document.getElementById('specificItemsSelector').style.display = applyTo === 'specific_items' ? 'block' : 'none';
-    document.getElementById('categoriesSelector').style.display = applyTo === 'categories' ? 'block' : 'none';
+// Add dynamic combo item row
+let comboItemIndex = 2;
+function addComboItem() {
+    const container = document.getElementById('comboItemsContainer');
+    const row = document.createElement('div');
+    row.className = 'combo-item-row';
+    row.style = 'display: flex; gap: 12px; margin-bottom: 8px;';
+    row.innerHTML = `
+        <select name="promotion_data[combo_items][${comboItemIndex}][item_id]" class="form-control" style="flex: 1;">
+            <option value="">Select item...</option>
+            @foreach($menuItems as $item)
+                <option value="{{ $item->id }}">{{ $item->name }} (RM {{ number_format($item->price, 2) }})</option>
+            @endforeach
+        </select>
+        <input type="number" name="promotion_data[combo_items][${comboItemIndex}][quantity]" class="form-control" style="width: 100px;" placeholder="Qty" min="1" value="1">
+        <button type="button" onclick="this.parentElement.remove()" class="btn-cancel" style="width: auto; padding: 8px 12px;">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    container.appendChild(row);
+    comboItemIndex++;
 }
 
-// Toggle free items selector
-function toggleFreeItems() {
-    const sameItem = document.getElementById('same_item').checked;
-    document.getElementById('freeItemsSelector').style.display = sameItem ? 'none' : 'block';
+// Add dynamic bundle item row
+let bundleItemIndex = 2;
+function addBundleItem() {
+    const container = document.getElementById('bundleItemsContainer');
+    const row = document.createElement('div');
+    row.className = 'bundle-item-row';
+    row.style = 'display: flex; gap: 12px; margin-bottom: 8px;';
+    row.innerHTML = `
+        <select name="promotion_data[bundle_items][${bundleItemIndex}][item_id]" class="form-control" style="flex: 1;">
+            <option value="">Select item...</option>
+            @foreach($menuItems as $item)
+                <option value="{{ $item->id }}">{{ $item->name }} (RM {{ number_format($item->price, 2) }})</option>
+            @endforeach
+        </select>
+        <input type="number" name="promotion_data[bundle_items][${bundleItemIndex}][quantity]" class="form-control" style="width: 100px;" placeholder="Qty" min="1" value="1">
+        <button type="button" onclick="this.parentElement.remove()" class="btn-cancel" style="width: auto; padding: 8px 12px;">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    container.appendChild(row);
+    bundleItemIndex++;
 }
 
 // Form validation and cleanup before submit

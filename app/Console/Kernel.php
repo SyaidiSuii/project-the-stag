@@ -21,6 +21,9 @@ class Kernel extends ConsoleKernel
         // Comprehensive analytics generation (replaces generate-sales-summary)
         $schedule->command('analytics:generate')->dailyAt('01:00');
 
+        // Cleanup unavailable cart items (Shopee-style: 7 days)
+        $schedule->command('cart:cleanup-unavailable')->dailyAt('02:00');
+
         // Keep old command for backward compatibility (will be deprecated)
         // $schedule->command('app:generate-sales-summary')->daily();
     }

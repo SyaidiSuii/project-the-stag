@@ -260,10 +260,22 @@ class MenuItemController extends Controller
      */
     public function destroy(MenuItem $menuItem)
     {
+        // Check how many users have this item in their cart
+        $cartCount = \App\Models\UserCart::where('menu_item_id', $menuItem->id)->count();
+
+        // Soft delete the menu item
         $menuItem->delete();
 
+        $message = 'Menu item deleted successfully';
+
+        // Add warning if item was in carts
+        if ($cartCount > 0) {
+            $message .= ". Note: {$cartCount} user(s) had this item in their cart. The item will appear as unavailable in their carts.";
+        }
+
         return redirect()->route('admin.menu-items.index')
-                        ->with('message', 'Menu item deleted successfully');
+                        ->with('message', $message)
+                        ->with('warning', $cartCount > 0 ? "Item was in {$cartCount} user cart(s)" : null);
     }
 
     /**

@@ -28,6 +28,21 @@
         <input type="hidden" name="_method" value="{{ $method }}">
         @csrf
 
+        @if($user->id)
+        <div class="form-info-box" style="background: #f0f9ff; border: 1px solid #bae6fd; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-id-card" style="font-size: 24px; color: #0284c7;"></i>
+                <div>
+                    <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">User ID</div>
+                    <div style="font-family: 'Courier New', monospace; font-size: 18px; font-weight: 700; color: #0284c7;">
+                        {{ $user->user_id ?? 'Not Generated' }}
+                    </div>
+                    <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">Internal ID: {{ $user->id }}</div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <div class="form-row">
             <div class="form-group">
                 <label for="name" class="form-label">Name</label>

@@ -90,6 +90,14 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/rewards', [CustomerRewardsController::class, 'index'])->name('rewards.index');
     Route::post('/rewards/redeem', [CustomerRewardsController::class, 'redeem'])->name('rewards.redeem');
     Route::post('/rewards/checkin', [CustomerRewardsController::class, 'checkin'])->name('rewards.checkin');
+    Route::post('/rewards/collect-voucher', [CustomerRewardsController::class, 'collectVoucher'])->name('rewards.collectVoucher');
+
+    // Cart Voucher Routes
+    Route::get('/cart/available-vouchers', [CustomerCartController::class, 'getAvailableVouchers'])->name('cart.availableVouchers');
+    Route::post('/cart/apply-voucher', [CustomerCartController::class, 'applyVoucher'])->name('cart.applyVoucher');
+    Route::post('/cart/remove-voucher', [CustomerCartController::class, 'removeVoucher'])->name('cart.removeVoucher');
+    Route::get('/cart/get-applied-voucher', [CustomerCartController::class, 'getAppliedVoucher'])->name('cart.getAppliedVoucher');
+
     Route::get('/booking', [CustomerBookingController::class, 'index'])->name('booking.index');
     Route::post('/booking/store', [CustomerBookingController::class, 'store'])->name('booking.store');
     Route::post('/booking/check-availability', [CustomerBookingController::class, 'checkAvailability'])->name('booking.check-availability');
@@ -112,7 +120,19 @@ Route::prefix('customer')->name('customer.')->group(function () {
         Route::put('/update/{menuItemId}', [CustomerCartController::class, 'updateItem'])->name('update');
         Route::delete('/remove/{menuItemId}', [CustomerCartController::class, 'removeItem'])->name('remove');
         Route::delete('/clear', [CustomerCartController::class, 'clearCart'])->name('clear');
+        Route::delete('/remove-unavailable', [CustomerCartController::class, 'removeUnavailableItems'])->name('remove-unavailable');
         Route::post('/merge', [CustomerCartController::class, 'mergeCart'])->name('merge');
+
+        // Promo code routes
+        Route::post('/promo/apply', [CustomerCartController::class, 'applyPromoCode'])->name('promo.apply');
+        Route::delete('/promo/remove', [CustomerCartController::class, 'removePromoCode'])->name('promo.remove');
+        Route::get('/promo/details', [CustomerCartController::class, 'getPromoCodeDetails'])->name('promo.details');
+
+        // Add promotion to cart (combo/bundle/buy-x-free-y)
+        Route::post('/add-promotion', [CustomerCartController::class, 'addPromotionToCart'])->name('add-promotion');
+
+        // Remove entire promotion group from cart (locked promotion items)
+        Route::delete('/promotion-group/{promotionGroupId}', [CustomerCartController::class, 'removePromotionGroup'])->name('promotion-group.remove');
     });
 
     // Promotions routes
@@ -422,6 +442,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             // New promotion actions
             Route::get('/{promotion}/stats', [AdminPromotionController::class, 'stats'])->name('stats');
+            Route::get('/{promotion}/analytics', [AdminPromotionController::class, 'analytics'])->name('analytics');
             Route::post('/{promotion}/duplicate', [AdminPromotionController::class, 'duplicate'])->name('duplicate');
 
             // Happy Hour Deals
@@ -673,3 +694,4 @@ Route::get('customer/verify-email/{id}/{hash}', function ($id, $hash) {
 
     return redirect()->route('customer.account.index')->with('success', 'Email verified successfully!');
 })->name('customer.verification.verify');
+require __DIR__.'/test-debug.php';

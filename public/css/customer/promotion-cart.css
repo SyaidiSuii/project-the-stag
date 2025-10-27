@@ -1,0 +1,236 @@
+/**
+ * Promotion Cart Styles - Locked Promotion Groups
+ * Styling for bundle/combo/buy-x-free-y promotions in cart
+ */
+
+/* Promotion Group Container */
+.cart-promotion-group {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #38bdf8;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.1);
+}
+
+/* Promotion Header */
+.promotion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.promotion-title {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 16px;
+  color: #1e293b;
+  flex: 1;
+}
+
+.locked-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-left: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.promotion-type-badge {
+  background: #8b5cf6;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Promotion Items List */
+.promotion-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.promo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.promo-item-image {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.promo-item-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.free-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-left: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+/* Promotion Footer */
+.promotion-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.promotion-total {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #64748b;
+  flex: 1;
+}
+
+/* Remove Promotion Button */
+.remove-promotion-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+}
+
+.remove-promotion-btn:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+}
+
+.remove-promotion-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.remove-promotion-btn i {
+  font-size: 12px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .cart-promotion-group {
+    padding: 12px;
+  }
+
+  .promotion-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .promotion-title {
+    font-size: 14px;
+    flex-wrap: wrap;
+  }
+
+  .locked-badge {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  .promotion-type-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .promotion-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .promotion-total {
+    font-size: 13px;
+  }
+
+  .remove-promotion-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px;
+  }
+
+  .promo-item {
+    padding: 8px;
+    gap: 8px;
+  }
+}
+
+/* Animation for adding promotion */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cart-promotion-group {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Lock icon animation */
+@keyframes lockPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.locked-badge i {
+  animation: lockPulse 2s infinite;
+}

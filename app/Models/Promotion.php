@@ -435,4 +435,245 @@ class Promotion extends Model
     {
         return $this->promotion_type;
     }
+
+    /**
+     * Get usage limit accessor (alias for total_usage_limit)
+     * This allows using $promotion->usage_limit in views for backward compatibility
+     */
+    public function getUsageLimitAttribute(): ?int
+    {
+        return $this->total_usage_limit;
+    }
+
+    // ==================== TYPE CHECKING METHODS ====================
+
+    /**
+     * Check if promotion is a promo code type
+     */
+    public function isPromoCode(): bool
+    {
+        return $this->promotion_type === self::TYPE_PROMO_CODE;
+    }
+
+    /**
+     * Check if promotion is a combo deal type
+     */
+    public function isComboType(): bool
+    {
+        return $this->promotion_type === self::TYPE_COMBO_DEAL;
+    }
+
+    /**
+     * Check if promotion is an item discount type
+     */
+    public function isItemDiscount(): bool
+    {
+        return $this->promotion_type === self::TYPE_ITEM_DISCOUNT;
+    }
+
+    /**
+     * Check if promotion is a buy X get Y type
+     */
+    public function isBuyXGetY(): bool
+    {
+        return $this->promotion_type === self::TYPE_BUY_X_FREE_Y;
+    }
+
+    /**
+     * Check if promotion is a bundle type
+     */
+    public function isBundle(): bool
+    {
+        return $this->promotion_type === self::TYPE_BUNDLE;
+    }
+
+    /**
+     * Check if promotion is a seasonal type
+     */
+    public function isSeasonal(): bool
+    {
+        return $this->promotion_type === self::TYPE_SEASONAL;
+    }
+
+    /**
+     * Check if this promotion type requires a promo code
+     */
+    public function requiresPromoCode(): bool
+    {
+        return in_array($this->promotion_type, [
+            self::TYPE_PROMO_CODE,
+            self::TYPE_SEASONAL
+        ]);
+    }
+
+    /**
+     * Check if this promotion type has a banner image
+     */
+    public function hasBannerImage(): bool
+    {
+        return $this->banner_image !== null;
+    }
+
+    // ==================== TYPE-SPECIFIC DATA ACCESSORS ====================
+
+    /**
+     * Get combo items from promo_config
+     */
+    public function getComboItems(): ?array
+    {
+        if (!$this->isComboType() || !$this->promo_config) {
+            return null;
+        }
+
+        return $this->promo_config['combo_items'] ?? null;
+    }
+
+    /**
+     * Get combo price from promo_config
+     */
+    public function getComboPrice(): ?float
+    {
+        if (!$this->isComboType() || !$this->promo_config) {
+            return null;
+        }
+
+        return isset($this->promo_config['combo_price'])
+            ? (float) $this->promo_config['combo_price']
+            : null;
+    }
+
+    /**
+     * Get bundle items from promo_config
+     */
+    public function getBundleItems(): ?array
+    {
+        if (!$this->isBundle() || !$this->promo_config) {
+            return null;
+        }
+
+        return $this->promo_config['bundle_items'] ?? null;
+    }
+
+    /**
+     * Get bundle price from promo_config
+     * Note: Bundle price is stored as 'combo_price' in promo_config for consistency
+     */
+    public function getBundlePrice(): ?float
+    {
+        if (!$this->isBundle() || !$this->promo_config) {
+            return null;
+        }
+
+        // Bundle price is stored as 'combo_price' in promo_config
+        return isset($this->promo_config['combo_price'])
+            ? (float) $this->promo_config['combo_price']
+            : null;
+    }
+
+    /**
+     * Get Buy 1 Free 1 items from promotion_data
+     */
+    public function getB1F1Items(): ?array
+    {
+        if (!$this->isBuyXGetY()) {
+            return null;
+        }
+
+        // For Buy 1 Free 1, we'll return the menu items with their quantities
+        // Each item should be charged for every first item in a pair
+        return $this->menuItems->map(function($item) {
+            $pivot = $item->pivot;
+            return [
+                'item_id' => $item->id,
+                'quantity' => $pivot->quantity ?? 1,
+                'is_free' => $pivot->is_free ?? false
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Get Buy 1 Free 1 price from promotion configuration
+     * Handles both promo_config and promotion_data for backward compatibility
+     */
+    public function getB1F1Price(): ?float
+    {
+        if (!$this->isBuyXGetY()) {
+            return null;
+        }
+
+        $totalPrice = 0;
+
+        // Get all menu items in this promotion
+        $menuItems = $this->menuItems;
+        
+        foreach ($menuItems as $item) {
+            $pivot = $item->pivot;
+            $quantity = $pivot->quantity ?? 1;
+            $isFree = $pivot->is_free ?? false;
+            
+            // Only charge for items that are not free
+            if (!$isFree) {
+                $totalPrice += $item->price * $quantity;
+            }
+        }
+
+        return $totalPrice;
+    }
+
+    /**
+     * Get Buy X Get Y configuration from promo_config
+     */
+    public function getBuyXGetYConfig(): ?array
+    {
+        if (!$this->isBuyXGetY()) {
+            return null;
+        }
+
+        // Get configuration from promo_config
+        $config = $this->promo_config ?? [];
+
+        return [
+            'buy_item_id' => $config['buy_item_id'] ?? null,
+            'buy_quantity' => $config['buy_quantity'] ?? null,
+            'get_item_id' => $config['get_item_id'] ?? null,
+            'get_quantity' => $config['get_quantity'] ?? $config['free_quantity'] ?? null,
+        ];
+    }
+
+    /**
+     * Get discounted item IDs for item discount type from promo_config
+     */
+    public function getDiscountedItemIds(): ?array
+    {
+        if (!$this->isItemDiscount() || !$this->promo_config) {
+            return null;
+        }
+
+        return $this->promo_config['item_ids'] ?? null;
+    }
+
+    /**
+     * Get banner image URL
+     */
+    public function getBannerImageUrlAttribute(): ?string
+    {
+        if (!$this->banner_image) {
+            return null;
+        }
+
+        if (strpos($this->banner_image, 'storage/') === 0) {
+            $filePath = public_path($this->banner_image);
+        } else {
+            $filePath = public_path('storage/' . $this->banner_image);
+        }
+
+        if (file_exists($filePath)) {
+            if (strpos($this->banner_image, 'storage/') === 0) {
+                return asset($this->banner_image);
+            }
+            return asset('storage/' . $this->banner_image);
+        }
+
+        return null;
+    }
 }

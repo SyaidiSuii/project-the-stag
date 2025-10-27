@@ -162,31 +162,48 @@
       z-index: 1;
       vertical-align: middle;
     }
-    /* Column widths for customer table */
+    /* Column widths for user table */
+    .admin-table .th-id {
+      width: 12%;
+    }
     .admin-table .th-customer {
       width: 20%;
       text-align: left;
     }
+
     .admin-table .th-contact {
       width: 18%;
     }
+
+    .admin-table .th-status {
+      width: 12%;
+      text-align: center;
+    }
+
     .admin-table .th-role {
       width: 10%;
     }
+
     .admin-table .th-account-status {
       width: 10%;
     }
+
     .admin-table .th-station {
       width: 15%;
     }
-    .admin-table .th-orders {
+    .admin-table .th-total-orders {
       width: 10%;
     }
     .admin-table .th-last-activity {
-      width: 15%;
+      width: 14%;
     }
     .admin-table .th-actions {
       width: 12%;
+      text-align: center;
+    }
+    /* Utility class for text alignment in table cells */
+    .cell-center {
+      text-align: center;
     }
     .admin-table td {
       padding: 12px 16px;
@@ -485,31 +502,48 @@
       z-index: 1;
       vertical-align: middle;
     }
-    /* Column widths for customer table */
+    /* Column widths for user table */
+    .admin-table .th-id {
+      width: 12%;
+    }
     .admin-table .th-customer {
       width: 20%;
       text-align: left;
     }
+
     .admin-table .th-contact {
       width: 18%;
     }
+
     .admin-table .th-role {
       width: 10%;
     }
+
     .admin-table .th-account-status {
       width: 10%;
     }
+
     .admin-table .th-station {
       width: 15%;
     }
-    .admin-table .th-orders {
+
+    .admin-table .th-status {
+      width: 12%;
+      text-align: center;
+    }
+    .admin-table .th-total-orders {
       width: 10%;
     }
     .admin-table .th-last-activity {
-      width: 15%;
+      width: 14%;
     }
     .admin-table .th-actions {
       width: 12%;
+      text-align: center;
+    }
+    /* Utility class for text alignment in table cells */
+    .cell-center {
+      text-align: center;
     }
     .admin-table td {
       padding: 12px 16px;

@@ -45,7 +45,8 @@
                 <div class="admin-nav-text">Users Management</div>
             </a>
 
-            <a href="{{ route('admin.homepage.index') }}" class="admin-nav-item">
+            <a href="{{ route('admin.homepage.index') }}"
+                class="admin-nav-item {{ request()->routeIs('admin.homepage.*') ? 'active' : '' }}">
                 <div class="admin-nav-icon"><i class="fas fa-home"></i></div>
                 <div class="admin-nav-text">Homepage Content</div>
             </a>

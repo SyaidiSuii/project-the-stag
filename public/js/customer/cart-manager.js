@@ -1,65 +1,17 @@
 /**
- * Hybrid Cart Manager
- * Handles cart operations for both guest users (localStorage) and logged-in users (database + localStorage)
+ * Session-Based Cart Manager
+ * Handles cart operations for both guest users (session) and logged-in users (database)
+ * All cart data is stored server-side for security and consistency
  */
 
 class CartManager {
     constructor() {
-        this.cartStorageKey = 'cartItems';
-        this.isLoggedIn = false; // Will be set by init()
         this.csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         console.log('Debug: CSRF Token:', this.csrfToken);
-        this.loginCheckPromise = this.init();
     }
 
-    async init() {
-        this.isLoggedIn = await this.checkLoginStatus();
-        return this.isLoggedIn;
-    }
-
-    // Check if user is logged in by making API call to auth endpoint
-    async checkLoginStatus() {
-        try {
-            const response = await fetch('/customer/cart/', {
-                method: 'GET',
-                headers: {
-                    'X-CSRF-TOKEN': this.csrfToken,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            const isLoggedIn = response.status !== 401;
-            console.log('Debug: Login status check via API:', { status: response.status, isLoggedIn });
-            return isLoggedIn;
-        } catch (error) {
-            console.log('Debug: Login check error, assuming guest:', error);
-            return false;
-        }
-    }
-
-    // Get current cart items
+    // Get current cart items from server (session or database)
     async getCart() {
-        await this.loginCheckPromise; // Wait for login check to complete
-        if (this.isLoggedIn) {
-            return await this.getDatabaseCart();
-        } else {
-            return this.getLocalStorageCart();
-        }
-    }
-
-    // Get cart from localStorage
-    getLocalStorageCart() {
-        try {
-            const cartData = localStorage.getItem(this.cartStorageKey);
-            return cartData ? JSON.parse(cartData) : [];
-        } catch (error) {
-            console.error('Error reading localStorage cart:', error);
-            return [];
-        }
-    }
-
-    // Get cart from database (for logged-in users)
-    async getDatabaseCart() {
         try {
             const response = await fetch('/customer/cart/', {
                 method: 'GET',
@@ -71,64 +23,57 @@ class CartManager {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Debug: Database cart fetched:', data.cart);
+                console.log('Debug: Cart fetched from server:', data.cart);
                 console.log('Debug: Cart items count:', data.cart ? data.cart.length : 0);
-                return data.cart || [];
+                console.log('Debug: Unavailable count:', data.unavailable_count);
+
+                // Return the full response object INCLUDING promotion_groups and regular_items
+                return {
+                    cart: data.cart || [],
+                    regular_items: data.regular_items || [],
+                    promotion_groups: data.promotion_groups || [],
+                    unavailable_count: data.unavailable_count || 0,
+                    available_total: data.available_total || 0,
+                    total: data.total || 0,
+                    count: data.count || 0,
+                    promo_discount: data.promo_discount || 0,
+                    final_total: data.final_total,
+                    applied_promo_code: data.applied_promo_code
+                };
             } else {
-                console.warn('Failed to fetch database cart, falling back to localStorage');
-                return this.getLocalStorageCart();
+                console.error('Failed to fetch cart from server');
+                return {
+                    cart: [],
+                    regular_items: [],
+                    promotion_groups: [],
+                    unavailable_count: 0,
+                    available_total: 0,
+                    total: 0,
+                    count: 0,
+                    promo_discount: 0,
+                    final_total: 0
+                };
             }
         } catch (error) {
-            console.error('Error fetching database cart:', error);
-            return this.getLocalStorageCart();
+            console.error('Error fetching cart:', error);
+            return {
+                cart: [],
+                regular_items: [],
+                promotion_groups: [],
+                unavailable_count: 0,
+                available_total: 0,
+                total: 0,
+                count: 0,
+                promo_discount: 0,
+                final_total: 0
+            };
         }
     }
 
-    // Add item to cart
+    // Add item to cart (server-side storage)
     async addItem(itemData) {
-        await this.loginCheckPromise; // Wait for login check to complete
-        const { id, name, price, quantity = 1, notes = null } = itemData;
+        console.log('Debug: Adding item to cart:', itemData);
 
-        if (this.isLoggedIn) {
-            return await this.addItemToDatabase(itemData);
-        } else {
-            return this.addItemToLocalStorage(itemData);
-        }
-    }
-
-    // Add item to localStorage
-    addItemToLocalStorage(itemData) {
-        try {
-            let cartItems = this.getLocalStorageCart();
-            const existingItemIndex = cartItems.findIndex(item => item.id === itemData.id);
-
-            if (existingItemIndex > -1) {
-                // Update existing item quantity
-                cartItems[existingItemIndex].quantity += itemData.quantity;
-            } else {
-                // Add new item
-                cartItems.push({
-                    id: itemData.id,
-                    name: itemData.name,
-                    price: itemData.price,
-                    quantity: itemData.quantity,
-                    notes: itemData.notes,
-                    image: itemData.image
-                });
-            }
-
-            localStorage.setItem(this.cartStorageKey, JSON.stringify(cartItems));
-            return { success: true, cart_count: this.getTotalQuantity(cartItems) };
-        } catch (error) {
-            console.error('Error adding to localStorage cart:', error);
-            return { success: false, error: error.message };
-        }
-    }
-
-    // Add item to database
-    async addItemToDatabase(itemData) {
-        console.log('Debug: Adding to database:', itemData);
-        
         try {
             const response = await fetch('/customer/cart/add', {
                 method: 'POST',
@@ -143,67 +88,25 @@ class CartManager {
                 })
             });
 
-            console.log('Debug: Database response status:', response.status);
-
-            // Check if response is JSON before parsing
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                console.warn('Non-JSON response received, using localStorage only. Content-Type:', contentType);
-                return this.addItemToLocalStorage(itemData);
-            }
-
-            const data = await response.json();
-            console.log('Debug: Database response data:', data);
+            console.log('Debug: Add item response status:', response.status);
 
             if (response.ok) {
-                // Also update localStorage as backup
-                this.addItemToLocalStorage(itemData);
+                const data = await response.json();
+                console.log('Debug: Item added successfully:', data);
                 return data;
             } else {
-                console.warn('Failed to add to database, using localStorage only:', data);
-                return this.addItemToLocalStorage(itemData);
+                const error = await response.json();
+                console.error('Failed to add item to cart:', error);
+                return { success: false, error: error.message || 'Failed to add item' };
             }
         } catch (error) {
-            console.error('Error adding to database cart:', error);
-            // Fall back to localStorage - cart will still work
-            return this.addItemToLocalStorage(itemData);
-        }
-    }
-
-    // Update item quantity
-    async updateItem(itemId, quantity) {
-        await this.loginCheckPromise; // Wait for login check to complete
-        if (this.isLoggedIn) {
-            return await this.updateItemInDatabase(itemId, quantity);
-        } else {
-            return this.updateItemInLocalStorage(itemId, quantity);
-        }
-    }
-
-    // Update item in localStorage
-    updateItemInLocalStorage(itemId, quantity) {
-        try {
-            let cartItems = this.getLocalStorageCart();
-            const itemIndex = cartItems.findIndex(item => item.id === itemId);
-
-            if (itemIndex > -1) {
-                if (quantity <= 0) {
-                    cartItems.splice(itemIndex, 1);
-                } else {
-                    cartItems[itemIndex].quantity = quantity;
-                }
-                localStorage.setItem(this.cartStorageKey, JSON.stringify(cartItems));
-                return { success: true, cart_count: this.getTotalQuantity(cartItems) };
-            }
-            return { success: false, error: 'Item not found' };
-        } catch (error) {
-            console.error('Error updating localStorage cart:', error);
+            console.error('Error adding item to cart:', error);
             return { success: false, error: error.message };
         }
     }
 
-    // Update item in database
-    async updateItemInDatabase(itemId, quantity) {
+    // Update item quantity (server-side storage)
+    async updateItem(itemId, quantity) {
         try {
             const response = await fetch(`/customer/cart/update/${itemId}`, {
                 method: 'PUT',
@@ -214,26 +117,25 @@ class CartManager {
                 body: JSON.stringify({ quantity })
             });
 
-            // Check if response is JSON before parsing
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                console.warn('Non-JSON response received for update, using localStorage only');
-                return this.updateItemInLocalStorage(itemId, quantity);
-            }
-
-            const data = await response.json();
-
             if (response.ok) {
-                // Also update localStorage as backup
-                this.updateItemInLocalStorage(itemId, quantity);
+                const data = await response.json();
+                console.log('Debug: Item updated successfully:', data);
                 return data;
             } else {
-                console.warn('Failed to update database, using localStorage only');
-                return this.updateItemInLocalStorage(itemId, quantity);
+                const error = await response.json();
+                console.error('Failed to update item:', error);
+                // Return all error data including is_locked flag
+                return {
+                    success: false,
+                    message: error.message || 'Failed to update item',
+                    is_locked: error.is_locked || false,
+                    promotion_name: error.promotion_name || null,
+                    promotion_group_id: error.promotion_group_id || null
+                };
             }
         } catch (error) {
-            console.error('Error updating database cart:', error);
-            return this.updateItemInLocalStorage(itemId, quantity);
+            console.error('Error updating item:', error);
+            return { success: false, error: error.message };
         }
     }
 
@@ -242,112 +144,246 @@ class CartManager {
         return await this.updateItem(itemId, 0);
     }
 
-    // Clear entire cart
+    // Clear entire cart (server-side storage)
     async clearCart() {
-        await this.loginCheckPromise; // Wait for login check to complete
-        if (this.isLoggedIn) {
-            await this.clearDatabaseCart();
-        }
-        this.clearLocalStorageCart();
-    }
-
-    // Clear localStorage cart
-    clearLocalStorageCart() {
-        localStorage.removeItem(this.cartStorageKey);
-    }
-
-    // Clear database cart
-    async clearDatabaseCart() {
         try {
-            await fetch('/customer/cart/clear', {
+            const response = await fetch('/customer/cart/clear', {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': this.csrfToken,
                     'Content-Type': 'application/json'
                 }
             });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Debug: Cart cleared successfully:', data);
+                return data;
+            } else {
+                console.error('Failed to clear cart');
+                return { success: false };
+            }
         } catch (error) {
-            console.error('Error clearing database cart:', error);
+            console.error('Error clearing cart:', error);
+            return { success: false, error: error.message };
         }
     }
 
-    // Merge localStorage cart with database (called on login)
+    // Merge session cart with database (called on login)
     async mergeCartOnLogin() {
-        await this.loginCheckPromise; // Wait for login check to complete
-        if (!this.isLoggedIn) return;
-
-        const localCart = this.getLocalStorageCart();
-        if (localCart.length === 0) return;
-
         try {
             const response = await fetch('/customer/cart/merge', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': this.csrfToken,
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    cart_items: localCart.map(item => ({
-                        id: item.id,
-                        quantity: item.quantity,
-                        notes: item.notes
-                    }))
-                })
+                }
             });
 
             if (response.ok) {
-                console.log('Cart merged successfully on login');
-                // Optionally clear localStorage after successful merge
-                // this.clearLocalStorageCart();
+                const data = await response.json();
+                console.log('Cart merged successfully on login:', data);
+                return data;
+            } else {
+                console.error('Failed to merge cart on login');
+                return { success: false };
             }
         } catch (error) {
             console.error('Error merging cart on login:', error);
+            return { success: false, error: error.message };
         }
     }
 
     // Get total quantity of items in cart
-    getTotalQuantity(cartItems = null) {
-        if (!cartItems) {
-            cartItems = this.getLocalStorageCart();
-        }
-        return cartItems.reduce((total, item) => total + item.quantity, 0);
+    getTotalQuantity(cartItems) {
+        // Handle both formats: array or object with cart property
+        const items = Array.isArray(cartItems) ? cartItems : (cartItems.cart || []);
+        return items.reduce((total, item) => total + item.quantity, 0);
     }
 
     // Get total price of items in cart
-    getTotalPrice(cartItems = null) {
-        if (!cartItems) {
-            cartItems = this.getLocalStorageCart();
-        }
-        return cartItems.reduce((total, item) => {
+    getTotalPrice(cartItems) {
+        // Handle both formats: array or object with cart property
+        const items = Array.isArray(cartItems) ? cartItems : (cartItems.cart || []);
+        return items.reduce((total, item) => {
             const price = parseFloat(item.price.replace(/[^\d.]/g, '')) || 0;
             return total + (price * item.quantity);
         }, 0);
     }
 
     // Update cart count display in UI
-    updateCartCountDisplay(count = null) {
-        if (count === null) {
-            const cartItems = this.getLocalStorageCart();
-            count = this.getTotalQuantity(cartItems);
-        }
+    async updateCartCountDisplay() {
+        try {
+            const cartData = await this.getCart();
+            const count = cartData.count || 0;
 
-        // Update all cart count elements
-        const cartCountElements = document.querySelectorAll('.cart-count, .cart-counter, #cart-count');
-        cartCountElements.forEach(element => {
-            element.textContent = count;
-            element.style.display = count > 0 ? 'inline-block' : 'none';
-        });
+            // Update all cart count elements
+            const cartCountElements = document.querySelectorAll('.cart-count, .cart-counter, #cart-count');
+            cartCountElements.forEach(element => {
+                element.textContent = count;
+                element.style.display = count > 0 ? 'inline-block' : 'none';
+            });
+        } catch (error) {
+            console.error('Error updating cart count display:', error);
+        }
+    }
+
+    // === PROMO CODE METHODS ===
+
+    /**
+     * Apply promo code to cart
+     */
+    async applyPromoCode(promoCode) {
+        try {
+            const response = await fetch('/customer/cart/promo/apply', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': this.csrfToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ promo_code: promoCode })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                console.log('Promo code applied successfully:', data);
+                return {
+                    success: true,
+                    message: data.message,
+                    discount: data.discount_amount,
+                    promo_code: data.promo_code,
+                    final_total: data.final_total
+                };
+            } else {
+                console.error('Failed to apply promo code:', data.message);
+                return {
+                    success: false,
+                    message: data.message || 'Failed to apply promo code'
+                };
+            }
+        } catch (error) {
+            console.error('Error applying promo code:', error);
+            return {
+                success: false,
+                message: 'An error occurred. Please try again.'
+            };
+        }
+    }
+
+    /**
+     * Remove promo code from cart
+     */
+    async removePromoCode() {
+        try {
+            const response = await fetch('/customer/cart/promo/remove', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': this.csrfToken,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                console.log('Promo code removed successfully');
+                return { success: true, message: data.message };
+            } else {
+                console.error('Failed to remove promo code');
+                return { success: false, message: 'Failed to remove promo code' };
+            }
+        } catch (error) {
+            console.error('Error removing promo code:', error);
+            return { success: false, message: 'An error occurred' };
+        }
+    }
+
+    /**
+     * Get current promo code details
+     */
+    async getPromoCodeDetails() {
+        try {
+            const response = await fetch('/customer/cart/promo/details', {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': this.csrfToken,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return data;
+            }
+            return { success: true, has_promo: false };
+        } catch (error) {
+            console.error('Error fetching promo details:', error);
+            return { success: true, has_promo: false };
+        }
+    }
+
+    // === PROMOTION GROUP METHODS ===
+
+    /**
+     * Remove entire promotion group from cart (locked items)
+     */
+    async removePromotionGroup(promotionGroupId) {
+        try {
+            const response = await fetch(`/customer/cart/promotion-group/${promotionGroupId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': this.csrfToken,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                console.log('Promotion group removed successfully:', data);
+                return {
+                    success: true,
+                    message: data.message,
+                    promotion_name: data.promotion_name,
+                    items_removed: data.items_removed,
+                    cart_count: data.cart_count
+                };
+            } else {
+                console.error('Failed to remove promotion group:', data.message);
+                return {
+                    success: false,
+                    message: data.message || 'Failed to remove promotion group'
+                };
+            }
+        } catch (error) {
+            console.error('Error removing promotion group:', error);
+            return {
+                success: false,
+                message: 'An error occurred. Please try again.'
+            };
+        }
+    }
+
+    /**
+     * Check if an item is part of a promotion (locked item)
+     */
+    isPromotionItem(item) {
+        return item && (item.promotion_id || item.is_free_item || item.promotion);
+    }
+
+    /**
+     * Check if item is locked (cannot be modified individually)
+     */
+    isItemLocked(item) {
+        return this.isPromotionItem(item);
     }
 }
 
 // Create global cart manager instance
 window.cartManager = new CartManager();
 
-// Auto-merge cart on page load if user is logged in
+// Update cart count display on page load
 document.addEventListener('DOMContentLoaded', () => {
-    if (window.cartManager.isLoggedIn) {
-        window.cartManager.mergeCartOnLogin();
-    }
-    // Update cart count display on page load
     window.cartManager.updateCartCountDisplay();
 });

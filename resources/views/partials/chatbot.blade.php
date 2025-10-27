@@ -9,16 +9,16 @@
 <div id="chatbot-window" class="chatbot-window hidden">
     <div class="chatbot-header">
         <div class="chatbot-header-content">
-            <span class="chatbot-title">🦌 The Stag AI Assistant</span>
+            <div class="chatbot-title">
+                <img src="{{ asset('images/logo.png') }}" alt="logo" class="chatbot-logo">
+                <div class="chatbot-title-text">The Stag AI Assistant</div>
+            </div>
             <span class="chatbot-status" id="chatbot-status">
                 <span class="status-dot"></span>
                 <span class="status-text">Online</span>
             </span>
         </div>
         <div class="chatbot-header-actions">
-            <button id="chatbot-history-btn" class="chatbot-action-btn" title="Chat history">
-                <i class="fas fa-history"></i>
-            </button>
             <button id="chatbot-clear" class="chatbot-action-btn" title="Clear current chat">
                 <i class="fas fa-trash-alt"></i>
             </button>
@@ -28,7 +28,6 @@
     <div id="chatbot-body" class="chatbot-body">
         <!-- Welcome Screen -->
         <div class="chatbot-welcome" id="chatbot-welcome">
-            <div class="welcome-icon">🦌</div>
             <h2 class="welcome-title">Welcome to Stag AI</h2>
             <p class="welcome-subtitle">I'm here to help you with our menu, orders, and reservations. Ask me anything!</p>
 
@@ -45,19 +44,6 @@
                     <span class="option-icon">💡</span>
                     <span class="option-text">What Can You Do?</span>
                 </button>
-            </div>
-        </div>
-
-        <!-- Chat History View -->
-        <div class="chatbot-history-view hidden" id="chatbot-history-view">
-            <div class="history-header">
-                <button id="back-to-chat" class="back-btn">
-                    <i class="fas fa-arrow-left"></i> Back to Chat
-                </button>
-                <h3><i class="fas fa-history"></i> Chat History</h3>
-            </div>
-            <div class="history-list" id="history-list">
-                <!-- Sessions will be loaded here -->
             </div>
         </div>
 
@@ -155,8 +141,21 @@
     gap: 4px;
 }
 .chatbot-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.chatbot-logo {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+.chatbot-title-text {
     font-weight: 600;
     font-size: 16px;
+    line-height: 32px;
 }
 .chatbot-status {
     display: flex;
@@ -243,6 +242,15 @@
     font-size: 64px;
     margin-bottom: 20px;
     animation: bounce 2s infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.welcome-icon .logo {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    border-radius: 16px;
 }
 @keyframes bounce {
     0%, 100% { transform: translateY(0); }
@@ -492,214 +500,65 @@
     opacity: 1;
 }
 
-/* Chat History View */
-.chatbot-history-view {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
 
-.history-header {
-    padding: 16px;
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
 
-.history-header h3 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: #1f2937;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.back-btn {
-    background: transparent;
-    border: none;
-    color: #5f48ff;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    padding: 6px 12px;
-    border-radius: 8px;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.back-btn:hover {
-    background: #f3f0ff;
-}
-
-.history-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px;
-}
-
-.history-session {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 14px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.history-session:hover {
-    border-color: #5f48ff;
-    box-shadow: 0 2px 8px rgba(95, 72, 255, 0.1);
-    transform: translateY(-1px);
-}
-
-.history-session-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 8px;
-}
-
-.history-session-date {
-    font-size: 12px;
-    color: #6b7280;
-}
-
-.history-session-status {
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: capitalize;
-}
-
-.history-session-status.active {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.history-session-status.ended {
-    background: #dbeafe;
-    color: #1e40af;
-}
-
-.history-session-status.timeout {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.history-session-meta {
-    display: flex;
-    gap: 14px;
-    margin-bottom: 10px;
-    font-size: 13px;
-    color: #6b7280;
-}
-
-.history-meta-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.history-meta-item i {
-    color: #5f48ff;
-}
-
-.history-last-message {
-    background: #f9fafb;
-    padding: 10px;
-    border-radius: 8px;
-    border-left: 3px solid #5f48ff;
-    margin-bottom: 10px;
-}
-
-.history-last-message-label {
-    font-size: 10px;
-    color: #9ca3af;
-    margin-bottom: 4px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.history-last-message-text {
-    font-size: 13px;
-    color: #374151;
-    line-height: 1.4;
-}
-
-.history-session-actions {
-    display: flex;
-    gap: 8px;
-    padding-top: 10px;
-    border-top: 1px solid #f3f4f6;
-}
-
-.history-btn-load {
-    flex: 1;
-    background: linear-gradient(135deg, #5f48ff 0%, #8b7bff 100%);
+/* Mobile Top Arrow for easier navigation */
+.mobile-top-arrow {
+    display: none; /* Will be shown via media query */
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1000;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5f48ff, #7c3aed);
     color: white;
     border: none;
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(95, 72, 255, 0.4);
     cursor: pointer;
-    transition: all 0.2s;
+    font-size: 1rem;
+    transition: all 0.3s ease;
 }
 
-.history-btn-load:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(95, 72, 255, 0.3);
+.mobile-top-arrow:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(95, 72, 255, 0.6);
 }
 
-.history-btn-delete {
-    background: #fee2e2;
-    color: #dc2626;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.history-btn-delete:hover {
-    background: #fecaca;
-}
-
-.history-empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: #9ca3af;
-}
-
-.history-empty-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
-    opacity: 0.5;
-}
-
-.history-empty p {
-    margin: 0;
-    font-size: 14px;
-}
-
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .chatbot-window {
-        width: calc(100vw - 20px);
-        height: calc(100vh - 120px);
-        right: 10px;
-        bottom: 80px;
+        width: 100%;
+        height: 400px;
+        top: auto;
+        right: 15px;
+        bottom: 85px; /* Position above the bottom navigation */
+        left: 15px;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .chatbot-toggle {
+        bottom: 15px; /* Position just above the bottom navigation */
+        right: 15px;
+        z-index: 1000;
+    }
+    
+    .mobile-top-arrow {
+        display: block;
     }
 }
 </style>
+
+@if (Request::routeIs('customer.index'))
+<style>
+    @media (max-width: 480px) {
+        .chatbot-toggle {
+            /* Move up further on homepage to avoid scroll-to-top arrow */
+            bottom: 140px;
+        }
+    }
+</style>
+@endif
 
 <script>
 // Chatbot State Management
@@ -718,11 +577,7 @@ const ChatBot = {
         sendBtn: document.getElementById('chatbot-send'),
         loading: document.getElementById('chatbot-loading'),
         welcome: document.getElementById('chatbot-welcome'),
-        status: document.getElementById('chatbot-status'),
-        historyBtn: document.getElementById('chatbot-history-btn'),
-        historyView: document.getElementById('chatbot-history-view'),
-        historyList: document.getElementById('history-list'),
-        backToChat: document.getElementById('back-to-chat')
+        status: document.getElementById('chatbot-status')
     },
 
     init() {
@@ -752,9 +607,7 @@ const ChatBot = {
             }
         });
 
-        // History buttons
-        this.elements.historyBtn.addEventListener('click', () => this.showHistory());
-        this.elements.backToChat.addEventListener('click', () => this.hideHistory());
+
 
         // Welcome option buttons
         document.querySelectorAll('.welcome-option').forEach(button => {
@@ -910,6 +763,15 @@ const ChatBot = {
                 this.showError('Session timeout. Starting new session...');
                 this.sessionToken = null;
                 localStorage.removeItem('chatbot_session');
+                await this.startSession();
+            } else if (response.status === 404 || (data.error && data.error.includes('Invalid session'))) {
+                // Handle invalid session - auto clear and start fresh
+                console.warn('Invalid session detected, clearing and starting fresh...');
+                this.sessionToken = null;
+                localStorage.removeItem('chatbot_session');
+                this.clearBody();
+                this.showWelcome(false);
+                this.showError('Session expired. Starting fresh session...');
                 await this.startSession();
             } else {
                 const errorMsg = data.debug || data.error || 'Failed to send message';
@@ -1192,6 +1054,15 @@ const ChatBot = {
             const data = await response.json();
             console.log('History loaded:', data);
 
+            // Handle invalid session
+            if (response.status === 404 || (data.error && data.error.includes('Session not found'))) {
+                console.warn('Invalid/expired session, starting fresh...');
+                this.sessionToken = null;
+                localStorage.removeItem('chatbot_session');
+                await this.startSession();
+                return;
+            }
+
             if (data.success && data.messages && data.messages.length > 0) {
                 this.clearBody();
 
@@ -1206,22 +1077,12 @@ const ChatBot = {
 
                 // Check if session is still active
                 if (!data.is_active) {
-                    // Session ended - show messages but disable input (read-only mode)
-                    console.log('Session has ended - enabling read-only mode');
-                    this.disableInput();
-
-                    // Add info message at the bottom
-                    const infoDiv = document.createElement('div');
-                    infoDiv.className = 'session-ended-info';
-                    infoDiv.innerHTML = `
-                        <div style="text-align: center; padding: 16px; background: #fef3c7; border-radius: 12px; margin-top: 16px; border: 1px solid #fbbf24;">
-                            <i class="fas fa-info-circle" style="color: #f59e0b; margin-right: 8px;"></i>
-                            <span style="color: #92400e; font-size: 13px; font-weight: 500;">
-                                This chat session has ended. You are viewing in read-only mode.
-                            </span>
-                        </div>
-                    `;
-                    this.elements.body.appendChild(infoDiv);
+                    // Session ended/timeout - clear session and start fresh
+                    console.log('Session has ended/timeout - starting fresh session');
+                    this.sessionToken = null;
+                    localStorage.removeItem('chatbot_session');
+                    this.clearBody();
+                    await this.startSession();
                 } else {
                     // Session active - enable input
                     this.enableInput();
@@ -1306,17 +1167,20 @@ const ChatBot = {
             console.log('Clear history response:', data);
 
             if (data.success) {
-                // Clear the chat body
+                // Clear the chat body (remove messages from view)
                 this.clearBody();
 
                 // Show welcome screen again
                 this.showWelcome(true);
 
-                console.log(`Successfully cleared ${data.deleted_count} messages`);
+                // Enable input (session still active)
+                this.enableInput();
 
-                // Optional: Show toast notification instead
+                console.log(`Successfully cleared ${data.deleted_count} messages from view`);
+
+                // Optional: Show toast notification
                 setTimeout(() => {
-                    alert(`✓ Chat history cleared! ${data.deleted_count} message(s) deleted.`);
+                    alert(`✓ Chat cleared! You can start a fresh conversation.`);
                 }, 300);
             } else {
                 this.showError(data.error || 'Failed to clear chat history');
@@ -1325,178 +1189,6 @@ const ChatBot = {
         } catch (error) {
             console.error('Failed to clear history:', error);
             this.showError('Failed to clear chat history. Please try again.');
-        }
-    },
-
-    // History View Methods
-    async showHistory() {
-        console.log('Showing chat history...');
-
-        // Hide chat view, show history view
-        this.elements.welcome.classList.add('hidden');
-        const messages = this.elements.body.querySelectorAll('.message');
-        messages.forEach(msg => msg.classList.add('hidden'));
-        this.elements.historyView.classList.remove('hidden');
-
-        // Load sessions
-        await this.loadChatSessions();
-    },
-
-    hideHistory() {
-        console.log('Hiding chat history...');
-
-        // Hide history view
-        this.elements.historyView.classList.add('hidden');
-
-        // Show chat view - check if there are messages or show welcome
-        const messages = this.elements.body.querySelectorAll('.message');
-
-        if (messages.length > 0) {
-            // Has messages - show them, hide welcome
-            messages.forEach(msg => msg.classList.remove('hidden'));
-            this.elements.welcome.classList.add('hidden');
-
-            // Also show session-ended-info if exists
-            const endedInfo = this.elements.body.querySelector('.session-ended-info');
-            if (endedInfo) {
-                endedInfo.classList.remove('hidden');
-            }
-        } else {
-            // No messages - show welcome screen
-            this.elements.welcome.classList.remove('hidden');
-        }
-    },
-
-    async loadChatSessions() {
-        try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-
-            const response = await fetch('/api/chatbot/sessions', {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken || '',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                credentials: 'same-origin'
-            });
-
-            const data = await response.json();
-
-            if (data.success && data.sessions) {
-                this.renderSessions(data.sessions);
-            } else {
-                this.elements.historyList.innerHTML = `
-                    <div class="history-empty">
-                        <div class="history-empty-icon">💬</div>
-                        <p>No chat history yet</p>
-                    </div>
-                `;
-            }
-
-        } catch (error) {
-            console.error('Failed to load sessions:', error);
-            this.elements.historyList.innerHTML = `
-                <div class="history-empty">
-                    <div class="history-empty-icon">⚠️</div>
-                    <p>Failed to load chat history</p>
-                </div>
-            `;
-        }
-    },
-
-    renderSessions(sessions) {
-        if (sessions.length === 0) {
-            this.elements.historyList.innerHTML = `
-                <div class="history-empty">
-                    <div class="history-empty-icon">💬</div>
-                    <p>No chat history yet</p>
-                </div>
-            `;
-            return;
-        }
-
-        this.elements.historyList.innerHTML = sessions.map(session => `
-            <div class="history-session" data-session-id="${session.id}">
-                <div class="history-session-header">
-                    <div class="history-session-date">
-                        <i class="far fa-calendar"></i> ${session.created_at_human}
-                    </div>
-                    <span class="history-session-status ${session.status}">
-                        ${session.status}
-                    </span>
-                </div>
-
-                <div class="history-session-meta">
-                    <div class="history-meta-item">
-                        <i class="fas fa-comments"></i>
-                        <span>${session.message_count} message${session.message_count !== 1 ? 's' : ''}</span>
-                    </div>
-                </div>
-
-                ${session.last_message ? `
-                    <div class="history-last-message">
-                        <div class="history-last-message-label">Last Message</div>
-                        <div class="history-last-message-text">${session.last_message.message}</div>
-                    </div>
-                ` : ''}
-
-                <div class="history-session-actions">
-                    <button class="history-btn-load" onclick="ChatBot.loadSession('${session.session_token}')">
-                        <i class="fas fa-eye"></i> Load Session
-                    </button>
-                    <button class="history-btn-delete" onclick="ChatBot.deleteSessionConfirm(${session.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `).join('');
-    },
-
-    async loadSession(sessionToken) {
-        console.log('Loading session:', sessionToken);
-
-        // Hide history, show chat
-        this.hideHistory();
-
-        // Set session token
-        this.sessionToken = sessionToken;
-        localStorage.setItem('chatbot_session', sessionToken);
-
-        // Load session history
-        await this.loadSessionHistory();
-    },
-
-    async deleteSessionConfirm(sessionId) {
-        if (!confirm('Delete this chat session? This cannot be undone.')) {
-            return;
-        }
-
-        try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-
-            const response = await fetch(`/api/chatbot/session/${sessionId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken || '',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                credentials: 'same-origin'
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                // Reload sessions list
-                await this.loadChatSessions();
-            } else {
-                alert('Failed to delete session');
-            }
-
-        } catch (error) {
-            console.error('Failed to delete session:', error);
-            alert('Failed to delete session');
         }
     }
 };

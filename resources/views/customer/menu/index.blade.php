@@ -4,6 +4,7 @@
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/customer/food.css') }}">
+<link rel="stylesheet" href="{{ asset('css/customer/promotion-cart.css') }}">
 @endsection
 
 @section('content')
@@ -175,68 +176,161 @@
       <button class="cart-modal-close" id="cartModalClose" aria-label="Close cart">✕</button>
       <h2 class="cart-modal-title">🛒 My Cart</h2>
     </div>
-    <div class="cart-modal-content">
-      <div class="cart-modal-toolbar">
-        <div class="cart-modal-count">Items: <span id="cart-count">0</span></div>
-        <button class="cart-modal-clear" id="clearAllBtn">Clear All</button>
-      </div>
-      <div class="cart-modal-items" id="cart-items">
-        <!-- Cart items will be displayed here -->
-        <div class="empty-cart" id="empty-cart">
-          <div class="empty-cart-icon">🛒</div>
-          <div class="empty-cart-text">Your cart is empty</div>
-          <div class="empty-cart-subtext">Add some delicious items to get started!</div>
+    <div class="cart-modal-body">
+      <div class="cart-modal-content">
+        <div class="cart-modal-toolbar">
+          <div class="cart-modal-count">Items: <span id="cart-count">0</span></div>
+          <button class="cart-modal-clear" id="clearAllBtn">Clear All</button>
+        </div>
+        <div class="cart-modal-items" id="cart-items">
+          <!-- Cart items will be displayed here -->
+          <div class="empty-cart" id="empty-cart">
+            <div class="empty-cart-icon">🛒</div>
+            <div class="empty-cart-text">Your cart is empty</div>
+            <div class="empty-cart-subtext">Add some delicious items to get started!</div>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="cart-modal-footer">
-      <!-- Promo Code Section -->
-      <div class="promo-code-section" id="promoCodeSection" style="padding: 16px; background: #f9fafb; border-radius: 12px; margin-bottom: 16px;">
-        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-          <input type="text" id="promoCodeInput" placeholder="Enter promo code"
-                 style="flex: 1; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; font-weight: 600; text-transform: uppercase; font-family: 'Courier New', monospace; letter-spacing: 1px; transition: all 0.3s;">
-          <button id="applyPromoBtn" onclick="applyPromoCode()"
-                  style="padding: 12px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.3s; font-size: 14px;">
-            Apply
-          </button>
+      <div class="cart-modal-footer">
+        <!-- Title for Summary Section -->
+        <div style="margin-bottom: 1rem;">
+          <h3 style="font-size: 1.1rem; font-weight: 800; color: #1f2937; margin: 0 0 0.5rem 0;">Your Subtotal</h3>
+          <div style="height: 3px; width: 40px; background: linear-gradient(135deg, var(--brand), var(--brand-2)); border-radius: 2px;"></div>
         </div>
 
-        <!-- Applied Promo Display -->
-        <div id="appliedPromo" style="display: none; background: white; border-radius: 10px; padding: 12px; border-left: 4px solid #10b981;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <div style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px;">PROMO APPLIED</div>
-              <div style="font-family: 'Courier New', monospace; font-weight: 700; color: #1f2937; font-size: 14px;" id="appliedPromoCode">—</div>
-              <div style="font-size: 12px; color: #10b981; font-weight: 600; margin-top: 4px;" id="appliedPromoName">—</div>
+        <!-- Voucher Selection Section (NEW) -->
+        @if(Auth::check())
+        <div class="voucher-selection-section" style="margin-bottom: 1rem; padding: 1rem; background: #fef3c7; border: 2px dashed #f59e0b; border-radius: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-ticket-alt" style="color: #f59e0b; font-size: 1.2rem;"></i>
+              <span style="font-weight: 700; color: #92400e; font-size: 0.95rem;">My Vouchers</span>
             </div>
-            <button onclick="removePromoCode()"
-                    style="padding: 6px 12px; background: #fee2e2; color: #dc2626; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">
-              Remove
+            <button id="select-voucher-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+              Select
             </button>
+          </div>
+
+          <!-- Applied Voucher Display -->
+          <div id="voucher-applied-container" style="display: none; background: white; padding: 10px; border-radius: 8px; margin-top: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 0.85rem; color: #92400e; font-weight: 600;" id="voucher-name">RM10 OFF</div>
+                <div style="font-size: 0.75rem; color: #d97706;" id="voucher-desc">Minimum spend RM50</div>
+              </div>
+              <button id="remove-voucher-btn" style="background: none; border: none; color: #dc2626; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+                Remove
+              </button>
+            </div>
+          </div>
+
+          <!-- No Vouchers Message -->
+          <div id="no-vouchers-message" style="font-size: 0.85rem; color: #92400e; text-align: center; padding: 8px;">
+            You have no vouchers available
+          </div>
+        </div>
+        @endif
+
+        <!-- Promo Code Section -->
+        <div class="promo-code-section" style="margin-bottom: 1rem; padding: 1rem; background: #f9fafb; border-radius: 12px;">
+          <div id="promo-input-container">
+            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+              <input
+                type="text"
+                id="promo-code-input"
+                placeholder="Enter promo code"
+                style="flex: 1; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.9rem; outline: none; transition: border-color 0.2s;"
+              />
+              <button
+                id="apply-promo-btn"
+                style="padding: 10px 20px; background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: transform 0.2s;"
+                onclick="this.style.transform = 'scale(0.95)'; setTimeout(() => this.style.transform = 'scale(1)', 100);"
+              >
+                Apply
+              </button>
+            </div>
+            <div id="promo-error-message" style="display: none; color: #ef4444; font-size: 0.85rem; margin-top: 4px;">
+              <i class="fas fa-exclamation-circle"></i> <span></span>
+            </div>
+          </div>
+
+          <div id="promo-applied-container" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #ecfdf5; border: 2px solid #10b981; border-radius: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-check-circle" style="color: #10b981; font-size: 1.1rem;"></i>
+                <div>
+                  <div style="font-weight: 600; color: #065f46; font-size: 0.9rem;">Promo Applied!</div>
+                  <div style="font-size: 0.85rem; color: #047857;" id="promo-code-text">CODE123</div>
+                </div>
+              </div>
+              <button
+                id="remove-promo-btn"
+                style="background: none; border: none; color: #dc2626; cursor: pointer; padding: 4px 8px; font-size: 0.85rem; font-weight: 600;"
+              >
+                Remove
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Find Best Deal Button -->
-        <button id="findBestDealBtn" onclick="findBestDeal()"
-                style="width: 100%; padding: 10px; background: white; border: 2px dashed #d1d5db; border-radius: 10px; color: #6b7280; font-weight: 600; cursor: pointer; margin-top: 8px; transition: all 0.3s; font-size: 13px;">
-          <i class="fas fa-magic"></i> Find Best Deal for Me
-        </button>
-      </div>
+        <!-- Cart Total -->
+        <div class="cart-modal-total">
+          <div style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
+            <!-- Subtotal Row -->
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="cart-total-label" style="font-size: 0.8rem;">Subtotal</div>
+              <div class="cart-total-amount" id="subtotal-amount" style="font-size: 1rem;">RM 0.00</div>
+            </div>
 
-      <!-- Cart Total -->
-      <div class="cart-modal-total">
-        <div>
-          <div class="cart-total-label">Subtotal</div>
-          <div class="cart-total-label" id="discountLabel" style="display: none; color: #10b981;">Discount</div>
-          <div class="cart-total-label" style="font-weight: 700; color: #1f2937;">Total</div>
+            <!-- Voucher Discount Row (hidden by default) -->
+            <div id="voucher-discount-row" style="display: none; justify-content: space-between; align-items: center;">
+              <div class="cart-total-label" style="font-size: 0.8rem; color: #f59e0b;">
+                <i class="fas fa-ticket-alt"></i> Voucher Discount
+              </div>
+              <div class="cart-total-amount" id="voucher-discount-amount" style="font-size: 1rem; color: #f59e0b;">-RM 0.00</div>
+            </div>
+
+            <!-- Promo Discount Row (hidden by default) -->
+            <div id="promo-discount-row" style="display: none; justify-content: space-between; align-items: center;">
+              <div class="cart-total-label" style="font-size: 0.8rem; color: #10b981;">
+                <i class="fas fa-tag"></i> Promo Discount
+              </div>
+              <div class="cart-total-amount" id="promo-discount-amount" style="font-size: 1rem; color: #10b981;">-RM 0.00</div>
+            </div>
+            <!-- Divider -->
+            <div style="height: 1px; background: #e5e7eb; margin: 6px 0;"></div>
+            <!-- Total Row -->
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="cart-total-label" style="font-weight: 800; color: #1f2937; font-size: 0.9rem;">Total</div>
+              <div class="cart-total-amount" id="total-amount" style="font-size: 1.4rem; font-weight: 900; background: linear-gradient(135deg, var(--brand), var(--brand-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">RM 0.00</div>
+            </div>
+          </div>
         </div>
-        <div>
-          <div class="cart-total-amount" id="subtotal-amount">RM 0.00</div>
-          <div class="cart-total-amount" id="discount-amount" style="display: none; color: #10b981;">- RM 0.00</div>
-          <div class="cart-total-amount" id="total-amount" style="font-size: 1.5rem; font-weight: 900;">RM 0.00</div>
-        </div>
+        <button class="cart-modal-checkout" style="padding: 1rem; font-size: 1rem;">Proceed to Checkout</button>
       </div>
-      <button class="cart-modal-checkout">Proceed to Checkout</button>
+    </div>
+  </div>
+</div>
+
+<!-- Voucher Selection Modal -->
+<div id="voucherSelectionModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+  <div style="background: white; border-radius: 16px; max-width: 500px; width: 90%; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
+    <!-- Header -->
+    <div style="padding: 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+      <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: #1f2937;">
+        <i class="fas fa-ticket-alt" style="color: #f59e0b; margin-right: 8px;"></i>
+        Select Voucher
+      </h3>
+      <button id="closeVoucherModal" style="background: none; border: none; font-size: 24px; color: #9ca3af; cursor: pointer; width: 32px; height: 32px;">✕</button>
+    </div>
+
+    <!-- Voucher List -->
+    <div id="voucherListContainer" style="flex: 1; overflow-y: auto; padding: 16px;">
+      <!-- Vouchers will be loaded here via JavaScript -->
+      <div style="text-align: center; padding: 40px 20px; color: #9ca3af;">
+        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 12px; display: block;"></i>
+        <p>Loading vouchers...</p>
+      </div>
     </div>
   </div>
 </div>
@@ -567,19 +661,12 @@
 
   // Apply Promo Code
   async function applyPromoCode() {
-    const promoCodeInput = document.getElementById('promoCodeInput');
+    const promoCodeInput = document.getElementById('promo-code-input');
     const promoCode = promoCodeInput.value.trim().toUpperCase();
-    const applyBtn = document.getElementById('applyPromoBtn');
+    const applyBtn = document.getElementById('apply-promo-btn');
 
     if (!promoCode) {
       showToast('Please enter a promo code', 'error');
-      return;
-    }
-
-    // Get cart items from localStorage or cart manager
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    if (cart.length === 0) {
-      showToast('Your cart is empty', 'error');
       return;
     }
 
@@ -588,33 +675,16 @@
     applyBtn.disabled = true;
 
     try {
-      const response = await fetch('{{ route("customer.promotions.apply-promo") }}', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': '{{ csrf_token() }}',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          promo_code: promoCode,
-          cart_items: cart.map(item => ({
-            menu_item_id: item.id,
-            quantity: item.quantity,
-            price: item.price
-          }))
-        })
-      });
+      // Use the cart manager to handle promo code application
+      const result = await window.cartManager.applyPromoCode(promoCode);
 
-      const data = await response.json();
-
-      if (data.success) {
-        appliedPromotion = data;
-        displayAppliedPromo(data);
-        updateCartTotals();
+      if (result.success) {
+        // Refresh the cart to get updated data from server
+        await updateCartDisplay();
         showToast('Promo code applied successfully!', 'success');
         promoCodeInput.value = '';
       } else {
-        showToast(data.message || 'Invalid promo code', 'error');
+        showToast(result.message || 'Invalid promo code', 'error');
       }
     } catch (error) {
       console.error('Error applying promo code:', error);
@@ -627,49 +697,48 @@
 
   // Display Applied Promo
   function displayAppliedPromo(data) {
-    const appliedPromoDiv = document.getElementById('appliedPromo');
-    const promoCodeSpan = document.getElementById('appliedPromoCode');
-    const promoNameSpan = document.getElementById('appliedPromoName');
-    const promoInput = document.getElementById('promoCodeInput');
-    const applyBtn = document.getElementById('applyPromoBtn');
+    const inputContainer = document.getElementById('promo-input-container');
+    const appliedContainer = document.getElementById('promo-applied-container');
+    const promoCodeText = document.getElementById('promo-code-text');
 
-    appliedPromoDiv.style.display = 'block';
-    promoCodeSpan.textContent = data.promotion.code || '';
-    promoNameSpan.textContent = data.promotion.name || '';
+    if (inputContainer) inputContainer.style.display = 'none';
+    if (appliedContainer) appliedContainer.style.display = 'block';
+    if (promoCodeText) promoCodeText.textContent = data.promotion.code || '';
 
-    // Hide input and apply button
-    promoInput.style.display = 'none';
-    applyBtn.style.display = 'none';
+    // Show discount row
+    const discountRow = document.getElementById('promo-discount-row');
+    const discountAmount = document.getElementById('promo-discount-amount');
+    const discountValue = parseFloat(data.discount || 0);
+    
+    if (discountRow) discountRow.style.display = 'flex';
+    if (discountAmount) discountAmount.textContent = `-RM ${discountValue.toFixed(2)}`;
   }
 
   // Remove Promo Code
   async function removePromoCode() {
     try {
-      const response = await fetch('{{ route("customer.promotions.remove-promo") }}', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': '{{ csrf_token() }}',
-          'Accept': 'application/json'
+      // Use the cart manager to handle promo code removal
+      const result = await window.cartManager.removePromoCode();
+
+      if (result.success) {
+        // Show input container, hide applied container
+        const inputContainer = document.getElementById('promo-input-container');
+        const appliedContainer = document.getElementById('promo-applied-container');
+        
+        if (inputContainer) inputContainer.style.display = 'block';
+        if (appliedContainer) appliedContainer.style.display = 'none';
+
+        // Clear and show the input
+        const promoInput = document.getElementById('promo-code-input');
+        if (promoInput) {
+          promoInput.value = '';
         }
-      });
 
-      const data = await response.json();
-      if (data.success) {
-        appliedPromotion = null;
-
-        // Hide applied promo display
-        document.getElementById('appliedPromo').style.display = 'none';
-
-        // Show input and button again
-        const promoInput = document.getElementById('promoCodeInput');
-        const applyBtn = document.getElementById('applyPromoBtn');
-        promoInput.style.display = 'block';
-        applyBtn.style.display = 'block';
-        promoInput.value = '';
-
-        updateCartTotals();
+        // Refresh the cart to get updated data from server
+        await updateCartDisplay();
         showToast('Promo code removed', 'info');
+      } else {
+        showToast(result.message || 'Failed to remove promo code', 'error');
       }
     } catch (error) {
       console.error('Error removing promo code:', error);
@@ -711,18 +780,16 @@
       const data = await response.json();
 
       if (data.success && data.promotion) {
-        // Auto-apply the best promotion
-        appliedPromotion = {
-          success: true,
-          discount: data.promotion.discount,
-          promotion: {
-            code: data.promotion.id,
-            name: data.promotion.name
-          }
-        };
-        displayAppliedPromo(appliedPromotion);
-        updateCartTotals();
-        showToast(`Best deal found! Saving RM ${data.promotion.discount.toFixed(2)}`, 'success');
+        // Apply the best promotion code using cart manager
+        const result = await window.cartManager.applyPromoCode(data.promotion.code);
+        
+        if (result.success) {
+          // Refresh the cart to get updated data from server
+          await updateCartDisplay();
+          showToast(`Best deal found! Saving RM ${data.promotion.discount.toFixed(2)}`, 'success');
+        } else {
+          showToast(result.message || 'Failed to apply best promotion', 'error');
+        }
       } else {
         showToast(data.message || 'No applicable promotions found', 'info');
       }
@@ -749,8 +816,8 @@
 
     // Update display
     const subtotalEl = document.getElementById('subtotal-amount');
-    const discountEl = document.getElementById('discount-amount');
-    const discountLabelEl = document.getElementById('discountLabel');
+    const discountEl = document.getElementById('promo-discount-amount');
+    const discountRowEl = document.getElementById('promo-discount-row');
     const totalEl = document.getElementById('total-amount');
 
     if (subtotalEl) subtotalEl.textContent = `RM ${subtotal.toFixed(2)}`;
@@ -758,13 +825,11 @@
 
     if (discount > 0) {
       if (discountEl) {
-        discountEl.textContent = `- RM ${discount.toFixed(2)}`;
-        discountEl.style.display = 'block';
+        discountEl.textContent = `-RM ${discount.toFixed(2)}`;
       }
-      if (discountLabelEl) discountLabelEl.style.display = 'block';
+      if (discountRowEl) discountRowEl.style.display = 'flex';
     } else {
-      if (discountEl) discountEl.style.display = 'none';
-      if (discountLabelEl) discountLabelEl.style.display = 'none';
+      if (discountRowEl) discountRowEl.style.display = 'none';
     }
   }
 
@@ -904,6 +969,7 @@
 </style>
 
 <script src="{{ asset('js/customer/cart-manager.js') }}"></script>
+<script src="{{ asset('js/customer/cart-voucher.js') }}"></script>
 <script src="{{ asset('js/customer/menu.js') }}"></script>
 <script>
 // Handle quick add item clicks from kitchen recommendations

@@ -137,7 +137,27 @@
     <div class="card special-events">
         <h2 style="color: #92400e;">🎪 Special Events</h2>
         <div class="event-list" id="event-list">
-            <!-- Special events will be loaded here -->
+            @if(isset($specialEvents) && $specialEvents->count() > 0)
+                @foreach($specialEvents as $event)
+                <div class="event-item">
+                    <div class="event-icon">🎉</div>
+                    <div class="event-details">
+                        <h3>{{ $event->name }}</h3>
+                        <p>{{ $event->description }}</p>
+                        @if($event->end_date)
+                        <div style="font-size: 0.9rem; color: var(--text-2); margin-top: 0.5rem;">
+                            Valid until: {{ $event->end_date->format('M j, Y') }}
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            @else
+                <div class="empty-state" style="padding: 2rem; text-align: center; color: var(--text-2);">
+                    <div class="icon" style="font-size: 3rem; margin-bottom: 1rem;">🎪</div>
+                    <p>No special events at the moment. Check back soon!</p>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -149,34 +169,72 @@
                 <h3>🎟️ Collect Vouchers</h3>
                 <p>Spend more to unlock exclusive vouchers!</p>
                 <div class="reward-list" id="voucherList">
-                    <!-- Voucher collection options will be loaded here -->
+                    @if(isset($voucherCollections) && $voucherCollections->count() > 0)
+                        @foreach($voucherCollections as $voucher)
+                        <div class="reward-item">
+                            <div class="reward-info">
+                                <div class="reward-name">
+                                    @if($voucher->voucher_type === 'percentage')
+                                        🎫 {{ $voucher->voucher_value }}% OFF
+                                    @else
+                                        💵 RM{{ number_format($voucher->voucher_value, 2) }} OFF
+                                    @endif
+                                </div>
+                                <div class="reward-requirement">Spend RM{{ number_format($voucher->spending_requirement, 2) }} or more</div>
+                            </div>
+                            <button class="btn-secondary" onclick="collectVoucher({{ $voucher->id }}, '{{ $voucher->name }}')">Collect</button>
+                        </div>
+                        @endforeach
+                    @else
+                        <div class="empty-state" style="padding: 1rem; text-align: center; color: var(--text-2); font-size: 0.9rem;">
+                            <p>No voucher collections available</p>
+                        </div>
+                    @endif
                 </div>
             </div>
             <div>
                 <h3>⭐ Earn Bonus Points</h3>
                 <p>Complete challenges to earn extra points!</p>
                 <div class="reward-list" id="bonusPointsList">
-                    <div class="reward-item">
-                        <div class="reward-info">
-                            <div class="reward-name">First Order Bonus</div>
-                            <div class="reward-requirement">Place your first order</div>
+                    @if(isset($bonusChallenges) && $bonusChallenges->count() > 0)
+                        @foreach($bonusChallenges as $challenge)
+                        <div class="reward-item">
+                            <div class="reward-info">
+                                <div class="reward-name">{{ $challenge->name }}</div>
+                                <div class="reward-requirement">{{ $challenge->description ?? $challenge->condition }}</div>
+                                @if($challenge->end_date)
+                                <div style="font-size: 0.8rem; color: var(--text-2); margin-top: 4px;">
+                                    Ends: {{ $challenge->end_date->format('M j, Y') }}
+                                </div>
+                                @endif
+                            </div>
+                            <button class="btn-secondary" onclick="showMessage('{{ $challenge->description ?? "Complete this challenge to earn bonus points!" }} 🎯')">+{{ $challenge->bonus_points }} pts</button>
                         </div>
-                        <button class="btn-secondary" onclick="showMessage('Complete your first order to earn bonus points! 🎯')">+50 pts</button>
-                    </div>
-                    <div class="reward-item">
-                        <div class="reward-info">
-                            <div class="reward-name">Review & Rate</div>
-                            <div class="reward-requirement">Leave a 5-star review</div>
+                        @endforeach
+                    @else
+                        <!-- Default/fallback challenges -->
+                        <div class="reward-item">
+                            <div class="reward-info">
+                                <div class="reward-name">First Order Bonus</div>
+                                <div class="reward-requirement">Place your first order</div>
+                            </div>
+                            <button class="btn-secondary" onclick="showMessage('Complete your first order to earn bonus points! 🎯')">+50 pts</button>
                         </div>
-                        <button class="btn-secondary" onclick="showMessage('Leave a review after your meal to earn points! ⭐')">+25 pts</button>
-                    </div>
-                    <div class="reward-item">
-                        <div class="reward-info">
-                            <div class="reward-name">Social Share</div>
-                            <div class="reward-requirement">Share us on social media</div>
+                        <div class="reward-item">
+                            <div class="reward-info">
+                                <div class="reward-name">Review & Rate</div>
+                                <div class="reward-requirement">Leave a 5-star review</div>
+                            </div>
+                            <button class="btn-secondary" onclick="showMessage('Leave a review after your meal to earn points! ⭐')">+25 pts</button>
                         </div>
-                        <button class="btn-secondary" onclick="showMessage('Share your experience on social media! 📱')">+15 pts</button>
-                    </div>
+                        <div class="reward-item">
+                            <div class="reward-info">
+                                <div class="reward-name">Social Share</div>
+                                <div class="reward-requirement">Share us on social media</div>
+                            </div>
+                            <button class="btn-secondary" onclick="showMessage('Share your experience on social media! 📱')">+15 pts</button>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -186,28 +244,72 @@
     <div class="card">
         <h2>🏆 Achievements</h2>
         <div class="achievement-grid" id="achievementGrid">
-            <!-- Achievements will be loaded here -->
+            @if(isset($achievements) && $achievements->count() > 0)
+                @foreach($achievements as $achievement)
+                <div class="achievement-item">
+                    <div class="achievement-icon">🏅</div>
+                    <div class="achievement-details">
+                        <h4>{{ $achievement->name }}</h4>
+                        <p>{{ $achievement->description }}</p>
+                        <div class="achievement-target">
+                            Target: {{ $achievement->target_value }} {{ $achievement->target_type }}
+                        </div>
+                        <div class="achievement-reward">
+                            Reward: +{{ $achievement->reward_points }} points
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            @else
+                <div class="empty-state" style="padding: 2rem; text-align: center; color: var(--text-2);">
+                    <div class="icon" style="font-size: 3rem; margin-bottom: 1rem;">🏆</div>
+                    <p>No achievements available yet. Keep ordering to unlock achievements!</p>
+                </div>
+            @endif
         </div>
     </div>
 
     <!-- My Vouchers -->
     <div class="card">
         <h2>🎪 My Voucher Collection</h2>
-        <div id="myVoucherList" class="voucher-grid">
-            <!-- User's vouchers will be displayed here -->
+        <div id="myVoucherList" class="voucher-grid" style="display: {{ (isset($userVouchers) && $userVouchers->count() > 0) ? 'grid' : 'none' }}">
+            @if(isset($userVouchers) && $userVouchers->count() > 0)
+                @foreach($userVouchers->take(6) as $voucher)
+                <div class="voucher-card {{ $voucher->status }}">
+                    <div class="voucher-header">
+                        <span class="voucher-icon">🎁</span>
+                        <span class="voucher-type">{{ $voucher->voucherTemplate->name ?? 'Voucher' }}</span>
+                    </div>
+                    <div class="voucher-body">
+                        <h3>{{ $voucher->voucherTemplate->title ?? 'Special Voucher' }}</h3>
+                        <p>{{ $voucher->voucherTemplate->description ?? 'Exclusive discount' }}</p>
+                        @if($voucher->expiry_date)
+                        <div class="voucher-expiry">Expires: {{ $voucher->expiry_date->format('M j, Y') }}</div>
+                        @endif
+                    </div>
+                    <div class="voucher-footer">
+                        <button class="btn-primary" onclick="window.location.href='{{ route('customer.menu.index') }}'">USE NOW</button>
+                    </div>
+                </div>
+                @endforeach
+            @endif
         </div>
-        <div id="noVoucher" class="empty-state">
+
+        <div id="noVoucher" class="empty-state" style="display: {{ (isset($userVouchers) && $userVouchers->count() > 0) ? 'none' : 'block' }}">
             <div class="icon">🎫</div>
             <h3>No vouchers yet</h3>
             <p>Start collecting vouchers by spending more or completing challenges!</p>
         </div>
 
-        <!-- See All Button -->
-        <div id="seeAllVouchersBtn" style="text-align: center; margin-top: 16px; display: none;">
+        @if(isset($userVouchers) && $userVouchers->count() > 6)
+        <div id="seeAllVouchersBtn" style="text-align: center; margin-top: 16px;">
             <button class="see-all-btn" onclick="showAllVouchersModal()">
-                See All <i class="fas fa-arrow-right"></i>
+                See All ({{ $userVouchers->count() }}) <i class="fas fa-arrow-right"></i>
             </button>
         </div>
+        @else
+        <div id="seeAllVouchersBtn" style="text-align: center; margin-top: 16px; display: none;"></div>
+        @endif
     </div>
 
     <!-- My Rewards -->
@@ -430,6 +532,7 @@
 @endif
 
 <!-- All Vouchers Modal -->
+@if(isset($userVouchers) && $userVouchers->count() > 0)
 <div id="allVouchersModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -440,11 +543,29 @@
         </div>
         <div class="modal-body">
             <div class="voucher-grid">
-                <!-- All vouchers will be displayed here by JavaScript -->
+                @foreach($userVouchers as $voucher)
+                <div class="voucher-card {{ $voucher->status }}">
+                    <div class="voucher-header">
+                        <span class="voucher-icon">🎁</span>
+                        <span class="voucher-type">{{ $voucher->voucherTemplate->name ?? 'Voucher' }}</span>
+                    </div>
+                    <div class="voucher-body">
+                        <h3>{{ $voucher->voucherTemplate->title ?? 'Special Voucher' }}</h3>
+                        <p>{{ $voucher->voucherTemplate->description ?? 'Exclusive discount' }}</p>
+                        @if($voucher->expiry_date)
+                        <div class="voucher-expiry">Expires: {{ $voucher->expiry_date->format('M j, Y') }}</div>
+                        @endif
+                    </div>
+                    <div class="voucher-footer">
+                        <button class="btn-primary" onclick="window.location.href='{{ route('customer.menu.index') }}'">USE NOW</button>
+                    </div>
+                </div>
+                @endforeach
             </div>
         </div>
     </div>
 </div>
+@endif
 
 @endsection
 
@@ -459,12 +580,44 @@
         'checkinStreak' => auth()->check() && isset($user) ? ($user->checkin_streak ?? 0) : 0,
         'csrfToken' => csrf_token(),
         'redeemRoute' => route('customer.rewards.redeem'),
-        'checkinRoute' => route('customer.rewards.checkin')
+        'checkinRoute' => route('customer.rewards.checkin'),
+        'collectVoucherRoute' => route('customer.rewards.collectVoucher')
     ];
 @endphp
 <script>
     // Pass all necessary data to JavaScript
     window.rewardsData = @json($rewardsData);
+
+    // Collect Voucher Function
+    function collectVoucher(voucherId, voucherName) {
+        if (!window.rewardsData.isAuthenticated) {
+            showMessage('Please login to collect vouchers', 'warning');
+            return;
+        }
+
+        fetch(window.rewardsData.collectVoucherRoute, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': window.rewardsData.csrfToken
+            },
+            body: JSON.stringify({ voucher_collection_id: voucherId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                // Reload page after 2 seconds to show new voucher
+                setTimeout(() => window.location.reload(), 2000);
+            } else {
+                showMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('Failed to collect voucher. Please try again.', 'error');
+        });
+    }
 </script>
 <script src="{{ asset('js/customer/rewards.js') }}"></script>
 @endsection

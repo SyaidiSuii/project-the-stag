@@ -36,85 +36,8 @@
       --vvip-bg: linear-gradient(135deg, #fdfcfb, #f9f5eb);
     }
     body {
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      min-height: 100vh;
-      padding-left: 80px;
       padding-right: 0; /* Removed fixed padding */
-      line-height: 1.6;
     }
-    /* ===== Fixed Sidebar ===== */
-    .sidebar {
-      width: 80px;
-      background: white;
-      position: fixed;
-      left: 0;
-      top: 0;
-      height: 100vh;
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px 0;
-      box-shadow: var(--shadow);
-      border-right: 1px solid var(--muted);
-    }
-    .sidebar a { 
-      text-decoration: none; 
-      color: inherit; 
-    }
-    .logo {
-      width: 50px;
-      height: 50px;
-      background: white;
-      border-radius: 15px;
-      display: grid;
-      place-items: center;
-      box-shadow: var(--shadow);
-      margin-bottom: 30px;
-      font-size: 22px;
-      color: var(--brand);
-    }
-    .nav-item {
-      width: 60px;
-      height: 60px;
-      border-radius: 15px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 12px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      text-decoration: none;
-      color: inherit;
-    }
-    .nav-item:hover {
-      background: var(--bg);
-      transform: translateY(-2px);
-    }
-    .nav-item.active {
-      background: linear-gradient(135deg, var(--brand), var(--brand-2));
-      color: white;
-      box-shadow: var(--shadow);
-    }
-    .nav-item.active::before {
-      content: '';
-      position: absolute;
-      left: -20px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 4px;
-      height: 30px;
-      background: var(--accent);
-      border-radius: 2px;
-    }
-    .nav-icon { font-size: 18px; margin-bottom: 5px; }
-    .nav-text { font-size: 10px; font-weight: 700; letter-spacing: .3px; }
-    .account-spacer { margin-top: auto; }
     
     /* ===== Main Content ===== */
     .main-content {
@@ -1133,7 +1056,7 @@
       background: white;
       color: var(--brand);
     }
-
+    
     /* ===== Responsive Design ===== */
     @media (max-width: 1400px) {
       .floor-grid { grid-template-columns: repeat(5, 1fr); }
@@ -1160,55 +1083,14 @@
       .tab { padding: 8px 12px; font-size: 12px; }
     }
     @media (max-width: 768px) {
-      /* --- Convert sidebar to bottom navigation --- */
-      body {
-        padding-left: 0;
-        padding-bottom: 70px; /* Space for bottom nav */
-      }
-      
       /* Guest layout responsive */
       .main-content.guest-layout {
         padding: 1rem;
         min-height: calc(100vh - 70px);
       }
-      
       .guest-content {
         max-width: 100%;
       }
-      .sidebar {
-        width: 100%;
-        height: 70px;
-        bottom: 0;
-        top: auto;
-        left: 0;
-        flex-direction: row;
-        justify-content: space-around;
-        padding: 0 5px;
-        border-right: none;
-        border-top: 1px solid var(--muted);
-        box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
-        order: 3;
-      }
-      .logo { display: none; }
-      .account-spacer { margin-top: 0; }
-      .nav-item {
-        width: auto;
-        height: 100%;
-        margin-bottom: 0;
-        flex: 1;
-        border-radius: 0;
-      }
-      .nav-item:hover { background: var(--bg); transform: none; }
-      .nav-item.active { background: transparent; color: var(--brand); box-shadow: none; }
-      .nav-item.active::before {
-        left: 50%;
-        top: 0;
-        transform: translateX(-50%);
-        width: 30px;
-        height: 4px;
-      }
-      .nav-icon { font-size: 20px; margin-bottom: 4px; }
-      .nav-text { font-size: 10px; }
       /* --- General Layout Adjustments --- */
       .main-content { padding: 1rem; }
       .header-section { padding: 1rem 0; }

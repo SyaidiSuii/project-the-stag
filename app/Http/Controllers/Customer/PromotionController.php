@@ -29,6 +29,19 @@ class PromotionController extends Controller
         $promotions = $this->promotionService->getActivePromotions($user)
             ->load(['menuItems', 'categories', 'usageLogs']);
 
+        // DEBUG: Log promotion count and types
+        \Log::info('Customer Promotions Index', [
+            'total_count' => $promotions->count(),
+            'promotions' => $promotions->map(fn($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'type' => $p->promotion_type,
+                'has_promo_code' => !empty($p->promo_code),
+                'is_valid' => $p->isValid(),
+                'can_be_used' => $p->canBeUsedBy($user?->id)
+            ])
+        ]);
+
         return view('customer.promotions.index', compact('promotions'));
     }
 
@@ -62,7 +75,26 @@ class PromotionController extends Controller
             'usage_percentage' => $promotion->usage_percentage
         ];
 
-        return view('customer.promotions.show', compact('promotion', 'stats'));
+        // Return type-specific views for combo deals and bundles
+        $view = match($promotion->promotion_type) {
+            Promotion::TYPE_COMBO_DEAL => 'customer.promotions.combo-deal',
+            Promotion::TYPE_BUNDLE => 'customer.promotions.bundle',
+            Promotion::TYPE_BUY_X_FREE_Y => 'customer.promotions.buy1free1',
+            default => 'customer.promotions.show'
+        };
+
+        return view($view, compact('promotion', 'stats'));
+    }
+
+    /**
+     * Test method to debug promotion data
+     */
+    public function test($id)
+    {
+        $promotion = Promotion::with(['menuItems', 'categories'])
+            ->findOrFail($id);
+
+        return view('customer.promotions.test', compact('promotion'));
     }
 
     /**

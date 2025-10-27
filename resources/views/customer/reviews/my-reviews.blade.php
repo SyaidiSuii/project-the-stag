@@ -417,17 +417,28 @@
 
 @section('content')
 <div class="reviews-container">
-    <a href="{{ route('customer.account.index') }}" class="back-button">
-        <i class="fas fa-arrow-left"></i>
-        Back to Account
-    </a>
+    @guest
+        <!-- Guest User - Login Required -->
+        <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 3rem; border-radius: 20px; margin: 2rem auto; text-align: center; max-width: 600px; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">⭐</div>
+            <h2 style="margin-bottom: 1rem; font-size: 2rem; font-weight: 700;">My Reviews</h2>
+            <p style="margin-bottom: 2rem; font-size: 1.1rem; line-height: 1.6;">Please login to view your reviews, share your dining experiences, and help others discover great meals at The Stag SmartDine.</p>
+            <a href="{{ route('login') }}" style="background: white; color: #059669; padding: 1rem 2.5rem; border-radius: 12px; text-decoration: none; font-weight: 700; display: inline-block; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';">
+                <i class="fas fa-sign-in-alt"></i> Login to View Reviews
+            </a>
+        </div>
+    @else
+        <a href="{{ route('customer.account.index') }}" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Back to Account
+        </a>
 
-    <div class="reviews-header">
-        <h1><i class="fas fa-star" style="color: #fbbf24;"></i> My Reviews</h1>
-        <p>View and manage your menu item reviews</p>
-    </div>
+        <div class="reviews-header">
+            <h1><i class="fas fa-star" style="color: #fbbf24;"></i> My Reviews</h1>
+            <p>View and manage your menu item reviews</p>
+        </div>
 
-    @if($reviews->count() > 0)
+        @if($reviews->count() > 0)
         <div class="reviews-stats">
             <div class="stat-card">
                 <div class="stat-number">{{ $reviews->total() }}</div>
@@ -520,5 +531,6 @@
             </a>
         </div>
     @endif
+    @endguest
 </div>
 @endsection

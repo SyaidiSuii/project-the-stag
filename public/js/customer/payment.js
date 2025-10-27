@@ -233,6 +233,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (orderItemsContainer) orderItemsContainer.innerHTML = '<p class="empty-cart-message">Your cart is empty. <a href="/customer/menu">Go back to menu</a> to add items.</p>';
         if (grandTotalEl) grandTotalEl.textContent = 'RM 0.00';
     } else if (orderItemsContainer && grandTotalEl) {
+        // --- REVISED TOTALS CALCULATION ---
+
+        // 1. Get totals from sessionStorage (passed from cart modal)
+        const promoDiscount = parseFloat(sessionStorage.getItem('checkoutPromoDiscount')) || 0;
+        const voucherDiscount = parseFloat(sessionStorage.getItem('checkoutVoucherDiscount')) || 0;
+        const finalTotalFromSession = parseFloat(sessionStorage.getItem('checkoutFinalTotal'));
+
+        // 2. Calculate subtotal from cart items (for display and validation)
         let subtotal = 0;
         orderItemsContainer.innerHTML = '';
         cart.forEach(item => {
@@ -268,12 +276,43 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             orderItemsContainer.appendChild(itemElement);
         });
-        grandTotalEl.textContent = `RM ${subtotal.toFixed(2)}`;
+
+        // 3. Determine the final total to use
+        // Use the value from session storage if it exists, otherwise calculate it.
+        const finalTotal = !isNaN(finalTotalFromSession) ? finalTotalFromSession : (subtotal - promoDiscount - voucherDiscount);
+
+        // 4. Update the UI elements
+        const subtotalEl = document.getElementById('subtotal');
+        const subtotalRow = document.getElementById('subtotal-row');
+        const promoDiscountRow = document.getElementById('promo-discount-row');
+        const promoDiscountEl = document.getElementById('promo-discount');
+        const voucherDiscountRow = document.getElementById('voucher-discount-row');
+        const voucherDiscountEl = document.getElementById('voucher-discount');
+
+        // Show subtotal row if we have any discounts
+        if (promoDiscount > 0 || voucherDiscount > 0) {
+            if (subtotalRow && subtotalEl) {
+                subtotalEl.textContent = `RM ${subtotal.toFixed(2)}`;
+                subtotalRow.style.display = 'flex';
+            }
+        }
+
+        if (promoDiscount > 0 && promoDiscountRow && promoDiscountEl) {
+            promoDiscountEl.textContent = `-RM ${promoDiscount.toFixed(2)}`;
+            promoDiscountRow.style.display = 'flex';
+        }
+
+        if (voucherDiscount > 0 && voucherDiscountRow && voucherDiscountEl) {
+            voucherDiscountEl.textContent = `-RM ${voucherDiscount.toFixed(2)}`;
+            voucherDiscountRow.style.display = 'flex';
+        }
+
+        grandTotalEl.textContent = `RM ${finalTotal.toFixed(2)}`;
 
         // Update button text to show amount like in booking payment
         const submitTextEl = document.getElementById('submit-text');
         if (submitTextEl) {
-            submitTextEl.textContent = `Pay RM ${subtotal.toFixed(2)}`;
+            submitTextEl.textContent = `Pay RM ${finalTotal.toFixed(2)}`;
         }
     }
 
@@ -291,16 +330,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let selectedMethod = 'card'; // Default to card (online banking)
 
-    // Calculate total for button text
-    function calculateTotal() {
-        let total = 0;
-        cart.forEach(item => {
-            const priceString = item.price || '0';
-            const priceMatch = priceString.match(/[\d.]+/);
-            const unitPrice = priceMatch ? parseFloat(priceMatch[0]) : 0;
-            total += unitPrice * item.quantity;
-        });
-        return total;
+    // Get final total for button text (already calculated above)
+    function getFinalTotal() {
+        const promoDiscount = parseFloat(sessionStorage.getItem('checkoutPromoDiscount')) || 0;
+        const voucherDiscount = parseFloat(sessionStorage.getItem('checkoutVoucherDiscount')) || 0;
+        const finalTotalFromSession = parseFloat(sessionStorage.getItem('checkoutFinalTotal'));
+
+        if (!isNaN(finalTotalFromSession)) {
+            return finalTotalFromSession;
+        }
+        // Fallback calculation if session data is missing
+        const subtotal = cart.reduce((acc, item) => acc + (parseFloat(item.price.match(/[\d.]+/)[0] || 0) * item.quantity), 0);
+        return subtotal - promoDiscount - voucherDiscount;
     }
 
     // Handle payment method selection
@@ -315,19 +356,19 @@ document.addEventListener('DOMContentLoaded', () => {
             // Get the payment method
             selectedMethod = this.getAttribute('data-method');
 
-            const total = calculateTotal();
+            const finalTotal = getFinalTotal();
 
             // Show/hide payment sections based on payment method
             if (selectedMethod === 'card') {
                 cardDetails.style.display = 'block';
                 cashDetails.style.display = 'none';
                 receiptSection.style.display = 'block';
-                submitButton.innerHTML = `<i class="fas fa-university"></i> <span>Pay via FPX - RM ${total.toFixed(2)}</span>`;
+                submitButton.innerHTML = `<i class="fas fa-university"></i> <span id="submit-text">Pay via FPX - RM ${finalTotal.toFixed(2)}</span>`;
             } else if (selectedMethod === 'cash') {
                 cardDetails.style.display = 'none';
                 cashDetails.style.display = 'block';
                 receiptSection.style.display = 'block';
-                submitButton.innerHTML = `<i class="fas fa-check"></i> <span>Order Now</span>`;
+                submitButton.innerHTML = `<i class="fas fa-check"></i> <span id="submit-text">Order Now</span>`;
             }
 
             // Update the selected payment method for form submission
@@ -382,6 +423,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Determine if this is from cart checkout or Order Now
             const isFromCart = !!checkoutCartData;
 
+            // Get promo discount, voucher discount and final total from sessionStorage
+            const promoDiscount = parseFloat(sessionStorage.getItem('checkoutPromoDiscount')) || 0;
+            const voucherDiscount = parseFloat(sessionStorage.getItem('checkoutVoucherDiscount')) || 0;
+            const finalTotal = parseFloat(sessionStorage.getItem('checkoutFinalTotal')) || 0;
+            const appliedPromoCode = sessionStorage.getItem('checkoutAppliedPromoCode') || null; // Get the applied promo code
+
             // Map payment method from UI to backend values
             let backendPaymentMethod = 'online'; // default
             if (selectedMethod === 'card') {
@@ -393,6 +440,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const payload = {
                 cart: cart,
                 is_from_cart: isFromCart,
+                promo_discount: promoDiscount,
+                promo_code: appliedPromoCode,
+                voucher_discount: voucherDiscount, // Add voucher discount
+                final_total: finalTotal,
                 payment_details: {
                     method: backendPaymentMethod,
                     order_type: selectedOrderType,

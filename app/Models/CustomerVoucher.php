@@ -13,15 +13,19 @@ class CustomerVoucher extends Model
     protected $fillable = [
         'customer_profile_id',
         'voucher_template_id',
+        'source',
         'voucher_code',
         'status',
         'expiry_date',
-        'redeemed_at'
+        'redeemed_at',
+        'order_id',
+        'used_at'
     ];
 
     protected $casts = [
         'expiry_date' => 'date',
-        'redeemed_at' => 'datetime'
+        'redeemed_at' => 'datetime',
+        'used_at' => 'datetime'
     ];
 
     public function customerProfile()
@@ -32,6 +36,11 @@ class CustomerVoucher extends Model
     public function voucherTemplate()
     {
         return $this->belongsTo(VoucherTemplate::class);
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
     }
 
     // Scopes
