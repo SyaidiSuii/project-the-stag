@@ -10,16 +10,19 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\PaymentService;
+use App\Services\SimpleRecommendationService;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class MenuController extends Controller
 {
     protected $paymentService;
+    protected $simpleRecommender;
 
-    public function __construct(PaymentService $paymentService)
+    public function __construct(PaymentService $paymentService, SimpleRecommendationService $simpleRecommender)
     {
         $this->paymentService = $paymentService;
+        $this->simpleRecommender = $simpleRecommender;
     }
 
     /**
@@ -46,50 +49,52 @@ class MenuController extends Controller
             return redirect()->route('qr.error')->with('error', 'Session has expired.');
         }
 
-        // Get main categories (Food and Drinks)
-        $mainCategories = Category::whereNull('parent_id')
-            ->where(function ($query) {
-                $query->where('name', 'LIKE', '%food%')
-                    ->orWhere('name', 'LIKE', '%drink%');
-            })
-            ->orderBy('name')
-            ->get();
-
-        // Prepare menu items grouped by main category and subcategory
-        $menuData = [];
-
-        foreach ($mainCategories as $mainCategory) {
-            // Get subcategories for this main category
-            $subCategories = Category::where('parent_id', $mainCategory->id)
-                ->with(['menuItems' => function ($query) {
-                    $query->available()->orderBy('name');
-                }])
-                ->orderBy('sort_order')
-                ->orderBy('name')
-                ->get();
-
-            // Group items by subcategory
-            $categoryItems = [];
-            foreach ($subCategories as $subCategory) {
-                if ($subCategory->menuItems->count() > 0) {
-                    $categoryItems[$subCategory->name] = $subCategory->menuItems;
-                }
-            }
-
-            // Only add category if it has items
-            if (!empty($categoryItems)) {
-                $menuData[$mainCategory->name] = $categoryItems;
-            }
-        }
+        // Get all categories with their available menu items (same as customer menu)
+        $categories = Category::with(['menuItems' => function ($query) {
+            $query->where('availability', true)->orderBy('name');
+        }])
+        ->orderBy('sort_order')
+        ->orderBy('name')
+        ->get();
 
         // Get cart from session if exists
         $cartKey = 'qr_cart_' . $session->session_code;
         $cart = session($cartKey, []);
         $cartTotal = $this->calculateCartTotal($cart);
 
+        // Get kitchen load status for customer recommendations
+        $kitchenStatus = $this->getKitchenLoadStatus();
+
+        // Get popular/trending items as recommendations for QR guests
+        $recommendedItems = [];
+        try {
+            // For QR guests, we'll get popular items using the simple recommender
+            // Pass a guest user ID (0) to get popular items
+            $recommendedItemIds = $this->simpleRecommender->getPopularItems(8);
+
+            if (!empty($recommendedItemIds)) {
+                $recommendedItems = MenuItem::whereIn('id', $recommendedItemIds)
+                    ->where('availability', true)
+                    ->with('category')
+                    ->get()
+                    ->sortBy(function($item) use ($recommendedItemIds) {
+                        return array_search($item->id, $recommendedItemIds);
+                    })
+                    ->values();
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to fetch recommendations for QR menu page', [
+                'session_code' => $session->session_code,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        // Store order type as 'dine in' in session for QR orders
+        session(['qr_order_type_' . $session->session_code => 'dine in']);
+
         // Disable caching for QR menu page
         return response()
-            ->view('qr.menu', compact('session', 'menuData', 'cart', 'cartTotal'))
+            ->view('qr.menu', compact('session', 'categories', 'cart', 'cartTotal', 'kitchenStatus', 'recommendedItems'))
             ->header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
             ->header('Pragma', 'no-cache')
             ->header('Expires', 'Sat, 01 Jan 2000 00:00:00 GMT');
@@ -157,7 +162,6 @@ class MenuController extends Controller
         $request->validate([
             'session_code' => 'required|exists:table_qrcodes,session_code',
             'menu_item_id' => 'required|integer',
-            'quantity' => 'required|integer|min:-10|max:10',
         ]);
 
         \Log::info('Updating cart with data: ' . json_encode($request->all()));
@@ -178,21 +182,47 @@ class MenuController extends Controller
 
         $itemId = $request->menu_item_id;
 
-        // Special case: clear all items when itemId is 0 and quantity is 0
-        if ($itemId == 0 && $request->quantity == 0) {
-            $cart = [];
-            \Log::info('Clearing all items from cart');
-        } else {
-            // Regular update
+        // Handle remove request
+        if ($request->has('remove') && $request->remove) {
             if (isset($cart[$itemId])) {
-                $cart[$itemId]['quantity'] += $request->quantity;
+                unset($cart[$itemId]);
+                \Log::info('Removing item ' . $itemId . ' from cart');
+            }
+        }
+        // Handle quantity change
+        elseif ($request->has('change')) {
+            $change = intval($request->change);
+            if (isset($cart[$itemId])) {
+                $cart[$itemId]['quantity'] += $change;
 
                 // Remove item if quantity is 0 or less
                 if ($cart[$itemId]['quantity'] <= 0) {
                     unset($cart[$itemId]);
-                    \Log::info('Removing item ' . $itemId . ' from cart');
+                    \Log::info('Removing item ' . $itemId . ' from cart (quantity 0)');
                 } else {
                     \Log::info('Updated item ' . $itemId . ' quantity to ' . $cart[$itemId]['quantity']);
+                }
+            }
+        }
+        // Legacy support for old 'quantity' parameter
+        elseif ($request->has('quantity')) {
+            $quantity = intval($request->quantity);
+            // Special case: clear all items when itemId is 0 and quantity is 0
+            if ($itemId == 0 && $quantity == 0) {
+                $cart = [];
+                \Log::info('Clearing all items from cart');
+            } else {
+                // Regular update
+                if (isset($cart[$itemId])) {
+                    $cart[$itemId]['quantity'] += $quantity;
+
+                    // Remove item if quantity is 0 or less
+                    if ($cart[$itemId]['quantity'] <= 0) {
+                        unset($cart[$itemId]);
+                        \Log::info('Removing item ' . $itemId . ' from cart');
+                    } else {
+                        \Log::info('Updated item ' . $itemId . ' quantity to ' . $cart[$itemId]['quantity']);
+                    }
                 }
             }
         }
@@ -345,6 +375,17 @@ class MenuController extends Controller
     /**
      * Track order status
      */
+    /**
+     * Show order tracking page
+     */
+    public function showTrackingPage()
+    {
+        return view('qr.track');
+    }
+
+    /**
+     * Track order via API
+     */
     public function trackOrder(Request $request)
     {
         $request->validate([
@@ -423,5 +464,116 @@ class MenuController extends Controller
 
         // Round to 2 decimal places for currency
         return round($total, 2);
+    }
+
+    /**
+     * Get kitchen load status API for real-time updates (QR version)
+     */
+    public function getKitchenStatus()
+    {
+        $status = $this->getKitchenLoadStatus();
+        return response()->json($status);
+    }
+
+    /**
+     * Get current kitchen load status with recommended menu items
+     */
+    private function getKitchenLoadStatus()
+    {
+        $stations = \App\Models\KitchenStation::where('is_active', true)
+            ->with('stationType')
+            ->select('id', 'name', 'station_type', 'station_type_id', 'current_load', 'max_capacity')
+            ->get();
+
+        $stationStatus = [];
+        $fastStationTypes = [];
+        $busyStations = [];
+
+        foreach ($stations as $station) {
+            $loadPercentage = $station->max_capacity > 0
+                ? round(($station->current_load / $station->max_capacity) * 100, 1)
+                : 0;
+
+            $status = 'available';
+            $estimatedWait = 5; // Default 5 minutes
+
+            if ($loadPercentage >= 85) {
+                $status = 'very_busy';
+                $estimatedWait = 25;
+                $busyStations[] = $station->station_type;
+            } elseif ($loadPercentage >= 70) {
+                $status = 'busy';
+                $estimatedWait = 15;
+            } elseif ($loadPercentage < 40) {
+                $status = 'fast';
+                $estimatedWait = 5;
+                $fastStationTypes[] = $station->id;
+            }
+
+            $stationStatus[$station->station_type] = [
+                'name' => $station->name,
+                'load_percentage' => $loadPercentage,
+                'status' => $status,
+                'estimated_wait' => $estimatedWait,
+                'current_load' => $station->current_load,
+                'max_capacity' => $station->max_capacity,
+            ];
+        }
+
+        // Get actual menu items from fast stations with estimated wait times
+        $recommendedItems = collect();
+        if (count($fastStationTypes) > 0) {
+            $items = MenuItem::where('availability', true)
+                ->whereHas('category', function ($query) use ($fastStationTypes) {
+                    $query->whereIn('default_station_id', $fastStationTypes);
+                })
+                ->with('category.defaultStation')
+                ->inRandomOrder()
+                ->limit(4)
+                ->get();
+
+            // Attach estimated wait time to each item based on preparation time
+            $recommendedItems = $items->map(function ($item) use ($stations) {
+                // Use item's preparation time (default 15 min if not set)
+                $basePrepTime = $item->preparation_time ?? 15;
+
+                // Get station load to adjust estimate
+                $station = $item->category && $item->category->defaultStation
+                    ? $stations->firstWhere('id', $item->category->defaultStation->id)
+                    : null;
+
+                if ($station) {
+                    $loadPercentage = $station->max_capacity > 0
+                        ? ($station->current_load / $station->max_capacity) * 100
+                        : 0;
+
+                    // Adjust preparation time based on station load
+                    if ($loadPercentage >= 85) {
+                        // Very busy - add 50% to prep time
+                        $item->estimated_wait = ceil($basePrepTime * 1.5);
+                    } elseif ($loadPercentage >= 70) {
+                        // Busy - add 30% to prep time
+                        $item->estimated_wait = ceil($basePrepTime * 1.3);
+                    } elseif ($loadPercentage >= 40) {
+                        // Normal - add 10% to prep time
+                        $item->estimated_wait = ceil($basePrepTime * 1.1);
+                    } else {
+                        // Fast - use base prep time
+                        $item->estimated_wait = $basePrepTime;
+                    }
+                } else {
+                    $item->estimated_wait = $basePrepTime;
+                }
+
+                return $item;
+            });
+        }
+
+        return [
+            'stations' => $stationStatus,
+            'recommended_items' => $recommendedItems,
+            'busy_types' => $busyStations,
+            'overall_status' => count($busyStations) > 2 ? 'busy' : 'normal',
+        ];
     }
 }

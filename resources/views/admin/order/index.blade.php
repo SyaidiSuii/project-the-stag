@@ -11,7 +11,6 @@
 @php
     $preparingCount = \App\Models\Order::where('order_status', 'preparing')->count();
     $readyCount = \App\Models\Order::where('order_status', 'ready')->count();
-    $servedCount = \App\Models\Order::where('order_status', 'served')->count();
 @endphp
 
 <!-- Stats Cards -->
@@ -50,14 +49,6 @@
     </div>
     <div class="admin-card">
         <div class="admin-card-header">
-            <div class="admin-card-title">Served</div>
-            <div class="admin-card-icon icon-purple"><i class="fas fa-check-circle"></i></div>
-        </div>
-        <div class="admin-card-value">{{ $servedCount }}</div>
-        <div class="admin-card-desc">Served orders</div>
-    </div>
-    <div class="admin-card">
-        <div class="admin-card-header">
             <div class="admin-card-title">Completed</div>
             <div class="admin-card-icon icon-teal"><i class="fas fa-flag-checkered"></i></div>
         </div>
@@ -90,7 +81,6 @@
                 <option value="pending" {{ request('order_status') == 'pending' ? 'selected' : '' }}>Pending</option>
                 <option value="preparing" {{ request('order_status') == 'preparing' ? 'selected' : '' }}>Preparing</option>
                 <option value="ready" {{ request('order_status') == 'ready' ? 'selected' : '' }}>Ready</option>
-                <option value="served" {{ request('order_status') == 'served' ? 'selected' : '' }}>Served</option>
                 <option value="completed" {{ request('order_status') == 'completed' ? 'selected' : '' }}>Completed</option>
                 <option value="cancelled" {{ request('order_status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
             </select>
@@ -133,20 +123,20 @@
         <table class="admin-table">
                 <thead>
                     <tr>
-                        <th class="th-order">Order Details</th>
-                        <th class="th-customer">Customer</th>
-                        <th class="th-type">Type/Table</th>
-                        <th class="th-amount">Amount</th>
-                        <th class="th-status" style="min-width: 180px;">Status</th>
-                        <th class="th-time">Order Time</th>
-                        <th class="th-eta" style="min-width: 100px;">ETA</th>
-                        <th class="th-actions" style="min-width: 130px; width: 130px;">Actions</th>
+                        <th class="th-order" style="text-align: center;">Order Details</th>
+                        <th class="th-customer" style="text-align: center;">Customer</th>
+                        <th class="th-type" style="text-align: center;">Type/Table</th>
+                        <th class="th-amount" style="text-align: center;">Amount</th>
+                        <th class="th-status" style="min-width: 180px; text-align: center;">Status</th>
+                        <th class="th-time" style="text-align: center;">Order Time</th>
+                        <th class="th-eta" style="min-width: 100px; text-align: center;">ETA</th>
+                        <th class="th-actions" style="min-width: 130px; width: 130px; text-align: center;">Actions</th>
                     </tr>
                 </thead>
             <tbody>
                 @foreach($orders as $order)
                 <tr>
-                    <td>
+                    <td class="cell-center">
                         <div class="order-info">
                             {{-- <div class="order-id">#{{ $order->id }}</div> --}}
                             @if($order->id)
@@ -162,17 +152,21 @@
                             @endif
                         </div>
                     </td>
-                    <td>
+                    <td class="cell-center">
                         <div class="customer-info">
                             <div class="customer-name">{{ $order->user->name ?? 'Unknown' }}</div>
                         </div>
                     </td>
-                    <td>
+                    <td class="cell-center">
                         <div class="type-table-info">
                             <span class="status status-type status-{{ str_replace('_', '-', $order->order_type) }}">
                                 {{ str_replace('_', ' ', ucfirst($order->order_type)) }}
                             </span>
-                            {{-- <div class="order-source">{{ ucfirst(str_replace('_', ' ', $order->order_source)) }}</div> --}}
+                            @if($order->order_source)
+                                <div class="order-source" style="font-size: 10px; color: #64748b; margin-top: 2px;">
+                                    {{ ucfirst(str_replace('_', ' ', $order->order_source)) }}
+                                </div>
+                            @endif
                             @if($order->table)
                                 <div class="table-info">
                                     <strong>{{ $order->table->table_number }}</strong>
@@ -188,25 +182,27 @@
                         <div class="amount">RM {{ number_format($order->total_amount, 2) }}</div>
                     </td>
                     <td class="cell-center">
-                        <div class="status-group-vertical">
-                            <div style="display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 6px;">
-                                <span class="status status-payment status-payment-{{ str_replace('_', '-', $order->payment_status) }}">
-                                    <i class="fas fa-{{ $order->payment_status === 'paid' ? 'check-circle' : ($order->payment_status === 'unpaid' ? 'clock' : 'info-circle') }}"></i>
-                                    {{ ucfirst($order->payment_status) }}
+                        <div class="status-group-vertical" style="display: flex; flex-direction: column; align-items: center;">
+                            <!-- Payment Status (Top) -->
+                            <span class="status status-payment status-payment-{{ str_replace('_', '-', $order->payment_status) }}" style="margin-bottom: 4px;">
+                                <i class="fas fa-{{ $order->payment_status === 'paid' ? 'check-circle' : ($order->payment_status === 'unpaid' ? 'clock' : 'info-circle') }}"></i>
+                                {{ ucfirst($order->payment_status) }}
+                            </span>
+
+                            <!-- Order Source (Middle) -->
+                            @if($order->order_source)
+                                <span class="status status-method" style="font-size: 9px; background: #e0e7ff; color: #4c51bf; padding: 3px 6px; margin-bottom: 4px;">
+                                    {{ ucfirst(str_replace('_', ' ', $order->order_source)) }}
                                 </span>
-                                @if($order->payment_method)
-                                    <span class="status status-method" style="font-size: 9px; background: #e0e7ff; color: #4c51bf; padding: 3px 6px;">
-                                        {{ $order->payment_method === 'online' ? 'Online' : 'Counter' }}
-                                    </span>
-                                @endif
-                            </div>
+                            @endif
+
+                            <!-- Order Status (Bottom) -->
                             <span class="status status-order status-order-{{ str_replace('_', '-', $order->order_status) }}">
                                 <i class="fas fa-{{
                                     $order->order_status === 'pending' ? 'clock' :
                                     ($order->order_status === 'preparing' ? 'utensils' :
                                     ($order->order_status === 'ready' ? 'bell' :
-                                    ($order->order_status === 'served' ? 'check' :
-                                    ($order->order_status === 'completed' ? 'check-double' : 'times'))))
+                                    ($order->order_status === 'completed' ? 'check-double' : 'times')))
                                 }}"></i>
                                 {{ str_replace('_', ' ', ucfirst($order->order_status)) }}
                             </span>
@@ -261,16 +257,6 @@
                                     <i class="fas fa-bell"></i>
                                 </button>
                             @elseif($order->order_status === 'ready')
-                                @if($order->order_type === 'dine_in')
-                                    <button class="action-btn serve-btn" title="Mark as Served" onclick="updateOrderStatus({{ $order->id }}, 'served')" style="grid-column: span 2;">
-                                        <i class="fas fa-utensils"></i>
-                                    </button>
-                                @else
-                                    <button class="action-btn complete-btn" title="Mark as Completed" onclick="updateOrderStatus({{ $order->id }}, 'completed')" style="grid-column: span 2;">
-                                        <i class="fas fa-check-circle"></i>
-                                    </button>
-                                @endif
-                            @elseif($order->order_status === 'served')
                                 <button class="action-btn complete-btn" title="Mark as Completed" onclick="updateOrderStatus({{ $order->id }}, 'completed')" style="grid-column: span 2;">
                                     <i class="fas fa-check-circle"></i>
                                 </button>
@@ -434,15 +420,13 @@ function updateOrderStatus(orderId, newStatus) {
     const statusTransitions = {
         'pending': ['preparing', 'cancelled'],
         'preparing': ['ready', 'cancelled'],
-        'ready': ['served', 'completed', 'cancelled'],
-        'served': ['completed']
+        'ready': ['completed', 'cancelled']
     };
 
     // Confirmation messages
     const confirmMessages = {
         'preparing': 'Start preparing this order?',
         'ready': 'Mark this order as ready?',
-        'served': 'Mark this order as served?',
         'completed': 'Mark this order as completed?',
         'cancelled': 'Cancel this order? This action cannot be undone.'
     };

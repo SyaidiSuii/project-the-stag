@@ -53,19 +53,26 @@ class DashboardController extends Controller
         // Real Sales Chart Data from SaleAnalytics for the last 7 days
         $chartLabels = collect();
         $chartData = collect();
-        
+
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i);
             $chartLabels->push($date->format('D, M j'));
-            
+
             $dailySales = SaleAnalytics::whereDate('date', $date)
                 ->sum('total_sales');
             $chartData->push($dailySales);
         }
-            
+
+        // Unpaid Orders Alert - Get flagged unpaid orders
+        $unpaidOrders = Order::where('is_flagged_unpaid', true)
+            ->where('payment_status', 'unpaid')
+            ->with(['user', 'table'])
+            ->orderBy('unpaid_alert_sent_at', 'desc')
+            ->get();
+
         return view('admin.dashboard.index', compact(
             'totalOrders',
-            'todayOrders', 
+            'todayOrders',
             'todayRevenue',
             'revenueGrowth',
             'customerFeedbackCount',
@@ -75,7 +82,8 @@ class DashboardController extends Controller
             'recentActivity',
             'popularMenuItems',
             'chartLabels',
-            'chartData'
+            'chartData',
+            'unpaidOrders'
         ));
     }
 

@@ -46,6 +46,81 @@
     </div>
 </div>
 
+<!-- Unpaid Orders Alert Section -->
+@if($unpaidOrders->isNotEmpty())
+<div class="admin-section" style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+    <div class="section-header" style="margin-bottom: 16px;">
+        <h2 class="section-title" style="color: #dc2626; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-exclamation-triangle"></i>
+            Unpaid Orders Alert ({{ $unpaidOrders->count() }})
+        </h2>
+        <a href="{{ route('admin.order.index', ['payment_status' => 'unpaid', 'is_flagged_unpaid' => true]) }}" class="admin-btn btn-danger">
+            <i class="fas fa-eye"></i> View All
+        </a>
+    </div>
+    <p style="color: #991b1b; margin-bottom: 16px; font-weight: 600;">
+        <i class="fas fa-info-circle"></i> The following orders have been completed/served for more than 4 hours but remain unpaid:
+    </p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+        @foreach($unpaidOrders->take(6) as $order)
+        <div style="background: white; padding: 16px; border-radius: 8px; border: 2px solid #fecaca;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                <div>
+                    <div style="font-weight: 700; font-size: 16px; color: #1f2937;">
+                        #{{ $order->confirmation_code }}
+                    </div>
+                    <div style="font-size: 13px; color: #6b7280; margin-top: 2px;">
+                        <i class="fas fa-user"></i> {{ $order->customer_name }}
+                    </div>
+                </div>
+                <span style="background: #dc2626; color: white; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                    UNPAID
+                </span>
+            </div>
+
+            <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">
+                <i class="fas fa-dollar-sign"></i> Amount: <strong style="color: #1f2937;">RM {{ number_format($order->total_amount, 2) }}</strong>
+            </div>
+
+            <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">
+                <i class="fas fa-{{ $order->payment_method == 'online' ? 'credit-card' : 'money-bill-wave' }}"></i>
+                Payment: <strong>{{ ucfirst($order->payment_method) }}</strong>
+            </div>
+
+            @if($order->table_number)
+            <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">
+                <i class="fas fa-chair"></i> Table {{ $order->table_number }}
+            </div>
+            @endif
+
+            <div style="font-size: 13px; color: #dc2626; margin-bottom: 12px; font-weight: 600;">
+                @php
+                    $completionTime = $order->actual_completion_time ?? $order->updated_at;
+                    $hoursUnpaid = $completionTime->diffInHours(now());
+                @endphp
+                <i class="fas fa-clock"></i> {{ $hoursUnpaid }}h unpaid
+                <span style="font-size: 11px; font-weight: 400; color: #6b7280;">
+                    (since {{ $completionTime->format('M d, h:i A') }})
+                </span>
+            </div>
+
+            <a href="{{ route('admin.order.show', $order->id) }}" class="admin-btn btn-sm btn-danger" style="width: 100%; justify-content: center;">
+                <i class="fas fa-file-alt"></i> View Order
+            </a>
+        </div>
+        @endforeach
+    </div>
+
+    @if($unpaidOrders->count() > 6)
+    <div style="margin-top: 16px; text-align: center;">
+        <a href="{{ route('admin.order.index', ['payment_status' => 'unpaid', 'is_flagged_unpaid' => true]) }}" style="color: #dc2626; font-weight: 600; text-decoration: underline;">
+            View {{ $unpaidOrders->count() - 6 }} more unpaid order(s) →
+        </a>
+    </div>
+    @endif
+</div>
+@endif
+
 <!-- Sales Chart Section -->
 <div class="admin-section">
     <div class="section-header">

@@ -19,11 +19,14 @@ class MenuItem extends Model
         'image',
         'allergens',
         'preparation_time',
+        'station_override_id',
         'availability',
         'is_featured',
         'is_set_meal', // Added for set meals
         'rating_average',
         'rating_count',
+        'station_type',
+        'kitchen_load_factor',
     ];
 
     protected $casts = [
@@ -34,6 +37,7 @@ class MenuItem extends Model
         'rating_average' => 'decimal:2',
         'rating_count' => 'integer',
         'preparation_time' => 'integer',
+        'kitchen_load_factor' => 'decimal:2',
     ];
 
     protected $attributes = [
@@ -97,6 +101,33 @@ class MenuItem extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Get the station override for this menu item
+     */
+    public function stationOverride()
+    {
+        return $this->belongsTo(KitchenStation::class, 'station_override_id');
+    }
+
+    /**
+     * Get the effective kitchen station for this item
+     * Returns override if set, otherwise returns category's default station
+     */
+    public function getEffectiveStation()
+    {
+        // If item has station override, use it
+        if ($this->station_override_id) {
+            return $this->stationOverride;
+        }
+
+        // Otherwise, use category's effective station
+        if ($this->category) {
+            return $this->category->getEffectiveStation();
+        }
+
+        return null;
     }
 
     /**
@@ -402,5 +433,83 @@ class MenuItem extends Model
         return str_repeat('★', $fullStars) .
                ($halfStar ? '⯨' : '') .
                str_repeat('☆', $emptyStars);
+    }
+
+    /**
+     * Get the effective station type (from category default if not set)
+     */
+    public function getEffectiveStationTypeAttribute()
+    {
+        // If item has its own station type, use it
+        if ($this->station_type) {
+            return $this->station_type;
+        }
+
+        // Otherwise, inherit from category
+        if ($this->category && $this->category->default_station_type) {
+            return $this->category->default_station_type;
+        }
+
+        // Default to hot kitchen
+        return 'hot_kitchen';
+    }
+
+    /**
+     * Get the effective kitchen load factor
+     */
+    public function getEffectiveLoadFactorAttribute()
+    {
+        // If item has its own load factor, use it
+        if ($this->kitchen_load_factor !== null) {
+            return $this->kitchen_load_factor;
+        }
+
+        // Otherwise, inherit from category
+        if ($this->category && $this->category->default_load_factor !== null) {
+            return $this->category->default_load_factor;
+        }
+
+        // Default to 1.0 (normal complexity)
+        return 1.0;
+    }
+
+    /**
+     * Calculate total load points for this item
+     * Load = load_factor * (preparation_time / 10)
+     */
+    public function getLoadPointsAttribute()
+    {
+        $loadFactor = $this->effective_load_factor;
+        $prepTime = $this->preparation_time ?? 15;
+
+        return round($loadFactor * ($prepTime / 10), 2);
+    }
+
+    /**
+     * Get station icon based on type
+     */
+    public function getStationIconAttribute()
+    {
+        return match($this->effective_station_type) {
+            'hot_kitchen' => '🔥',
+            'cold_kitchen' => '🥗',
+            'drinks' => '🍹',
+            'desserts' => '🍰',
+            default => '🍴'
+        };
+    }
+
+    /**
+     * Get station display name
+     */
+    public function getStationDisplayNameAttribute()
+    {
+        return match($this->effective_station_type) {
+            'hot_kitchen' => 'Hot Cooking',
+            'cold_kitchen' => 'Cold Prep & Salads',
+            'drinks' => 'Beverages & Drinks',
+            'desserts' => 'Desserts & Pastries',
+            default => 'General Kitchen'
+        };
     }
 }

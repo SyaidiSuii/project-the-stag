@@ -14,6 +14,8 @@ use App\Models\TableReservation;
 use App\Models\MenuItem;
 use Illuminate\Validation\Rule;
 use App\Events\AnalyticsRefreshEvent;
+use App\Services\Kitchen\OrderDistributionService;
+use App\Services\Kitchen\KitchenLoadService;
 
 class OrderController extends Controller
 {
@@ -29,6 +31,104 @@ class OrderController extends Controller
             ->groupBy('order_status');
 
         return view('admin.order.today', compact('orders'));
+    }
+
+    /**
+     * Kitchen Display System - Full screen view for kitchen staff
+     */
+    public function kds(Request $request)
+    {
+        $user = $request->user();
+        $stationId = $request->get('station_id');
+
+        // Check if user is kitchen staff (restrict access)
+        $isKitchenStaff = $user->isKitchenStaff();
+
+        // Kitchen staff MUST use their assigned station only
+        if ($isKitchenStaff) {
+            // Force kitchen staff to their assigned station
+            if ($user->assigned_station_id) {
+                $stationId = $user->assigned_station_id;
+            } else {
+                // If kitchen staff has no assigned station, redirect to error
+                return redirect()->route('admin.dashboard')
+                    ->with('error', 'You must be assigned to a station to access the KDS. Please contact an administrator.');
+            }
+        } else {
+            // For admin/manager, allow station selection or auto-assign if they have one
+            if (!$stationId && $user->assigned_station_id) {
+                $stationId = $user->assigned_station_id;
+            }
+        }
+
+        // Get active orders (not completed or cancelled)
+        $query = Order::with([
+            'user',
+            'table',
+            'reservation',
+            'items.menuItem.category',
+            'stationAssignments.station',
+            'kitchenLoads.station'
+        ])
+        ->whereIn('order_status', ['pending', 'confirmed', 'preparing', 'ready'])
+        ->orderBy('order_time', 'asc');
+
+        // Filter by station if specified or auto-assigned
+        if ($stationId) {
+            $query->whereHas('stationAssignments', function ($q) use ($stationId) {
+                $q->where('station_id', $stationId);
+            });
+        }
+
+        $orders = $query->get()->groupBy('order_status');
+
+        // Get all active kitchen stations
+        // Kitchen staff can only see their assigned station
+        if ($isKitchenStaff && $user->assigned_station_id) {
+            $stations = \App\Models\KitchenStation::where('is_active', true)
+                ->where('id', $user->assigned_station_id)
+                ->ordered()
+                ->withCount(['activeLoads', 'pendingAssignments'])
+                ->get();
+        } else {
+            $stations = \App\Models\KitchenStation::where('is_active', true)
+                ->ordered()
+                ->withCount(['activeLoads', 'pendingAssignments'])
+                ->get();
+        }
+
+        // Get today's stats (scoped to station for kitchen staff)
+        if ($stationId) {
+            $todayStats = [
+                'total_orders' => Order::whereDate('order_time', today())
+                    ->whereHas('stationAssignments', function ($q) use ($stationId) {
+                        $q->where('station_id', $stationId);
+                    })->count(),
+                'pending' => $orders->get('pending', collect())->count(),
+                'preparing' => $orders->get('preparing', collect())->count(),
+                'ready' => $orders->get('ready', collect())->count(),
+                'completed_today' => Order::whereDate('order_time', today())
+                    ->where('order_status', 'completed')
+                    ->whereHas('stationAssignments', function ($q) use ($stationId) {
+                        $q->where('station_id', $stationId);
+                    })->count(),
+            ];
+        } else {
+            $todayStats = [
+                'total_orders' => Order::whereDate('order_time', today())->count(),
+                'pending' => $orders->get('pending', collect())->count(),
+                'preparing' => $orders->get('preparing', collect())->count(),
+                'ready' => $orders->get('ready', collect())->count(),
+                'completed_today' => Order::whereDate('order_time', today())
+                    ->where('order_status', 'completed')
+                    ->count(),
+            ];
+        }
+
+        // Get current station name if filtered
+        $currentStation = $stationId ? \App\Models\KitchenStation::find($stationId) : null;
+
+        return view('admin.kitchen.kds', compact('orders', 'stations', 'stationId', 'todayStats', 'currentStation', 'isKitchenStaff'));
     }
 
     /**
@@ -82,7 +182,7 @@ class OrderController extends Controller
 
         // Get statistics for dashboard cards
         $totalOrders = Order::count();
-        $totalRevenue = Order::whereIn('order_status', ['completed', 'served'])
+        $totalRevenue = Order::where('order_status', 'completed')
             ->where('payment_status', 'paid')
             ->sum('total_amount');
         $pendingOrders = Order::where('order_status', 'pending')->count();
@@ -103,12 +203,34 @@ class OrderController extends Controller
     public function create()
     {
         $order = new Order;
-        $users = User::select('id', 'name')->get();
-        $tables = Table::where('is_active', true)->select('id', 'table_number', 'status')->get();
+
+        // Separate customers from staff
+        $customers = User::whereDoesntHave('roles', function($query) {
+                $query->whereIn('name', ['admin', 'manager', 'kitchen_staff']);
+            })
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
+
+        $users = $customers; // For backward compatibility
+
+        $tables = Table::where('is_active', true)->select('id', 'table_number', 'status', 'capacity')->orderBy('table_number')->get();
         $reservations = TableReservation::with('table')->whereDate('booking_date', '>=', now())->get();
-        $menuItems = MenuItem::where('availability', true)->select('id', 'name', 'price', 'preparation_time')->get();
-        
-        return view('admin.order.form', compact('order', 'users', 'tables', 'reservations', 'menuItems'));
+
+        // Get menu items grouped by category
+        $menuItems = MenuItem::with('category')
+            ->where('availability', true)
+            ->select('id', 'name', 'price', 'preparation_time', 'category_id')
+            ->orderBy('category_id')
+            ->orderBy('name')
+            ->get();
+
+        // Group menu items by category
+        $menuItemsByCategory = $menuItems->groupBy(function($item) {
+            return $item->category->name ?? 'Uncategorized';
+        });
+
+        return view('admin.order.form-improved', compact('order', 'users', 'customers', 'tables', 'reservations', 'menuItems', 'menuItemsByCategory'));
     }
 
     /**
@@ -122,7 +244,7 @@ class OrderController extends Controller
             'reservation_id' => 'nullable|exists:table_reservations,id',
             'order_type' => 'required|in:dine_in,takeaway,delivery,event',
             'order_source' => 'required|in:counter,web,mobile,waiter,qr_scan',
-            'order_status' => 'required|in:pending,confirmed,preparing,ready,served,completed,cancelled',
+            'order_status' => 'required|in:pending,confirmed,preparing,ready,completed,cancelled',
             'table_number' => 'nullable|string|max:10',
             'total_amount' => 'required|numeric|min:0|max:999999.99',
             'payment_status' => 'required|in:unpaid,partial,paid,refunded',
@@ -175,7 +297,7 @@ class OrderController extends Controller
                     $quantity = $itemData['quantity'] ?? 1;
                     $unitPrice = $itemData['price'];
                     $totalPrice = $unitPrice * $quantity;
-                    
+
                     $order->items()->create([
                         'menu_item_id' => $itemData['menu_item_id'],
                         'quantity' => $quantity,
@@ -191,6 +313,30 @@ class OrderController extends Controller
         $order->load('items.menuItem'); // Load items with menu item data
         if ($order->items->count() > 0) {
             $order->autoCreateETA();
+        }
+
+        // 🔥 KITCHEN LOAD BALANCING: Auto-distribute order to stations
+        // This happens IMMEDIATELY when order is created (regardless of status)
+        // Orders need to go to kitchen right away so chefs can start preparing
+        if ($order->items->count() > 0 && !in_array($order->order_status, ['cancelled', 'completed'])) {
+            try {
+                $distributionService = app(OrderDistributionService::class);
+                $distributionService->distributeOrder($order);
+
+                \Log::info('✅ Order distributed to kitchen stations', [
+                    'order_id' => $order->id,
+                    'confirmation_code' => $order->confirmation_code,
+                    'items_count' => $order->items->count(),
+                    'order_status' => $order->order_status
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('❌ Failed to distribute order to kitchen', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                // Don't fail the order creation, just log the error
+            }
         }
 
         // 🔥 DISPATCH REAL-TIME EVENT if order created with "paid" status
@@ -216,12 +362,33 @@ class OrderController extends Controller
      */
     public function edit(Order $order)
     {
-        $users = User::select('id', 'name')->get();
-        $tables = Table::where('is_active', true)->select('id', 'table_number', 'status')->get();
+        // Separate customers from staff
+        $customers = User::whereDoesntHave('roles', function($query) {
+                $query->whereIn('name', ['admin', 'manager', 'kitchen_staff']);
+            })
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
+
+        $users = $customers; // For backward compatibility
+
+        $tables = Table::where('is_active', true)->select('id', 'table_number', 'status', 'capacity')->orderBy('table_number')->get();
         $reservations = TableReservation::with('table')->whereDate('booking_date', '>=', now())->get();
-        $menuItems = MenuItem::where('availability', true)->select('id', 'name', 'price', 'preparation_time')->get();
-        
-        return view('admin.order.form', compact('order', 'users', 'tables', 'reservations', 'menuItems'));
+
+        // Get menu items grouped by category
+        $menuItems = MenuItem::with('category')
+            ->where('availability', true)
+            ->select('id', 'name', 'price', 'preparation_time', 'category_id')
+            ->orderBy('category_id')
+            ->orderBy('name')
+            ->get();
+
+        // Group menu items by category
+        $menuItemsByCategory = $menuItems->groupBy(function($item) {
+            return $item->category->name ?? 'Uncategorized';
+        });
+
+        return view('admin.order.form-improved', compact('order', 'users', 'customers', 'tables', 'reservations', 'menuItems', 'menuItemsByCategory'));
     }
 
     /**
@@ -235,7 +402,7 @@ class OrderController extends Controller
             'reservation_id' => 'nullable|exists:table_reservations,id',
             'order_type' => 'required|in:dine_in,takeaway,delivery,event',
             'order_source' => 'required|in:counter,web,mobile,waiter,qr_scan',
-            'order_status' => 'required|in:pending,confirmed,preparing,ready,served,completed,cancelled',
+            'order_status' => 'required|in:pending,confirmed,preparing,ready,completed,cancelled',
             'table_number' => 'nullable|string|max:10',
             'total_amount' => 'required|numeric|min:0|max:999999.99',
             'payment_status' => 'required|in:unpaid,partial,paid,refunded',
@@ -377,21 +544,126 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $this->validate($request, [
-            'order_status' => 'required|in:pending,confirmed,preparing,ready,served,completed,cancelled',
+            'order_status' => 'required|in:pending,confirmed,preparing,ready,completed,cancelled',
+            'station_id' => 'nullable|exists:kitchen_stations,id', // Optional: specific station
         ]);
 
         $oldOrderStatus = $order->order_status;
-        $order->order_status = $request->order_status;
+        $newStatus = $request->order_status;
+        $stationId = $request->station_id;
 
-        // Set actual completion time if status is completed
-        if ($request->order_status === 'completed' && !$order->actual_completion_time) {
-            $order->actual_completion_time = now();
+        // Kitchen Load Balancing: Distribute order when confirmed
+        if ($newStatus === 'confirmed' && $oldOrderStatus !== 'confirmed') {
+            try {
+                $distributionService = app(\App\Services\Kitchen\OrderDistributionService::class);
+                $distributionService->distributeOrder($order);
+            } catch (\Exception $e) {
+                \Log::error('Failed to distribute order to kitchen', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
         }
 
-        $order->save();
+        // Handle station-specific completion
+        if ($newStatus === 'completed' && $stationId) {
+            // Mark station assignments as completed for this specific station
+            $assignments = $order->stationAssignments()
+                ->where('station_id', $stationId)
+                ->whereIn('status', ['assigned', 'started'])
+                ->get();
+
+            foreach ($assignments as $assignment) {
+                $assignment->update([
+                    'status' => 'completed',
+                    'completed_at' => now()
+                ]);
+            }
+
+            // Release kitchen load for this station only
+            $kitchenLoadService = app(\App\Services\Kitchen\KitchenLoadService::class);
+            $kitchenLoadService->releaseLoad($stationId, $order->id);
+
+            // Check if ALL station assignments are completed
+            $remainingAssignments = $order->stationAssignments()
+                ->whereIn('status', ['assigned', 'started'])
+                ->count();
+
+            if ($remainingAssignments === 0) {
+                // All stations completed - mark entire order as completed
+                $order->order_status = 'completed';
+                $order->actual_completion_time = now();
+                $order->save();
+            } else {
+                // Some stations still working - keep order in preparing/ready status
+                if ($oldOrderStatus === 'pending' || $oldOrderStatus === 'confirmed') {
+                    $order->order_status = 'preparing';
+                    $order->save();
+                }
+                // Don't change status if already preparing/ready
+            }
+        }
+        // Handle ready status (when station finishes but not yet served to customer)
+        elseif ($newStatus === 'ready' && $stationId) {
+            // Mark station assignments as completed for this specific station
+            $assignments = $order->stationAssignments()
+                ->where('station_id', $stationId)
+                ->whereIn('status', ['assigned', 'started'])
+                ->get();
+
+            foreach ($assignments as $assignment) {
+                $assignment->update([
+                    'status' => 'completed',
+                    'completed_at' => now()
+                ]);
+            }
+
+            // Release kitchen load for this station
+            $kitchenLoadService = app(\App\Services\Kitchen\KitchenLoadService::class);
+            $kitchenLoadService->releaseLoad($stationId, $order->id);
+
+            // Check if ALL stations are done
+            $remainingAssignments = $order->stationAssignments()
+                ->whereIn('status', ['assigned', 'started'])
+                ->count();
+
+            if ($remainingAssignments === 0) {
+                // All stations ready - mark order as ready
+                $order->order_status = 'ready';
+                $order->save();
+            } elseif ($oldOrderStatus !== 'ready' && $oldOrderStatus !== 'preparing') {
+                $order->order_status = 'preparing';
+                $order->save();
+            }
+        }
+        // Handle order-level status updates (no specific station)
+        else {
+            $order->order_status = $newStatus;
+
+            // Set actual completion time if status is completed
+            if ($newStatus === 'completed' && !$order->actual_completion_time) {
+                $order->actual_completion_time = now();
+
+                // Mark ALL station assignments as completed
+                $order->stationAssignments()
+                    ->whereIn('status', ['assigned', 'started'])
+                    ->update([
+                        'status' => 'completed',
+                        'completed_at' => now()
+                    ]);
+
+                // Release all loads
+                $kitchenLoadService = app(\App\Services\Kitchen\KitchenLoadService::class);
+                foreach ($order->kitchenLoads as $load) {
+                    $kitchenLoadService->releaseLoad($load->station_id, $order->id);
+                }
+            }
+
+            $order->save();
+        }
 
         // Auto-create or update ETA when status changes to preparing
-        if ($request->order_status === 'preparing') {
+        if ($order->order_status === 'preparing' && $oldOrderStatus !== 'preparing') {
             $order->load('items.menuItem');
             if ($order->items->count() > 0) {
                 // Check if ETA already exists
@@ -409,6 +681,13 @@ class OrderController extends Controller
                 today(),
                 [],
                 "order_status_ajax:{$oldOrderStatus}→{$request->order_status}"
+            ));
+
+            // 🔥 BROADCAST ORDER STATUS UPDATE FOR KDS
+            event(new \App\Events\OrderStatusUpdatedEvent(
+                $order,
+                $oldOrderStatus,
+                auth()->user()->name ?? 'System'
             ));
         }
 
@@ -453,6 +732,54 @@ class OrderController extends Controller
             'success' => true,
             'message' => 'Payment status updated successfully!',
             'order' => $order
+        ]);
+    }
+
+    /**
+     * Request more time for order preparation (Kitchen Staff)
+     */
+    public function needMoreTime(Request $request, Order $order)
+    {
+        $this->validate($request, [
+            'additional_minutes' => 'required|integer|min:5|max:60',
+        ]);
+
+        $additionalMinutes = $request->additional_minutes ?? 10;
+
+        // Update the estimated completion time
+        if ($order->estimated_completion_time) {
+            $order->estimated_completion_time = \Carbon\Carbon::parse($order->estimated_completion_time)
+                ->addMinutes($additionalMinutes);
+        } else {
+            $order->estimated_completion_time = now()->addMinutes($additionalMinutes);
+        }
+
+        // Update ETA if exists
+        $eta = $order->etas()->latest()->first();
+        if ($eta) {
+            $eta->estimated_time = \Carbon\Carbon::parse($eta->estimated_time)->addMinutes($additionalMinutes);
+            $eta->delay_reason = 'Chef requested more time (+' . $additionalMinutes . ' minutes)';
+            $eta->save();
+        }
+
+        $order->save();
+
+        // Log the delay request
+        \Log::info('Order delay requested', [
+            'order_id' => $order->id,
+            'requested_by' => auth()->user()->name,
+            'additional_minutes' => $additionalMinutes,
+            'new_estimated_time' => $order->estimated_completion_time,
+        ]);
+
+        // TODO: Send notification to manager about the delay
+        // This can be implemented with broadcasting or push notifications
+
+        return response()->json([
+            'success' => true,
+            'message' => "Added {$additionalMinutes} minutes to preparation time. Manager has been notified.",
+            'order' => $order->fresh(['etas']),
+            'new_estimated_time' => $order->estimated_completion_time?->format('h:i A'),
         ]);
     }
 

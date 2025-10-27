@@ -64,6 +64,27 @@
             </div>
         </div>
 
+        <div class="form-row">
+            <div class="form-group">
+                <label for="assigned_station_id" class="form-label">Assigned Kitchen Station <small>(Optional - For Kitchen Staff Only)</small></label>
+                <select name="assigned_station_id" id="assigned_station_id" class="form-control">
+                    <option value="">-- No Station Assigned --</option>
+                    @foreach($stations as $station)
+                        <option value="{{ $station->id }}"
+                            {{ old('assigned_station_id', $user->assigned_station_id) == $station->id ? 'selected' : '' }}>
+                            {{ $station->name }}
+                        </option>
+                    @endforeach
+                </select>
+                <small style="color: var(--text-3); font-size: 12px; margin-top: 4px; display: block;">
+                    <i class="fas fa-info-circle"></i> Kitchen staff will only see orders for their assigned station in KDS
+                </small>
+                @if($errors->get('assigned_station_id'))
+                    <div class="form-error">{{ implode(', ', $errors->get('assigned_station_id')) }}</div>
+                @endif
+            </div>
+        </div>
+
         @if(!$user->id)
         <div class="form-row">
             <div class="form-group">

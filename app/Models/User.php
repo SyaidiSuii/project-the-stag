@@ -33,6 +33,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'points_balance',
         'last_checkin_date',
         'checkin_streak',
+        'assigned_station_id',
     ];
 
     /**
@@ -81,6 +82,30 @@ class User extends Authenticatable implements MustVerifyEmail
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Get the kitchen station assigned to this user
+     */
+    public function assignedStation()
+    {
+        return $this->belongsTo(KitchenStation::class, 'assigned_station_id');
+    }
+
+    /**
+     * Check if user is kitchen staff
+     */
+    public function isKitchenStaff()
+    {
+        return $this->hasRole('kitchen_staff');
+    }
+
+    /**
+     * Check if user has access to view all stations
+     */
+    public function canViewAllStations()
+    {
+        return $this->hasAnyRole(['admin', 'manager']) || $this->is_super_admin;
     }
 
      /**

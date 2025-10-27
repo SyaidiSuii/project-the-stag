@@ -40,6 +40,15 @@ class AuthenticatedSessionController extends Controller
             }
         }
 
+        // Redirect kitchen staff to their assigned station KDS
+        if ($user && $user->hasRole('kitchen_staff')) {
+            if ($user->assigned_station_id) {
+                return redirect()->route('kds.index', ['station_id' => $user->assigned_station_id]);
+            }
+            // If no station assigned, redirect to KDS index (will show all orders)
+            return redirect()->route('kds.index');
+        }
+
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 

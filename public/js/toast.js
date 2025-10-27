@@ -44,7 +44,6 @@ function showToast(title, message = '', type = 'info', duration = 4000) {
             ${message ? `<div class="toast-message">${message}</div>` : ''}
         </div>
         <button class="toast-close" aria-label="Close">×</button>
-        ${duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms;"></div>` : ''}
     `;
 
     // Add to container

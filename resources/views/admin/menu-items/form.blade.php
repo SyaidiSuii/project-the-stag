@@ -139,6 +139,58 @@
             </div>
         </div>
 
+        {{-- Kitchen Station Override (Optional) --}}
+        <div class="form-row">
+            <div class="form-group">
+                <label for="station_type" class="form-label">Kitchen Station Override (Optional)</label>
+                <select id="station_type" name="station_type" class="form-control @error('station_type') is-invalid @enderror">
+                    <option value="">-- Inherit from Category --</option>
+                    <option value="hot_kitchen" {{ old('station_type', $menuItem->station_type ?? '') == 'hot_kitchen' ? 'selected' : '' }}>
+                        🔥 Hot Cooking
+                    </option>
+                    <option value="cold_kitchen" {{ old('station_type', $menuItem->station_type ?? '') == 'cold_kitchen' ? 'selected' : '' }}>
+                        🥗 Cold Prep & Salads
+                    </option>
+                    <option value="drinks" {{ old('station_type', $menuItem->station_type ?? '') == 'drinks' ? 'selected' : '' }}>
+                        🍹 Beverages & Drinks
+                    </option>
+                    <option value="desserts" {{ old('station_type', $menuItem->station_type ?? '') == 'desserts' ? 'selected' : '' }}>
+                        🍰 Desserts
+                    </option>
+                </select>
+                <small class="form-help">Leave empty to use category default. Override only for special items.</small>
+                @error('station_type')
+                <div class="form-error">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="kitchen_load_factor" class="form-label">Kitchen Load Factor (Optional)</label>
+                <select id="kitchen_load_factor" name="kitchen_load_factor" class="form-control @error('kitchen_load_factor') is-invalid @enderror">
+                    <option value="">-- Inherit from Category --</option>
+                    <option value="0.3" {{ old('kitchen_load_factor', $menuItem->kitchen_load_factor ?? '') == '0.3' ? 'selected' : '' }}>
+                        0.3 - Very Fast (drinks, pour & serve)
+                    </option>
+                    <option value="0.5" {{ old('kitchen_load_factor', $menuItem->kitchen_load_factor ?? '') == '0.5' ? 'selected' : '' }}>
+                        0.5 - Simple (toast, blend)
+                    </option>
+                    <option value="1.0" {{ old('kitchen_load_factor', $menuItem->kitchen_load_factor ?? '') == '1.0' ? 'selected' : '' }}>
+                        1.0 - Normal (stir-fry, standard cook)
+                    </option>
+                    <option value="1.5" {{ old('kitchen_load_factor', $menuItem->kitchen_load_factor ?? '') == '1.5' ? 'selected' : '' }}>
+                        1.5 - Complex (grilling, multi-step)
+                    </option>
+                    <option value="2.0" {{ old('kitchen_load_factor', $menuItem->kitchen_load_factor ?? '') == '2.0' ? 'selected' : '' }}>
+                        2.0 - Very Complex (multiple components)
+                    </option>
+                </select>
+                <small class="form-help">Override complexity for this specific item if needed.</small>
+                @error('kitchen_load_factor')
+                <div class="form-error">{{ $message }}</div>
+                @enderror
+            </div>
+        </div>
+
         <div class="form-group">
             <label for="image" class="form-label">Image Photo</label>
             <input

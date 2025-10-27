@@ -69,6 +69,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
     // Unified Menu Page
     Route::get('/menu', [\App\Http\Controllers\Customer\MenuController::class, 'index'])->name('menu.index');
     Route::get('/menu/data', [\App\Http\Controllers\Customer\MenuController::class, 'getMenuData'])->name('menu.data');
+    Route::get('/menu/kitchen-status', [\App\Http\Controllers\Customer\MenuController::class, 'getKitchenStatus'])->name('menu.kitchen-status');
 
     // Legacy routes for backward compatibility (redirect to menu)
     Route::get('/food', function () {
@@ -244,6 +245,36 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('upload-image', [HomepageContentController::class, 'uploadImage'])->name('upload-image');
             Route::put('{id}', [HomepageContentController::class, 'update'])->name('update');
             Route::delete('{id}', [HomepageContentController::class, 'destroy'])->name('destroy');
+        });
+
+        // ---------------------------------------------
+        // KITCHEN MANAGEMENT
+        // ---------------------------------------------
+        Route::prefix('kitchen')->name('kitchen.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\KitchenController::class, 'index'])->name('index');
+            Route::get('/kds', [\App\Http\Controllers\Admin\KitchenController::class, 'kds'])->name('kds');
+            Route::get('/orders', [\App\Http\Controllers\Admin\KitchenController::class, 'orders'])->name('orders');
+            Route::get('/orders/{order}', [\App\Http\Controllers\Admin\KitchenController::class, 'orderDetail'])->name('orders.detail');
+            Route::get('/analytics', [\App\Http\Controllers\Admin\KitchenController::class, 'analytics'])->name('analytics');
+
+            // Kitchen Stations
+            Route::prefix('stations')->name('stations.')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Admin\StationTypeController::class, 'index'])->name('index');
+                Route::get('/{station}', [\App\Http\Controllers\Admin\StationTypeController::class, 'show'])->name('detail');
+                Route::post('/', [\App\Http\Controllers\Admin\StationTypeController::class, 'store'])->name('store');
+                Route::put('/{station}', [\App\Http\Controllers\Admin\StationTypeController::class, 'update'])->name('update');
+                Route::delete('/{station}', [\App\Http\Controllers\Admin\StationTypeController::class, 'destroy'])->name('destroy');
+            });
+
+            // Station Types Management
+            Route::prefix('station-types')->name('station-types.')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Admin\StationTypeController::class, 'index'])->name('index');
+                Route::get('/create', [\App\Http\Controllers\Admin\StationTypeController::class, 'create'])->name('create');
+                Route::post('/', [\App\Http\Controllers\Admin\StationTypeController::class, 'store'])->name('store');
+                Route::get('/{stationType}/edit', [\App\Http\Controllers\Admin\StationTypeController::class, 'edit'])->name('edit');
+                Route::put('/{stationType}', [\App\Http\Controllers\Admin\StationTypeController::class, 'update'])->name('update');
+                Route::delete('/{stationType}', [\App\Http\Controllers\Admin\StationTypeController::class, 'destroy'])->name('destroy');
+            });
         });
 
         // ---------------------------------------------
@@ -587,7 +618,7 @@ Route::prefix('qr')->name('qr.')->group(function () {
     Route::get('menu', [QRMenuController::class, 'index'])->name('menu');
     Route::get('cart', [QRMenuController::class, 'viewCart'])->name('cart');
     Route::get('error', [QRMenuController::class, 'error'])->name('error');
-    Route::get('track', [QRMenuController::class, 'trackOrder'])->name('track');
+    Route::get('track', [QRMenuController::class, 'showTrackingPage'])->name('track');
 
     // Cart Management
     Route::prefix('cart')->name('cart.')->group(function () {
@@ -613,6 +644,7 @@ Route::prefix('qr')->name('qr.')->group(function () {
     // API Endpoints
     Route::prefix('api')->name('api.')->group(function () {
         Route::post('track-order', [QRMenuController::class, 'trackOrder'])->name('track-order');
+        Route::get('kitchen-status', [QRMenuController::class, 'getKitchenStatus'])->name('kitchen-status');
     });
 });
 
