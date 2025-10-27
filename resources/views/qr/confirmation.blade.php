@@ -261,12 +261,12 @@
             </div>
 
             <div class="actions">
-                <a href="{{ route('qr.menu', ['session' => $session->session_code]) }}" class="btn btn-primary">
-                    <i class="fas fa-utensils"></i> Back to Menu
+                <a href="{{ route('qr.track') }}?order={{ $order->confirmation_code }}&phone={{ $order->guest_phone }}" class="btn btn-primary">
+                    <i class="fas fa-box"></i> Track My Order
                 </a>
-                {{-- <a href="{{ route('qr.track') }}" class="btn btn-secondary">
-                <i class="fas fa-search"></i> Track Order
-                </a> --}}
+                <a href="{{ route('qr.menu', ['session' => $session->session_code]) }}" class="btn btn-secondary">
+                    <i class="fas fa-utensils"></i> Order More
+                </a>
             </div>
         </div>
     </div>

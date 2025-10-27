@@ -15,6 +15,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:send-happy-birthday-email')->everyTwoMinutes();
         $schedule->command('app:cleanup-abandoned-orders')->everyFiveMinutes();
 
+        // Detect unpaid orders after 4 hours - run every hour
+        $schedule->command('app:detect-unpaid-orders')->hourly();
+
         // Comprehensive analytics generation (replaces generate-sales-summary)
         $schedule->command('analytics:generate')->dailyAt('01:00');
 

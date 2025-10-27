@@ -21,6 +21,14 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
+                $user = Auth::guard($guard)->user();
+
+                // Redirect kitchen staff directly to KDS
+                if ($user->hasRole('kitchen_staff')) {
+                    return redirect()->route('kds.index');
+                }
+
+                // Everyone else goes to normal HOME
                 return redirect(RouteServiceProvider::HOME);
             }
         }

@@ -34,14 +34,19 @@ class Order extends Model
         'guest_email',
         'guest_phone',
         'session_token',
+        // Unpaid order tracking
+        'unpaid_alert_sent_at',
+        'is_flagged_unpaid',
     ];
 
     protected $casts = [
         'order_time' => 'datetime',
         'estimated_completion_time' => 'datetime',
         'actual_completion_time' => 'datetime',
+        'unpaid_alert_sent_at' => 'datetime',
         'special_instructions' => 'array',
         'is_rush_order' => 'boolean',
+        'is_flagged_unpaid' => 'boolean',
     ];
 
     /**
@@ -59,24 +64,64 @@ class Order extends Model
 
         // Trigger AI model retrain when order is completed/served
         static::updated(function ($order) {
-            // Check if order status changed to completed or served
+            // Decrement kitchen station loads when order is completed or cancelled
             if (
                 $order->isDirty('order_status') &&
-                in_array($order->order_status, ['completed', 'served'])
+                in_array($order->order_status, ['completed', 'cancelled', 'served'])
             ) {
+                // Get the old status before it was updated
+                $oldStatus = $order->getOriginal('order_status');
 
-                try {
-                    app(RecommendationService::class)->onOrderCompleted($order->id);
-                } catch (\Exception $e) {
-                    \Log::warning('Failed to trigger AI retrain on order completion', [
-                        'order_id' => $order->id,
-                        'error' => $e->getMessage()
-                    ]);
+                // Only decrement if the old status was pending, preparing, or ready
+                if (in_array($oldStatus, ['pending', 'confirmed', 'preparing', 'ready'])) {
+                    $stationAssignments = $order->stationAssignments()->with(['station', 'orderItem'])->get();
+
+                    foreach ($stationAssignments as $assignment) {
+                        if ($assignment->station && in_array($assignment->status, ['assigned', 'started'])) {
+                            // Calculate item quantity for this assignment
+                            $itemQuantity = $assignment->orderItem ? $assignment->orderItem->quantity : 1;
+
+                            // Decrement by actual item quantity
+                            $newLoad = max(0, $assignment->station->current_load - $itemQuantity);
+                            $assignment->station->update(['current_load' => $newLoad]);
+
+                            // Update assignment status to completed
+                            $assignment->update(['status' => 'completed']);
+                        }
+                    }
+                }
+
+                // Trigger AI retrain
+                if (in_array($order->order_status, ['completed', 'served'])) {
+                    try {
+                        app(RecommendationService::class)->onOrderCompleted($order->id);
+                    } catch (\Exception $e) {
+                        \Log::warning('Failed to trigger AI retrain on order completion', [
+                            'order_id' => $order->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
                 }
             }
         });
 
         // Trigger retrain when order is deleted (affects training data)
+        static::deleting(function ($order) {
+            // Decrement kitchen station loads for this order
+            $stationAssignments = $order->stationAssignments()->with(['station', 'orderItem'])->get();
+
+            foreach ($stationAssignments as $assignment) {
+                if ($assignment->station && in_array($assignment->status, ['assigned', 'started'])) {
+                    // Calculate item quantity for this assignment
+                    $itemQuantity = $assignment->orderItem ? $assignment->orderItem->quantity : 1;
+
+                    // Decrement by actual item quantity
+                    $newLoad = max(0, $assignment->station->current_load - $itemQuantity);
+                    $assignment->station->update(['current_load' => $newLoad]);
+                }
+            }
+        });
+
         static::deleted(function ($order) {
             try {
                 app(RecommendationService::class)->onOrderCompleted($order->id);
@@ -141,6 +186,24 @@ class Order extends Model
     public function reviews()
     {
         return $this->hasMany(MenuItemReview::class);
+    }
+
+    /**
+     * Kitchen Load Balancing relationships
+     */
+    public function kitchenLoads()
+    {
+        return $this->hasMany(KitchenLoad::class);
+    }
+
+    public function stationAssignments()
+    {
+        return $this->hasMany(StationAssignment::class);
+    }
+
+    public function loadBalancingLogs()
+    {
+        return $this->hasMany(LoadBalancingLog::class);
     }
 
     // Helper methods

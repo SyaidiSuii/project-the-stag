@@ -134,6 +134,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Kitchen Management Menu
+    const kitchenMenu = document.getElementById("kitchenMenu");
+    const kitchenSubmenu = document.getElementById("kitchenSubmenu");
+
+    if (kitchenMenu && kitchenSubmenu) {
+        // Check if submenu should be expanded on page load
+        if (kitchenMenu.classList.contains("active")) {
+            kitchenMenu.classList.add("expanded");
+            kitchenSubmenu.classList.add("expanded");
+        }
+
+        kitchenMenu.addEventListener("click", () => {
+            kitchenMenu.classList.toggle("expanded");
+            kitchenSubmenu.classList.toggle("expanded");
+        });
+    }
+
     // Role & Permission Menu
     const roleMenu = document.getElementById("roleMenu");
     const roleSubmenu = document.getElementById("roleSubmenu");

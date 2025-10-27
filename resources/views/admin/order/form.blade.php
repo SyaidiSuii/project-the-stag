@@ -82,15 +82,14 @@
             <div class="form-row">
             <div class="form-group">
                 <label for="order_type" class="form-label">Order Type *</label>
-                <select 
-                    id="order_type" 
-                    name="order_type" 
+                <select
+                    id="order_type"
+                    name="order_type"
                     class="form-control @error('order_type') is-invalid @enderror"
                     required>
                     <option value="">Select Order Type</option>
                     <option value="dine_in" {{ old('order_type', $order->order_type) == 'dine_in' ? 'selected' : '' }}>Dine In</option>
                     <option value="takeaway" {{ old('order_type', $order->order_type) == 'takeaway' ? 'selected' : '' }}>Takeaway</option>
-                    <option value="delivery" {{ old('order_type', $order->order_type) == 'delivery' ? 'selected' : '' }}>Delivery</option>
                     <option value="event" {{ old('order_type', $order->order_type) == 'event' ? 'selected' : '' }}>Event</option>
                 </select>
                 @if($errors->get('order_type'))
@@ -154,7 +153,7 @@
                     @if($errors->get('table_number'))
                         <div class="form-error">{{ implode(', ', $errors->get('table_number')) }}</div>
                     @endif
-                    <div class="form-hint" style="font-size: 12px; color: #6b7280; margin-top: 4px;">Use this for custom table numbers or delivery orders</div>
+                    <div class="form-hint" style="font-size: 12px; color: #6b7280; margin-top: 4px;">Use this for custom table numbers or takeaway orders</div>
                 </div>
             </div>
 
@@ -186,16 +185,15 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="order_status" class="form-label">Order Status *</label>
-                    <select 
-                        id="order_status" 
-                        name="order_status" 
+                    <select
+                        id="order_status"
+                        name="order_status"
                         class="form-control @error('order_status') is-invalid @enderror"
                         required>
-                        <option value="pending" {{ old('order_status', $order->order_status) == 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="preparing" {{ old('order_status', $order->order_status) == 'preparing' ? 'selected' : '' }}>Preparing</option>
-                        <option value="ready" {{ old('order_status', $order->order_status) == 'ready' ? 'selected' : '' }}>Ready</option>
-                        <option value="served" {{ old('order_status', $order->order_status) == 'served' ? 'selected' : '' }}>Served</option>
-                        <option value="completed" {{ old('order_status', $order->order_status) == 'completed' ? 'selected' : '' }}>Completed</option>
+                        <option value="pending" {{ old('order_status', $order->order_status ?? 'pending') == 'pending' ? 'selected' : '' }}>Pending (Will auto-send to kitchen)</option>
+                        <option value="preparing" {{ old('order_status', $order->order_status) == 'preparing' ? 'selected' : '' }}>Preparing (Cooking)</option>
+                        <option value="ready" {{ old('order_status', $order->order_status) == 'ready' ? 'selected' : '' }}>Ready (For Pickup)</option>
+                        <option value="completed" {{ old('order_status', $order->order_status) == 'completed' ? 'selected' : '' }}>Completed (Finished)</option>
                         <option value="cancelled" {{ old('order_status', $order->order_status) == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                     </select>
                     @if($errors->get('order_status'))
@@ -666,12 +664,8 @@ document.getElementById('table_id').addEventListener('change', function() {
 // Order type specific field visibility
 document.getElementById('order_type').addEventListener('change', function() {
     const orderType = this.value;
-    
-    if (orderType === 'delivery') {
-        // Hide table selection for delivery orders
-        document.getElementById('table_id').disabled = true;
-        document.getElementById('table_number').placeholder = 'Delivery Address or ID';
-    } else if (orderType === 'takeaway') {
+
+    if (orderType === 'takeaway') {
         document.getElementById('table_id').disabled = true;
         document.getElementById('table_number').placeholder = 'Takeaway Order Number';
     } else {

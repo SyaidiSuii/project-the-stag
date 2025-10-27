@@ -211,17 +211,54 @@
       <h2>Payment Successful!</h2>
       <p>Your order has been placed successfully.</p>
       <div id="success-details"></div>
-      <button class="modal-btn modal-btn-primary" id="success-ok-btn">
-        Back to Menu
-      </button>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-primary" id="success-ok-btn">
+          <i class="fas fa-box"></i> Track My Order
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back Confirmation Modal -->
+  <div id="back-confirm-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-icon" style="color: #f59e0b;">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <h2>Leave Payment Page?</h2>
+      <p>Are you sure you want to go back? Your order will not be placed.</p>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-secondary" id="back-cancel-btn">
+          Stay on Page
+        </button>
+        <button class="modal-btn modal-btn-primary" id="back-confirm-btn" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+          Yes, Go Back
+        </button>
+      </div>
     </div>
   </div>
 
   <script src="{{ asset('js/toast.js') }}"></script>
   <script>
+    // Show flash messages
+    @if(session('success'))
+        Toast.success('Success', '{{ session('success') }}');
+    @endif
+
+    @if(session('error'))
+        Toast.error('Error', '{{ session('error') }}');
+    @endif
+
     // QR Payment Page JavaScript
     document.addEventListener('DOMContentLoaded', () => {
       console.log('QR Payment page loaded');
+
+      // Show welcome message when page loads (only if not from a flash message)
+      @if(!session('success') && !session('error'))
+        setTimeout(() => {
+          Toast.info('Payment', 'Complete your payment to place order');
+        }, 300);
+      @endif
 
       const sessionCode = '{{ $session->session_code }}';
       const totalAmount = {{ $orderData['total_amount'] }};
@@ -338,17 +375,65 @@
         });
       }
 
-      // Back button confirmation
+      // Back button confirmation with modern modal
       const backLink = document.querySelector('.back-link');
+      const backConfirmModal = document.getElementById('back-confirm-modal');
+      const backCancelBtn = document.getElementById('back-cancel-btn');
+      const backConfirmBtn = document.getElementById('back-confirm-btn');
+      let backLinkHref = '';
+
       if (backLink) {
         backLink.addEventListener('click', function(e) {
           e.preventDefault();
+          backLinkHref = this.href;
+          backConfirmModal.style.display = 'flex';
+        });
+      }
 
-          if (confirm('Are you sure you want to go back? Your order will not be placed.')) {
-            window.location.href = this.href;
+      if (backCancelBtn) {
+        backCancelBtn.addEventListener('click', function() {
+          backConfirmModal.style.display = 'none';
+        });
+      }
+
+      if (backConfirmBtn) {
+        backConfirmBtn.addEventListener('click', function() {
+          window.location.href = backLinkHref;
+        });
+      }
+
+      // Close modal when clicking outside
+      if (backConfirmModal) {
+        backConfirmModal.addEventListener('click', function(e) {
+          if (e.target === this) {
+            this.style.display = 'none';
           }
         });
       }
+
+      // Intercept browser back button
+      let isLeavingPage = false;
+
+      // Add a dummy state to history so we can intercept back button
+      history.pushState({page: 'payment'}, '', '');
+
+      window.addEventListener('popstate', function(e) {
+        if (!isLeavingPage) {
+          // User pressed back button, show confirmation
+          history.pushState({page: 'payment'}, '', '');
+          backLinkHref = '{{ route("qr.menu", ["session" => $session->session_code]) }}';
+          backConfirmModal.style.display = 'flex';
+        }
+      });
+
+      // Update confirm button to set flag
+      const originalConfirmHandler = backConfirmBtn.onclick;
+      backConfirmBtn.addEventListener('click', function() {
+        isLeavingPage = true;
+        if (backLinkHref) {
+          window.location.href = backLinkHref;
+        }
+      }, true);
     });
   </script>
 </body>

@@ -87,8 +87,9 @@
                 <tr>
                     <th class="th-customer">User</th>
                     <th class="th-contact">Contact</th>
-                    <th class="th-status">Role</th>
+                    <th class="th-role">Role</th>
                     <th class="th-account-status">Account Status</th>
+                    <th class="th-station">Assigned Station</th>
                     {{-- <th class="th-total-orders">Total Orders</th> --}}
                     <th class="th-last-activity">Created</th>
                     <th class="th-actions">Actions</th>
@@ -116,7 +117,7 @@
                             <div style="font-size: 13px; color: var(--text-3); font-style: italic;">No phone</div>
                         @endif
                     </td>
-                    <td class="cell-center">
+                    <td>
                         @if($user->roles->isNotEmpty())
                             <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
                                 @foreach($user->roles as $role)
@@ -127,16 +128,23 @@
                             <span class="status" style="background: #fee2e2; color: var(--danger);">No Role</span>
                         @endif
                     </td>
-                    <td class="cell-center">
+                    <td>
                         @if($user->is_active)
                             <span class="status status-active">Active</span>
                         @else
                             <span class="status status-inactive">Inactive</span>
                         @endif
                     </td>
-                    {{-- <td class="cell-center">
-                        <span class="orders-count">{{ $user->orders_count ?? 0 }}</span>
-                    </td> --}}
+                    <td>
+                        @if($user->assignedStation)
+                            <span class="status status-station">
+                                <i class="fas fa-utensils"></i>
+                                {{ $user->assignedStation->name }}
+                            </span>
+                        @else
+                            <span style="font-size: 13px; color: var(--text-3); font-style: italic;">No Station</span>
+                        @endif
+                    </td>
                     <td>
                         <div style="font-size: 13px;">{{ $user->created_at->format('M d, Y') }}</div>
                         <div style="font-size: 12px; color: var(--text-3);">{{ $user->created_at->diffForHumans() }}</div>
@@ -146,8 +154,8 @@
                             <a href="{{ route('admin.user.edit', $user->id) }}" class="action-btn edit-btn" title="Edit User">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form method="POST" 
-                                  action="{{ route('admin.user.destroy', $user->id) }}" 
+                            <form method="POST"
+                                  action="{{ route('admin.user.destroy', $user->id) }}"
                                   style="display: inline;"
                                   onsubmit="return confirm('Are you sure you want to delete this user?');">
                                 <input type="hidden" name="_method" value="DELETE">
