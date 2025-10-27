@@ -12,13 +12,20 @@ class VoucherTemplate extends Model
 
     protected $fillable = [
         'name',
+        'title',
+        'description',
         'discount_type',
         'discount_value',
+        'minimum_spend',
+        'max_discount',
+        'terms_conditions',
         'expiry_days'
     ];
 
     protected $casts = [
         'discount_value' => 'decimal:2',
+        'minimum_spend' => 'decimal:2',
+        'max_discount' => 'decimal:2',
         'expiry_days' => 'integer'
     ];
 

@@ -42,7 +42,7 @@ class OrdersController extends Controller
     {
         $userId = Auth::id();
 
-        $order = Order::with(['items.menuItem', 'table', 'user', 'payment'])
+        $order = Order::with(['items.menuItem', 'items.promotion', 'table', 'user', 'payment'])
             ->where('id', $orderId)
             ->where('user_id', $userId) // Ensure customer can only see their own orders
             ->first();
@@ -51,7 +51,74 @@ class OrdersController extends Controller
             abort(404, 'Order not found');
         }
 
-        return view('customer.order.show', compact('order'));
+        // DEBUG: Log order items data
+        \Log::info('Order Details - Checking Promotion Grouping', [
+            'order_id' => $order->id,
+            'total_items' => $order->items->count(),
+            'items_data' => $order->items->map(fn($item) => [
+                'id' => $item->id,
+                'menu_item' => $item->menuItem->name ?? 'Unknown',
+                'combo_group_id' => $item->combo_group_id,
+                'is_combo_item' => $item->is_combo_item,
+                'promotion_id' => $item->promotion_id,
+                'has_promotion' => $item->promotion ? true : false,
+                'promotion_name' => $item->promotion->name ?? null,
+            ])
+        ]);
+
+        // Group items by combo_group_id (for bundle/combo/buy-x-free-y)
+        $regularItems = [];
+        $promotionGroups = [];
+
+        foreach ($order->items as $item) {
+            // Check if item is part of a combo/bundle using combo_group_id
+            if ($item->combo_group_id && $item->is_combo_item) {
+                $groupId = $item->combo_group_id;
+
+                if (!isset($promotionGroups[$groupId])) {
+                    $promotionGroups[$groupId] = [
+                        'group_id' => $groupId,
+                        'promotion' => $item->promotion,
+                        'items' => [],
+                        'total_price' => 0,
+                        'original_total_price' => 0,
+                        'savings' => 0,
+                    ];
+                }
+
+                $promotionGroups[$groupId]['items'][] = $item;
+                $promotionGroups[$groupId]['total_price'] += $item->total_price;
+
+                // Calculate savings from discount_amount or original_price
+                if ($item->discount_amount > 0) {
+                    $promotionGroups[$groupId]['savings'] += ($item->discount_amount * $item->quantity);
+                } elseif ($item->original_price && $item->original_price > $item->unit_price) {
+                    $originalTotal = $item->original_price * $item->quantity;
+                    $promotionGroups[$groupId]['original_total_price'] += $originalTotal;
+                    $promotionGroups[$groupId]['savings'] += ($originalTotal - $item->total_price);
+                }
+            } else {
+                $regularItems[] = $item;
+            }
+        }
+
+        $promotionGroups = array_values($promotionGroups);
+
+        // DEBUG: Log final grouping results
+        \Log::info('Order Details - Final Grouping Results', [
+            'order_id' => $order->id,
+            'promotion_groups_count' => count($promotionGroups),
+            'regular_items_count' => count($regularItems),
+            'promotion_groups' => collect($promotionGroups)->map(fn($g) => [
+                'group_id' => $g['group_id'],
+                'promotion_name' => $g['promotion']->name ?? 'Unknown',
+                'items_count' => count($g['items']),
+                'total_price' => $g['total_price'],
+                'savings' => $g['savings'],
+            ]),
+        ]);
+
+        return view('customer.order.show', compact('order', 'regularItems', 'promotionGroups'));
     }
 
     /**

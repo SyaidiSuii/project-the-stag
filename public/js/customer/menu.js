@@ -39,7 +39,10 @@ if (menuData && menuData.length > 0) {
           image: item.image || null,
           is_available: item.availability !== undefined ? item.availability : item.is_available,
           preparation_time: item.preparation_time,
-          stock_quantity: item.stock_quantity
+          stock_quantity: item.stock_quantity,
+          // Item discount support
+          has_discount: item.has_discount || false,
+          discount_info: item.discount_info || null
         };
 
         // Debug first processed item
@@ -203,10 +206,29 @@ function createMenuCard(item) {
     </div>`;
   }
 
+  // Build price HTML (with discount support)
+  let priceHtml;
+  if (item.has_discount && item.discount_info) {
+    const discount = item.discount_info;
+    const discountLabel = discount.discount_type === 'percentage'
+      ? `${discount.discount_value}% OFF`
+      : `RM ${formatPrice(discount.discount_value)} OFF`;
+
+    priceHtml = `
+      <div class="food-price-container">
+        <div class="discount-badge">${discountLabel}</div>
+        <div class="food-price original-price">RM ${formatPrice(discount.original_price)}</div>
+        <div class="food-price discounted-price">RM ${formatPrice(discount.discounted_price)}</div>
+      </div>
+    `;
+  } else {
+    priceHtml = `<div class="food-price">RM ${formatPrice(item.price)}</div>`;
+  }
+
   let cardContent = `
     <div class="food-image ${isDrink ? 'drink-style' : ''}">${imageHtml}</div>
     <div class="food-name">${item.name}</div>
-    <div class="food-price">RM ${formatPrice(item.price)}</div>
+    ${priceHtml}
     ${description ? `<div class="food-description">${description}</div>` : ''}
     ${actionsHtml}
   `;
@@ -297,11 +319,17 @@ const cartBadge = document.getElementById('cartBadge');
 
 // Update cart badge
 async function updateCartBadge() {
-  const cart = await window.cartManager.getCart();
-  console.log('Debug [updateCartBadge]: Cart items:', cart);
-  console.log('Debug [updateCartBadge]: Number of items:', cart.length);
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartData = await window.cartManager.getCart();
+
+  // Handle both formats: array (localStorage) or object (database)
+  const cart = Array.isArray(cartData) ? cartData : (cartData.cart || []);
+  const totalItems = Array.isArray(cartData)
+    ? cart.reduce((sum, item) => sum + item.quantity, 0)
+    : (cartData.count || 0);
+
+  console.log('Debug [updateCartBadge]: Cart data:', cartData);
   console.log('Debug [updateCartBadge]: Total quantity:', totalItems);
+
   cartBadge.textContent = totalItems;
   cartBadge.style.display = totalItems > 0 ? 'flex' : 'none';
 }
@@ -313,12 +341,27 @@ document.addEventListener('click', async function(e) {
     const itemCard = e.target.closest('.food-card');
     if (!itemCard) return;
 
-    const itemId = itemCard.dataset.id;
+    const itemId = parseInt(itemCard.dataset.id);
     const itemName = itemCard.querySelector('.food-name').textContent;
-    const itemPriceText = itemCard.querySelector('.food-price').textContent;
     const itemDescription = itemCard.querySelector('.food-description')?.textContent || '';
     const imgElement = itemCard.querySelector('.food-image img');
     const itemImage = imgElement ? imgElement.src : null;
+
+    // Find the item from arrays to get actual price (including discount)
+    const allItems = [...food, ...drinks, ...setMeals];
+    const itemData = allItems.find(item => item.id === itemId);
+
+    // Use discounted price if available, otherwise use original price
+    let itemPriceText;
+    if (itemData && itemData.has_discount && itemData.discount_info) {
+      itemPriceText = `RM ${itemData.discount_info.discounted_price.toFixed(2)}`;
+    } else if (itemData) {
+      itemPriceText = `RM ${itemData.price.toFixed(2)}`;
+    } else {
+      // Fallback: read from card
+      itemPriceText = itemCard.querySelector('.food-price.discounted-price')?.textContent ||
+                      itemCard.querySelector('.food-price')?.textContent || 'RM 0.00';
+    }
 
     // Show add to cart modal (from food_and_drink.js)
     if (typeof window.showAddToCartModal === 'function') {
@@ -333,9 +376,8 @@ document.addEventListener('click', async function(e) {
     const itemCard = e.target.closest('.food-card');
     if (!itemCard) return;
 
-    const itemId = itemCard.dataset.id;
+    const itemId = parseInt(itemCard.dataset.id);
     const itemName = itemCard.querySelector('.food-name').textContent;
-    const itemPriceText = itemCard.querySelector('.food-price').textContent;
     const imgElement = itemCard.querySelector('.food-image img');
     const itemImage = imgElement ? imgElement.src : null;
     const itemDescription = itemCard.querySelector('.food-description')?.textContent || '';
@@ -343,10 +385,26 @@ document.addEventListener('click', async function(e) {
     // Debug: Check if itemId exists
     console.log('Debug [Order Now clicked]: itemId =', itemId, 'itemCard.dataset =', itemCard.dataset);
 
-    if (!itemId || itemId === 'undefined') {
+    if (!itemId || isNaN(itemId)) {
       console.error('Error: Menu item ID is missing! Cannot proceed with order.');
       alert('Sorry, there was an error loading this item. Please refresh the page and try again.');
       return;
+    }
+
+    // Find the item from arrays to get actual price (including discount)
+    const allItems = [...food, ...drinks, ...setMeals];
+    const itemData = allItems.find(item => item.id === itemId);
+
+    // Use discounted price if available, otherwise use original price
+    let itemPriceText;
+    if (itemData && itemData.has_discount && itemData.discount_info) {
+      itemPriceText = `RM ${itemData.discount_info.discounted_price.toFixed(2)}`;
+    } else if (itemData) {
+      itemPriceText = `RM ${itemData.price.toFixed(2)}`;
+    } else {
+      // Fallback: read from card
+      itemPriceText = itemCard.querySelector('.food-price.discounted-price')?.textContent ||
+                      itemCard.querySelector('.food-price')?.textContent || 'RM 0.00';
     }
 
     // Show order modal
@@ -362,10 +420,11 @@ if (cartFab) {
 }
 
 // Cart Modal Functions
-function showCartModal() {
+async function showCartModal() {
   const modal = document.getElementById('cartModal');
   if (modal) {
-    updateCartDisplay();
+    await updateCartDisplay();
+    await loadExistingPromo(); // Load promo code status
     modal.classList.add('open');
   }
 }
@@ -382,25 +441,180 @@ async function updateCartDisplay() {
   const cartCount = document.getElementById('cart-count');
   const totalItems = document.getElementById('total-items');
   const totalAmount = document.getElementById('total-amount');
+  const checkoutButton = document.querySelector('.cart-modal-checkout');
 
   if (!cartItemsContainer) return;
 
-  const cartItems = await window.cartManager.getCart();
+  const cartData = await window.cartManager.getCart();
+
+  // DEBUG: Log full cart data structure
+  console.log('🔍 Debug [updateCartDisplay]: Full cartData:', cartData);
+  console.log('🔍 Debug [updateCartDisplay]: promotion_groups:', cartData.promotion_groups);
+  console.log('🔍 Debug [updateCartDisplay]: regular_items:', cartData.regular_items);
+
+  // Handle both formats: array (localStorage) or object with cart property (database)
+  let cartItems = Array.isArray(cartData) ? cartData : (cartData.cart || []);
+  const unavailableCount = cartData.unavailable_count || 0;
+  const availableTotal = cartData.available_total || window.cartManager.getTotalPrice(cartItems);
+
   console.log('Debug [updateCartDisplay]: Cart items:', cartItems);
-  console.log('Debug [updateCartDisplay]: Number of items:', cartItems.length);
+  console.log('Debug [updateCartDisplay]: Unavailable count:', unavailableCount);
+  console.log('Debug [updateCartDisplay]: Available total:', availableTotal);
+
   const totalCartItems = window.cartManager.getTotalQuantity(cartItems);
-  console.log('Debug [updateCartDisplay]: Total quantity:', totalCartItems);
+  const availableItemsCount = cartItems.filter(item => item.is_available !== false).length;
 
   if (cartCount) cartCount.textContent = totalCartItems;
   if (totalItems) totalItems.textContent = totalCartItems;
 
-  const total = window.cartManager.getTotalPrice(cartItems);
-  if (totalAmount) totalAmount.textContent = `RM ${total.toFixed(2)}`;
+  // Use available_total from API to exclude unavailable items
+  const subtotal = availableTotal;
+  const promoDiscount = parseFloat(cartData.promo_discount) || 0;
+  const finalTotal = cartData.final_total !== undefined ? cartData.final_total : (subtotal - promoDiscount);
+
+  console.log('Cart totals:', {
+    subtotal,
+    promoDiscount,
+    finalTotal,
+    cartData_final_total: cartData.final_total
+  });
+
+  // Update subtotal display
+  const subtotalElement = document.getElementById('subtotal-amount');
+  if (subtotalElement) subtotalElement.textContent = `RM ${subtotal.toFixed(2)}`;
+
+  // Update promo discount display
+  if (promoDiscount > 0) {
+    const promoDiscountRow = document.getElementById('promo-discount-row');
+    const promoDiscountAmount = document.getElementById('promo-discount-amount');
+    if (promoDiscountRow) promoDiscountRow.style.display = 'flex';
+    if (promoDiscountAmount) promoDiscountAmount.textContent = `-RM ${promoDiscount.toFixed(2)}`;
+  } else {
+    const promoDiscountRow = document.getElementById('promo-discount-row');
+    if (promoDiscountRow) promoDiscountRow.style.display = 'none';
+  }
+
+  // Get voucher discount from applied voucher (ensure it's a number)
+  const appliedVoucher = window.getAppliedVoucher ? window.getAppliedVoucher() : null;
+  const voucherDiscount = appliedVoucher ? (parseFloat(appliedVoucher.discount) || 0) : 0;
+
+  // Update voucher discount display
+  if (voucherDiscount > 0) {
+    const voucherDiscountRow = document.getElementById('voucher-discount-row');
+    const voucherDiscountAmount = document.getElementById('voucher-discount-amount');
+    if (voucherDiscountRow) voucherDiscountRow.style.display = 'flex';
+    if (voucherDiscountAmount) voucherDiscountAmount.textContent = `-RM ${voucherDiscount.toFixed(2)}`;
+  } else {
+    const voucherDiscountRow = document.getElementById('voucher-discount-row');
+    if (voucherDiscountRow) voucherDiscountRow.style.display = 'none';
+  }
+
+  // Update final total - calculate from subtotal - promo discount - voucher discount
+  const calculatedTotal = Math.max(0, subtotal - promoDiscount - voucherDiscount);
+  if (totalAmount) totalAmount.textContent = `RM ${calculatedTotal.toFixed(2)}`;
+
+  // IMPORTANT: Disable promo code input if cart has promotional items (prevent double discount)
+  const promotionGroups = cartData.promotion_groups || [];
+  const regularItems = cartData.regular_items || cartData.cart || [];
+
+  // Check for bundle/combo/buy1free1 items
+  const hasBundleItems = promotionGroups.length > 0;
+
+  // Check for item_discount items (regular items with promotion_id)
+  const hasItemDiscountItems = regularItems.some(item => item.promotion_id);
+
+  // Has promotional items if either condition is true
+  const hasPromotionItems = hasBundleItems || hasItemDiscountItems;
+
+  const promoCodeInput = document.getElementById('promo-code-input');
+  const applyPromoBtn = document.getElementById('apply-promo-btn');
+  const promoInputContainer = document.getElementById('promo-input-container');
+
+  if (promoCodeInput && applyPromoBtn) {
+    if (hasPromotionItems) {
+      // Disable promo code - cart has promotional items
+      promoCodeInput.disabled = true;
+      promoCodeInput.placeholder = 'Cannot use with promotional items';
+      promoCodeInput.style.background = '#f3f4f6';
+      promoCodeInput.style.cursor = 'not-allowed';
+      applyPromoBtn.disabled = true;
+      applyPromoBtn.style.opacity = '0.5';
+      applyPromoBtn.style.cursor = 'not-allowed';
+
+      // Show info message
+      if (promoInputContainer && !document.getElementById('promo-disabled-message')) {
+        const messageHTML = `
+          <div id="promo-disabled-message" style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 13px; color: #92400e;">
+            <i class="fas fa-info-circle" style="margin-right: 6px;"></i>
+            Promo code cannot be used with promotional items (bundle/combo/item discount)
+          </div>
+        `;
+        promoInputContainer.insertAdjacentHTML('afterend', messageHTML);
+      }
+    } else {
+      // Enable promo code - no bundle items
+      promoCodeInput.disabled = false;
+      promoCodeInput.placeholder = 'Enter promo code';
+      promoCodeInput.style.background = '';
+      promoCodeInput.style.cursor = '';
+      applyPromoBtn.disabled = false;
+      applyPromoBtn.style.opacity = '';
+      applyPromoBtn.style.cursor = '';
+
+      // Remove info message if exists
+      const existingMessage = document.getElementById('promo-disabled-message');
+      if (existingMessage) {
+        existingMessage.remove();
+      }
+    }
+  }
+
+  // Disable checkout button if no available items
+  if (checkoutButton) {
+    if (availableItemsCount === 0 && cartItems.length > 0) {
+      // All items unavailable - disable checkout
+      checkoutButton.disabled = true;
+      checkoutButton.style.opacity = '0.5';
+      checkoutButton.style.cursor = 'not-allowed';
+      checkoutButton.style.background = '#9ca3af';
+      checkoutButton.textContent = 'No Available Items to Checkout';
+    } else if (cartItems.length === 0) {
+      // Empty cart - disable checkout
+      checkoutButton.disabled = true;
+      checkoutButton.style.opacity = '0.5';
+      checkoutButton.style.cursor = 'not-allowed';
+      checkoutButton.style.background = '#9ca3af';
+      checkoutButton.textContent = 'Cart is Empty';
+    } else {
+      // Has available items - enable checkout
+      checkoutButton.disabled = false;
+      checkoutButton.style.opacity = '1';
+      checkoutButton.style.cursor = 'pointer';
+      checkoutButton.style.background = '';
+      checkoutButton.textContent = 'Proceed to Checkout';
+    }
+  }
 
   cartItemsContainer.innerHTML = '';
 
-  if (cartItems.length === 0) {
-    cartItemsContainer.innerHTML = `
+  // Add unavailable items warning banner if needed
+  if (unavailableCount > 0) {
+    const warningHTML = `
+      <div class="cart-unavailable-warning">
+        <div class="cart-unavailable-warning-icon">⚠️</div>
+        <div class="cart-unavailable-warning-text">
+          ${unavailableCount} item${unavailableCount > 1 ? 's' : ''} no longer available
+        </div>
+        <button class="cart-unavailable-warning-button" id="removeUnavailableBtn">
+          Remove All
+        </button>
+      </div>
+    `;
+    cartItemsContainer.innerHTML += warningHTML;
+  }
+
+  if (cartItems.length === 0 && (!cartData.promotion_groups || cartData.promotion_groups.length === 0)) {
+    cartItemsContainer.innerHTML += `
       <div class="empty-cart" id="empty-cart">
         <div class="empty-cart-icon">🛒</div>
         <div class="empty-cart-text">Your cart is empty</div>
@@ -408,26 +622,108 @@ async function updateCartDisplay() {
       </div>
     `;
   } else {
-    cartItems.forEach((item, index) => {
-      const cartItemHTML = `
-        <div class="cart-item">
-          <div class="cart-item-image">
-            ${item.image ? `<img src="${item.image}" alt="${item.name}">` : '🍽️'}
-          </div>
-          <div class="cart-item-details">
-            <div class="cart-item-name">${item.name}</div>
-            <div class="cart-item-price">${item.price}</div>
-          </div>
-          <div class="quantity-controls">
-            <button class="qty-btn" data-index="${index}" data-change="-1">−</button>
-            <span class="quantity">${item.quantity}</span>
-            <button class="qty-btn" data-index="${index}" data-change="1">+</button>
-          </div>
-        </div>
-      `;
-      cartItemsContainer.innerHTML += cartItemHTML;
-    });
+    // === RENDER PROMOTION GROUPS FIRST ===
+    const promotionGroups = cartData.promotion_groups || [];
+    if (promotionGroups.length > 0) {
+      promotionGroups.forEach((group) => {
+        const promotionHTML = renderPromotionGroup(group);
+        cartItemsContainer.innerHTML += promotionHTML;
+      });
+    }
+
+    // === RENDER REGULAR ITEMS ===
+    const regularItems = cartData.regular_items || cartItems.filter(item => !window.cartManager.isPromotionItem(item));
+    if (regularItems.length > 0) {
+      regularItems.forEach((item, index) => {
+        const itemHTML = renderRegularCartItem(item, index);
+        cartItemsContainer.innerHTML += itemHTML;
+      });
+    }
   }
+}
+
+/**
+ * Render a promotion group (bundle/combo/buy-x-free-y)
+ */
+function renderPromotionGroup(group) {
+  const savingsText = group.savings > 0 ? `
+    <span style="color: #10b981; font-size: 12px; margin-left: 8px;">
+      💰 Save RM ${group.savings.toFixed(2)}
+    </span>
+  ` : '';
+
+  let itemsHTML = '';
+  group.items.forEach(item => {
+    const freeTag = item.is_free_item ? '<span class="free-tag">FREE</span>' : '';
+    itemsHTML += `
+      <div class="promo-item">
+        <div class="promo-item-image">
+          ${item.image ? `<img src="${item.image}" alt="${item.name}" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover;">` : '<span style="font-size: 24px;">🍽️</span>'}
+        </div>
+        <div class="promo-item-details">
+          <div style="font-weight: 500; font-size: 14px;">${item.name} ${freeTag}</div>
+          <div style="font-size: 12px; color: #6b7280;">Qty: ${item.quantity} × ${item.price}</div>
+        </div>
+      </div>
+    `;
+  });
+
+  return `
+    <div class="cart-promotion-group">
+      <div class="promotion-header">
+        <div class="promotion-title">
+          <i class="fas fa-gift" style="color: #8b5cf6; margin-right: 8px;"></i>
+          <span>${group.promotion.name}</span>
+          <span class="locked-badge"><i class="fas fa-lock"></i> Locked</span>
+        </div>
+        <div class="promotion-type-badge">${group.promotion.type_label}</div>
+      </div>
+      <div class="promotion-items">
+        ${itemsHTML}
+      </div>
+      <div class="promotion-footer">
+        <div class="promotion-total">
+          <span>Bundle Total:</span>
+          <span style="font-weight: 700; color: #8b5cf6;">RM ${group.total_price.toFixed(2)}</span>
+          ${savingsText}
+        </div>
+        <button class="remove-promotion-btn" data-group-id="${group.group_id}" data-promotion-name="${group.promotion.name}">
+          <i class="fas fa-trash"></i> Remove
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render a regular cart item (non-promotion)
+ */
+function renderRegularCartItem(item, index) {
+  const isUnavailable = item.is_available === false;
+  const unavailableClass = isUnavailable ? ' unavailable' : '';
+  const unavailableBadge = isUnavailable ? `
+    <div class="cart-item-unavailable-badge">
+      ${item.availability_message || 'Tidak Tersedia'}
+    </div>
+  ` : '';
+
+  return `
+    <div class="cart-item${unavailableClass}">
+      <div class="cart-item-image">
+        ${item.image ? `<img src="${item.image}" alt="${item.name}">` : '🍽️'}
+      </div>
+      <div class="cart-item-details">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-price">${item.price}</div>
+      </div>
+      <div class="quantity-controls">
+        <button class="qty-btn" data-index="${index}" data-change="-1">−</button>
+        <span class="quantity">${item.quantity}</span>
+        <button class="qty-btn" data-index="${index}" data-change="1">+</button>
+      </div>
+      ${unavailableBadge}
+    </div>
+  `;
 }
 
 // Cart Modal Event Listeners
@@ -444,7 +740,9 @@ document.addEventListener('click', async function(e) {
 
   // Clear all button
   if (e.target.id === 'clearAllBtn') {
-    const cartItems = await window.cartManager.getCart();
+    const cartData = await window.cartManager.getCart();
+    const cartItems = Array.isArray(cartData) ? cartData : (cartData.cart || []);
+
     if (cartItems.length > 0) {
       const confirmed = await showConfirm(
         'Clear All Items?',
@@ -462,21 +760,94 @@ document.addEventListener('click', async function(e) {
     }
   }
 
+  // Remove unavailable items button (Shopee-style)
+  if (e.target.id === 'removeUnavailableBtn') {
+    try {
+      const response = await fetch('/customer/cart/remove-unavailable', {
+        method: 'DELETE',
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        Toast.success('Items Removed', data.message);
+        updateCartBadge();
+        updateCartDisplay();
+      } else {
+        Toast.error('Error', data.error || 'Failed to remove unavailable items');
+      }
+    } catch (error) {
+      console.error('Error removing unavailable items:', error);
+      Toast.error('Error', 'Failed to remove unavailable items');
+    }
+  }
+
+  // Remove entire promotion group (locked items)
+  if (e.target.closest('.remove-promotion-btn')) {
+    const button = e.target.closest('.remove-promotion-btn');
+    const groupId = button.dataset.groupId;
+    const promotionName = button.dataset.promotionName;
+
+    const confirmed = await showConfirm(
+      'Remove Promotion?',
+      `Remove "${promotionName}" from cart? All items in this promotion will be removed.`,
+      'warning',
+      'Remove',
+      'Cancel'
+    );
+
+    if (confirmed) {
+      const result = await window.cartManager.removePromotionGroup(groupId);
+
+      if (result.success) {
+        Toast.success('Promotion Removed', result.message);
+        updateCartBadge();
+        updateCartDisplay();
+      } else {
+        Toast.error('Error', result.message || 'Failed to remove promotion');
+      }
+    }
+  }
+
   // Checkout button - redirect directly to payment page
   if (e.target.classList.contains('cart-modal-checkout')) {
-    const cartItems = await window.cartManager.getCart();
-    if (cartItems.length > 0) {
+    const cartData = await window.cartManager.getCart();
+    const cartItems = Array.isArray(cartData) ? cartData : (cartData.cart || []);
+
+    // Filter out unavailable items before checkout (Shopee-style)
+    const availableItems = cartItems.filter(item => item.is_available !== false);
+
+    if (availableItems.length > 0) {
       // Get order type from sessionStorage
       const orderType = sessionStorage.getItem('selectedOrderType') || 'dine_in';
 
       // Clear currentOrder to avoid conflicts
       sessionStorage.removeItem('currentOrder');
 
-      // Store cart items and order type for payment page
-      sessionStorage.setItem('checkoutCart', JSON.stringify(cartItems));
+      // Store only AVAILABLE cart items and order type for payment page
+      sessionStorage.setItem('checkoutCart', JSON.stringify(availableItems));
       sessionStorage.setItem('selectedOrderType', orderType);
       sessionStorage.setItem('selectedPaymentMethod', 'online'); // Default payment method
 
+      // --- NEW: Store promo discount and final total for payment page ---
+      // These values are already calculated and displayed in updateCartDisplay
+      const subtotal = cartData.available_total || window.cartManager.getTotalPrice(cartItems);
+      const promoDiscount = parseFloat(cartData.promo_discount) || 0;
+
+      // Get voucher discount from applied voucher (ensure it's a number)
+      const appliedVoucher = window.getAppliedVoucher ? window.getAppliedVoucher() : null;
+      const voucherDiscount = appliedVoucher ? (parseFloat(appliedVoucher.discount) || 0) : 0;
+
+      const calculatedFinalTotal = Math.max(0, subtotal - promoDiscount - voucherDiscount);
+      sessionStorage.setItem('checkoutPromoDiscount', promoDiscount.toFixed(2));
+      sessionStorage.setItem('checkoutAppliedPromoCode', cartData.applied_promo_code || ''); // Store the applied promo code
+      sessionStorage.setItem('checkoutVoucherDiscount', voucherDiscount.toFixed(2)); // Store voucher discount
+      sessionStorage.setItem('checkoutFinalTotal', calculatedFinalTotal.toFixed(2));
       // Hide cart modal immediately before redirect
       hideCartModal();
 
@@ -489,12 +860,22 @@ document.addEventListener('click', async function(e) {
   if (e.target.classList.contains('qty-btn')) {
     const index = parseInt(e.target.dataset.index);
     const change = parseInt(e.target.dataset.change);
-    const cartItems = await window.cartManager.getCart();
+    const cartData = await window.cartManager.getCart();
+    const regularItems = cartData.regular_items || [];
 
-    if (index >= 0 && index < cartItems.length) {
-      const item = cartItems[index];
+    if (index >= 0 && index < regularItems.length) {
+      const item = regularItems[index];
       const newQuantity = item.quantity + change;
-      await window.cartManager.updateItem(item.id, newQuantity);
+
+      // Call updateItem - backend will check if locked
+      const result = await window.cartManager.updateItem(item.id, newQuantity);
+
+      // Check if item is locked (backend returned error)
+      if (result && !result.success && result.is_locked) {
+        Toast.error('Cannot Modify', result.message || 'This item is part of a promotion and cannot be modified individually.');
+        return;
+      }
+
       updateCartBadge();
       updateCartDisplay();
     }
@@ -562,7 +943,7 @@ document.addEventListener('click', function(e) {
   }
 
   // Close modal button
-  if (e.target.id === 'order-modal-close-x' || e.target.id === 'cancel-order-btn') {
+  if (e.target.id === 'order-modal-close-x' || e.target.id === 'order-cancel-btn') {
     closeOrderModal();
   }
 
@@ -959,6 +1340,157 @@ function updateOrderTypeFab(orderType) {
   ordertypeFab.style.opacity = '1';
 }
 
+// === PROMO CODE FUNCTIONALITY ===
+
+// Initialize promo code event listeners
+function initPromoCodeListeners() {
+  const applyBtn = document.getElementById('apply-promo-btn');
+  const removeBtn = document.getElementById('remove-promo-btn');
+  const promoInput = document.getElementById('promo-code-input');
+
+  if (applyBtn) {
+    applyBtn.addEventListener('click', async () => {
+      const promoCode = promoInput?.value?.trim();
+
+      if (!promoCode) {
+        showPromoError('Please enter a promo code');
+        return;
+      }
+
+      // Disable button during processing
+      applyBtn.disabled = true;
+      applyBtn.textContent = 'Applying...';
+
+      try {
+        const result = await window.cartManager.applyPromoCode(promoCode);
+
+        if (result.success) {
+          // Show success state
+          showPromoApplied(result.promo_code, result.discount);
+
+          // Refresh cart display to show updated totals
+          await updateCartDisplay();
+
+          Toast.success('Promo Applied!', result.message);
+
+          // Refresh cart to show updated totals
+          await updateCart();
+
+        } else {
+          showPromoError(result.message);
+        }
+      } catch (error) {
+        showPromoError('An error occurred. Please try again.');
+      } finally {
+        applyBtn.disabled = false;
+        applyBtn.textContent = 'Apply';
+      }
+    });
+  }
+
+  if (removeBtn) {
+    removeBtn.addEventListener('click', async () => {
+      removeBtn.disabled = true;
+
+      try {
+        const result = await window.cartManager.removePromoCode();
+
+        if (result.success) {
+          // Hide applied promo, show input
+          hidePromoApplied();
+
+          // Refresh cart display
+          await updateCartDisplay();
+
+          Toast.info('Promo Removed', result.message);
+
+          // Refresh cart
+          await updateCart();
+        }
+      } catch (error) {
+        alert('An error occurred');
+      } finally {
+        removeBtn.disabled = false;
+      }
+    });
+  }
+
+  // Enter key support
+  if (promoInput) {
+    promoInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        applyBtn?.click();
+      }
+    });
+  }
+}
+
+async function updateCart() {
+  await updateCartBadge();
+  if (document.getElementById('cartModal').classList.contains('open')) {
+    await updateCartDisplay();
+  }
+}
+
+function showPromoError(message) {
+  const errorContainer = document.getElementById('promo-error-message');
+  if (errorContainer) {
+    const span = errorContainer.querySelector('span');
+    if (span) span.textContent = message;
+    errorContainer.style.display = 'block';
+
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+      errorContainer.style.display = 'none';
+    }, 4000);
+  }
+}
+
+function showPromoApplied(promoCode, discount) {
+  const inputContainer = document.getElementById('promo-input-container');
+  const appliedContainer = document.getElementById('promo-applied-container');
+  const promoCodeText = document.getElementById('promo-code-text');
+
+  if (inputContainer) inputContainer.style.display = 'none';
+  if (appliedContainer) appliedContainer.style.display = 'block';
+  if (promoCodeText) promoCodeText.textContent = promoCode;
+
+  // Show discount row - handle both number and string
+  const discountRow = document.getElementById('promo-discount-row');
+  const discountAmount = document.getElementById('promo-discount-amount');
+  const discountValue = parseFloat(discount) || 0;
+
+  if (discountRow) discountRow.style.display = 'flex';
+  if (discountAmount) discountAmount.textContent = `-RM ${discountValue.toFixed(2)}`;
+}
+
+function hidePromoApplied() {
+  const inputContainer = document.getElementById('promo-input-container');
+  const appliedContainer = document.getElementById('promo-applied-container');
+
+  if (inputContainer) inputContainer.style.display = 'block';
+  if (appliedContainer) appliedContainer.style.display = 'none';
+
+  // Hide discount row
+  const discountRow = document.getElementById('promo-discount-row');
+  if (discountRow) discountRow.style.display = 'none';
+}
+
+// Check for existing promo code on cart load
+async function loadExistingPromo() {
+  try {
+    const promoDetails = await window.cartManager.getPromoCodeDetails();
+
+    if (promoDetails.has_promo) {
+      showPromoApplied(promoDetails.promo_code, promoDetails.discount_amount);
+    } else {
+      hidePromoApplied();
+    }
+  } catch (error) {
+    console.error('Error loading promo details:', error);
+  }
+}
+
 // Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   initializeMenuData();
@@ -973,4 +1505,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (existingOrderType) {
     updateOrderTypeFab(existingOrderType);
   }
+
+  // Initialize promo code functionality
+  initPromoCodeListeners();
 });

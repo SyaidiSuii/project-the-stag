@@ -5,6 +5,62 @@
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/admin/user-account.css') }}">
+<style>
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.type-badge-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50px;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.type-badge-display i {
+    font-size: 18px;
+}
+
+.item-selector {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.item-checkbox {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+}
+
+.item-checkbox:hover {
+    background: #f9fafb;
+}
+
+.item-checkbox input {
+    margin-right: 8px;
+}
+
+.current-image-preview {
+    max-width: 300px;
+    max-height: 200px;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    margin: 10px 0;
+}
+</style>
 @endsection
 
 @section('content')
@@ -16,201 +72,149 @@
         </a>
     </div>
 
-    <form action="{{ route('admin.promotions.update', $promotion->id) }}" method="POST" enctype="multipart/form-data" class="user-form">
+    @if(session('error'))
+        <div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+            <strong style="color: #dc2626;">Error:</strong>
+            <p style="color: #991b1b; margin-top: 4px;">{{ session('error') }}</p>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+            <strong style="color: #dc2626;">Validation Errors:</strong>
+            <ul style="margin-top: 8px; padding-left: 20px; color: #991b1b;">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ route('admin.promotions.update', $promotion->id) }}" method="POST" enctype="multipart/form-data" class="user-form" id="promotionForm">
         @csrf
         @method('PUT')
 
-        <!-- Promotion Name -->
-        <div class="form-group">
-            <label for="name" class="form-label">Promotion Name *</label>
-            <input
-                type="text"
-                id="name"
-                name="name"
-                class="form-control"
-                value="{{ old('name', $promotion->name) }}"
-                placeholder="e.g., Weekend Special, Summer Sale"
-                required
-            >
-            @if($errors->get('name'))
-                <div class="form-error">{{ implode(', ', $errors->get('name')) }}</div>
-            @endif
+        {{-- Display Current Promotion Type --}}
+        <div class="form-section">
+            <h3 style="margin-bottom: 16px; color: var(--text);">Promotion Type</h3>
+            <div class="type-badge-display">
+                @if($promotion->promotion_type === 'promo_code')
+                    <i class="fas fa-ticket-alt"></i> Promo Code
+                @elseif($promotion->promotion_type === 'combo_deal')
+                    <i class="fas fa-layer-group"></i> Combo Deal
+                @elseif($promotion->promotion_type === 'item_discount')
+                    <i class="fas fa-percent"></i> Item Discount
+                @elseif($promotion->promotion_type === 'buy_x_free_y')
+                    <i class="fas fa-gift"></i> Buy X Free Y
+                @elseif($promotion->promotion_type === 'bundle')
+                    <i class="fas fa-box-open"></i> Bundle
+                @elseif($promotion->promotion_type === 'seasonal')
+                    <i class="fas fa-calendar-alt"></i> Seasonal
+                @endif
+            </div>
+            <input type="hidden" name="promotion_type" value="{{ $promotion->promotion_type }}">
+            <small style="color: #6b7280; font-size: 0.85rem;">Promotion type cannot be changed after creation</small>
         </div>
 
-        <!-- Promotion Image/Banner -->
-        <div class="form-group">
-            <label for="image" class="form-label">Promotion Banner/Image</label>
+        {{-- Basic Information --}}
+        <div class="form-section">
+            <h3 style="margin-bottom: 16px; color: var(--text);">Basic Information</h3>
 
-            @if($promotion->image_path)
-                <div style="margin-bottom: 10px;">
-                    <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 8px;">Current Image:</p>
-                    <img
-                        src="{{ asset('storage/' . $promotion->image_path) }}"
-                        alt="Current promotion image"
-                        style="max-width: 300px; max-height: 200px; border-radius: 8px; border: 2px solid #e5e7eb; display: block;"
-                    >
+            <div class="form-group">
+                <label for="name" class="form-label">Promotion Name *</label>
+                <input type="text" id="name" name="name" class="form-control" value="{{ old('name', $promotion->name) }}" placeholder="e.g., Weekend Special, Summer Sale" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description" class="form-label">Description</label>
+                <textarea id="description" name="description" class="form-control" rows="3" placeholder="Describe this promotion">{{ old('description', $promotion->description ?? '') }}</textarea>
+            </div>
+
+            @if(in_array($promotion->promotion_type, ['combo_deal', 'bundle', 'seasonal']))
+                <div class="form-group">
+                    <label for="banner_image" class="form-label">Banner Image</label>
+
+                    @if($promotion->banner_image)
+                        <div style="margin-bottom: 10px;">
+                            <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 8px;">Current Banner:</p>
+                            <img src="{{ asset('storage/' . $promotion->banner_image) }}" alt="Current banner" class="current-image-preview">
+                        </div>
+                    @endif
+
+                    <input type="file" id="banner_image" name="banner_image" class="form-control" accept="image/*" onchange="previewImage(event, 'bannerPreview')">
+                    <small style="color: #6b7280; font-size: 0.85rem; display: block; margin-top: 4px;">
+                        Large banner for promotion (Maximum: 2MB)
+                        @if($promotion->banner_image)
+                            <br>Upload a new image to replace the current one
+                        @endif
+                    </small>
+                    <div id="bannerImagePreview" style="display: none; margin-top: 10px;">
+                        <p style="color: #059669; font-size: 0.9rem; margin-bottom: 8px; font-weight: 500;">New Banner Preview:</p>
+                        <img id="bannerPreview" src="" alt="Preview" class="current-image-preview" style="border-color: #10b981;">
+                    </div>
+                </div>
+            @else
+                <div class="form-group">
+                    <label for="image" class="form-label">Promotion Image</label>
+
+                    @if($promotion->image_path)
+                        <div style="margin-bottom: 10px;">
+                            <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 8px;">Current Image:</p>
+                            <img src="{{ asset('storage/' . $promotion->image_path) }}" alt="Current image" class="current-image-preview">
+                        </div>
+                    @endif
+
+                    <input type="file" id="image" name="image" class="form-control" accept="image/*" onchange="previewImage(event, 'preview')">
+                    <small style="color: #6b7280; font-size: 0.85rem; display: block; margin-top: 4px;">
+                        Maximum file size: 2MB
+                        @if($promotion->image_path)
+                            <br>Upload a new image to replace the current one
+                        @endif
+                    </small>
+                    <div id="imagePreview" style="display: none; margin-top: 10px;">
+                        <p style="color: #059669; font-size: 0.9rem; margin-bottom: 8px; font-weight: 500;">New Image Preview:</p>
+                        <img id="preview" src="" alt="Preview" class="current-image-preview" style="border-color: #10b981;">
+                    </div>
                 </div>
             @endif
 
-            <input
-                type="file"
-                id="image"
-                name="image"
-                class="form-control"
-                accept="image/jpeg,image/png,image/jpg,image/gif"
-                onchange="previewImage(event)"
-            >
-            @if($errors->get('image'))
-                <div class="form-error">{{ implode(', ', $errors->get('image')) }}</div>
-            @endif
-            <small style="color: #6b7280; font-size: 0.85rem; display: block; margin-top: 4px;">
-                Maximum file size: 2MB. Accepted formats: JPEG, PNG, JPG, GIF
-                @if($promotion->image_path)
-                    <br>Upload a new image to replace the current one
-                @endif
-            </small>
-
-            <!-- Image Preview -->
-            <div id="imagePreview" style="display: none; margin-top: 10px;">
-                <p style="color: #059669; font-size: 0.9rem; margin-bottom: 8px; font-weight: 500;">New Image Preview:</p>
-                <img id="preview" src="" alt="Preview" style="max-width: 300px; max-height: 200px; border-radius: 8px; border: 2px solid #10b981;">
-            </div>
-        </div>
-
-        <!-- Promo Code -->
-        <div class="form-group">
-            <label for="promo_code" class="form-label">Promo Code</label>
-            <input
-                type="text"
-                id="promo_code"
-                name="promo_code"
-                class="form-control"
-                value="{{ old('promo_code', $promotion->promo_code) }}"
-                placeholder="e.g., FESTIVE2025, SAVE20"
-                style="text-transform: uppercase;"
-            >
-            @if($errors->get('promo_code'))
-                <div class="form-error">{{ implode(', ', $errors->get('promo_code')) }}</div>
-            @endif
-            <small style="color: #6b7280; font-size: 0.85rem; display: block; margin-top: 4px;">
-                Customers will use this code at checkout
-            </small>
-        </div>
-
-        <!-- Discount Type & Value -->
-        <div class="form-row">
-            <div class="form-group">
-                <label for="discount_type" class="form-label">Discount Type *</label>
-                <select
-                    id="discount_type"
-                    name="discount_type"
-                    class="form-control"
-                    required
-                    onchange="updateDiscountLabel()"
-                >
-                    <option value="percentage" {{ old('discount_type', $promotion->discount_type) == 'percentage' ? 'selected' : '' }}>Percentage (%)</option>
-                    <option value="fixed" {{ old('discount_type', $promotion->discount_type) == 'fixed' ? 'selected' : '' }}>Fixed Amount (RM)</option>
-                </select>
-                @if($errors->get('discount_type'))
-                    <div class="form-error">{{ implode(', ', $errors->get('discount_type')) }}</div>
-                @endif
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="start_date" class="form-label">Start Date *</label>
+                    <input type="date" id="start_date" name="start_date" class="form-control" value="{{ old('start_date', $promotion->start_date->format('Y-m-d')) }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="end_date" class="form-label">End Date *</label>
+                    <input type="date" id="end_date" name="end_date" class="form-control" value="{{ old('end_date', $promotion->end_date->format('Y-m-d')) }}" required>
+                </div>
             </div>
 
             <div class="form-group">
-                <label for="discount_value" class="form-label">
-                    <span id="discount_label">
-                        Discount Value ({{ $promotion->discount_type == 'percentage' ? '%' : 'RM' }}) *
-                    </span>
-                </label>
-                <input
-                    type="number"
-                    id="discount_value"
-                    name="discount_value"
-                    class="form-control"
-                    value="{{ old('discount_value', $promotion->discount_value) }}"
-                    step="0.01"
-                    min="0"
-                    required
-                >
-                @if($errors->get('discount_value'))
-                    <div class="form-error">{{ implode(', ', $errors->get('discount_value')) }}</div>
-                @endif
+                <div class="role-checkbox">
+                    <input type="checkbox" id="is_active" name="is_active" value="1" {{ old('is_active', $promotion->is_active) ? 'checked' : '' }}>
+                    <label for="is_active">Activate this promotion</label>
+                </div>
             </div>
         </div>
 
-        <!-- Minimum Order Value -->
-        <div class="form-group">
-            <label for="minimum_order_value" class="form-label">Minimum Order Value (RM)</label>
-            <input
-                type="number"
-                id="minimum_order_value"
-                name="minimum_order_value"
-                class="form-control"
-                value="{{ old('minimum_order_value', $promotion->minimum_order_value) }}"
-                step="0.01"
-                min="0"
-                placeholder="e.g., 50.00"
-            >
-            @if($errors->get('minimum_order_value'))
-                <div class="form-error">{{ implode(', ', $errors->get('minimum_order_value')) }}</div>
-            @endif
-            <small style="color: #6b7280; font-size: 0.85rem; display: block; margin-top: 4px;">
-                Leave empty for no minimum requirement
-            </small>
-        </div>
+        {{-- Type-Specific Fields (Partials) --}}
+        @if($promotion->promotion_type === 'promo_code')
+            @include('admin.promotions.partials.edit-promo-code')
+        @elseif($promotion->promotion_type === 'combo_deal')
+            @include('admin.promotions.partials.edit-combo-deal')
+        @elseif($promotion->promotion_type === 'bundle')
+            @include('admin.promotions.partials.edit-bundle')
+        @elseif($promotion->promotion_type === 'item_discount')
+            @include('admin.promotions.partials.edit-item-discount')
+        @elseif($promotion->promotion_type === 'buy_x_free_y')
+            @include('admin.promotions.partials.edit-buy-x-free-y')
+        @elseif($promotion->promotion_type === 'seasonal')
+            @include('admin.promotions.partials.edit-seasonal')
+        @endif
 
-        <!-- Valid Period -->
-        <div class="form-row">
-            <div class="form-group">
-                <label for="start_date" class="form-label">Start Date *</label>
-                <input
-                    type="date"
-                    id="start_date"
-                    name="start_date"
-                    class="form-control"
-                    value="{{ old('start_date', $promotion->start_date->format('Y-m-d')) }}"
-                    required
-                >
-                @if($errors->get('start_date'))
-                    <div class="form-error">{{ implode(', ', $errors->get('start_date')) }}</div>
-                @endif
-            </div>
+        {{-- Usage Limits & Restrictions --}}
+        @include('admin.promotions.partials.usage-limits', ['promotion' => $promotion])
 
-            <div class="form-group">
-                <label for="end_date" class="form-label">End Date *</label>
-                <input
-                    type="date"
-                    id="end_date"
-                    name="end_date"
-                    class="form-control"
-                    value="{{ old('end_date', $promotion->end_date->format('Y-m-d')) }}"
-                    required
-                >
-                @if($errors->get('end_date'))
-                    <div class="form-error">{{ implode(', ', $errors->get('end_date')) }}</div>
-                @endif
-            </div>
-        </div>
-
-        <!-- Active Status -->
-        <div class="form-group">
-            <div class="role-checkbox">
-                <input
-                    type="checkbox"
-                    id="is_active"
-                    name="is_active"
-                    value="1"
-                    {{ old('is_active', $promotion->is_active) ? 'checked' : '' }}
-                >
-                <label for="is_active">Promotion is active</label>
-            </div>
-            <small style="color: #6b7280; font-size: 0.85rem; display: block; margin-top: 4px; margin-left: 24px;">
-                <i class="fas fa-info-circle"></i> Checked = Active (visible to customers)<br>
-                <i class="fas fa-info-circle"></i> Unchecked = Inactive (hidden from customers)
-            </small>
-        </div>
-
-        <!-- Form Actions -->
         <div class="form-actions">
             <button type="submit" class="btn-save">
                 <i class="fas fa-save"></i> Update Promotion
@@ -224,47 +228,10 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('js/admin/promotion-edit.js') }}"></script>
 <script>
-// Preview uploaded image
-function previewImage(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('preview').src = e.target.result;
-            document.getElementById('imagePreview').style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    } else {
-        document.getElementById('imagePreview').style.display = 'none';
-    }
-}
-
-// Auto-uppercase promo code
-document.getElementById('promo_code').addEventListener('input', function(e) {
-    e.target.value = e.target.value.toUpperCase();
-});
-
-// Update discount label based on type
-function updateDiscountLabel() {
-    const type = document.getElementById('discount_type').value;
-    const label = document.getElementById('discount_label');
-
-    if (type === 'percentage') {
-        label.textContent = 'Discount Value (%) *';
-    } else {
-        label.textContent = 'Discount Value (RM) *';
-    }
-}
-
-// Set minimum end date to start date
-document.getElementById('start_date').addEventListener('change', function() {
-    const endDateInput = document.getElementById('end_date');
-    endDateInput.min = this.value;
-
-    if (endDateInput.value && endDateInput.value < this.value) {
-        endDateInput.value = this.value;
-    }
-});
+var menuItemsData = {!! json_encode($menuItems->values()->toArray()) !!};
+initializeMenuItems(menuItemsData);
+setIndexes(2, 2);
 </script>
 @endsection

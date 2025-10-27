@@ -81,18 +81,20 @@
               <button class="btn btn-success complete-order-btn" data-order-id="{{ $order->id }}">Mark as Completed</button>
             @elseif($order->order_status === 'completed' || $order->order_status === 'served')
               <button class="btn btn-primary reorder-btn" data-order-id="{{ $order->id }}">Reorder</button>
-              @php
-                $hasReviews = $order->reviews()->exists();
-              @endphp
-              @if(!$hasReviews)
-                <a href="{{ route('customer.orders.show', $order->id) }}#review-section" class="btn btn-success" style="text-decoration: none;">
-                  <i class="fas fa-star"></i> Rate Order
-                </a>
-              @else
-                <span class="btn btn-secondary" style="cursor: default; opacity: 0.7;" title="You've already reviewed this order">
-                  <i class="fas fa-check-circle"></i> Reviewed
-                </span>
-              @endif
+              @auth
+                @php
+                  $hasReviews = $order->reviews()->exists();
+                @endphp
+                @if(!$hasReviews)
+                  <a href="{{ route('customer.orders.show', $order->id) }}#review-section" class="btn btn-success" style="text-decoration: none;">
+                    <i class="fas fa-star"></i> Rate Order
+                  </a>
+                @else
+                  <span class="btn btn-secondary" style="cursor: default; opacity: 0.7;" title="You've already reviewed this order">
+                    <i class="fas fa-check-circle"></i> Reviewed
+                  </span>
+                @endif
+              @endauth
             @elseif($order->order_status === 'cancelled')
               <button class="btn btn-primary reorder-btn" data-order-id="{{ $order->id }}">Reorder</button>
             @endif
@@ -106,7 +108,13 @@
         </div>
         @empty
         <div class="no-orders-message">
-          <p>No orders found. Start your first order!</p>
+          <div class="empty-state-icon">🍽️</div>
+          <h3 class="empty-state-title">No Orders Yet</h3>
+          <p class="empty-state-description">Start your culinary journey with us today!</p>
+          <a href="{{ route('customer.menu.index') }}" class="btn btn-primary empty-state-cta">
+            <span class="btn-icon">📋</span>
+            Browse Menu
+          </a>
         </div>
         @endforelse
 
@@ -155,7 +163,13 @@
         @empty
         @if($orders->isEmpty())
         <div class="no-bookings-message">
-          <p>No table reservations found. Make your first reservation!</p>
+          <div class="empty-state-icon">🪑</div>
+          <h3 class="empty-state-title">No Reservations Yet</h3>
+          <p class="empty-state-description">Reserve your perfect table for a memorable dining experience</p>
+          <a href="{{ route('customer.booking.index') }}" class="btn btn-success empty-state-cta">
+            <span class="btn-icon">📅</span>
+            Book a Table
+          </a>
         </div>
         @endif
         @endforelse
@@ -936,70 +950,4 @@ document.addEventListener('DOMContentLoaded', function() {
     filterByCategory('All');
 });
 </script>
-
-<style>
-/* Additional styles for modals */
-.detail-items-text {
-    background: #f9fafb;
-    padding: 0.75rem;
-    border-radius: 6px;
-    margin: 0.5rem 0;
-}
-
-.tracking-progress {
-    margin: 1rem 0;
-}
-
-.progress-bar {
-    width: 100%;
-    height: 8px;
-    background: #e5e7eb;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #10b981, #059669);
-    transition: width 0.3s ease;
-}
-
-.progress-text {
-    text-align: center;
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin: 0.5rem 0;
-}
-
-/* Loading Spinner Styles */
-.loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #e5e7eb;
-    border-left: 4px solid #10b981;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Ensure modals are initially hidden */
-.popup:not(.open) {
-    display: none;
-}
-
-.popup.open {
-    display: flex;
-}
-</style>
 @endsection

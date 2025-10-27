@@ -37,56 +37,46 @@
           @endif
         </div>
       </div>
+      @if($isGuest)
+      <!-- Guest Join Section -->
+      <div class="profile-stats" style="flex-direction: column; align-items: stretch; gap: 1rem; position: relative; z-index: 10;">
+        <div style="text-align: center; padding: 1rem; position: relative; z-index: 10;">
+          <h2 style="color: white; font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 700;">
+            <i class="fas fa-users"></i> JOIN THE STAG SMARTDINE
+          </h2>
+          <p style="color: rgba(255, 255, 255, 0.9); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5;">
+            Please login or create an account to access your profile, track orders, and manage your dining preferences.
+          </p>
+          <div class="btn-group" style="justify-content: center; gap: 1rem;">
+            <a href="{{ route('login') }}" class="btn btn-primary" style="background: white; color: #6366f1; border: 2px solid white; font-weight: 600; position: relative; z-index: 100; cursor: pointer;">
+              <i class="fas fa-sign-in-alt"></i> LOGIN
+            </a>
+            <a href="{{ route('register') }}" class="btn btn-secondary" style="background: transparent; color: white; border: 2px solid white; font-weight: 600; position: relative; z-index: 100; cursor: pointer;">
+              <i class="fas fa-user-plus"></i> CREATE ACCOUNT
+            </a>
+          </div>
+        </div>
+      </div>
+      @else
+      <!-- User Stats -->
       <div class="profile-stats">
         <div class="stat-item">
           <div class="stat-number">{{ $orderCount }}</div>
           <div class="stat-label">Orders</div>
         </div>
         <div class="stat-item">
-          <div class="stat-number">
-            @if(Auth::check())
-            {{ number_format($user->points_balance ?? 0) }}
-            @else
-            0
-            @endif
-          </div>
+          <div class="stat-number">{{ number_format($user->points_balance ?? 0) }}</div>
           <div class="stat-label">Points</div>
         </div>
         <div class="stat-item">
-          <div class="stat-number">
-            @if($isGuest)
-              <i class="fas fa-user-plus"></i>
-            @else
-              <i class="fas fa-star"></i>
-            @endif
-          </div>
+          <div class="stat-number"><i class="fas fa-star"></i></div>
           <div class="stat-label">{{ $membershipLevel }}</div>
         </div>
       </div>
+      @endif
     </div>
 
-    @if($isGuest)
-      <!-- Guest User Content -->
-      <div class="guest-content">
-        <div class="account-card">
-          <div class="card-header">
-            <div class="card-icon"><i class="fas fa-user-plus"></i></div>
-            <h2 class="card-title">Join The Stag SmartDine</h2>
-          </div>
-          <p style="color: var(--text-2); margin-bottom: 2rem; text-align: center;">
-            Please login or create an account to access your profile, track orders, and manage your dining preferences.
-          </p>
-          <div class="btn-group" style="justify-content: center;">
-            <a href="{{ route('login') }}" class="btn btn-primary">
-              <i class="fas fa-sign-in-alt"></i> Login
-            </a>
-            <a href="{{ route('register') }}" class="btn btn-secondary">
-              <i class="fas fa-user-plus"></i> Create Account
-            </a>
-          </div>
-        </div>
-      </div>
-    @else
+    @if(!$isGuest)
 
       <!-- Quick Actions -->
     <div class="quick-actions">

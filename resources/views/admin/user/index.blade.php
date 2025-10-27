@@ -52,7 +52,7 @@
     <div class="search-filter">
         <div class="search-box">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-input" placeholder="Search users..." id="searchInput" value="{{ request('search') }}">
+            <input type="text" class="search-input" placeholder="Search by name, email, or User ID..." id="searchInput" value="{{ request('search') }}">
         </div>
         <div class="filter-group">
             <select class="filter-select" id="roleFilter">
@@ -85,6 +85,7 @@
         <table class="admin-table">
             <thead>
                 <tr>
+                    <th class="th-id">User ID</th>
                     <th class="th-customer">User</th>
                     <th class="th-contact">Contact</th>
                     <th class="th-status">Role</th>
@@ -97,6 +98,12 @@
             <tbody>
                 @foreach($users as $user)
                 <tr>
+                    <td>
+                        <div style="font-family: 'Courier New', monospace; font-weight: 600; color: var(--primary);">
+                            {{ $user->user_id ?? 'N/A' }}
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-3);">ID: {{ $user->id }}</div>
+                    </td>
                     <td>
                         <div class="customer-info">
                             <div class="customer-avatar">

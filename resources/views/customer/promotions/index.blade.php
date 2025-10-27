@@ -142,6 +142,168 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
     gap: 28px;
     margin-bottom: 48px;
+    position: relative;
+}
+
+/* Guest Blur Styles */
+.promotions-grid.guest-blur .promotion-card {
+    filter: blur(4px);
+    transition: filter 0.3s ease;
+}
+
+.promotions-grid.guest-blur .promotion-card:hover {
+    filter: blur(3px);
+}
+
+/* Login Modal */
+.login-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.login-modal-overlay.show {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.login-modal {
+    background: white;
+    padding: 48px 40px;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    max-width: 480px;
+    width: 90%;
+    position: relative;
+    animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.login-modal .close-modal {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: #f3f4f6;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: #6b7280;
+    font-size: 18px;
+}
+
+.login-modal .close-modal:hover {
+    background: #e5e7eb;
+    color: #1f2937;
+    transform: rotate(90deg);
+}
+
+.login-modal .lock-icon {
+    font-size: 4rem;
+    color: #667eea;
+    margin-bottom: 24px;
+    animation: lockPulse 2s ease-in-out infinite;
+}
+
+@keyframes lockPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.login-modal h3 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin-bottom: 16px;
+    line-height: 1.3;
+}
+
+.login-modal p {
+    font-size: 1.05rem;
+    color: #6b7280;
+    margin-bottom: 32px;
+    line-height: 1.6;
+}
+
+.login-modal .login-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.guest-login-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+
+.guest-login-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
+}
+
+.guest-signup-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 32px;
+    background: white;
+    color: #667eea;
+    text-decoration: none;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+    border: 2px solid #667eea;
+}
+
+.guest-signup-btn:hover {
+    background: #f0f4ff;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
 }
 
 /* Promotion Card */
@@ -492,57 +654,6 @@ body {
     color: #667eea;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .promotions-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .page-header h1 {
-        font-size: 2rem;
-    }
-
-    .page-header {
-        padding: 40px 20px;
-    }
-
-    .section-header h2 {
-        font-size: 1.5rem;
-    }
-
-    .type-filters {
-        gap: 8px;
-    }
-
-    .filter-btn {
-        padding: 10px 18px;
-        font-size: 13px;
-    }
-
-    .copy-toast {
-        top: 16px;
-        right: 16px;
-        left: 16px;
-        padding: 16px 20px;
-    }
-
-    .copy-toast-icon {
-        width: 40px;
-        height: 40px;
-    }
-
-    .copy-toast-icon i {
-        font-size: 20px;
-    }
-
-    .copy-toast-content h4 {
-        font-size: 1rem;
-    }
-
-    .copy-toast-content p {
-        font-size: 0.85rem;
-    }
-}
 </style>
 @endsection
 
@@ -581,28 +692,32 @@ body {
 
     <!-- Promotions Grid -->
     @if($promotions->count() > 0)
-        <div class="promotions-grid" id="promotionsGrid">
+        <div class="promotions-grid @guest guest-blur @endguest" id="promotionsGrid">
             @foreach($promotions as $promo)
-            <div class="promotion-card {{ $promo->type }}" data-type="{{ $promo->type }}" onclick="window.location.href='{{ route('customer.promotions.show', $promo->id) }}'">
+            <div class="promotion-card {{ $promo->promotion_type }}" data-type="{{ $promo->promotion_type }}"
+                 onclick="@auth window.location.href='{{ route('customer.promotions.show', $promo->id) }}' @else showLoginModal(event) @endauth">
                 <!-- Type Badge -->
-                <span class="type-badge {{ $promo->type }}">
-                    {{ ucwords(str_replace('_', ' ', $promo->type)) }}
+                <span class="type-badge {{ $promo->promotion_type }}">
+                    {{ ucwords(str_replace('_', ' ', $promo->promotion_type)) }}
                 </span>
 
                 <!-- Banner -->
-                <div class="promotion-banner {{ $promo->type }}">
-                    @if($promo->hasImage())
-                        {{-- Display uploaded image --}}
+                <div class="promotion-banner {{ $promo->promotion_type }}">
+                    @if($promo->hasBannerImage())
+                        {{-- Display banner image for combo/bundle/seasonal --}}
+                        <img src="{{ $promo->banner_image_url }}" alt="{{ $promo->name }}">
+                    @elseif($promo->hasImage())
+                        {{-- Display regular image for other types --}}
                         <img src="{{ $promo->image_url }}" alt="{{ $promo->name }}">
                     @else
                         {{-- Display default gradient banner with icon --}}
                         <div class="icon-placeholder">
-                            @if($promo->type === 'promo_code') 🎫
-                            @elseif($promo->type === 'combo_deal') 🍱
-                            @elseif($promo->type === 'item_discount') 💰
-                            @elseif($promo->type === 'buy_x_free_y') 🎁
-                            @elseif($promo->type === 'bundle') 📦
-                            @elseif($promo->type === 'seasonal') 🎊
+                            @if($promo->promotion_type === 'promo_code') 🎫
+                            @elseif($promo->promotion_type === 'combo_deal') 🍱
+                            @elseif($promo->promotion_type === 'item_discount') 💰
+                            @elseif($promo->promotion_type === 'buy_x_free_y') 🎁
+                            @elseif($promo->promotion_type === 'bundle') 📦
+                            @elseif($promo->promotion_type === 'seasonal') 🎊
                             @else 🎉
                             @endif
                         </div>
@@ -614,7 +729,7 @@ body {
                     <h3 class="promotion-title">{{ $promo->name }}</h3>
 
                     <!-- Discount Display -->
-                    @if($promo->type === 'promo_code' || $promo->type === 'item_discount')
+                    @if($promo->promotion_type === 'promo_code' || $promo->promotion_type === 'item_discount')
                         <div class="promotion-discount">
                             @if($promo->discount_type === 'percentage')
                                 {{ number_format($promo->discount_value, 0) }}% OFF
@@ -622,28 +737,122 @@ body {
                                 RM {{ number_format($promo->discount_value, 2) }} OFF
                             @endif
                         </div>
-                    @elseif($promo->type === 'combo_deal' || $promo->type === 'bundle' || $promo->type === 'seasonal')
-                        <div class="promotion-discount">
-                            RM {{ number_format($promo->combo_price, 2) }}
-                        </div>
-                        @if($promo->original_price)
-                            <p class="promotion-description">
-                                <span style="text-decoration: line-through; color: #9ca3af;">
-                                    RM {{ number_format($promo->original_price, 2) }}
-                                </span>
-                                <span class="stats-badge">
-                                    Save RM {{ number_format($promo->original_price - $promo->combo_price, 2) }}
-                                </span>
-                            </p>
+                    @elseif($promo->promotion_type === 'combo_deal')
+                        @php $comboPrice = $promo->getComboPrice(); @endphp
+                        @if($comboPrice)
+                            <div class="promotion-discount">
+                                RM {{ number_format($comboPrice, 2) }}
+                            </div>
                         @endif
-                    @elseif($promo->type === 'buy_x_free_y')
+                    @elseif($promo->promotion_type === 'bundle')
+                        @php $bundlePrice = $promo->getBundlePrice(); @endphp
+                        @if($bundlePrice)
+                            <div class="promotion-discount">
+                                RM {{ number_format($bundlePrice, 2) }}
+                            </div>
+                        @endif
+                    @elseif($promo->promotion_type === 'seasonal')
                         <div class="promotion-discount">
-                            Buy {{ $promo->buy_quantity }} Get {{ $promo->free_quantity }} FREE
+                            @if($promo->discount_type === 'percentage')
+                                {{ number_format($promo->discount_value, 0) }}% OFF
+                            @else
+                                RM {{ number_format($promo->discount_value, 2) }} OFF
+                            @endif
                         </div>
+                    @elseif($promo->promotion_type === 'buy_x_free_y')
+                        @php $config = $promo->getBuyXGetYConfig(); @endphp
+                        @if($config && $config['buy_quantity'] && $config['get_quantity'])
+                            <div class="promotion-discount">
+                                Buy {{ $config['buy_quantity'] }} Get {{ $config['get_quantity'] }} FREE
+                            </div>
+                        @endif
                     @endif
 
                     @if($promo->description)
                         <p class="promotion-description">{{ Str::limit($promo->description, 100) }}</p>
+                    @endif
+
+                    {{-- Scarcity & Usage Indicators --}}
+                    @php
+                        $currentUses = $promo->current_usage_count ?? 0;
+                        $totalLimit = $promo->total_usage_limit;
+                        $perUserLimit = $promo->usage_limit_per_customer;
+                        $remaining = $totalLimit ? ($totalLimit - $currentUses) : null;
+                        $percentageUsed = $totalLimit && $totalLimit > 0 ? ($currentUses / $totalLimit) * 100 : 0;
+                        $isLimited = $totalLimit !== null;
+                        $isAlmostGone = $remaining !== null && $remaining <= 20 && $remaining > 0;
+                        $isVeryLimited = $remaining !== null && $remaining <= 5 && $remaining > 0;
+
+                        // Get user's personal usage (if logged in)
+                        $userUsage = null;
+                        $userRemaining = null;
+                        if (auth()->check() && $perUserLimit) {
+                            $userUsage = \App\Models\PromotionUsageLog::where('promotion_id', $promo->id)
+                                ->where('user_id', auth()->id())
+                                ->count();
+                            $userRemaining = max(0, $perUserLimit - $userUsage);
+                        }
+                    @endphp
+
+                    @if($isLimited || $perUserLimit)
+                        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                            {{-- Scarcity Badge for Limited Total Uses --}}
+                            @if($isVeryLimited)
+                                <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-radius: 12px; border-left: 3px solid #ef4444;">
+                                    <i class="fas fa-exclamation-triangle" style="color: #dc2626; font-size: 1rem;"></i>
+                                    <span style="color: #991b1b; font-weight: 700; font-size: 0.85rem;">
+                                        HURRY! Only {{ $remaining }} {{ Str::plural('use', $remaining) }} left!
+                                    </span>
+                                </div>
+                            @elseif($isAlmostGone)
+                                <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; border-left: 3px solid #f59e0b;">
+                                    <i class="fas fa-fire" style="color: #d97706; font-size: 1rem;"></i>
+                                    <span style="color: #92400e; font-weight: 600; font-size: 0.85rem;">
+                                        LIMITED! {{ $remaining }} {{ Str::plural('use', $remaining) }} remaining
+                                    </span>
+                                </div>
+                            @elseif($isLimited && $remaining > 0)
+                                <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #6b7280;">
+                                    <i class="fas fa-users"></i>
+                                    <span>{{ number_format($remaining) }} {{ Str::plural('use', $remaining) }} available</span>
+                                </div>
+                            @endif
+
+                            {{-- Personal Usage Indicator (for logged-in users) --}}
+                            @auth
+                                @if($perUserLimit && $userUsage !== null)
+                                    <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: #f0f9ff; border-radius: 10px; border-left: 3px solid #3b82f6;">
+                                        <i class="fas fa-user-check" style="color: #2563eb; font-size: 0.9rem;"></i>
+                                        <span style="color: #1e40af; font-weight: 500; font-size: 0.8rem;">
+                                            You've used this {{ $userUsage }}/{{ $perUserLimit }} {{ Str::plural('time', $userUsage) }}
+                                            @if($userRemaining > 0)
+                                                <span style="color: #059669;">({{ $userRemaining }} {{ Str::plural('use', $userRemaining) }} left)</span>
+                                            @else
+                                                <span style="color: #dc2626;">(Limit reached)</span>
+                                            @endif
+                                        </span>
+                                    </div>
+                                @endif
+                            @endauth
+
+                            {{-- Time/Day Restrictions Display --}}
+                            @if($promo->applicable_days && count($promo->applicable_days) > 0)
+                                <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #6b7280;">
+                                    <i class="fas fa-calendar-day"></i>
+                                    <span>Available: {{ implode(', ', array_map('ucfirst', $promo->applicable_days)) }}</span>
+                                </div>
+                            @endif
+
+                            @if($promo->applicable_start_time && $promo->applicable_end_time)
+                                <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #6b7280;">
+                                    <i class="fas fa-clock"></i>
+                                    <span>
+                                        {{ date('g:i A', strtotime($promo->applicable_start_time)) }} -
+                                        {{ date('g:i A', strtotime($promo->applicable_end_time)) }}
+                                    </span>
+                                </div>
+                            @endif
+                        </div>
                     @endif
 
                     <!-- Promo Code Box -->
@@ -651,25 +860,83 @@ body {
                         <div class="promo-code-box">
                             <div class="promo-code-label">Promo Code</div>
                             <div class="promo-code">{{ $promo->promo_code }}</div>
-                            <button class="copy-code-btn" onclick="event.stopPropagation(); copyPromoCode('{{ $promo->promo_code }}')">
+                            <button class="copy-code-btn" onclick="event.stopPropagation(); @auth copyPromoCode('{{ $promo->promo_code }}') @else showLoginModal(event) @endauth">
                                 <i class="fas fa-copy"></i> Copy Code
                             </button>
                         </div>
                     @endif
 
-                    <!-- Combo Items -->
-                    @if(($promo->type === 'combo_deal' || $promo->type === 'bundle') && $promo->menuItems->count() > 0)
-                        <div class="combo-items">
-                            <div class="combo-items-title">Includes {{ $promo->menuItems->count() }} Items:</div>
-                            <div class="combo-items-list">
-                                @foreach($promo->menuItems->take(5) as $item)
-                                    <span class="combo-item-tag">{{ $item->name }}</span>
-                                @endforeach
-                                @if($promo->menuItems->count() > 5)
-                                    <span class="combo-item-tag">+{{ $promo->menuItems->count() - 5 }} more</span>
-                                @endif
+                    <!-- Combo/Bundle Items -->
+                    @if($promo->promotion_type === 'combo_deal')
+                        @php $comboItems = $promo->getComboItems(); @endphp
+                        @if($comboItems && count($comboItems) > 0)
+                            <div class="combo-items">
+                                <div class="combo-items-title">Includes {{ count($comboItems) }} Items:</div>
+                                <div class="combo-items-list">
+                                    @foreach(array_slice($comboItems, 0, 5) as $comboItem)
+                                        @php
+                                            $menuItem = \App\Models\MenuItem::find($comboItem['item_id']);
+                                        @endphp
+                                        @if($menuItem)
+                                            <span class="combo-item-tag">
+                                                {{ $menuItem->name }}
+                                                @if(isset($comboItem['quantity']) && $comboItem['quantity'] > 1)
+                                                    (×{{ $comboItem['quantity'] }})
+                                                @endif
+                                            </span>
+                                        @endif
+                                    @endforeach
+                                    @if(count($comboItems) > 5)
+                                        <span class="combo-item-tag">+{{ count($comboItems) - 5 }} more</span>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
+                        @endif
+                    @elseif($promo->promotion_type === 'bundle')
+                        @php $bundleItems = $promo->getBundleItems(); @endphp
+                        @if($bundleItems && count($bundleItems) > 0)
+                            <div class="combo-items">
+                                <div class="combo-items-title">Includes {{ count($bundleItems) }} Items:</div>
+                                <div class="combo-items-list">
+                                    @foreach(array_slice($bundleItems, 0, 5) as $bundleItem)
+                                        @php
+                                            $menuItem = \App\Models\MenuItem::find($bundleItem['item_id']);
+                                        @endphp
+                                        @if($menuItem)
+                                            <span class="combo-item-tag">
+                                                {{ $menuItem->name }}
+                                                @if(isset($bundleItem['quantity']) && $bundleItem['quantity'] > 1)
+                                                    (×{{ $bundleItem['quantity'] }})
+                                                @endif
+                                            </span>
+                                        @endif
+                                    @endforeach
+                                    @if(count($bundleItems) > 5)
+                                        <span class="combo-item-tag">+{{ count($bundleItems) - 5 }} more</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                    @elseif($promo->promotion_type === 'item_discount')
+                        @php $itemIds = $promo->getDiscountedItemIds(); @endphp
+                        @if($itemIds && count($itemIds) > 0)
+                            <div class="combo-items">
+                                <div class="combo-items-title">Applies to {{ count($itemIds) }} Items:</div>
+                                <div class="combo-items-list">
+                                    @foreach(array_slice($itemIds, 0, 5) as $itemId)
+                                        @php
+                                            $menuItem = \App\Models\MenuItem::find($itemId);
+                                        @endphp
+                                        @if($menuItem)
+                                            <span class="combo-item-tag">{{ $menuItem->name }}</span>
+                                        @endif
+                                    @endforeach
+                                    @if(count($itemIds) > 5)
+                                        <span class="combo-item-tag">+{{ count($itemIds) - 5 }} more</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
                     @endif
 
                     <!-- Meta Info -->
@@ -715,7 +982,65 @@ body {
     @endif
 </div>
 
+<!-- Login Modal (for guests only) -->
+@guest
+<div class="login-modal-overlay" id="loginModal" onclick="closeLoginModal(event)">
+    <div class="login-modal" onclick="event.stopPropagation()">
+        <button class="close-modal" onclick="closeLoginModal()">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="lock-icon">
+            <i class="fas fa-lock"></i>
+        </div>
+        <h3>Login to Enjoy Promotions and Deals</h3>
+        <p>Get access to all exclusive promotions, special discounts and exciting offers by signing up!</p>
+        <div class="login-buttons">
+            <a href="{{ route('login') }}" class="guest-login-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                Login Now
+            </a>
+            <a href="{{ route('register') }}" class="guest-signup-btn">
+                <i class="fas fa-user-plus"></i>
+                Register Account
+            </a>
+        </div>
+    </div>
+</div>
+@endguest
+@endsection
+
+@section('scripts')
 <script>
+// Show login modal for guests
+function showLoginModal(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden'; // Prevent background scroll
+    }
+}
+
+// Close login modal
+function closeLoginModal(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = ''; // Re-enable scroll
+    }
+}
+
+// Close modal on ESC key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeLoginModal();
+    }
+});
+
 // Filter by type
 function filterByType(type) {
     // Update active button
@@ -811,4 +1136,5 @@ function showToast(message) {
     }, 4000);
 }
 </script>
+{{-- End of promotions index script section --}}
 @endsection

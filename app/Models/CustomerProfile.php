@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Services\IdGeneratorService;
 
 class CustomerProfile extends Model
 {
@@ -22,6 +23,7 @@ class CustomerProfile extends Model
         'last_visit',
         'total_spent',
         'visit_count',
+        'customer_id',
     ];
 
     protected $casts = [
@@ -32,6 +34,29 @@ class CustomerProfile extends Model
         'loyalty_points' => 'integer',
         'visit_count' => 'integer',
     ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['display_id'];
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($customerProfile) {
+            // Auto-generate customer_id if not provided
+            if (empty($customerProfile->customer_id)) {
+                $idGenerator = app(IdGeneratorService::class);
+                $customerProfile->customer_id = $idGenerator->generateCustomerId();
+            }
+        });
+    }
 
     // Relationships
     public function user()
@@ -75,5 +100,15 @@ class CustomerProfile extends Model
         }
 
         return $tier;
+    }
+
+    /**
+     * Get display ID attribute
+     *
+     * @return string|null
+     */
+    public function getDisplayIdAttribute()
+    {
+        return $this->customer_id;
     }
 }

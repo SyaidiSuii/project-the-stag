@@ -312,8 +312,6 @@ Route::prefix('chatbot')->middleware(['web', 'auth'])->group(function () {
     Route::post('/history', [ChatController::class, 'getHistory']);
     Route::post('/end', [ChatController::class, 'endSession']);
     Route::post('/clear', [ChatController::class, 'clearHistory']);
-    Route::get('/sessions', [ChatController::class, 'getAllSessions']); // Get all user sessions
-    Route::delete('/session/{sessionId}', [ChatController::class, 'deleteSession']); // Delete specific session
     Route::get('/health', [ChatController::class, 'healthCheck']);
 });
 

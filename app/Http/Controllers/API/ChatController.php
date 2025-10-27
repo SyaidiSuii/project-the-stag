@@ -291,7 +291,7 @@ class ChatController extends Controller
     }
 
     /**
-     * Clear chat history for current session
+     * Clear chat history for current session (soft delete only - view clear, data retained)
      */
     public function clearHistory(Request $request): JsonResponse
     {
@@ -313,12 +313,12 @@ class ChatController extends Controller
                 ->where('user_id', $userId) // Ensure user owns this session
                 ->firstOrFail();
 
-            // Delete all messages for this session
+            // Soft delete all messages for this session (data retained in DB)
             $deletedCount = ChatMessage::where('chat_session_id', $session->id)->delete();
 
-            Log::info('Chat history cleared', [
+            Log::info('Chat history cleared (soft delete)', [
                 'session_id' => $session->id,
-                'messages_deleted' => $deletedCount,
+                'messages_soft_deleted' => $deletedCount,
                 'user_id' => $session->user_id
             ]);
 
@@ -358,98 +358,6 @@ class ChatController extends Controller
         }
 
         return "Hi there! 👋 Welcome to The Stag SmartDine AI Assistant. I can help you with our menu, orders, reservations, and any questions about our restaurant. What can I help you with today?";
-    }
-
-    /**
-     * Get all chat sessions for current user
-     */
-    public function getAllSessions(): JsonResponse
-    {
-        try {
-            $userId = auth()->id();
-
-            $sessions = ChatSession::where('user_id', $userId)
-                ->withCount('messages')
-                ->with(['messages' => function ($query) {
-                    $query->latest()->take(1); // Get last message
-                }])
-                ->orderBy('created_at', 'desc')
-                ->limit(20) // Limit to recent 20 sessions
-                ->get()
-                ->map(function ($session) {
-                    return [
-                        'id' => $session->id,
-                        'session_token' => $session->session_token,
-                        'status' => $session->status,
-                        'created_at' => $session->created_at->toIso8601String(),
-                        'created_at_human' => $session->created_at->diffForHumans(),
-                        'message_count' => $session->messages_count,
-                        'last_message' => $session->messages->first() ? [
-                            'role' => $session->messages->first()->role,
-                            'message' => \Str::limit($session->messages->first()->message, 100),
-                            'created_at' => $session->messages->first()->created_at->toIso8601String()
-                        ] : null
-                    ];
-                });
-
-            return response()->json([
-                'success' => true,
-                'sessions' => $sessions
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Failed to get chat sessions', [
-                'error' => $e->getMessage(),
-                'user_id' => auth()->id()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to load chat history'
-            ], 500);
-        }
-    }
-
-    /**
-     * Delete specific chat session
-     */
-    public function deleteSession($sessionId): JsonResponse
-    {
-        try {
-            $userId = auth()->id();
-
-            $session = ChatSession::where('id', $sessionId)
-                ->where('user_id', $userId)
-                ->firstOrFail();
-
-            // Delete all messages
-            ChatMessage::where('chat_session_id', $session->id)->delete();
-
-            // Delete session
-            $session->delete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Chat session deleted successfully'
-            ]);
-
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Session not found'
-            ], 404);
-
-        } catch (\Exception $e) {
-            Log::error('Failed to delete chat session', [
-                'error' => $e->getMessage(),
-                'session_id' => $sessionId
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to delete session'
-            ], 500);
-        }
     }
 
     /**

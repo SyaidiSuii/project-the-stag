@@ -20,9 +20,9 @@ return new class extends Migration
             $table->text('special_notes')->nullable();
             $table->softDeletes();
             $table->timestamps();
-            
-            // Unique constraint to prevent duplicate items per user
-            $table->unique(['user_id', 'menu_item_id']);
+
+            // NOTE: No unique constraint - users can have same item multiple times
+            // (e.g., as individual item + as part of bundle/combo promotion)
         });
     }
 

@@ -110,3 +110,57 @@ body {
 .nav-icon { font-size: 18px; margin-bottom: 5px; }
 .nav-text { font-size: 10px; font-weight: 700; letter-spacing: .3px; }
 .account-spacer { margin-top: auto; }
+
+/* ===== Responsive Mobile View (Bottom Navigation) ===== */
+@media (max-width: 768px) {
+  /* Sediakan ruang di bawah untuk footerbar dan buang padding kiri */
+  body {
+    padding-left: 0;
+    padding-bottom: 70px; /* Ruang untuk bottom nav */
+  }
+
+  /* Ubah sidebar menjadi footerbar */
+  .sidebar {
+    width: 100%;
+    height: 70px;
+    bottom: 0;
+    top: auto;
+    left: 0;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 0 5px;
+    border-right: none;
+    border-top: 1px solid var(--muted);
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+  }
+
+  /* Sembunyikan logo dan reset spacer di mobile */
+  .logo { display: none; }
+  .account-spacer { margin-top: 0; }
+
+  /* Gayakan item navigasi untuk footerbar */
+  .nav-item {
+    width: auto;
+    height: 100%;
+    margin-bottom: 0;
+    flex: 1; /* Pastikan setiap item mengambil ruang yang sama */
+    border-radius: 0;
+  }
+
+  /* Ubah gaya hover dan active untuk mobile */
+  .nav-item:hover { background: var(--bg); transform: none; }
+  .nav-item.active { background: transparent; color: var(--brand); box-shadow: none; }
+
+  /* Pindahkan penanda 'active' dari kiri ke atas */
+  .nav-item.active::before {
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 4px;
+    background: var(--brand); /* Selaraskan warna dengan teks aktif */
+  }
+
+  /* Sesuaikan ikon dan teks untuk paparan mobile */
+  .nav-icon { font-size: 20px; margin-bottom: 4px; }
+}

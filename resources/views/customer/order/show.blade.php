@@ -228,6 +228,110 @@
     margin: 32px 0;
 }
 
+/* Promotion Group Styles */
+.order-promotion-group {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 2px solid #38bdf8;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(56, 189, 248, 0.15);
+}
+
+.promotion-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(56, 189, 248, 0.3);
+}
+
+.promotion-group-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.promotion-group-title i {
+    color: #8b5cf6;
+    font-size: 20px;
+}
+
+.promotion-type-badge {
+    background: #8b5cf6;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.promotion-savings {
+    font-size: 14px;
+    font-weight: 700;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.promotion-savings i {
+    font-size: 16px;
+}
+
+.promotion-group-items {
+    margin-bottom: 16px;
+}
+
+.promotion-item {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    margin-bottom: 12px;
+}
+
+.promotion-item:last-child {
+    margin-bottom: 0;
+}
+
+.free-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+.original-price {
+    display: inline-block;
+    margin-left: 8px;
+    color: #9ca3af;
+    text-decoration: line-through;
+    font-size: 13px;
+}
+
+.promotion-group-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 2px solid rgba(56, 189, 248, 0.3);
+    font-size: 18px;
+    font-weight: 700;
+    color: #8b5cf6;
+}
+
 .order-item {
     display: flex;
     gap: 20px;
@@ -715,7 +819,61 @@
                 <div class="section-title">
                     <i class="fas fa-shopping-cart"></i> Order Items
                 </div>
-                @foreach($order->items as $item)
+
+                {{-- Promotion Groups --}}
+                @foreach($promotionGroups as $group)
+                <div class="order-promotion-group">
+                    <div class="promotion-group-header">
+                        <div class="promotion-group-title">
+                            <i class="fas fa-gift"></i>
+                            <span>{{ $group['promotion']->name ?? 'Promotion' }}</span>
+                            <span class="promotion-type-badge">{{ $group['promotion']->type_label ?? 'Bundle' }}</span>
+                        </div>
+                        @if($group['savings'] > 0)
+                        <div class="promotion-savings">
+                            <i class="fas fa-tag"></i> Saved RM {{ number_format($group['savings'], 2) }}
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="promotion-group-items">
+                        @foreach($group['items'] as $item)
+                        <div class="order-item promotion-item">
+                            @if($item->menuItem && $item->menuItem->image_url)
+                            <img src="{{ $item->menuItem->image_url }}" alt="{{ $item->menuItem->name }}" class="item-image">
+                            @else
+                            <div class="item-image" style="background: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-utensils" style="font-size: 32px; color: #9ca3af;"></i>
+                            </div>
+                            @endif
+                            <div class="item-details">
+                                <div class="item-name">
+                                    {{ $item->menuItem->name ?? 'Unknown Item' }}
+                                    @if($item->is_free_item)
+                                    <span class="free-badge">FREE</span>
+                                    @endif
+                                </div>
+                                <div class="item-unit-price">
+                                    RM {{ number_format($item->unit_price, 2) }} (x{{ $item->quantity }})
+                                    @if($item->original_price && $item->original_price > $item->unit_price)
+                                    <span class="original-price">RM {{ number_format($item->original_price, 2) }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="item-price">RM {{ number_format($item->total_price, 2) }}</div>
+                        </div>
+                        @endforeach
+                    </div>
+
+                    <div class="promotion-group-total">
+                        <span>Bundle Total:</span>
+                        <span>RM {{ number_format($group['total_price'], 2) }}</span>
+                    </div>
+                </div>
+                @endforeach
+
+                {{-- Regular Items --}}
+                @foreach($regularItems as $item)
                 <div class="order-item">
                     @if($item->menuItem && $item->menuItem->image_url)
                     <img src="{{ $item->menuItem->image_url }}" alt="{{ $item->menuItem->name }}" class="item-image">
@@ -759,7 +917,8 @@
                 </div>
             </div>
 
-            <!-- Review Section (Only for completed/served orders) -->
+            <!-- Review Section (Only for completed/served orders and logged in users) -->
+            @auth
             @if(in_array($order->order_status, ['completed', 'served']))
                 <div class="review-section" id="review-section">
                     <div class="section-title">
@@ -865,6 +1024,7 @@
                     @endif
                 </div>
             @endif
+            @endauth
         </div>
     </div>
 </div>

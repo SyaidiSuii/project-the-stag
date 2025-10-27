@@ -176,16 +176,20 @@ class PromotionService
         try {
             DB::beginTransaction();
 
-            // Log usage
-            $promotion->logUsage(
-                $orderId,
-                $userId,
-                $discountAmount,
-                $subtotal,
-                $total,
-                session()->getId(),
-                request()->ip()
-            );
+            // Use PromotionUsageLogger service for consistent logging
+            $usageLogger = app(PromotionUsageLogger::class);
+
+            // Get the order for logging
+            $order = \App\Models\Order::find($orderId);
+            if (!$order) {
+                throw new \Exception("Order not found: {$orderId}");
+            }
+
+            // Get user instance if user ID provided
+            $user = $userId ? User::find($userId) : null;
+
+            // Log usage (this will increment current_usage_count and create log entry)
+            $usageLogger->logUsage($promotion, $order, $discountAmount, $user);
 
             DB::commit();
             return true;

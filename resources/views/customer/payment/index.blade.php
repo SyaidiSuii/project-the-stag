@@ -84,6 +84,18 @@
 
       <!-- Order Totals -->
       <div class="order-totals">
+        <div class="total-line" id="subtotal-row" style="display: none;">
+          <span class="total-label">Subtotal</span>
+          <span id="subtotal">RM 0.00</span>
+        </div>
+        <div class="total-line" id="promo-discount-row" style="display: none; color: var(--success, #10b981);">
+          <span class="total-label">Promo Discount</span>
+          <span id="promo-discount">-RM 0.00</span>
+        </div>
+        <div class="total-line" id="voucher-discount-row" style="display: none; color: var(--success, #10b981);">
+          <span class="total-label">Voucher Discount</span>
+          <span id="voucher-discount">-RM 0.00</span>
+        </div>
         <div class="total-line grand-total">
           <span>Total</span>
           <span id="grand-total">RM 0.00</span>

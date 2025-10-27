@@ -5,13 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Services\IdGeneratorService;
 
 class StaffProfile extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'roles_id',
+        'role_id',
         'user_id',
         'phone_number',
         'address',
@@ -22,6 +23,8 @@ class StaffProfile extends Model
         'hire_date',
         'emergency_contact',
         'emergency_phone',
+        'staff_id',
+        'ic_number',
     ];
 
 
@@ -30,7 +33,33 @@ class StaffProfile extends Model
         'salary' => 'decimal:2',
     ];
 
-    
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['display_id'];
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($staffProfile) {
+            // Auto-generate staff_id if not provided
+            if (empty($staffProfile->staff_id)) {
+                $idGenerator = app(IdGeneratorService::class);
+                $staffProfile->staff_id = $idGenerator->generateStaffId(
+                    $staffProfile->position,
+                    $staffProfile->ic_number
+                );
+            }
+        });
+    }
+
+
     // Relationships
     public function user()
     {
@@ -39,6 +68,27 @@ class StaffProfile extends Model
 
     public function role()
     {
-        return $this->belongsTo(Role::class, 'roles_id');
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    /**
+     * Get display ID attribute
+     *
+     * @return string|null
+     */
+    public function getDisplayIdAttribute()
+    {
+        return $this->staff_id;
+    }
+
+    /**
+     * Get position code for ID generation
+     *
+     * @return string
+     */
+    public function getPositionCode()
+    {
+        $idGenerator = app(IdGeneratorService::class);
+        return $idGenerator->getPositionCode($this->position);
     }
 }

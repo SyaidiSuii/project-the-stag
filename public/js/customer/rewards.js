@@ -941,7 +941,7 @@ const AppData = {
               'Content-Type': 'application/json',
               'X-CSRF-TOKEN': rewardsData.csrfToken
             },
-            body: JSON.stringify({ exchange_point_id: rewardId })
+            body: JSON.stringify({ reward_id: rewardId })
           })
           .then(response => {
             if (!response.ok) {

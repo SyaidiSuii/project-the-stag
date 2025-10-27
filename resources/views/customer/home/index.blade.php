@@ -179,7 +179,14 @@
                 <li><strong>✉️ Email:</strong> {{ $contact['email'] ?? 'hello@thestag.com' }}</li>
             </ul>
             <div class="map">
-                <div class="pin">📍</div>
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3968.2701343721774!2d102.2575562!3d5.957472999999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31b6bdb86a1f1f1b%3A0x7a5e581c88791a33!2sThe%20Stag%20Coffee%20House!5e0!3m2!1sen!2smy!4v1761011598652!5m2!1sen!2smy"
+                    width="100%"
+                    height="100%"
+                    style="border:0; border-radius: 20px;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
             </div>
         </div>
         <div class="feedback">
