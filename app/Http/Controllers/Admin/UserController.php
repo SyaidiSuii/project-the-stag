@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
   use Illuminate\Http\Request;
   use App\Models\User;
   use App\Models\Order;
+  use App\Models\KitchenStation;
   use Spatie\Permission\Models\Role;
   use Spatie\Permission\Models\Permission;
   use libphonenumber\PhoneNumberUtil;
@@ -36,7 +37,7 @@ namespace App\Http\Controllers\Admin;
             $roles = Role::all();
 
             // Build query with filters
-            $query = User::with('roles')->withCount('orders');
+            $query = User::with(['roles', 'assignedStation'])->withCount('orders');
 
             // Search filter
             if ($request->filled('search')) {
@@ -119,7 +120,8 @@ namespace App\Http\Controllers\Admin;
       {
           $user = new User;
           $roles = Role::all();
-          return view('admin.user.form', compact('user', 'roles'));
+          $stations = KitchenStation::where('is_active', true)->orderBy('name')->get();
+          return view('admin.user.form', compact('user', 'roles', 'stations'));
       }
 
       /**
@@ -135,6 +137,7 @@ namespace App\Http\Controllers\Admin;
               'is_active' => 'boolean',
               'roles' => ['nullable', 'array'],
               'roles.*' => ['exists:roles,id'],
+              'assigned_station_id' => ['nullable', 'exists:kitchen_stations,id'],
           ]);
 
           // Phone number processing (only if provided)
@@ -165,6 +168,7 @@ namespace App\Http\Controllers\Admin;
               'phone_number' => $formattedPhone,
               'is_active' => $request->has('is_active') ? $request->boolean('is_active') : true, // Default to active
               'password' => bcrypt($request->password),
+              'assigned_station_id' => $request->assigned_station_id ?: null,
           ]);
 
           // Convert role IDs to role objects with explicit guard checking
@@ -192,8 +196,9 @@ namespace App\Http\Controllers\Admin;
       public function edit(User $user)
       {
           $roles = Role::all();
+          $stations = KitchenStation::where('is_active', true)->orderBy('name')->get();
           $user->load('roles');
-          return view('admin.user.form', compact('user', 'roles'));
+          return view('admin.user.form', compact('user', 'roles', 'stations'));
       }
 
       /**
@@ -208,6 +213,7 @@ namespace App\Http\Controllers\Admin;
               'is_active' => 'nullable|boolean',
               'roles' => ['nullable', 'array'],
               'roles.*' => ['exists:roles,id'],
+              'assigned_station_id' => ['nullable', 'exists:kitchen_stations,id'],
           ]);
 
           // Phone number processing (only if provided)
@@ -237,6 +243,7 @@ namespace App\Http\Controllers\Admin;
               'email' => $request->email,
               'phone_number' => $formattedPhone,
               'is_active' => $request->boolean('is_active'), // Menggunakan boolean() lebih aman untuk checkbox
+              'assigned_station_id' => $request->assigned_station_id ?: null,
           ]);
 
           // Convert role IDs to role objects with explicit guard checking

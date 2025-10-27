@@ -35,6 +35,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'last_checkin_date',
         'checkin_streak',
         'user_id',
+        'assigned_station_id',
     ];
 
     /**
@@ -151,11 +152,43 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+<<<<<<< HEAD
     * Get formatted phone number for display
     */
     public function getFormattedPhoneAttribute()
     {
         if (!$this->phone_number) return null;
+=======
+     * Get the kitchen station assigned to this user
+     */
+    public function assignedStation()
+    {
+        return $this->belongsTo(KitchenStation::class, 'assigned_station_id');
+    }
+
+    /**
+     * Check if user is kitchen staff
+     */
+    public function isKitchenStaff()
+    {
+        return $this->hasRole('kitchen_staff');
+    }
+
+    /**
+     * Check if user has access to view all stations
+     */
+    public function canViewAllStations()
+    {
+        return $this->hasAnyRole(['admin', 'manager']) || $this->is_super_admin;
+    }
+
+     /**
+       * Get formatted phone number for display
+       */
+      public function getFormattedPhoneAttribute()
+      {
+          if (!$this->phone_number) return null;
+>>>>>>> b4c8ad5df6f24a4edbcf80d59c212c7bac203cf2
 
         $phoneUtil = PhoneNumberUtil::getInstance();
         try {

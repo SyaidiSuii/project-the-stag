@@ -11,33 +11,103 @@ class RecommendationService
 {
     private string $baseUrl;
     private int $timeout;
+    private SimpleRecommendationService $simpleRecommender;
 
-    public function __construct()
+    public function __construct(SimpleRecommendationService $simpleRecommender)
     {
         $this->baseUrl = config('services.ai_recommender.base_url', 'http://localhost:8000');
         $this->timeout = config('services.ai_recommender.timeout', 30);
+        $this->simpleRecommender = $simpleRecommender;
     }
 
     /**
-     * Get recommendations for a user with context data
+     * Get recommendations for a user with smart fallback
+     *
+     * Fallback strategy:
+     * 1. Try AI service (Python collaborative filtering)
+     * 2. If AI unavailable -> Use smart rule-based recommendations
+     * 3. If both fail -> Use popular items
+     *
+     * @param int $userId User ID to get recommendations for
+     * @param int $limit Number of recommendations to return (default 10)
+     * @param array|null $excludeItems Menu item IDs to exclude from recommendations
+     * @return array Menu item IDs
      */
-    public function getRecommendations(int $userId, ?float $alpha = null, int $topn = 5, ?array $context = null): array
+    public function getRecommendations(int $userId, int $limit = 10, ?array $excludeItems = null): array
+    {
+        // Check if AI service is enabled in config
+        $aiEnabled = config('services.ai_recommender.enabled', true);
+
+        if ($aiEnabled) {
+            try {
+                $requestData = [
+                    'user_id' => $userId,
+                    'limit' => $limit,
+                ];
+
+                if ($excludeItems !== null) {
+                    $requestData['exclude_items'] = $excludeItems;
+                }
+
+                $response = Http::timeout($this->timeout)
+                    ->post("{$this->baseUrl}/recommend", $requestData);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+
+                    // Extract menu item IDs from recommendations
+                    if (isset($data['recommendations']) && is_array($data['recommendations'])) {
+                        $aiRecommendations = array_map(function($item) {
+                            return $item['menu_item_id'];
+                        }, $data['recommendations']);
+
+                        Log::info('AI recommendations successful', [
+                            'user_id' => $userId,
+                            'count' => count($aiRecommendations)
+                        ]);
+
+                        return $aiRecommendations;
+                    }
+                }
+
+                Log::warning('AI recommendation failed, falling back to smart rules', [
+                    'status' => $response->status(),
+                    'user_id' => $userId
+                ]);
+
+            } catch (Exception $e) {
+                Log::warning('AI service unavailable, falling back to smart rules', [
+                    'message' => $e->getMessage(),
+                    'user_id' => $userId,
+                ]);
+            }
+        }
+
+        // Fallback to smart rule-based recommendations
+        Log::info('Using smart rule-based recommendations', ['user_id' => $userId]);
+        return $this->simpleRecommender->getRecommendations($userId, $limit, $excludeItems);
+    }
+
+    /**
+     * Get recommendations with detailed info (scores included)
+     *
+     * @param int $userId User ID to get recommendations for
+     * @param int $limit Number of recommendations to return
+     * @param array|null $excludeItems Menu item IDs to exclude
+     * @return array Array with detailed recommendation info including scores
+     */
+    public function getRecommendationsWithScores(int $userId, int $limit = 10, ?array $excludeItems = null): array
     {
         try {
-            // Build user context if not provided
-            $userContext = $context ?? $this->buildUserContext($userId);
-            
             $requestData = [
                 'user_id' => $userId,
-                'topn' => $topn,
-                'context' => $userContext
+                'limit' => $limit,
             ];
 
-            if ($alpha !== null) {
-                $requestData['alpha'] = $alpha;
+            if ($excludeItems !== null) {
+                $requestData['exclude_items'] = $excludeItems;
             }
 
-            // Try enhanced POST request first
             $response = Http::timeout($this->timeout)
                 ->post("{$this->baseUrl}/recommend", $requestData);
 
@@ -45,45 +115,24 @@ class RecommendationService
                 return $response->json();
             }
 
-            // Fallback to old GET method if POST fails
-            Log::warning('Enhanced recommendation failed, trying fallback', [
-                'status' => $response->status(),
-                'user_id' => $userId
-            ]);
-            
-            return $this->getRecommendationsFallback($userId, $alpha, $topn);
+            return [
+                'success' => false,
+                'recommendations' => [],
+                'fallback' => true
+            ];
 
         } catch (Exception $e) {
             Log::error('Recommendation service error', [
                 'message' => $e->getMessage(),
                 'user_id' => $userId,
-                'alpha' => $alpha,
-                'topn' => $topn
             ]);
 
-            // Try fallback method
-            return $this->getRecommendationsFallback($userId, $alpha, $topn);
+            return [
+                'success' => false,
+                'recommendations' => [],
+                'fallback' => true
+            ];
         }
-    }
-
-    /**
-     * Fallback to simple GET request (old method)
-     */
-    private function getRecommendationsFallback(int $userId, ?float $alpha = null, int $topn = 5): array
-    {
-        $params = ['topn' => $topn];
-        if ($alpha !== null) {
-            $params['alpha'] = $alpha;
-        }
-
-        $response = Http::timeout($this->timeout)
-            ->get("{$this->baseUrl}/recommend/{$userId}", $params);
-
-        if ($response->successful()) {
-            return $response->json();
-        }
-
-        throw new Exception("Both enhanced and fallback recommendation requests failed");
     }
 
     /**
@@ -272,7 +321,7 @@ class RecommendationService
     {
         try {
             $response = Http::timeout(5)
-                ->get("{$this->baseUrl}/");
+                ->get("{$this->baseUrl}/health");
 
             return $response->successful();
 
@@ -286,160 +335,13 @@ class RecommendationService
     }
 
     /**
-     * Get recommendations with fallback to popular items
+     * Get recommendations with reasoning (for debugging/display)
      */
-    public function getRecommendationsWithFallback(int $userId, ?float $alpha = null, int $topn = 5, ?array $context = null): array
+    public function getRecommendationsWithReasons(int $userId, int $limit = 10, ?array $excludeItems = null): array
     {
-        try {
-            return $this->getRecommendations($userId, $alpha, $topn, $context);
-        } catch (Exception $e) {
-            Log::warning('Using fallback recommendations', [
-                'user_id' => $userId,
-                'error' => $e->getMessage()
-            ]);
-
-            // Return fallback recommendations (you can implement this based on your business logic)
-            return $this->getFallbackRecommendations($topn);
-        }
+        // Always use simple recommender for detailed reasons
+        // AI doesn't provide human-readable reasoning
+        return $this->simpleRecommender->getRecommendationsWithReasons($userId, $limit, $excludeItems);
     }
 
-    /**
-     * Fallback recommendations when AI service is unavailable
-     */
-    private function getFallbackRecommendations(int $topn): array
-    {
-        // This is a placeholder - implement based on your business logic
-        // Could be popular items, recently added items, etc.
-        return [
-            'user_id' => null,
-            'recommendations' => [],
-            'fallback' => true,
-            'message' => 'AI service unavailable, using fallback recommendations'
-        ];
-    }
-
-    /**
-     * Build comprehensive user context for recommendations
-     */
-    private function buildUserContext(int $userId): array
-    {
-        return [
-            'current_cart' => $this->getCurrentCart($userId),
-            'recent_orders' => $this->getRecentOrders($userId),
-            'available_menu' => $this->getAvailableMenu(),
-            'favorites' => $this->getUserFavorites($userId), // placeholder for future
-            'view_history' => $this->getViewHistory($userId), // placeholder for future
-        ];
-    }
-
-    /**
-     * Get current cart items for user
-     */
-    private function getCurrentCart(int $userId): array
-    {
-        try {
-            return DB::table('user_carts')
-                ->join('menu_items', 'user_carts.menu_item_id', '=', 'menu_items.id')
-                ->where('user_carts.user_id', $userId)
-                ->whereNull('user_carts.deleted_at')
-                ->select([
-                    'menu_items.id as menu_id',
-                    'menu_items.name',
-                    'menu_items.category',
-                    'user_carts.quantity',
-                    'user_carts.unit_price',
-                    'user_carts.special_notes'
-                ])
-                ->get()
-                ->toArray();
-        } catch (Exception $e) {
-            Log::warning('Failed to get current cart', ['user_id' => $userId, 'error' => $e->getMessage()]);
-            return [];
-        }
-    }
-
-    /**
-     * Get recent orders history for user (last 30 days)
-     */
-    private function getRecentOrders(int $userId): array
-    {
-        try {
-            return DB::table('orders')
-                ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-                ->join('menu_items', 'order_items.menu_item_id', '=', 'menu_items.id')
-                ->where('orders.user_id', $userId)
-                ->where('orders.order_status', '!=', 'cancelled')
-                ->where('orders.created_at', '>=', now()->subDays(30))
-                ->whereNull('orders.deleted_at')
-                ->whereNull('order_items.deleted_at')
-                ->select([
-                    'menu_items.id as menu_id',
-                    'menu_items.name',
-                    'menu_items.category',
-                    'order_items.quantity',
-                    'orders.created_at as order_date',
-                    'orders.order_type',
-                    DB::raw('COUNT(*) as frequency')
-                ])
-                ->groupBy([
-                    'menu_items.id', 'menu_items.name', 'menu_items.category',
-                    'order_items.quantity', 'orders.created_at', 'orders.order_type'
-                ])
-                ->orderBy('orders.created_at', 'desc')
-                ->limit(20)
-                ->get()
-                ->toArray();
-        } catch (Exception $e) {
-            Log::warning('Failed to get recent orders', ['user_id' => $userId, 'error' => $e->getMessage()]);
-            return [];
-        }
-    }
-
-    /**
-     * Get available menu items
-     */
-    private function getAvailableMenu(): array
-    {
-        try {
-            return DB::table('menu_items')
-                ->where('availability', true)
-                ->whereNull('deleted_at')
-                ->select([
-                    'id as menu_id',
-                    'name',
-                    'category',
-                    'price',
-                    'is_featured',
-                    'rating_average',
-                    'rating_count'
-                ])
-                ->orderBy('category')
-                ->orderBy('name')
-                ->get()
-                ->toArray();
-        } catch (Exception $e) {
-            Log::warning('Failed to get available menu', ['error' => $e->getMessage()]);
-            return [];
-        }
-    }
-
-    /**
-     * Get user favorites (placeholder for future implementation)
-     */
-    private function getUserFavorites(int $userId): array
-    {
-        // TODO: Implement when favorites feature is added
-        // This would query a user_favorites table or similar
-        return [];
-    }
-
-    /**
-     * Get user view history (placeholder for future implementation)
-     */
-    private function getViewHistory(int $userId): array
-    {
-        // TODO: Implement when view tracking feature is added
-        // This would query a menu_views or user_activity table
-        return [];
-    }
 }

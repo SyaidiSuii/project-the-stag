@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/toast.css') }}">
     <style>
         :root {
             --brand: #6366f1;
@@ -100,6 +101,49 @@
 
         .cart-item:last-child {
             border-bottom: none;
+        }
+
+        /* Cart item animations */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideOutDown {
+            from {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(-30px) scale(0.9);
+            }
+        }
+
+        .cart-item {
+            animation: slideInUp 0.4s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        .cart-item:nth-child(1) { animation-delay: 0.05s; }
+        .cart-item:nth-child(2) { animation-delay: 0.1s; }
+        .cart-item:nth-child(3) { animation-delay: 0.15s; }
+        .cart-item:nth-child(4) { animation-delay: 0.2s; }
+        .cart-item:nth-child(5) { animation-delay: 0.25s; }
+
+        .cart-item.removing {
+            animation: slideOutDown 0.4s ease forwards;
+        }
+
+        .cart-item.updating {
+            opacity: 0.5;
+            transform: scale(0.98);
         }
 
         .item-image {
@@ -267,8 +311,8 @@
             @foreach ($cart as $item)
             <div class="cart-item">
                 <div class="item-image">
-                    @if($item['image'])
-                    <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}">
+                    @if(isset($item['image']) && $item['image'])
+                    <img src="{{ asset('storage/' . $item['image']) }}" alt="{{ $item['name'] }}">
                     @else
                     🍽️
                     @endif
@@ -311,16 +355,253 @@
         @endif
     </div>
 
+    <!-- Remove Item Confirmation Modal -->
+    <div id="remove-confirm-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
+        <div style="background: white; border-radius: 20px; padding: 2.5rem; max-width: 500px; width: 100%; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); animation: modalAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <div style="font-size: 4rem; margin-bottom: 1.5rem; color: #f59e0b;">
+                <i class="fas fa-trash-alt"></i>
+            </div>
+            <h2 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; color: #1e293b;">Remove Item?</h2>
+            <p style="color: #64748b; margin-bottom: 1.5rem; line-height: 1.6;">Are you sure you want to remove this item from your cart?</p>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button id="remove-cancel-btn" style="padding: 0.875rem 1.75rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 1rem; background: white; color: #1e293b; border: 2px solid #e2e8f0;">
+                    Cancel
+                </button>
+                <button id="remove-confirm-btn" style="padding: 0.875rem 1.75rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 1rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                    Yes, Remove
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Confirmation Modal -->
+    <div id="back-confirm-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
+        <div style="background: white; border-radius: 20px; padding: 2.5rem; max-width: 500px; width: 100%; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); animation: modalAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <div style="font-size: 4rem; margin-bottom: 1.5rem; color: #3b82f6;">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <h2 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; color: #1e293b;">Leave Cart?</h2>
+            <p style="color: #64748b; margin-bottom: 1.5rem; line-height: 1.6;">Go back to menu? Your cart will be saved.</p>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button id="back-cancel-btn" style="padding: 0.875rem 1.75rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 1rem; background: white; color: #1e293b; border: 2px solid #e2e8f0;">
+                    Stay in Cart
+                </button>
+                <button id="back-confirm-btn" style="padding: 0.875rem 1.75rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 1rem; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                    Yes, Go Back
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    </style>
+
+    <!-- Toast JavaScript -->
+    <script src="{{ asset('js/toast.js') }}"></script>
+
     <script>
+        const sessionCode = '{{ $session->session_code }}';
+
         function updateQuantity(itemId, change) {
-            // In a real implementation, you would send an AJAX request to update the quantity
-            alert('In a real implementation, this would update the item quantity via AJAX');
+            // Add loading state
+            const cartItem = event.target.closest('.cart-item');
+            cartItem.classList.add('updating');
+
+            fetch('{{ route("qr.cart.update") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    session_code: sessionCode,
+                    menu_item_id: itemId,
+                    change: change
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Add slide out animation before reload
+                    cartItem.classList.remove('updating');
+                    cartItem.classList.add('removing');
+
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 400);
+                } else {
+                    cartItem.classList.remove('updating');
+                    Toast.error('Error', data.error || 'Failed to update quantity');
+                }
+            })
+            .catch(error => {
+                cartItem.classList.remove('updating');
+                console.error('Error:', error);
+                Toast.error('Error', 'An error occurred');
+            });
         }
 
+        // Remove item with modern modal confirmation
+        let pendingRemoveItemId = null;
+        const removeModal = document.getElementById('remove-confirm-modal');
+        const removeCancelBtn = document.getElementById('remove-cancel-btn');
+        const removeConfirmBtn = document.getElementById('remove-confirm-btn');
+
         function removeItem(itemId) {
-            // In a real implementation, you would send an AJAX request to remove the item
-            alert('In a real implementation, this would remove the item via AJAX');
+            // Store the item ID and show modal
+            pendingRemoveItemId = itemId;
+            removeModal.style.display = 'flex';
         }
+
+        // Cancel button
+        if (removeCancelBtn) {
+            removeCancelBtn.addEventListener('click', function() {
+                removeModal.style.display = 'none';
+                pendingRemoveItemId = null;
+            });
+        }
+
+        // Confirm button
+        if (removeConfirmBtn) {
+            removeConfirmBtn.addEventListener('click', function() {
+                if (!pendingRemoveItemId) return;
+
+                // Hide modal
+                removeModal.style.display = 'none';
+
+                // Find the cart item and add removing animation
+                const cartItem = document.querySelector(`[onclick="removeItem('${pendingRemoveItemId}')"]`).closest('.cart-item');
+                cartItem.classList.add('removing');
+
+                // Show toast immediately
+                Toast.success('Success', 'Item removed from cart');
+
+                fetch('{{ route("qr.cart.update") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        session_code: sessionCode,
+                        menu_item_id: pendingRemoveItemId,
+                        remove: true
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Wait for animation to complete before reload
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 400);
+                    } else {
+                        cartItem.classList.remove('removing');
+                        Toast.error('Error', data.error || 'Failed to remove item');
+                    }
+                })
+                .catch(error => {
+                    cartItem.classList.remove('removing');
+                    console.error('Error:', error);
+                    Toast.error('Error', 'An error occurred');
+                });
+
+                pendingRemoveItemId = null;
+            });
+        }
+
+        // Close modal when clicking outside
+        if (removeModal) {
+            removeModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                    pendingRemoveItemId = null;
+                }
+            });
+        }
+
+        // Show flash messages
+        @if(session('success'))
+            Toast.success('Success', '{{ session('success') }}');
+        @endif
+
+        @if(session('error'))
+            Toast.error('Error', '{{ session('error') }}');
+        @endif
+
+        // Show welcome message when page loads (only if not from a flash message)
+        @if(!session('success') && !session('error') && count($cart) > 0)
+            setTimeout(() => {
+                Toast.success('Cart', 'Review your items before checkout');
+            }, 300);
+        @elseif(!session('success') && !session('error') && count($cart) == 0)
+            setTimeout(() => {
+                Toast.info('Cart', 'Your cart is empty');
+            }, 300);
+        @endif
+
+        // Back button confirmation modal
+        const backButton = document.querySelector('.back-button');
+        const backConfirmModal = document.getElementById('back-confirm-modal');
+        const backCancelBtn = document.getElementById('back-cancel-btn');
+        const backConfirmBtn = document.getElementById('back-confirm-btn');
+        let backLinkHref = '';
+        let isLeavingPage = false;
+
+        // Intercept "Back to Menu" button
+        if (backButton) {
+            backButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                backLinkHref = this.href;
+                backConfirmModal.style.display = 'flex';
+            });
+        }
+
+        // Cancel button
+        if (backCancelBtn) {
+            backCancelBtn.addEventListener('click', function() {
+                backConfirmModal.style.display = 'none';
+            });
+        }
+
+        // Confirm button
+        if (backConfirmBtn) {
+            backConfirmBtn.addEventListener('click', function() {
+                isLeavingPage = true;
+                window.location.href = backLinkHref;
+            });
+        }
+
+        // Close modal when clicking outside
+        if (backConfirmModal) {
+            backConfirmModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+        }
+
+        // Intercept browser back button
+        history.pushState({page: 'cart'}, '', '');
+
+        window.addEventListener('popstate', function(e) {
+            if (!isLeavingPage) {
+                // User pressed back button, show confirmation
+                history.pushState({page: 'cart'}, '', '');
+                backLinkHref = '{{ route("qr.menu", ["session" => $session->session_code]) }}';
+                backConfirmModal.style.display = 'flex';
+            }
+        });
     </script>
 </body>
 

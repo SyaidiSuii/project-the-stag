@@ -50,6 +50,35 @@
                 <div class="admin-nav-icon"><i class="fas fa-home"></i></div>
                 <div class="admin-nav-text">Homepage Content</div>
             </a>
+            <!-- Kitchen Management Menu -->
+            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.kitchen.*') ? 'active' : '' }}" id="kitchenMenu">
+                <div class="admin-nav-icon"><i class="fas fa-fire"></i></div>
+                <div class="admin-nav-text">Kitchen Management</div>
+                <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="admin-nav-submenu" id="kitchenSubmenu">
+                <a href="{{ route('admin.kitchen.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.kitchen.index') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Dashboard</div>
+                </a>
+                <a href="{{ route('admin.kitchen.kds') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.kitchen.kds') ? 'active' : '' }}"
+                    target="_blank">
+                    <div class="admin-nav-text">Kitchen Display</div>
+                </a>
+                <a href="{{ route('admin.kitchen.stations.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.kitchen.stations.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Stations</div>
+                </a>
+                <a href="{{ route('admin.kitchen.orders') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.kitchen.orders') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Active Orders</div>
+                </a>
+                <a href="{{ route('admin.kitchen.analytics') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.kitchen.analytics') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Analytics</div>
+                </a>
+            </div>
             <!-- Menu Managements Menu -->
             <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.menu-items.*') || request()->routeIs('admin.categories.*') ? 'active' : '' }}" id="menuMenu">
                 <div class="admin-nav-icon"><i class="fas fa-utensils"></i></div>
@@ -255,6 +284,31 @@
     <script src="{{ asset('js/password-toggle.js') }}"></script>
 
     <script src="{{ asset('js/admin/layout-admin.js') }}?v={{ time() }}"></script>
+
+    {{-- Auto-show toast for Laravel flash messages --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Small delay to ensure everything is rendered
+            setTimeout(function() {
+                @if(session('success'))
+                    Toast.success('Success', '{{ session('success') }}');
+                @endif
+
+                @if(session('error'))
+                    Toast.error('Error', '{{ session('error') }}');
+                @endif
+
+                @if(session('warning'))
+                    Toast.warning('Warning', '{{ session('warning') }}');
+                @endif
+
+                @if(session('info'))
+                    Toast.info('Info', '{{ session('info') }}');
+                @endif
+            }, 100);
+        });
+    </script>
+
     @yield('scripts')
 </body>
 

@@ -722,7 +722,6 @@
       font-size: 12px;
       font-weight: 600;
       display: inline-block;
-      width: 100%;
       text-align: center;
     }
 
@@ -771,18 +770,19 @@
     }
 
     .status-order {
-      padding: 4px 10px;
+      padding: 4px 8px;
       border-radius: 16px;
-      font-size: 11px;
+      font-size: 9px;
       font-weight: 700;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       text-align: center;
+      white-space: nowrap;
     }
 
     .status-order i {
-      font-size: 10px;
+      font-size: 8px;
     }
 
     .status-order-pending {
@@ -1511,3 +1511,13 @@
   .pagination-btn:hover:not(.active) {
     background: var(--bg);
   }
+
+/* Center align table cells */
+.cell-center {
+    text-align: center !important;
+}
+
+.cell-center > * {
+    margin-left: auto;
+    margin-right: auto;
+}

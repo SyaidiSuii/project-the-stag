@@ -86,17 +86,7 @@
         </div>
     </div>
 
-    @if(session('message'))
-        <div class="alert alert-success">
-            {{ session('message') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-error">
-            {{ session('error') }}
-        </div>
-    @endif
+    {{-- Flash messages handled by layout toast system --}}
 
     <!-- Active Orders Display -->
     @foreach(['pending', 'preparing', 'ready', 'served'] as $status)
@@ -200,12 +190,9 @@
                     @if($order->items && $order->items->count() > 0)
                     <div class="order-items-preview">
                         <strong>Items ({{ $order->items->count() }}):</strong>
-                        @foreach($order->items->take(3) as $item)
+                        @foreach($order->items as $item)
                             <div class="item-preview">{{ $item->quantity ?? 1 }}x {{ $item->menuItem->name ?? 'Item' }}</div>
                         @endforeach
-                        @if($order->items->count() > 3)
-                            <div class="items-more">... and {{ $order->items->count() - 3 }} more items</div>
-                        @endif
                     </div>
                     @endif
 
@@ -348,62 +335,83 @@
 @section('scripts')
 <script src="{{ asset('js/admin/order-management.js') }}"></script>
 <script>
-    function updateOrderStatus(orderId, status) {
-        if (!confirm(`Are you sure you want to mark this order as '${status}'?`)) {
+    async function updateOrderStatus(orderId, status) {
+        const statusLabels = {
+            'preparing': 'Start Preparing',
+            'ready': 'Mark as Ready',
+            'served': 'Mark as Served',
+            'completed': 'Mark as Completed'
+        };
+
+        const confirmed = await Confirm.show(
+            'Update Order Status?',
+            `Are you sure you want to ${statusLabels[status] || status}?`
+        );
+
+        if (!confirmed) {
             return;
         }
 
-        fetch(`/admin/order/${orderId}/update-status`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({
-                order_status: status
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
+        try {
+            const response = await fetch(`/admin/order/${orderId}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    order_status: status
+                })
+            });
+
+            const data = await response.json();
+
             if (data.success) {
-                window.location.reload();
+                Toast.success('Success', `Order updated to ${status}`);
+                setTimeout(() => window.location.reload(), 1000);
             } else {
-                alert('Error updating order status: ' + (data.message || 'Unknown error'));
+                Toast.error('Error', data.message || 'Failed to update order status');
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Error:', error);
-            alert('Error updating order status');
-        });
+            Toast.error('Error', 'Failed to update order status');
+        }
     }
 
-    function updatePaymentStatus(orderId, status) {
-        if (!confirm('Mark this order as paid?')) {
+    async function updatePaymentStatus(orderId, status) {
+        const confirmed = await Confirm.show(
+            'Mark as Paid?',
+            'Are you sure you want to mark this order as paid?'
+        );
+
+        if (!confirmed) {
             return;
         }
 
-        fetch(`/admin/order/${orderId}/update-payment-status`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({
-                payment_status: status
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
+        try {
+            const response = await fetch(`/admin/order/${orderId}/update-payment-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    payment_status: status
+                })
+            });
+
+            const data = await response.json();
+
             if (data.success) {
-                window.location.reload();
+                Toast.success('Success', 'Payment status updated');
+                setTimeout(() => window.location.reload(), 1000);
             } else {
-                alert('Error updating payment status: ' + (data.message || 'Unknown error'));
+                Toast.error('Error', data.message || 'Failed to update payment status');
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Error:', error);
-            alert('Error updating payment status');
-        });
+            Toast.error('Error', 'Failed to update payment status');
+        }
     }
 
     // Auto-refresh page every 60 seconds for kitchen display

@@ -315,3 +315,9 @@ Route::prefix('chatbot')->middleware(['web', 'auth'])->group(function () {
     Route::get('/health', [ChatController::class, 'healthCheck']);
 });
 
+// Kitchen Load Balancing API Routes
+Route::prefix('kitchen')->group(function () {
+    // Public/real-time status endpoints
+    Route::get('/status', [\App\Http\Controllers\Api\KitchenStatusController::class, 'index']);
+    Route::get('/status/{stationId}', [\App\Http\Controllers\Api\KitchenStatusController::class, 'show']);
+});
