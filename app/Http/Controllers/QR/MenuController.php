@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\PaymentService;
 use App\Services\SimpleRecommendationService;
+use App\Services\Kitchen\OrderDistributionService;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -18,11 +19,17 @@ class MenuController extends Controller
 {
     protected $paymentService;
     protected $simpleRecommender;
+    protected $distributionService;
 
-    public function __construct(PaymentService $paymentService, SimpleRecommendationService $simpleRecommender)
+    public function __construct(
+        PaymentService $paymentService,
+        SimpleRecommendationService $simpleRecommender,
+        OrderDistributionService $distributionService
+    )
     {
         $this->paymentService = $paymentService;
         $this->simpleRecommender = $simpleRecommender;
+        $this->distributionService = $distributionService;
     }
 
     /**
@@ -359,6 +366,23 @@ class MenuController extends Controller
                 'total_price' => $item['price'] * $item['quantity'],
                 'status' => 'pending',
             ]);
+        }
+
+        // Distribute order to kitchen stations automatically
+        try {
+            $this->distributionService->distributeOrder($order);
+            \Log::info("QR Order #{$order->confirmation_code} distributed to kitchen stations", [
+                'order_id' => $order->id,
+                'table' => $session->table->table_number
+            ]);
+        } catch (\Exception $e) {
+            \Log::warning('Failed to distribute QR order to stations', [
+                'order_id' => $order->id,
+                'confirmation_code' => $order->confirmation_code,
+                'error' => $e->getMessage()
+            ]);
+            // Don't fail the order, just log the warning
+            // Order can still be processed manually if distribution fails
         }
 
         // Clear cart

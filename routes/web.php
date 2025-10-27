@@ -260,8 +260,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // Kitchen Stations
             Route::prefix('stations')->name('stations.')->group(function () {
                 Route::get('/', [\App\Http\Controllers\Admin\StationTypeController::class, 'index'])->name('index');
+                Route::get('/{station}/edit', [\App\Http\Controllers\Admin\StationTypeController::class, 'edit'])->name('edit');
                 Route::get('/{station}', [\App\Http\Controllers\Admin\StationTypeController::class, 'show'])->name('detail');
                 Route::post('/', [\App\Http\Controllers\Admin\StationTypeController::class, 'store'])->name('store');
+                Route::patch('/{station}/toggle-status', [\App\Http\Controllers\Admin\StationTypeController::class, 'toggleStatus'])->name('toggleStatus');
                 Route::put('/{station}', [\App\Http\Controllers\Admin\StationTypeController::class, 'update'])->name('update');
                 Route::delete('/{station}', [\App\Http\Controllers\Admin\StationTypeController::class, 'destroy'])->name('destroy');
             });
