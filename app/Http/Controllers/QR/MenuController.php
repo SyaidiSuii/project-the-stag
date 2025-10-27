@@ -34,6 +34,8 @@ class MenuController extends Controller
 
     /**
      * Display menu for QR code access
+     * Redirects authenticated customers to customer menu with dine-in
+     * Shows guest welcome page for unauthenticated users
      */
     public function index(Request $request)
     {
@@ -54,6 +56,54 @@ class MenuController extends Controller
 
         if (!$session->isActive()) {
             return redirect()->route('qr.error')->with('error', 'Session has expired.');
+        }
+
+        // Update table status to 'occupied' when QR session is being used
+        if ($session->table && $session->table->status !== 'occupied') {
+            $session->table->update(['status' => 'occupied']);
+        }
+
+        // Check if user is authenticated (logged in customer)
+        if (auth()->check()) {
+            // Redirect to customer menu with table number and dine-in order type
+            return redirect()->route('customer.menu.index', [
+                'table' => $session->table->table_number,
+                'order_type' => 'dine_in',
+                'session' => $sessionCode
+            ]);
+        }
+
+        // For guests, show welcome page with options to login or continue
+        return view('qr.welcome', compact('session'));
+    }
+
+    /**
+     * Show menu for guest users (not logged in)
+     */
+    public function guestMenu(Request $request)
+    {
+        $sessionCode = $request->get('session');
+
+        if (!$sessionCode) {
+            return redirect()->route('qr.error')->with('error', 'Invalid QR code. Session not found.');
+        }
+
+        // Find and validate session
+        $session = TableQrcode::where('session_code', $sessionCode)
+            ->with(['table', 'reservation'])
+            ->first();
+
+        if (!$session) {
+            return redirect()->route('qr.error')->with('error', 'Session not found.');
+        }
+
+        if (!$session->isActive()) {
+            return redirect()->route('qr.error')->with('error', 'Session has expired.');
+        }
+
+        // Update table status to 'occupied' when QR session is being used
+        if ($session->table && $session->table->status !== 'occupied') {
+            $session->table->update(['status' => 'occupied']);
         }
 
         // Get all categories with their available menu items (same as customer menu)
@@ -314,8 +364,8 @@ class MenuController extends Controller
     {
         $request->validate([
             'session_code' => 'required|exists:table_qrcodes,session_code',
-            'guest_name' => 'required|string|max:255',
-            'guest_phone' => 'required|string|max:20',
+            'guest_name' => 'nullable|string|max:255',
+            'guest_phone' => 'nullable|string|max:20',
             'special_instructions' => 'nullable|string|max:500',
         ]);
 
@@ -371,21 +421,18 @@ class MenuController extends Controller
         $cartTotal = $this->calculateCartTotal($cart);
 
         // Create order
+        $sessionToken = Str::random(32);
         $order = Order::create([
             'user_id' => null, // QR orders don't have user_id
             'table_id' => $session->table_id,
-            'table_qrcode_id' => $session->id,
-            'order_type' => 'qr_table',
-            'order_source' => 'qr_scan',
-            'order_status' => 'pending',
-            'order_time' => now(),
-            'table_number' => $session->table->table_number,
+            'order_type' => 'dine_in', // QR orders are dine-in orders
+            'status' => 'pending',
             'total_amount' => $cartTotal,
             'payment_status' => 'pending',
             'special_instructions' => $request->special_instructions,
-            'guest_name' => $request->guest_name,
+            'guest_name' => $request->guest_name ?: 'Guest - Table ' . $session->table->table_number,
             'guest_phone' => $request->guest_phone,
-            'session_token' => Str::random(32),
+            'session_token' => $sessionToken,
             'confirmation_code' => 'ORD' . strtoupper(Str::random(6)),
         ]);
 
@@ -455,14 +502,25 @@ class MenuController extends Controller
     {
         $request->validate([
             'order_code' => 'required|string',
-            'phone' => 'required|string',
+            'phone' => 'nullable|string',
+            'token' => 'nullable|string',
         ]);
 
-        $order = Order::where('confirmation_code', $request->order_code)
-            ->where('guest_phone', $request->phone)
-            ->where('order_type', 'qr_table')
-            ->with(['items.menuItem', 'tableQrcode.table', 'trackings'])
-            ->first();
+        // Allow tracking with either phone number OR session token
+        // Look for orders with confirmation code and session_token (QR orders)
+        $query = Order::where('confirmation_code', $request->order_code)
+            ->whereNotNull('session_token'); // QR orders have session tokens
+
+        if ($request->phone) {
+            $query->where('guest_phone', $request->phone);
+        } elseif ($request->token) {
+            $query->where('session_token', $request->token);
+        } else {
+            // If neither phone nor token provided, just search by order code
+            // This allows guests who didn't provide phone to track
+        }
+
+        $order = $query->with(['items.menuItem', 'tableQrcode.table', 'trackings'])->first();
 
         if (!$order) {
             return response()->json(['error' => 'Order not found'], 404);
@@ -470,10 +528,10 @@ class MenuController extends Controller
 
         return response()->json([
             'order' => $order,
-            'status' => $order->order_status,
-            'table_number' => $order->table_number,
+            'status' => $order->status,
+            'table_number' => $order->table ? $order->table->table_number : null,
             'total_amount' => $order->total_amount,
-            'estimated_time' => $order->estimated_completion_time,
+            'estimated_time' => $order->estimated_ready_time,
             'items' => $order->items,
         ]);
     }

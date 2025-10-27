@@ -639,6 +639,7 @@ Route::prefix('qr')->name('qr.')->group(function () {
 
     // Main QR Pages
     Route::get('menu', [QRMenuController::class, 'index'])->name('menu');
+    Route::get('guest/menu', [QRMenuController::class, 'guestMenu'])->name('guest.menu');
     Route::get('cart', [QRMenuController::class, 'viewCart'])->name('cart');
     Route::get('error', [QRMenuController::class, 'error'])->name('error');
     Route::get('track', [QRMenuController::class, 'showTrackingPage'])->name('track');
@@ -694,4 +695,10 @@ Route::get('customer/verify-email/{id}/{hash}', function ($id, $hash) {
 
     return redirect()->route('customer.account.index')->with('success', 'Email verified successfully!');
 })->name('customer.verification.verify');
+
+// Utility route to clear cart
+Route::get('/clear-cart', function() {
+    return view('clear-cart');
+});
+
 require __DIR__.'/test-debug.php';

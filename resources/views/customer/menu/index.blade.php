@@ -10,6 +10,19 @@
 @section('content')
 <!-- Header Section -->
 <div class="header-section">
+  @if(isset($tableNumber) && $tableNumber)
+  <!-- Table Number Display (From QR) -->
+  <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 16px; padding: 16px 24px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; color: white;">
+      <i class="fas fa-chair" style="font-size: 24px;"></i>
+      <div>
+        <div style="font-size: 14px; opacity: 0.9; font-weight: 500;">You're ordering for</div>
+        <div style="font-size: 20px; font-weight: 800;">Table {{ $tableNumber }}</div>
+      </div>
+    </div>
+  </div>
+  @endif
+
   <!-- Search Bar -->
   <div class="search-bar-container" role="search">
     <div class="search-bar">
@@ -19,6 +32,7 @@
     </div>
   </div>
 
+  @auth
   <!-- Promotions Banner -->
   <div class="promotions-banner" id="promotionsBanner">
     <div class="promo-carousel">
@@ -84,6 +98,7 @@
       </div>
   </div>
   @endif
+  @endauth
 
   <!-- AI Recommendations Section -->
   @if(Auth::check() && isset($recommendedItems) && count($recommendedItems) > 0)
@@ -162,11 +177,13 @@
   <span class="cart-badge" id="cartBadge">0</span>
 </button>
 
+@auth
 <!-- Floating Order Type Button -->
 <button class="ordertype-fab" id="ordertypeFab" aria-label="Change order type" style="position: fixed; top: 24px; right: 24px; min-width: 140px; height: 56px; border-radius: 28px; border: none; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3); z-index: 999; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 20px; transition: all 0.3s; opacity: 0;">
   <i class="fas fa-utensils" id="ordertypeIcon" style="font-size: 18px;"></i>
   <span id="ordertypeText">Dine In</span>
 </button>
+@endauth
 
 <!-- Modern Centered Cart Modal -->
 <div class="cart-modal" id="cartModal">
@@ -656,6 +673,18 @@
   // Pass menu data from server to JavaScript
   window.menuData = @json($categories ?? []);
 
+  // QR Parameters: Handle table number and order type from QR scan
+  @if(isset($orderType) && $orderType)
+  // Order type is set (from QR or session), mark as selected to skip modal
+  sessionStorage.setItem('selectedOrderType', '{{ $orderType }}');
+  sessionStorage.setItem('orderTypeSelected', 'true');
+
+  @if(isset($tableNumber) && $tableNumber)
+  // Store table number for display
+  sessionStorage.setItem('qrTableNumber', '{{ $tableNumber }}');
+  @endif
+  @endif
+
   // Promo Code Management
   let appliedPromotion = null;
 
@@ -968,6 +997,11 @@
   }
 </style>
 
+<script>
+// Define auth status BEFORE loading menu.js so it's available
+window.isAuthenticated = {{ Auth::check() ? 'true' : 'false' }};
+</script>
+
 <script src="{{ asset('js/customer/cart-manager.js') }}"></script>
 <script src="{{ asset('js/customer/cart-voucher.js') }}"></script>
 <script src="{{ asset('js/customer/menu.js') }}"></script>
@@ -1078,6 +1112,21 @@ document.getElementById('all-recommendations-modal')?.addEventListener('click', 
         closeAllRecommendationsModal();
     }
 });
+
+// Intercept add to cart and order now buttons for guests - redirect to login
+document.addEventListener('click', function(e) {
+    const orderBtn = e.target.closest('.order-now-btn');
+    const addToCartBtn = e.target.closest('.add-to-cart-btn');
+    const cartFab = e.target.closest('#cartFab');
+
+    if ((orderBtn || addToCartBtn || cartFab) && !window.isAuthenticated) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        window.location.href = '{{ route("login") }}?redirect=' + encodeURIComponent(window.location.href);
+        return false;
+    }
+}, true); // Use capture phase to intercept before other handlers
 </script>
 {{-- food_and_drink.js is NOT loaded here - menu.js handles all functionality for the unified menu page --}}
 @endsection

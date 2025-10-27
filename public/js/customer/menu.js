@@ -336,6 +336,14 @@ async function updateCartBadge() {
 
 // Add to cart and order now button handlers
 document.addEventListener('click', async function(e) {
+  // Check if user is authenticated before allowing cart actions
+  if ((e.target.classList.contains('btn-cart') || e.target.classList.contains('btn-order')) && !window.isAuthenticated) {
+    e.preventDefault();
+    e.stopPropagation();
+    window.location.href = '/login?redirect=' + encodeURIComponent(window.location.href);
+    return;
+  }
+
   // Add to Cart button - now shows modal instead of direct add
   if (e.target.classList.contains('btn-cart')) {
     const itemCard = e.target.closest('.food-card');
@@ -414,7 +422,13 @@ document.addEventListener('click', async function(e) {
 
 // Cart FAB click handler
 if (cartFab) {
-  cartFab.addEventListener('click', function() {
+  cartFab.addEventListener('click', function(e) {
+    // Check if user is authenticated
+    if (!window.isAuthenticated) {
+      e.preventDefault();
+      window.location.href = '/login?redirect=' + encodeURIComponent(window.location.href);
+      return;
+    }
     showCartModal();
   });
 }
