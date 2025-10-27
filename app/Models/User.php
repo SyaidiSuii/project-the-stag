@@ -152,13 +152,6 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-<<<<<<< HEAD
-    * Get formatted phone number for display
-    */
-    public function getFormattedPhoneAttribute()
-    {
-        if (!$this->phone_number) return null;
-=======
      * Get the kitchen station assigned to this user
      */
     public function assignedStation()
@@ -182,13 +175,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasAnyRole(['admin', 'manager']) || $this->is_super_admin;
     }
 
-     /**
-       * Get formatted phone number for display
-       */
-      public function getFormattedPhoneAttribute()
-      {
-          if (!$this->phone_number) return null;
->>>>>>> b4c8ad5df6f24a4edbcf80d59c212c7bac203cf2
+    /**
+     * Get formatted phone number for display
+     */
+    public function getFormattedPhoneAttribute()
+    {
+        if (!$this->phone_number) return null;
 
         $phoneUtil = PhoneNumberUtil::getInstance();
         try {
