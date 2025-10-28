@@ -1537,3 +1537,28 @@
       background: var(--muted);
       transform: none;
   }
+
+  /* ===== Barcode Container ===== */
+  .barcode-container {
+      background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+      border: 2px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 16px 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      color: #1e293b;
+      font-weight: 600;
+  }
+
+  .barcode-container:hover {
+      background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .barcode-container i {
+      display: block;
+      margin-bottom: 4px;
+      color: #3b82f6;
+  }

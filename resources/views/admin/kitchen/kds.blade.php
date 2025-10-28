@@ -1028,12 +1028,13 @@
     <script src="https://cdn.jsdelivr.net/npm/pusher-js@8/dist/web/pusher.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1/dist/echo.iife.js"></script>
     <script>
-        // Initialize Laravel Echo
+        // Initialize Laravel Echo with Pusher
         window.Echo = new Echo({
             broadcaster: 'pusher',
             key: '{{ config('broadcasting.connections.pusher.key') }}',
             cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
-            forceTLS: true
+            forceTLS: true,
+            encrypted: true
         });
 
         // Listen for order status updates
@@ -1117,7 +1118,7 @@
             }
 
             try {
-                const response = await fetch(`{{ url('/admin/order') }}/${orderId}/need-more-time`, {
+                const response = await fetch(`/admin/order/${orderId}/need-more-time`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1202,7 +1203,7 @@
             }
 
             try {
-                const response = await fetch(`{{ url('/admin/order') }}/${orderId}/update-status`, {
+                const response = await fetch(`/admin/order/${orderId}/update-status`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

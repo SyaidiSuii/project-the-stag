@@ -302,7 +302,7 @@
             <p>Table {{ $session->table->table_number }}</p>
         </div>
 
-        <a href="{{ route('qr.menu', ['session' => $session->session_code]) }}" class="back-button">
+        <a href="{{ secure_url(route('qr.menu', ['session' => $session->session_code], false)) }}" class="back-button">
             <i class="fas fa-arrow-left"></i> Back to Menu
         </a>
 
@@ -340,7 +340,7 @@
             </div>
         </div>
 
-        <a href="{{ route('qr.payment', ['session' => $session->session_code]) }}" class="checkout-btn">
+        <a href="{{ secure_url(route('qr.payment', ['session' => $session->session_code], false)) }}" class="checkout-btn">
             <i class="fas fa-credit-card"></i> Proceed to Payment
         </a>
         @else
@@ -348,7 +348,7 @@
             <div class="empty-cart-icon">🛒</div>
             <div class="empty-cart-text">Your cart is empty</div>
             <p>Add some delicious items from the menu to get started!</p>
-            <a href="{{ route('qr.menu', ['session' => $session->session_code]) }}" class="checkout-btn" style="margin-top: 20px; display: inline-block;">
+            <a href="{{ secure_url(route('qr.menu', ['session' => $session->session_code], false)) }}" class="checkout-btn" style="margin-top: 20px; display: inline-block;">
                 <i class="fas fa-utensils"></i> Browse Menu
             </a>
         </div>
@@ -417,7 +417,7 @@
             const cartItem = event.target.closest('.cart-item');
             cartItem.classList.add('updating');
 
-            fetch('{{ route("qr.cart.update") }}', {
+            fetch('{{ secure_url(route("qr.cart.update", [], false)) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -486,7 +486,7 @@
                 // Show toast immediately
                 Toast.success('Success', 'Item removed from cart');
 
-                fetch('{{ route("qr.cart.update") }}', {
+                fetch('{{ secure_url(route("qr.cart.update", [], false)) }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

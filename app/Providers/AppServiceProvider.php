@@ -8,6 +8,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,15 +25,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS in production
         if ($this->app->environment('production')) {
-        Artisan::command('migrate:fresh', function () {
-            $this->error('❌ migrate:fresh is disabled in production!');
-        });
+            URL::forceScheme('https');
+        }
 
-        Artisan::command('migrate:refresh', function () {
-            $this->error('❌ migrate:refresh is disabled in production!');
-        });
-    }
+        if ($this->app->environment('production')) {
+            Artisan::command('migrate:fresh', function () {
+                $this->error('❌ migrate:fresh is disabled in production!');
+            });
+
+            Artisan::command('migrate:refresh', function () {
+                $this->error('❌ migrate:refresh is disabled in production!');
+            });
+        }
 
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
             return (new MailMessage)

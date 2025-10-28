@@ -345,18 +345,21 @@
                         <small>✓ Already Claimed</small>
                     </div>
                     @else
-                    <div class="qr-code" onclick="showRewardQR('{{ $redemption->id }}', '{{ $redemption->exchangePoint->name }}', '{{ $redemption->redemption_code }}')">
-                        📱 Show QR
-                    </div>
-                    @if($redemption->exchangePoint->redemption_method === 'show_to_staff')
-                    <div class="staff-note">
-                        <small>Show this to staff</small>
-                    </div>
-                    @elseif($redemption->exchangePoint->redemption_method === 'qr_code_scan')
-                    <div class="staff-note">
-                        <small>Staff will scan QR code</small>
-                    </div>
-                    @endif
+                        @if($redemption->exchangePoint && $redemption->exchangePoint->voucher_template_id)
+                            {{-- Voucher/Discount rewards - automatically applied in cart --}}
+                            <div class="staff-note" style="background: #3b82f6; color: white; padding: 12px 16px; border-radius: 8px; font-weight: 600; text-align: center;">
+                                <i class="fas fa-shopping-cart"></i> Auto-apply in cart
+                            </div>
+                        @else
+                            {{-- Physical item rewards - need staff verification --}}
+                            <div class="barcode-container" onclick="showRewardBarcode('{{ $redemption->id }}', '{{ $redemption->exchangePoint->name }}', '{{ $redemption->redemption_code }}')">
+                                <i class="fas fa-barcode" style="font-size: 1.5rem;"></i>
+                                <div style="font-size: 0.85rem; margin-top: 4px;">Show Barcode</div>
+                            </div>
+                            <div class="staff-note">
+                                <small>Staff will scan barcode</small>
+                            </div>
+                        @endif
                     @endif
                 </div>
             </div>
@@ -509,18 +512,21 @@
                             <small>✓ Already Claimed</small>
                         </div>
                         @else
-                        <div class="qr-code" onclick="showRewardQR('{{ $redemption->id }}', '{{ $redemption->exchangePoint->name }}', '{{ $redemption->redemption_code }}')">
-                            📱 Show QR
-                        </div>
-                        @if($redemption->exchangePoint->redemption_method === 'show_to_staff')
-                        <div class="staff-note">
-                            <small>Show this to staff</small>
-                        </div>
-                        @elseif($redemption->exchangePoint->redemption_method === 'qr_code_scan')
-                        <div class="staff-note">
-                            <small>Staff will scan QR code</small>
-                        </div>
-                        @endif
+                            @if($redemption->exchangePoint && $redemption->exchangePoint->voucher_template_id)
+                                {{-- Voucher/Discount rewards - automatically applied in cart --}}
+                                <div class="staff-note" style="background: #3b82f6; color: white; padding: 12px 16px; border-radius: 8px; font-weight: 600; text-align: center;">
+                                    <i class="fas fa-shopping-cart"></i> Auto-apply in cart
+                                </div>
+                            @else
+                                {{-- Physical item rewards - need staff verification --}}
+                                <div class="barcode-container" onclick="showRewardBarcode('{{ $redemption->id }}', '{{ $redemption->exchangePoint->name }}', '{{ $redemption->redemption_code }}')">
+                                    <i class="fas fa-barcode" style="font-size: 1.5rem;"></i>
+                                    <div style="font-size: 0.85rem; margin-top: 4px;">Show Barcode</div>
+                                </div>
+                                <div class="staff-note">
+                                    <small>Staff will scan barcode</small>
+                                </div>
+                            @endif
                         @endif
                     </div>
                 </div>
@@ -618,6 +624,51 @@
             showMessage('Failed to collect voucher. Please try again.', 'error');
         });
     }
+
+    // Show Barcode Modal
+    function showRewardBarcode(redemptionId, rewardName, redemptionCode) {
+        // Create modal HTML
+        const modalHTML = `
+            <div id="barcodeModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+                <div style="background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 90%; text-align: center;">
+                    <h3 style="margin-bottom: 16px; color: #1e293b;">${rewardName}</h3>
+                    <p style="color: #64748b; margin-bottom: 24px;">Show this barcode to staff</p>
+
+                    <div style="background: white; padding: 24px; border-radius: 12px; margin-bottom: 16px;">
+                        <svg id="barcode"></svg>
+                    </div>
+
+                    <div style="font-size: 1.2rem; font-weight: 600; color: #1e293b; margin-bottom: 24px; letter-spacing: 2px;">
+                        ${redemptionCode}
+                    </div>
+
+                    <button onclick="closeBarcodeModal()" style="background: #ef4444; color: white; border: none; padding: 12px 32px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                        Close
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // Generate barcode using JsBarcode
+        JsBarcode("#barcode", redemptionCode, {
+            format: "CODE128",
+            width: 2,
+            height: 100,
+            displayValue: false
+        });
+    }
+
+    function closeBarcodeModal() {
+        const modal = document.getElementById('barcodeModal');
+        if (modal) {
+            modal.remove();
+        }
+    }
 </script>
+<!-- JsBarcode Library -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 <script src="{{ asset('js/customer/rewards.js') }}"></script>
 @endsection

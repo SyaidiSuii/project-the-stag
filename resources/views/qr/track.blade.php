@@ -244,7 +244,7 @@
         }
 
         function loadOrderDetails() {
-            fetch('{{ route("qr.api.track-order") }}', {
+            fetch('{{ secure_url(route("qr.api.track-order", [], false)) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

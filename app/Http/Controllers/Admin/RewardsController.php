@@ -936,7 +936,14 @@ class RewardsController extends Controller
         $redemptions = CustomerReward::with(['customerProfile.user', 'reward'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
-        return view('admin.rewards.redemptions.index', compact('redemptions'));
+
+        // Get voucher usage (redeemed vouchers)
+        $voucherUsage = \App\Models\CustomerVoucher::with(['customerProfile.user', 'voucherTemplate', 'order'])
+            ->orderBy('used_at', 'desc')
+            ->orderBy('redeemed_at', 'desc')
+            ->paginate(20);
+
+        return view('admin.rewards.redemptions.index', compact('redemptions', 'voucherUsage'));
     }
 
     // Members

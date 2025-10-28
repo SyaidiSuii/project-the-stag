@@ -600,7 +600,7 @@
 @php
     $cartItemCount = array_sum(array_column($cart, 'quantity'));
 @endphp
-<a href="{{ route('qr.cart', ['session' => $session->session_code]) }}" class="cart-fab" id="cartFab" aria-label="View cart" style="position: fixed; bottom: 24px; right: 24px; width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4); z-index: 1000; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+<a href="{{ secure_url(route('qr.cart', ['session' => $session->session_code], false)) }}" class="cart-fab" id="cartFab" aria-label="View cart" style="position: fixed; bottom: 24px; right: 24px; width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4); z-index: 1000; display: flex; align-items: center; justify-content: center; text-decoration: none;">
   <i class="fas fa-shopping-cart"></i>
   <span class="cart-badge" id="cartBadge" style="display: {{ $cartItemCount > 0 ? 'flex' : 'none' }}; position: absolute; top: -4px; right: -4px; background: #ef4444; color: white; width: 24px; height: 24px; border-radius: 50%; font-size: 12px; font-weight: 700; align-items: center; justify-content: center; border: 2px solid white;">{{ $cartItemCount }}</span>
 </a>
@@ -800,7 +800,7 @@
   document.getElementById('modal-confirm-btn')?.addEventListener('click', function() {
     const notes = document.getElementById('modal-special-notes').value;
 
-    fetch('{{ route("qr.cart.add") }}', {
+    fetch('{{ secure_url(route("qr.cart.add", [], false)) }}', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -905,7 +905,7 @@
     applyBtn.disabled = true;
 
     try {
-      const response = await fetch('{{ route("customer.promotions.apply-promo") }}', {
+      const response = await fetch('{{ secure_url(route("customer.promotions.apply-promo", [], false)) }}', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -962,7 +962,7 @@
   // Remove Promo Code
   async function removePromoCode() {
     try {
-      const response = await fetch('{{ route("customer.promotions.remove-promo") }}', {
+      const response = await fetch('{{ secure_url(route("customer.promotions.remove-promo", [], false)) }}', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1009,7 +1009,7 @@
     findBestDealBtn.disabled = true;
 
     try {
-      const response = await fetch('{{ route("customer.promotions.best-promotion") }}', {
+      const response = await fetch('{{ secure_url(route("customer.promotions.best-promotion", [], false)) }}', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1153,7 +1153,7 @@
   if (kitchenStatus) {
     setInterval(async function() {
       try {
-        const response = await fetch('{{ route("customer.menu.kitchen-status") }}');
+        const response = await fetch('{{ secure_url(route("customer.menu.kitchen-status", [], false)) }}');
         const data = await response.json();
 
         // Update banner if status changed significantly
@@ -1355,7 +1355,7 @@ function showToast(message, type = 'success') {
 
 // Initialize cart count on page load
 function loadCartCount(skipAnimation = true) {
-    fetch('{{ route("qr.cart") }}?session=' + sessionCode, {
+    fetch('{{ secure_url(route("qr.cart", [], false)) }}?session=' + sessionCode, {
         headers: {
             'Accept': 'application/json'
         }

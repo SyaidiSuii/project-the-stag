@@ -327,7 +327,7 @@ class PaymentController extends Controller
                 if ($user && $voucherDiscount > 0) {
                     $appliedVoucher = session('applied_voucher');
                     if ($appliedVoucher && isset($appliedVoucher['id'])) {
-                        $voucher = \App\Models\CustomerVoucher::find($appliedVoucher['id']);
+                        $voucher = \App\Models\CustomerVoucher::with('voucherTemplate')->find($appliedVoucher['id']);
                         if ($voucher) {
                             $voucher->status = 'redeemed';
                             $voucher->used_at = now();
@@ -337,8 +337,32 @@ class PaymentController extends Controller
                             logger()->info('Voucher marked as redeemed', [
                                 'voucher_id' => $voucher->id,
                                 'order_id' => $order->id,
-                                'discount' => $voucherDiscount
+                                'discount' => $voucherDiscount,
+                                'source' => $voucher->source
                             ]);
+
+                            // If voucher came from reward redemption, mark the CustomerReward as redeemed too
+                            if ($voucher->source === 'reward' && $voucher->voucherTemplate) {
+                                $customerReward = \App\Models\CustomerReward::where('customer_profile_id', $voucher->customer_profile_id)
+                                    ->whereHas('reward', function($query) use ($voucher) {
+                                        $query->where('voucher_template_id', $voucher->voucher_template_id);
+                                    })
+                                    ->where('status', 'pending')
+                                    ->orderBy('created_at', 'desc')
+                                    ->first();
+
+                                if ($customerReward) {
+                                    $customerReward->status = 'redeemed';
+                                    $customerReward->redeemed_at = now();
+                                    $customerReward->save();
+
+                                    logger()->info('CustomerReward marked as redeemed via voucher usage', [
+                                        'customer_reward_id' => $customerReward->id,
+                                        'voucher_id' => $voucher->id,
+                                        'order_id' => $order->id
+                                    ]);
+                                }
+                            }
 
                             // Clear applied voucher from session
                             session()->forget('applied_voucher');
@@ -614,7 +638,7 @@ class PaymentController extends Controller
                             if ($pendingOrderData['user_id'] && isset($pendingOrderData['voucher_discount']) && $pendingOrderData['voucher_discount'] > 0) {
                                 $appliedVoucher = session('applied_voucher');
                                 if ($appliedVoucher && isset($appliedVoucher['id'])) {
-                                    $voucher = \App\Models\CustomerVoucher::find($appliedVoucher['id']);
+                                    $voucher = \App\Models\CustomerVoucher::with('voucherTemplate')->find($appliedVoucher['id']);
                                     if ($voucher) {
                                         $voucher->status = 'redeemed';
                                         $voucher->used_at = now();
@@ -625,8 +649,32 @@ class PaymentController extends Controller
                                         logger()->info('Voucher marked as redeemed (online payment)', [
                                             'voucher_id' => $voucher->id,
                                             'order_id' => $order->id,
-                                            'discount' => $pendingOrderData['voucher_discount']
+                                            'discount' => $pendingOrderData['voucher_discount'],
+                                            'source' => $voucher->source
                                         ]);
+
+                                        // If voucher came from reward redemption, mark the CustomerReward as redeemed too
+                                        if ($voucher->source === 'reward' && $voucher->voucherTemplate) {
+                                            $customerReward = \App\Models\CustomerReward::where('customer_profile_id', $voucher->customer_profile_id)
+                                                ->whereHas('reward', function($query) use ($voucher) {
+                                                    $query->where('voucher_template_id', $voucher->voucher_template_id);
+                                                })
+                                                ->where('status', 'pending')
+                                                ->orderBy('created_at', 'desc')
+                                                ->first();
+
+                                            if ($customerReward) {
+                                                $customerReward->status = 'redeemed';
+                                                $customerReward->redeemed_at = now();
+                                                $customerReward->save();
+
+                                                logger()->info('CustomerReward marked as redeemed via voucher usage (online payment)', [
+                                                    'customer_reward_id' => $customerReward->id,
+                                                    'voucher_id' => $voucher->id,
+                                                    'order_id' => $order->id
+                                                ]);
+                                            }
+                                        }
                                     }
                                 }
                             }

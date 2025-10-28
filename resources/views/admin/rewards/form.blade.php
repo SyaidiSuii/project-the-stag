@@ -38,12 +38,12 @@
 
             <div class="form-group">
                 <label for="reward_type">Reward Type *</label>
-                <select id="reward_type" 
-                        name="reward_type" 
+                <select id="reward_type"
+                        name="reward_type"
                         required
                         class="@error('reward_type') error @enderror">
                     <option value="">Select Type</option>
-                    <option value="points" {{ old('reward_type', $reward->reward_type ?? '') == 'points' ? 'selected' : '' }}>Points Reward</option>
+                    <option value="points" {{ old('reward_type', $reward->reward_type ?? '') == 'points' ? 'selected' : '' }}>Points</option>
                     <option value="voucher" {{ old('reward_type', $reward->reward_type ?? '') == 'voucher' ? 'selected' : '' }}>Voucher</option>
                     <option value="tier_upgrade" {{ old('reward_type', $reward->reward_type ?? '') == 'tier_upgrade' ? 'selected' : '' }}>Tier Upgrade</option>
                 </select>

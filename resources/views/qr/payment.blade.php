@@ -17,7 +17,7 @@
       <div class="logo">🦌</div>
       <h1 class="header-title">The Stag - SmartDine</h1>
     </div>
-    <a href="{{ route('qr.menu', ['session' => $session->session_code]) }}" class="back-link">
+    <a href="{{ secure_url(route('qr.menu', ['session' => $session->session_code], false)) }}" class="back-link">
       <i class="fas fa-arrow-left"></i> Back to Menu
     </a>
   </header>
@@ -325,7 +325,7 @@
           console.log('Submitting payment:', paymentData);
 
           // Send payment request
-          fetch('{{ route("qr.payment.process") }}', {
+          fetch('{{ secure_url(route("qr.payment.process", [], false)) }}', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -371,7 +371,7 @@
       // Success modal button
       if (successOkBtn) {
         successOkBtn.addEventListener('click', function() {
-          window.location.href = '{{ route("qr.menu", ["session" => $session->session_code]) }}';
+          window.location.href = '{{ secure_url(route("qr.menu", ["session" => $session->session_code], false)) }}';
         });
       }
 

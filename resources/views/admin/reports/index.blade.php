@@ -781,20 +781,16 @@
 <!-- Real-time Analytics JavaScript -->
 <script src="{{ asset('js/admin/realtime-analytics.js') }}"></script>
 
-<!-- Laravel Echo for WebSockets (Reverb) -->
+<!-- Laravel Echo for WebSockets (Pusher) -->
 <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.0.1/dist/web/pusher.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.15.0/dist/echo.iife.js"></script>
 <script>
     window.Echo = new Echo({
         broadcaster: 'pusher',
-        key: '{{ env('REVERB_APP_KEY') }}',
-        wsHost: '{{ env('REVERB_HOST') }}',
-        wsPort: {{ env('REVERB_PORT', 8080) }},
-        wssPort: {{ env('REVERB_PORT', 8080) }},
-        forceTLS: false,
-        enabledTransports: ['ws', 'wss'],
-        cluster: 'mt1',
-        disableStats: true
+        key: '{{ config('broadcasting.connections.pusher.key') }}',
+        cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
+        forceTLS: true,
+        encrypted: true
     });
 </script>
 @endsection
