@@ -261,7 +261,7 @@
             </div>
 
             <div class="actions">
-                <a href="{{ secure_url(route('qr.track', [], false)) }}?order={{ $order->confirmation_code }}&phone={{ $order->guest_phone }}" class="btn btn-primary">
+                <a href="{{ secure_url(route('qr.track', [], false)) }}?order={{ $order->confirmation_code }}&token={{ $order->session_token }}" class="btn btn-primary">
                     <i class="fas fa-box"></i> Track My Order
                 </a>
                 <a href="{{ secure_url(route('qr.menu', ['session' => $session->session_code], false)) }}" class="btn btn-secondary">

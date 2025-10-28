@@ -659,6 +659,16 @@ body {
 
 @section('content')
 <div class="promotions-container">
+    @guest
+    <!-- Guest Message -->
+    <div style="background: linear-gradient(135deg, #f59e0b, #ea580c); color: white; padding: 2rem; border-radius: 20px; margin: 2rem; text-align: center;">
+        <h2 style="margin-bottom: 1rem;">🎉 Promotions & Deals</h2>
+        <p style="margin-bottom: 1.5rem; font-size: 1.1rem;">Please login to view exclusive promotions, special deals, and limited-time offers.</p>
+        <a href="{{ route('login') }}" style="background: white; color: #ea580c; padding: 1rem 2rem; border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block;">
+            <i class="fas fa-sign-in-alt"></i> Login to View Promotions
+        </a>
+    </div>
+    @else
     <!-- Hero Header -->
     <div class="page-header">
         <h1>🎉 Promotions & Deals</h1>
@@ -1137,4 +1147,5 @@ function showToast(message) {
 }
 </script>
 {{-- End of promotions index script section --}}
+@endguest
 @endsection

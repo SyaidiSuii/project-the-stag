@@ -8,6 +8,16 @@
 
 @section('content')
 <div class="main-content">
+    @guest
+    <!-- Guest Message -->
+    <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 2rem; border-radius: 20px; margin: 2rem; text-align: center;">
+        <h2 style="margin-bottom: 1rem;">📦 My Orders</h2>
+        <p style="margin-bottom: 1.5rem; font-size: 1.1rem;">Please login to view your order history, track ongoing orders, and manage your bookings.</p>
+        <a href="{{ route('login') }}" style="background: white; color: #6366f1; padding: 1rem 2rem; border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block;">
+            <i class="fas fa-sign-in-alt"></i> Login to View Orders
+        </a>
+    </div>
+    @else
     <!-- Header Section -->
     <div class="header-section">
       <!-- Search Bar -->
@@ -950,4 +960,5 @@ document.addEventListener('DOMContentLoaded', function() {
     filterByCategory('All');
 });
 </script>
+@endguest
 @endsection

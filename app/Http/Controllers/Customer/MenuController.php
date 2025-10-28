@@ -23,8 +23,30 @@ class MenuController extends Controller
     /**
      * Display the unified menu page with food, drinks, and set meals.
      */
-    public function index()
+    public function index(Request $request)
     {
+        // Get QR parameters (table number, order type, session code)
+        $tableNumber = $request->get('table');
+        $orderType = $request->get('order_type');
+        $sessionCode = $request->get('session');
+
+        // Store parameters in session for later use during checkout
+        if ($tableNumber) {
+            session(['qr_table_number' => $tableNumber]);
+        }
+        if ($orderType) {
+            session(['order_type' => $orderType]);
+        }
+        if ($sessionCode) {
+            session(['qr_session_code' => $sessionCode]);
+        }
+
+        // If no order type specified (direct access, not from QR), default to takeaway
+        if (!$orderType) {
+            $orderType = 'takeaway';
+            session(['order_type' => 'takeaway']);
+        }
+
         // Get all categories with their available menu items
         $categories = Category::with(['menuItems' => function ($query) {
             $query->where('availability', true)->orderBy('name');
@@ -91,7 +113,6 @@ class MenuController extends Controller
             }
         }
 
-        return view('customer.menu.index', compact('categories'));
         // Get kitchen load status for customer recommendations
         $kitchenStatus = $this->getKitchenLoadStatus();
 
@@ -120,7 +141,7 @@ class MenuController extends Controller
             }
         }
 
-        return view('customer.menu.index', compact('categories', 'kitchenStatus', 'recommendedItems'));
+        return view('customer.menu.index', compact('categories', 'kitchenStatus', 'recommendedItems', 'tableNumber', 'orderType'));
     }
 
     /**
