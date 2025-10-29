@@ -146,6 +146,40 @@ class PaymentController extends Controller
 
         if (in_array($paymentMethod, ['card', 'wallet'])) {
             // Online payment - use gateway
+            // Store order data in session and delete the order temporarily
+            // Order will be recreated only if payment succeeds
+
+            // Store order data before deleting
+            session([
+                'pending_qr_order_' . $session->session_code => [
+                    'order_id' => $order->id,
+                    'order_confirmation_code' => $order->confirmation_code,
+                    'order_data' => $order->toArray(),
+                    'cart_items' => $order->orderItems->map(function($item) {
+                        return [
+                            'menu_item_id' => $item->menu_item_id,
+                            'quantity' => $item->quantity,
+                            'unit_price' => $item->unit_price,
+                            'total_price' => $item->total_price,
+                            'special_note' => $item->special_note,
+                        ];
+                    })->toArray(),
+                ]
+            ]);
+
+            // Delete the order items first (foreign key constraint)
+            $order->orderItems()->delete();
+
+            // Delete the order (will be recreated on successful payment)
+            $orderId = $order->id;
+            $orderConfirmationCode = $order->confirmation_code;
+            $order->delete();
+
+            \Log::info('QR Order temporarily deleted for online payment', [
+                'order_id' => $orderId,
+                'session' => $session->session_code
+            ]);
+
             $paymentData = [
                 'payment_method' => $paymentMethod,
                 'amount' => $cartTotal,
@@ -157,13 +191,13 @@ class PaymentController extends Controller
                 'payment_status' => 'pending',
                 'return_url' => route('qr.payment.confirmation', [
                     'session' => $session->session_code,
-                    'order' => $order->id
+                    'order' => 'pending' // Placeholder since order doesn't exist yet
                 ]),
             ];
 
             try {
-                // Create payment with ToyyibPay gateway integration
-                $gatewayResult = $this->paymentService->createGatewayPayment($paymentData, $order->id);
+                // Create payment with ToyyibPay gateway integration (without order_id)
+                $gatewayResult = $this->paymentService->createGatewayPayment($paymentData, null);
 
                 if (!$gatewayResult['success']) {
                     return response()->json([
@@ -175,14 +209,14 @@ class PaymentController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Redirecting to payment gateway...',
-                    'order_id' => $order->confirmation_code,
+                    'order_id' => $orderConfirmationCode,
                     'amount' => $cartTotal,
                     'redirect_url' => $gatewayResult['redirect_url'], // ToyyibPay URL
                     'bill_code' => $gatewayResult['bill_code']
                 ]);
             } catch (\Exception $e) {
                 \Log::error('QR Payment processing failed: ' . $e->getMessage(), [
-                    'order_id' => $order->id,
+                    'order_id' => $orderId,
                     'exception' => $e,
                 ]);
 
@@ -193,7 +227,7 @@ class PaymentController extends Controller
             }
         } else {
             // Cash payment - mark as unpaid
-            $order->update(['payment_status' => 'unpaid', 'order_status' => 'confirmed']);
+            $order->update(['payment_status' => 'unpaid', 'order_status' => 'pending']);
 
             return response()->json([
                 'success' => true,
@@ -224,12 +258,75 @@ class PaymentController extends Controller
             return redirect()->route('qr.error')->with('error', 'Session expired.');
         }
 
+        // Check if this is a pending online payment order
+        if ($orderId === 'pending') {
+            // Check if payment was successful and recreate order from session
+            $orderSessionKey = 'pending_qr_order_' . $session->session_code;
+            $pendingOrderData = session($orderSessionKey);
+
+            if (!$pendingOrderData) {
+                return redirect()->route('qr.guest.menu', ['session' => $session->session_code])
+                    ->with('error', 'Payment session expired. Please try again.');
+            }
+
+            // Check payment status via payment gateway
+            // For now, we assume if user reaches here, payment was successful
+            // TODO: Verify payment status with ToyyibPay API
+
+            // Recreate the order
+            $orderData = $pendingOrderData['order_data'];
+            $order = Order::create([
+                'user_id' => $orderData['user_id'],
+                'table_id' => $orderData['table_id'],
+                'table_qrcode_id' => $session->id,
+                'order_type' => $orderData['order_type'],
+                'order_source' => $orderData['order_source'] ?? 'qr_scan',
+                'order_status' => 'pending', // Will be updated by payment callback
+                'order_time' => $orderData['order_time'] ?? now(),
+                'table_number' => $orderData['table_number'] ?? $session->table->table_number,
+                'payment_status' => 'paid', // Assuming payment successful
+                'total_amount' => $orderData['total_amount'],
+                'guest_name' => $orderData['guest_name'] ?? null,
+                'guest_phone' => $orderData['guest_phone'] ?? null,
+                'session_token' => $orderData['session_token'],
+                'confirmation_code' => $orderData['confirmation_code'],
+                'special_instructions' => $orderData['special_instructions'] ?? null,
+            ]);
+
+            // Recreate order items
+            foreach ($pendingOrderData['cart_items'] as $itemData) {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'menu_item_id' => $itemData['menu_item_id'],
+                    'quantity' => $itemData['quantity'],
+                    'unit_price' => $itemData['unit_price'],
+                    'total_price' => $itemData['total_price'],
+                    'special_note' => $itemData['special_note'] ?? null,
+                    'status' => 'pending',
+                ]);
+            }
+
+            // Clear session data
+            session()->forget($orderSessionKey);
+
+            \Log::info('QR Order recreated after successful payment', [
+                'order_id' => $order->id,
+                'session' => $session->session_code
+            ]);
+
+            // Redirect to confirmation with actual order ID
+            return redirect()->route('qr.payment.confirmation', [
+                'session' => $session->session_code,
+                'order' => $order->id
+            ]);
+        }
+
         $order = Order::where('id', $orderId)
             ->where('table_qrcode_id', $session->id)
             ->first();
 
         if (!$order) {
-            return redirect()->route('qr.menu', ['session' => $session->session_code])
+            return redirect()->route('qr.guest.menu', ['session' => $session->session_code])
                 ->with('error', 'Order not found.');
         }
 

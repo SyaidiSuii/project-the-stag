@@ -89,10 +89,10 @@
               @endforeach
           </div>
           @if($kitchenStatus['recommended_items']->count() > 4)
-          <button onclick="showAllRecommendationsModal()" style="margin-top: 12px; width: 100%; padding: 10px 16px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; color: white; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <a href="{{ route('customer.menu.fast-items') }}" style="margin-top: 12px; width: 100%; padding: 10px 16px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; color: white; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;">
               <span>See All {{ $kitchenStatus['recommended_items']->count() }} Fast Items</span>
               <i class="fas fa-arrow-right"></i>
-          </button>
+          </a>
           @endif
           @endif
       </div>
@@ -491,7 +491,9 @@
   <div class="modal-content" style="max-width: 900px; border-radius: 24px; background: white; max-height: 90vh; display: flex; flex-direction: column;">
     <!-- Modal Header -->
     <div style="position: relative; padding: 24px; border-bottom: 2px solid #e5e7eb; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 24px 24px 0 0;">
-      <button id="close-recommendations-modal" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">✕</button>
+      <button id="close-recommendations-modal" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+              onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='rotate(90deg)';"
+              onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='rotate(0deg)';">✕</button>
       <div style="display: flex; align-items: center; gap: 16px; color: white;">
         <div style="font-size: 48px;">⚡</div>
         <div>
@@ -507,7 +509,9 @@
         @if(isset($kitchenStatus['recommended_items']))
         @foreach($kitchenStatus['recommended_items'] as $item)
         <div class="quick-add-item" data-item-id="{{ $item->id }}" data-item-name="{{ $item->name }}" data-item-price="{{ $item->price }}" data-item-image="{{ $item->image ?? '' }}"
-             style="background: white; border: 2px solid #e5e7eb; border-radius: 16px; padding: 12px; cursor: pointer; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+             style="background: white; border: 2px solid #e5e7eb; border-radius: 16px; padding: 12px; cursor: pointer; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.08);"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(99,102,241,0.25)'; this.style.borderColor='#6366f1';"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'; this.style.borderColor='#e5e7eb';">
           <div style="position: relative; width: 100%; padding-top: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 12px; background: #f3f4f6;">
             @if($item->image)
             <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}"
@@ -1035,7 +1039,7 @@ document.addEventListener('click', async function(e) {
             // Get item image URL
             const imageUrl = itemImage ? `/storage/${itemImage}` : '';
 
-            // Open Add to Cart modal with item details
+            // Open Add to Cart modal with item details (it will appear on top due to z-index: 1010)
             if (typeof window.showAddToCartModal === 'function') {
                 window.showAddToCartModal(itemId, itemName, `RM ${itemPrice.toFixed(2)}`, '', imageUrl);
             } else {
@@ -1093,6 +1097,9 @@ function showAllRecommendationsModal() {
         document.body.style.overflow = 'hidden';
     }
 }
+
+// Attach event listener to "See All" button
+document.getElementById('show-all-recommendations-btn')?.addEventListener('click', showAllRecommendationsModal);
 
 // Close Recommendations Modal
 function closeAllRecommendationsModal() {

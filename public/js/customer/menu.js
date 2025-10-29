@@ -5,6 +5,10 @@ const menuData = window.menuData || [];
 let food = [], setMeals = [], drinks = [], allCategories = [];
 let currentMenuType = 'all';
 
+// Add to Cart Modal Variables (moved to top to avoid hoisting issues)
+let currentAddToCartItem = null;
+let addToCartQuantity = 1;
+
 // Debug: Log the raw menuData from window
 console.log('Debug [menu.js init]: window.menuData =', window.menuData);
 console.log('Debug [menu.js init]: menuData length =', menuData ? menuData.length : 'null/undefined');
@@ -1038,10 +1042,6 @@ function updateOrderTotal() {
   }
 }
 
-// Add to Cart Modal Variables
-let currentAddToCartItem = null;
-let addToCartQuantity = 1;
-
 // Show Add to Cart modal
 function showAddToCartModal(itemId, itemName, itemPrice, itemDescription, itemImage) {
   const modal = document.getElementById('addtocart-modal');
@@ -1079,6 +1079,11 @@ function showAddToCartModal(itemId, itemName, itemPrice, itemDescription, itemIm
 function closeAddToCartModal() {
   const modal = document.getElementById('addtocart-modal');
   if (modal) modal.style.display = 'none';
+
+  // Clear the special notes field
+  const notesField = document.getElementById('addtocart-notes');
+  if (notesField) notesField.value = '';
+
   currentAddToCartItem = null;
   addToCartQuantity = 1;
 }
@@ -1160,8 +1165,35 @@ document.addEventListener('click', async function(e) {
 // Expose showAddToCartModal globally for use in menu.js event delegation
 window.showAddToCartModal = showAddToCartModal;
 
+// Quick Add to Cart function for recommendation items
+async function quickAddToCart(itemId, itemName, itemPrice, itemImage) {
+  try {
+    const imageUrl = itemImage ? `/storage/${itemImage}` : '';
+    const priceText = `RM ${parseFloat(itemPrice).toFixed(2)}`;
+
+    // Use the showAddToCartModal function
+    showAddToCartModal(itemId, itemName, priceText, '', imageUrl);
+  } catch (error) {
+    console.error('Error in quickAddToCart:', error);
+    Toast.error('Error', 'Failed to add item to cart');
+  }
+}
+
+// Expose quickAddToCart globally
+window.quickAddToCart = quickAddToCart;
+
 // Order Type Selection Modal (First Visit)
 function checkAndShowOrderTypeModal() {
+  // Check if coming from QR code (has table number in session)
+  const tableNumber = sessionStorage.getItem('qr_table_number');
+
+  // If from QR, order type is already set to dine-in by the QR controller
+  if (tableNumber) {
+    sessionStorage.setItem('orderTypeSelected', 'true');
+    sessionStorage.setItem('orderType', 'dinein');
+    return; // Don't show modal
+  }
+
   // Check if user just placed an order - if so, clear the order type selection flag
   const justPlacedOrder = sessionStorage.getItem('justPlacedOrder');
   if (justPlacedOrder === 'true') {
@@ -1173,11 +1205,25 @@ function checkAndShowOrderTypeModal() {
   const hasSelectedOrderType = sessionStorage.getItem('orderTypeSelected');
 
   if (!hasSelectedOrderType) {
-    // Show the order type selection modal
-    const modal = document.getElementById('ordertype-selection-modal');
-    if (modal) {
-      modal.style.display = 'flex';
+    // For regular menu access (not QR), default to takeaway
+    sessionStorage.setItem('orderTypeSelected', 'true');
+    sessionStorage.setItem('orderType', 'takeaway');
+
+    // Update the floating button text
+    const ordertypeText = document.getElementById('ordertypeText');
+    const ordertypeIcon = document.getElementById('ordertypeIcon');
+    if (ordertypeText) ordertypeText.textContent = 'Takeaway';
+    if (ordertypeIcon) ordertypeIcon.className = 'fas fa-shopping-bag';
+
+    // Disable the order type button for non-QR users
+    const ordertypeFab = document.getElementById('ordertypeFab');
+    if (ordertypeFab) {
+      ordertypeFab.style.pointerEvents = 'none';
+      ordertypeFab.style.opacity = '0.7';
+      ordertypeFab.style.cursor = 'not-allowed';
     }
+
+    // Don't show the modal - default is takeaway
   }
 }
 
@@ -1304,7 +1350,16 @@ const ordertypeText = document.getElementById('ordertypeText');
 
 // Show change order type modal
 if (ordertypeFab) {
-  ordertypeFab.addEventListener('click', function() {
+  ordertypeFab.addEventListener('click', function(e) {
+    // Check if coming from QR code - only allow changing order type if from QR
+    const tableNumber = sessionStorage.getItem('qr_table_number');
+    if (!tableNumber) {
+      // Not from QR - prevent modal from showing
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+
     const currentOrderType = sessionStorage.getItem('selectedOrderType') || 'dine_in';
 
     // Pre-select current order type in modal
