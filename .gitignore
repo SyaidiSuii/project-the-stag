@@ -5,6 +5,12 @@
 /public/storage
 /storage/*.key
 /vendor
+/ai-service/
+.ai-service
+/ai-recommend/
+.ai-recommend
+/ai_recommend/
+.ai_recommend
 .env
 .env.backup
 .env.production
