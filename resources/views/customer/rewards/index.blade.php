@@ -3,7 +3,7 @@
 @section('title', 'Rewards - The Stag SmartDine')
 
 @section('styles')
-<link rel="stylesheet" href="{{ asset('css/customer/rewards.css') }}">
+<link rel="stylesheet" href="{{ asset('css/customer/rewards.css') }}?v={{ time() }}">
 @endsection
 
 @section('content')
@@ -324,11 +324,11 @@
                     <div class="reward-details">
                         <h4>
                             {{ $redemption->exchangePoint->name }}
-                            <span class="status-badge {{ $redemption->status ?? 'pending' }}">
-                                @if(($redemption->status ?? 'pending') === 'redeemed')
+                            <span class="status-badge {{ $redemption->status ?? 'active' }}">
+                                @if(($redemption->status ?? 'active') === 'redeemed')
                                 ✓ Claimed
                                 @else
-                                ⏳ Pending
+                                ⏳ Active
                                 @endif
                             </span>
                         </h4>
@@ -340,7 +340,7 @@
                     </div>
                 </div>
                 <div class="reward-actions">
-                    @if(($redemption->status ?? 'pending') === 'redeemed')
+                    @if(($redemption->status ?? 'active') === 'redeemed')
                     <div class="staff-note" style="background: var(--success); color: white; padding: 8px 12px; border-radius: 8px; font-weight: 600;">
                         <small>✓ Already Claimed</small>
                     </div>
@@ -348,7 +348,7 @@
                         @if($redemption->exchangePoint && $redemption->exchangePoint->voucher_template_id)
                             {{-- Voucher/Discount rewards - automatically applied in cart --}}
                             <div class="staff-note" style="background: #3b82f6; color: white; padding: 12px 16px; border-radius: 8px; font-weight: 600; text-align: center;">
-                                <i class="fas fa-shopping-cart"></i> Auto-apply in cart
+                                <i class="fas fa-shopping-cart"></i> Please apply in cart
                             </div>
                         @else
                             {{-- Physical item rewards - need staff verification --}}
@@ -491,11 +491,11 @@
                         <div class="reward-details">
                             <h4>
                                 {{ $redemption->exchangePoint->name }}
-                                <span class="status-badge {{ $redemption->status ?? 'pending' }}">
-                                    @if(($redemption->status ?? 'pending') === 'redeemed')
+                                <span class="status-badge {{ $redemption->status ?? 'active' }}">
+                                    @if(($redemption->status ?? 'active') === 'redeemed')
                                     ✓ Claimed
                                     @else
-                                    ⏳ Pending
+                                    ⏳ Active
                                     @endif
                                 </span>
                             </h4>
@@ -507,7 +507,7 @@
                         </div>
                     </div>
                     <div class="reward-actions">
-                        @if(($redemption->status ?? 'pending') === 'redeemed')
+                        @if(($redemption->status ?? 'active') === 'redeemed')
                         <div class="staff-note" style="background: var(--success); color: white; padding: 8px 12px; border-radius: 8px; font-weight: 600;">
                             <small>✓ Already Claimed</small>
                         </div>
@@ -625,12 +625,23 @@
         });
     }
 
-    // Show Barcode Modal
-    function showRewardBarcode(redemptionId, rewardName, redemptionCode) {
+    // Show Barcode Modal (attach to window to prevent override)
+    window.showRewardBarcode = function(redemptionId, rewardName, redemptionCode) {
+        // Check if JsBarcode is loaded
+        if (typeof JsBarcode === 'undefined') {
+            console.error('JsBarcode library not loaded');
+            if (typeof showMessage === 'function') {
+                showMessage('Error loading barcode library. Please refresh the page.', 'error');
+            } else {
+                alert('Error loading barcode library. Please refresh the page.');
+            }
+            return;
+        }
+
         // Create modal HTML
         const modalHTML = `
-            <div id="barcodeModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;">
-                <div style="background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 90%; text-align: center;">
+            <div id="barcodeModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;" onclick="if(event.target.id === 'barcodeModal') closeBarcodeModal()">
+                <div style="background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 90%; text-align: center;" onclick="event.stopPropagation()">
                     <h3 style="margin-bottom: 16px; color: #1e293b;">${rewardName}</h3>
                     <p style="color: #64748b; margin-bottom: 24px;">Show this barcode to staff</p>
 
@@ -652,16 +663,22 @@
         // Add modal to body
         document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-        // Generate barcode using JsBarcode
-        JsBarcode("#barcode", redemptionCode, {
-            format: "CODE128",
-            width: 2,
-            height: 100,
-            displayValue: false
-        });
+        // Generate barcode using JsBarcode with error handling
+        try {
+            JsBarcode("#barcode", redemptionCode, {
+                format: "CODE128",
+                width: 2,
+                height: 100,
+                displayValue: false
+            });
+        } catch (error) {
+            console.error('Error generating barcode:', error);
+            // Show redemption code as fallback
+            document.getElementById('barcode').innerHTML = '<p style="color: #1e293b; font-size: 1.5rem; font-weight: 700;">' + redemptionCode + '</p>';
+        }
     }
 
-    function closeBarcodeModal() {
+    window.closeBarcodeModal = function() {
         const modal = document.getElementById('barcodeModal');
         if (modal) {
             modal.remove();

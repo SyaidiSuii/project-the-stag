@@ -347,7 +347,7 @@ class PaymentController extends Controller
                                     ->whereHas('reward', function($query) use ($voucher) {
                                         $query->where('voucher_template_id', $voucher->voucher_template_id);
                                     })
-                                    ->where('status', 'pending')
+                                    ->where('status', 'active')
                                     ->orderBy('created_at', 'desc')
                                     ->first();
 
@@ -659,7 +659,7 @@ class PaymentController extends Controller
                                                 ->whereHas('reward', function($query) use ($voucher) {
                                                     $query->where('voucher_template_id', $voucher->voucher_template_id);
                                                 })
-                                                ->where('status', 'pending')
+                                                ->where('status', 'active')
                                                 ->orderBy('created_at', 'desc')
                                                 ->first();
 

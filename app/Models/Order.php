@@ -206,6 +206,14 @@ class Order extends Model
         return $this->hasMany(LoadBalancingLog::class);
     }
 
+    /**
+     * Get promotion usage logs for this order
+     */
+    public function promotionUsageLogs()
+    {
+        return $this->hasMany(PromotionUsageLog::class);
+    }
+
     // Helper methods
     public function isQROrder()
     {

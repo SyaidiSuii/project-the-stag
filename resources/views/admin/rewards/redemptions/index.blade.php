@@ -76,8 +76,8 @@
                                 <td>{{ $redemption->reward->title ?? 'N/A' }}</td>
                                 <td>{{ number_format($redemption->points_spent) }} pts</td>
                                 <td>
-                                    @if($redemption->status == 'pending')
-                                        <span class="badge badge-warning">Pending</span>
+                                    @if($redemption->status == 'active')
+                                        <span class="badge badge-warning">Active</span>
                                     @elseif($redemption->status == 'redeemed')
                                         <span class="badge badge-success">Redeemed</span>
                                     @else
@@ -87,7 +87,7 @@
                                 <td>{{ $redemption->expires_at ? $redemption->expires_at->format('d M Y') : 'No Expiry' }}</td>
                                 <td>
                                     <div class="action-buttons">
-                                        @if($redemption->status == 'pending')
+                                        @if($redemption->status == 'active')
                                             <form action="{{ route('admin.rewards.redemptions.mark-redeemed', $redemption->id) }}" method="POST" style="display: inline;">
                                                 @csrf
                                                 <button type="submit" class="admin-btn btn-icon btn-success" title="Mark as Redeemed">

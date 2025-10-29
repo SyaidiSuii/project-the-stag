@@ -27,22 +27,25 @@ class RewardsController extends Controller
             $user = Auth::user();
 
             // Get available rewards (active rewards only)
+            // Get customer profile
+            $customerProfile = $user->customerProfile;
+
+            // Get all active rewards
             $allRewards = Reward::where('is_active', true)
                 ->orderBy('points_required', 'asc')
                 ->get();
 
-            // Get customer profile
-            $customerProfile = $user->customerProfile;
-
+            // Filter out rewards that user has already redeemed
             if ($customerProfile) {
-                // Add redemption count for each reward (for display purposes)
-                foreach ($allRewards as $reward) {
-                    $userRedemptions = CustomerReward::where('customer_profile_id', $customerProfile->id)
-                        ->where('reward_id', $reward->id)
-                        ->count();
+                $redeemedRewardIds = CustomerReward::where('customer_profile_id', $customerProfile->id)
+                    ->pluck('reward_id')
+                    ->unique()
+                    ->toArray();
 
-                    $reward->user_redemptions_count = $userRedemptions;
-                }
+                // Only show rewards that haven't been redeemed yet
+                $allRewards = $allRewards->filter(function($reward) use ($redeemedRewardIds) {
+                    return !in_array($reward->id, $redeemedRewardIds);
+                });
             }
 
             // Limit to first 4 for main display
@@ -177,8 +180,10 @@ class RewardsController extends Controller
             return response()->json(['success' => false, 'message' => 'Insufficient points']);
         }
 
-        // Process redemption
+        // Process redemption with database transaction
         try {
+            \DB::beginTransaction();
+
             // Deduct points from user
             $user->decrement('points_balance', $reward->points_required);
 
@@ -190,7 +195,7 @@ class RewardsController extends Controller
                 'customer_profile_id' => $customerProfile->id,
                 'reward_id' => $reward->id,
                 'points_spent' => $reward->points_required,
-                'status' => 'pending',
+                'status' => 'active',
                 'claimed_at' => now(),
                 'expires_at' => $expiryDate
             ]);
@@ -217,6 +222,8 @@ class RewardsController extends Controller
                 }
             }
 
+            \DB::commit();
+
             $message = $this->getRedemptionMessage($reward);
 
             return response()->json([
@@ -225,12 +232,19 @@ class RewardsController extends Controller
                 'new_balance' => $user->fresh()->points_balance ?? 0
             ]);
         } catch (\Exception $e) {
+            \DB::rollBack();
+
             logger()->error('Reward redemption failed', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'reward_id' => $reward->id,
                 'user_id' => $user->id
             ]);
-            return response()->json(['success' => false, 'message' => 'Failed to redeem reward. Please try again.']);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to redeem reward: ' . $e->getMessage()
+            ]);
         }
     }
 

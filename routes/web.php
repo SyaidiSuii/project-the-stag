@@ -413,6 +413,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // ANALYTICS & REPORTING
         // ---------------------------------------------
         Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/generate-pdf', [\App\Http\Controllers\Admin\ReportController::class, 'generatePDF'])->name('reports.generate-pdf');
+        Route::get('reports/download-pdf', [\App\Http\Controllers\Admin\ReportController::class, 'downloadPDF'])->name('reports.download-pdf');
         Route::get('reports/live-analytics', [\App\Http\Controllers\Admin\ReportController::class, 'getLiveAnalytics'])->name('reports.live-analytics');
         Route::get('reports/chart-data', [\App\Http\Controllers\Admin\ReportController::class, 'getChartData'])->name('reports.chart-data');
 
@@ -702,3 +704,8 @@ Route::get('/clear-cart', function() {
 });
 
 require __DIR__.'/test-debug.php';
+
+// Test route for 404 page
+Route::get('/test-404', function () {
+    abort(404);
+});
