@@ -264,12 +264,17 @@
                 <a href="{{ secure_url(route('qr.track', [], false)) }}?order={{ $order->confirmation_code }}&token={{ $order->session_token }}" class="btn btn-primary">
                     <i class="fas fa-box"></i> Track My Order
                 </a>
-                <a href="{{ secure_url(route('qr.menu', ['session' => $session->session_code], false)) }}" class="btn btn-secondary">
-                    <i class="fas fa-utensils"></i> Order More
-                </a>
             </div>
         </div>
     </div>
+
+    <script>
+        // Disable back button navigation
+        history.pushState(null, null, location.href);
+        window.onpopstate = function() {
+            history.go(1);
+        };
+    </script>
 </body>
 
 </html>

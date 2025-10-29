@@ -117,27 +117,38 @@ class MenuController extends Controller
         $kitchenStatus = $this->getKitchenLoadStatus();
 
         // Get AI-based recommendations for authenticated users
+        // Only show recommendations if user has completed at least one order
         $recommendedItems = [];
         if (Auth::check()) {
-            try {
-                $userId = Auth::id();
-                $recommendedItemIds = $this->recommendationService->getRecommendations($userId, 8);
+            // Check if user has at least one completed order
+            $hasCompletedOrder = Order::where('user_id', Auth::id())
+                ->where('order_status', 'completed')
+                ->exists();
 
-                if (!empty($recommendedItemIds)) {
-                    $recommendedItems = MenuItem::whereIn('id', $recommendedItemIds)
-                        ->where('availability', true)
-                        ->with('category')
-                        ->get()
-                        ->sortBy(function($item) use ($recommendedItemIds) {
-                            return array_search($item->id, $recommendedItemIds);
-                        })
-                        ->values();
+            if ($hasCompletedOrder) {
+                try {
+                    $userId = Auth::id();
+                    // Get ALL recommendations (no limit) - AI will analyze user behavior
+                    $recommendedItemIds = $this->recommendationService->getRecommendations($userId);
+
+                    if (!empty($recommendedItemIds)) {
+                        $recommendedItems = MenuItem::whereIn('id', $recommendedItemIds)
+                            ->where('availability', true)
+                            ->with('category')
+                            ->get()
+                            ->sortBy(function($item) use ($recommendedItemIds) {
+                                return array_search($item->id, $recommendedItemIds);
+                            })
+                            ->values();
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to fetch recommendations for menu page', [
+                        'user_id' => Auth::id(),
+                        'error' => $e->getMessage()
+                    ]);
+                    // Don't show fallback - only show AI recommendations based on order history
+                    $recommendedItems = [];
                 }
-            } catch (\Exception $e) {
-                \Log::warning('Failed to fetch recommendations for menu page', [
-                    'user_id' => Auth::id(),
-                    'error' => $e->getMessage()
-                ]);
             }
         }
 
@@ -330,5 +341,29 @@ class MenuController extends Controller
             'busy_types' => $busyStations,
             'overall_status' => count($busyStations) > 2 ? 'busy' : 'normal',
         ];
+    }
+
+    /**
+     * Display fast items page (items from stations with low load)
+     */
+    public function fastItems(Request $request)
+    {
+        // Get kitchen status with recommended items
+        $kitchenStatus = $this->getKitchenLoadStatus();
+
+        // Get all categories for filtering
+        $categories = Category::whereHas('menuItems', function ($query) {
+            $query->where('availability', true);
+        })->get();
+
+        // Group recommended items by category
+        $itemsByCategory = $kitchenStatus['recommended_items']->groupBy('category_id');
+
+        return view('customer.menu.fast-items', [
+            'kitchenStatus' => $kitchenStatus,
+            'recommendedItems' => $kitchenStatus['recommended_items'],
+            'categories' => $categories,
+            'itemsByCategory' => $itemsByCategory,
+        ]);
     }
 }
