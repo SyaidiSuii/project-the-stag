@@ -369,30 +369,75 @@
         display: none;
         position: fixed;
         inset: 0;
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.6);
         align-items: center;
         justify-content: center;
         z-index: 1002;
-        backdrop-filter: blur(5px);
+        backdrop-filter: blur(8px);
+        animation: fadeIn 0.2s ease;
     }
+
+    /* Add to Cart Modal - Higher z-index */
+    #add-to-cart-modal,
+    #addtocart-modal,
+    #order-modal,
+    #addon-modal {
+        z-index: 1010 !important;
+    }
+
+    /* Recommendations Modal - Lower than cart modals */
+    #all-recommendations-modal {
+        z-index: 1005;
+    }
+
     .modal-content {
         background: white;
-        border-radius: 20px;
+        border-radius: 24px;
         width: min(420px, 90vw);
-        box-shadow: var(--shadow-lg);
-        border: 1px solid var(--muted);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        border: 1px solid #e5e7eb;
         max-height: 85vh;
         display: flex;
         flex-direction: column;
+        position: relative;
+        animation: modalSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
+
+    #add-to-cart-modal .modal-content,
+    #addtocart-modal .modal-content,
+    #order-modal .modal-content,
+    #addon-modal .modal-content {
+        transform-origin: center center;
+        animation: modalPopIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
     @keyframes modalSlideUp {
         from {
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(50px) scale(0.9);
         }
         to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes modalPopIn {
+        0% {
+            transform: scale(0.8);
+            opacity: 0;
+        }
+        50% {
+            transform: scale(1.05);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
         }
     }
 </style>
@@ -507,6 +552,12 @@
       </div>
       @endforeach
     </div>
+    @if(count($recommendedItems) > 4)
+    <button onclick="showAllPopularItemsModal()" style="margin-top: 16px; width: 100%; padding: 12px 16px; background: rgba(99,102,241,0.1); border: 2px solid #6366f1; border-radius: 12px; color: #6366f1; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <span>See All {{ count($recommendedItems) }} Popular Items</span>
+      <i class="fas fa-arrow-right"></i>
+    </button>
+    @endif
   </div>
   <style>
     .recommendation-card:hover {
@@ -580,7 +631,7 @@
           <div class="add-to-cart">
             <div class="quantity-control">
               <button type="button" class="quantity-btn" onclick="decreaseQty(this)">−</button>
-              <input type="number" class="quantity-input" value="1" min="1" max="10" readonly>
+              <input type="number" class="quantity-input" value="1" min="1" max="999" readonly>
               <button type="button" class="quantity-btn" onclick="increaseQty(this)">+</button>
             </div>
             <button type="button" class="add-btn" onclick="showAddModal({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->price }}, '{{ $item->image ?? '' }}', this)">
@@ -633,11 +684,13 @@
         </div>
       </div>
 
-      <!-- Quantity (Read-only display) -->
+      <!-- Quantity (Editable) -->
       <div style="margin-bottom: 24px;">
         <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Quantity:</label>
-        <div style="display: flex; align-items: center; justify-content: center; padding: 12px; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px;">
-          <span id="modal-quantity-display" style="font-size: 20px; font-weight: 700; color: #1f2937;">1</span>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 16px; padding: 12px; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px;">
+          <button id="modal-qty-minus" style="width: 40px; height: 40px; border-radius: 10px; border: 2px solid #e5e7eb; background: white; font-size: 20px; font-weight: 700; color: #6366f1; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='#6366f1'; this.style.color='white';" onmouseout="this.style.background='white'; this.style.color='#6366f1';">−</button>
+          <span id="modal-quantity-display" style="font-size: 24px; font-weight: 700; color: #1f2937; min-width: 40px; text-align: center;">1</span>
+          <button id="modal-qty-plus" style="width: 40px; height: 40px; border-radius: 10px; border: 2px solid #e5e7eb; background: white; font-size: 20px; font-weight: 700; color: #6366f1; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='#6366f1'; this.style.color='white';" onmouseout="this.style.background='white'; this.style.color='#6366f1';">+</button>
         </div>
       </div>
 
@@ -672,12 +725,14 @@
   </div>
 </div>
 
-<!-- All Recommendations Modal -->
+<!-- All Recommendations Modal (Fast Items) -->
 <div id="all-recommendations-modal" class="addon-modal" style="display: none;" aria-modal="true" role="dialog">
   <div class="modal-content" style="max-width: 900px; border-radius: 24px; background: white; max-height: 90vh; display: flex; flex-direction: column;">
     <!-- Modal Header -->
     <div style="position: relative; padding: 24px; border-bottom: 2px solid #e5e7eb; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 24px 24px 0 0;">
-      <button id="close-recommendations-modal" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">✕</button>
+      <button id="close-recommendations-modal" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+              onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='rotate(90deg)';"
+              onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='rotate(0deg)';">✕</button>
       <div style="display: flex; align-items: center; gap: 16px; color: white;">
         <div style="font-size: 48px;">⚡</div>
         <div>
@@ -693,7 +748,9 @@
         @if(isset($kitchenStatus['recommended_items']))
         @foreach($kitchenStatus['recommended_items'] as $item)
         <div class="quick-add-item" data-item-id="{{ $item->id }}" data-item-name="{{ $item->name }}" data-item-price="{{ $item->price }}" data-item-image="{{ $item->image ?? '' }}"
-             style="background: white; border: 2px solid #e5e7eb; border-radius: 16px; padding: 12px; cursor: pointer; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+             style="background: white; border: 2px solid #e5e7eb; border-radius: 16px; padding: 12px; cursor: pointer; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.08);"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(99,102,241,0.25)'; this.style.borderColor='#6366f1';"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'; this.style.borderColor='#e5e7eb';">
           <div style="position: relative; width: 100%; padding-top: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 12px; background: #f3f4f6;">
             @if($item->image)
             <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}"
@@ -705,6 +762,58 @@
             @endif
             <div style="position: absolute; top: 8px; right: 8px; background: rgba(16, 185, 129, 0.95); color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
               ~{{ $item->estimated_wait ?? 5 }} min
+            </div>
+          </div>
+          <div style="font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $item->name }}</div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 16px; font-weight: 700; color: #6366f1;">RM {{ number_format($item->price, 2) }}</span>
+            <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1; font-weight: 400; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);">+</div>
+          </div>
+        </div>
+        @endforeach
+        @endif
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- All Popular Items Modal -->
+<div id="all-popular-items-modal" class="addon-modal" style="display: none; z-index: 1005;" aria-modal="true" role="dialog">
+  <div class="modal-content" style="max-width: 900px; border-radius: 24px; background: white; max-height: 90vh; display: flex; flex-direction: column;">
+    <!-- Modal Header -->
+    <div style="position: relative; padding: 24px; border-bottom: 2px solid #e5e7eb; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); border-radius: 24px 24px 0 0;">
+      <button id="close-popular-items-modal" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+              onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='rotate(90deg)';"
+              onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='rotate(0deg)';">✕</button>
+      <div style="display: flex; align-items: center; gap: 16px; color: white;">
+        <div style="font-size: 48px;">⭐</div>
+        <div>
+          <h3 style="font-size: 24px; font-weight: 700; margin: 0 0 4px 0;">Popular Items</h3>
+          <p style="font-size: 14px; opacity: 0.9; margin: 0;">Customer favorites this week</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Body - Scrollable -->
+    <div style="padding: 24px; overflow-y: auto; flex: 1; max-height: calc(90vh - 200px);">
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+        @if(isset($recommendedItems))
+        @foreach($recommendedItems as $item)
+        <div class="popular-item-card" onclick="showAddToCartModal({{ $item->id }}, {{ json_encode($item->name) }}, {{ $item->price }}, {{ json_encode($item->image ?? '') }})"
+             style="background: white; border: 2px solid #e5e7eb; border-radius: 16px; padding: 12px; cursor: pointer; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.08);"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(99,102,241,0.25)'; this.style.borderColor='#6366f1';"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'; this.style.borderColor='#e5e7eb';">
+          <div style="position: relative; width: 100%; padding-top: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 12px; background: #f3f4f6;">
+            @if($item->image)
+            <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}"
+                 style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+            @else
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 48px;">
+              {{ $item->category && strpos(strtolower($item->category->type), 'drink') !== false ? '🍹' : '🍽️' }}
+            </div>
+            @endif
+            <div style="position: absolute; top: 8px; right: 8px; background: #fbbf24; color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);">
+              ⭐ Popular
             </div>
           </div>
           <div style="font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $item->name }}</div>
@@ -742,7 +851,7 @@
   function increaseQty(button) {
     const input = button.parentElement.querySelector('.quantity-input');
     let value = parseInt(input.value);
-    if (value < 10) {
+    if (value < 999) {
       input.value = value + 1;
     }
   }
@@ -750,6 +859,7 @@
   // Show Add to Cart Modal
   let currentItemData = {};
 
+  // Function for menu item cards with quantity selector
   function showAddModal(itemId, itemName, itemPrice, itemImage, button) {
     const input = button.parentElement.parentElement.querySelector('.quantity-input');
     const quantity = parseInt(input.value);
@@ -784,6 +894,52 @@
     // Don't prevent body scroll
   }
 
+  // Function for recommendation cards (without quantity selector)
+  function showAddToCartModal(itemId, itemName, itemPrice, itemImage, isEditable = false) {
+    // Default quantity is 1 for recommendations
+    const quantity = 1;
+
+    // Store item data
+    currentItemData = {
+      id: itemId,
+      name: itemName,
+      price: itemPrice,
+      image: itemImage,
+      quantity: quantity,
+      inputElement: null, // No input element for recommendations
+      isEditable: isEditable // Track if quantity is editable
+    };
+
+    // Fill modal
+    document.getElementById('modal-item-name').textContent = itemName;
+    document.getElementById('modal-item-price').textContent = 'RM ' + itemPrice.toFixed(2);
+    document.getElementById('modal-quantity-display').textContent = quantity;
+    document.getElementById('modal-total-amount').textContent = 'RM ' + (itemPrice * quantity).toFixed(2);
+
+    const imgEl = document.getElementById('modal-item-image');
+    if (itemImage) {
+      imgEl.src = '{{ asset("storage") }}/' + itemImage;
+      imgEl.style.display = 'block';
+    } else {
+      imgEl.style.display = 'none';
+    }
+
+    // Show/hide quantity buttons based on isEditable
+    const qtyMinus = document.getElementById('modal-qty-minus');
+    const qtyPlus = document.getElementById('modal-qty-plus');
+    if (isEditable) {
+      qtyMinus.style.display = 'flex';
+      qtyPlus.style.display = 'flex';
+    } else {
+      qtyMinus.style.display = 'none';
+      qtyPlus.style.display = 'none';
+    }
+
+    // Show modal
+    const modal = document.getElementById('add-to-cart-modal');
+    modal.style.display = 'flex';
+  }
+
   // Close modal
   function closeAddModal() {
     const modal = document.getElementById('add-to-cart-modal');
@@ -791,10 +947,41 @@
     document.body.style.overflow = '';
     document.body.style.position = '';
     document.getElementById('modal-special-notes').value = '';
+
+    // Reset quantity to 1
+    document.getElementById('modal-quantity-display').textContent = '1';
+    if (currentItemData) {
+      currentItemData.quantity = 1;
+    }
   }
 
   document.getElementById('close-add-modal')?.addEventListener('click', closeAddModal);
   document.getElementById('modal-cancel-btn')?.addEventListener('click', closeAddModal);
+
+  // Quantity controls in modal
+  document.getElementById('modal-qty-minus')?.addEventListener('click', function() {
+    if (currentItemData.quantity > 1) {
+      currentItemData.quantity--;
+      document.getElementById('modal-quantity-display').textContent = currentItemData.quantity;
+
+      // Update total price
+      const itemPrice = parseFloat(currentItemData.price);
+      const total = itemPrice * currentItemData.quantity;
+      document.getElementById('modal-total-amount').textContent = `RM ${total.toFixed(2)}`;
+    }
+  });
+
+  document.getElementById('modal-qty-plus')?.addEventListener('click', function() {
+    if (currentItemData.quantity < 999) { // Max 999 items
+      currentItemData.quantity++;
+      document.getElementById('modal-quantity-display').textContent = currentItemData.quantity;
+
+      // Update total price
+      const itemPrice = parseFloat(currentItemData.price);
+      const total = itemPrice * currentItemData.quantity;
+      document.getElementById('modal-total-amount').textContent = `RM ${total.toFixed(2)}`;
+    }
+  });
 
   // Add to cart from modal
   document.getElementById('modal-confirm-btn')?.addEventListener('click', function() {
@@ -813,11 +1000,23 @@
         notes: notes
       })
     })
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        if (response.status === 419) {
+          showToast('Session expired. Refreshing page...', 'error');
+          setTimeout(() => window.location.reload(), 1500);
+          throw new Error('Session expired');
+        }
+        throw new Error('Request failed with status: ' + response.status);
+      }
+      return response.json();
+    })
     .then(data => {
       if (data.success) {
-        // Reset quantity to 1
-        currentItemData.inputElement.value = 1;
+        // Reset quantity to 1 (only for menu items with quantity selector)
+        if (currentItemData.inputElement) {
+          currentItemData.inputElement.value = 1;
+        }
 
         // Update cart badge with animation (ONLY animation here)
         updateCartBadge(data.cartCount || 0, false);
@@ -1247,60 +1446,13 @@ document.addEventListener('click', async function(e) {
 
         // If not found in current view, open Add to Cart modal directly
         if (!found) {
-            // Get item image URL
-            const imageUrl = itemImage ? `/storage/${itemImage}` : '';
-
-            // Open Add to Cart modal with item details
-            if (typeof window.showAddToCartModal === 'function') {
-                window.showAddToCartModal(itemId, itemName, `RM ${itemPrice.toFixed(2)}`, '', imageUrl);
-            } else {
-                console.error('showAddToCartModal function not found');
-                // Fallback: try to add directly
-                try {
-                    const response = await fetch('/customer/cart/add', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            menu_item_id: itemId,
-                            quantity: 1
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        // Update cart badge
-                        const cartBadge = document.getElementById('cartBadge');
-                        if (cartBadge && data.cart_count !== undefined) {
-                            cartBadge.textContent = data.cart_count;
-                            cartBadge.style.display = data.cart_count > 0 ? 'flex' : 'none';
-                        }
-
-                        // Show success toast
-                        if (typeof showToast === 'function') {
-                            showToast('Added to cart!', 'success');
-                        }
-                    } else {
-                        throw new Error(data.message || 'Failed to add item');
-                    }
-                } catch (error) {
-                    console.error('Error adding to cart:', error);
-                    if (typeof showToast === 'function') {
-                        showToast('Failed to add item to cart', 'error');
-                    } else if (typeof Toast !== 'undefined') {
-                        Toast.error('Error', error.message || 'Failed to add item to cart');
-                    }
-                }
-            }
+            // Open Add to Cart modal with item details (editable quantity for fast items)
+            showAddToCartModal(itemId, itemName, itemPrice, itemImage, true);
         }
     }
 });
 
-// Show All Recommendations Modal
+// Show All Recommendations Modal (Fast Items)
 function showAllRecommendationsModal() {
     const modal = document.getElementById('all-recommendations-modal');
     if (modal) {
@@ -1325,6 +1477,34 @@ document.getElementById('close-recommendations-modal')?.addEventListener('click'
 document.getElementById('all-recommendations-modal')?.addEventListener('click', function(e) {
     if (e.target === this) {
         closeAllRecommendationsModal();
+    }
+});
+
+// Show All Popular Items Modal
+function showAllPopularItemsModal() {
+    const modal = document.getElementById('all-popular-items-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+// Close Popular Items Modal
+function closeAllPopularItemsModal() {
+    const modal = document.getElementById('all-popular-items-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+// Event listener for close button
+document.getElementById('close-popular-items-modal')?.addEventListener('click', closeAllPopularItemsModal);
+
+// Close modal when clicking outside
+document.getElementById('all-popular-items-modal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeAllPopularItemsModal();
     }
 });
 

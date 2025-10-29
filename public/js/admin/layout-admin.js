@@ -35,8 +35,8 @@ document.addEventListener("DOMContentLoaded", () => {
             'Cancel'
         );
         if (confirmed) {
-            // Tambah route logout Laravel bila dah setup Auth
             Toast.info('Logging out...', 'Please wait');
+            document.getElementById('logout-form').submit();
         }
     });
 

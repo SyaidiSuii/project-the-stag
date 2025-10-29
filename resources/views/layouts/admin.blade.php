@@ -251,6 +251,9 @@
                 <div class="admin-nav-icon"><i class="fas fa-sign-out-alt"></i></div>
                 <div>Logout</div>
             </button>
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
         </div>
     </div>
 

@@ -706,29 +706,83 @@
   display: none;
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   align-items: center;
   justify-content: center;
   z-index: 1002;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease;
+}
+
+/* Add to Cart Modal - Higher z-index */
+#addtocart-modal {
+  z-index: 1010 !important;
+}
+
+/* Order Modal - Higher z-index */
+#order-modal {
+  z-index: 1010 !important;
+}
+
+/* Addon Modal - Higher z-index */
+#addon-modal {
+  z-index: 1010 !important;
+}
+
+/* Recommendations Modal - Lower than cart modals */
+#all-recommendations-modal {
+  z-index: 1005;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-content {
   background: white;
-  border-radius: 20px;
+  border-radius: 24px;
   width: min(420px, 90vw);
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--muted);
-  animation: modalSlideUp 0.3s ease;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid #e5e7eb;
+  animation: modalSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   max-height: 85vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
+}
+
+#addtocart-modal .modal-content,
+#order-modal .modal-content,
+#addon-modal .modal-content {
+  transform-origin: center center;
+  animation: modalPopIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes modalSlideUp {
-  from { transform: translateY(50px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(50px) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes modalPopIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .modal-body-scrollable {

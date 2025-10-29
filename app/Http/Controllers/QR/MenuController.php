@@ -122,36 +122,12 @@ class MenuController extends Controller
         // Get kitchen load status for customer recommendations
         $kitchenStatus = $this->getKitchenLoadStatus();
 
-        // Get popular/trending items as recommendations for QR guests
-        $recommendedItems = [];
-        try {
-            // For QR guests, we'll get popular items using the simple recommender
-            // Pass a guest user ID (0) to get popular items
-            $recommendedItemIds = $this->simpleRecommender->getPopularItems(8);
-
-            if (!empty($recommendedItemIds)) {
-                $recommendedItems = MenuItem::whereIn('id', $recommendedItemIds)
-                    ->where('availability', true)
-                    ->with('category')
-                    ->get()
-                    ->sortBy(function($item) use ($recommendedItemIds) {
-                        return array_search($item->id, $recommendedItemIds);
-                    })
-                    ->values();
-            }
-        } catch (\Exception $e) {
-            \Log::warning('Failed to fetch recommendations for QR menu page', [
-                'session_code' => $session->session_code,
-                'error' => $e->getMessage()
-            ]);
-        }
-
         // Store order type as 'dine in' in session for QR orders
         session(['qr_order_type_' . $session->session_code => 'dine in']);
 
         // Disable caching for QR menu page
         return response()
-            ->view('qr.menu', compact('session', 'categories', 'cart', 'cartTotal', 'kitchenStatus', 'recommendedItems'))
+            ->view('qr.menu', compact('session', 'categories', 'cart', 'cartTotal', 'kitchenStatus'))
             ->header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
             ->header('Pragma', 'no-cache')
             ->header('Expires', 'Sat, 01 Jan 2000 00:00:00 GMT');
@@ -165,7 +141,7 @@ class MenuController extends Controller
         $request->validate([
             'session_code' => 'required|exists:table_qrcodes,session_code',
             'menu_item_id' => 'required|exists:menu_items,id',
-            'quantity' => 'required|integer|min:1|max:10',
+            'quantity' => 'required|integer|min:1|max:999',
         ]);
 
         $session = TableQrcode::where('session_code', $request->session_code)
@@ -652,7 +628,6 @@ class MenuController extends Controller
                 })
                 ->with('category.defaultStation')
                 ->inRandomOrder()
-                ->limit(4)
                 ->get();
 
             // Attach estimated wait time to each item based on preparation time

@@ -7,25 +7,34 @@
 <link rel="stylesheet" href="{{ asset('css/admin/kitchen-dashboard.css') }}">
 <style>
 .stations-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 16px;
+    background: #ffffff;
+    border-radius: 12px;
     padding: 32px;
     margin-bottom: 32px;
-    color: white;
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .stations-header h1 {
-    font-size: 32px;
-    font-weight: 700;
+    font-size: 28px;
+    font-weight: 600;
     margin: 0 0 8px 0;
-    color: white;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.stations-header h1 i {
+    color: #6b7280;
+    font-size: 24px;
 }
 
 .stations-header p {
     margin: 0;
-    opacity: 0.9;
-    font-size: 16px;
+    color: #6b7280;
+    font-size: 15px;
+    line-height: 1.6;
 }
 
 .header-actions {
@@ -39,39 +48,38 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 24px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-    color: white;
+    padding: 10px 20px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    color: #374151;
     text-decoration: none;
     font-weight: 500;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     font-size: 14px;
 }
 
 .header-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    color: white;
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    color: #111827;
 }
 
 .header-btn.btn-primary {
-    background: white;
-    color: #667eea;
-    border-color: white;
+    background: #111827;
+    color: #ffffff;
+    border-color: #111827;
 }
 
 .header-btn.btn-primary:hover {
-    background: #f8f9ff;
-    color: #5568d3;
+    background: #1f2937;
+    border-color: #1f2937;
+    color: #ffffff;
 }
 
 .stations-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
     margin-bottom: 32px;
 }
@@ -80,64 +88,80 @@
     background: white;
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e2e8f0;
-    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
 }
 
 .stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    border-color: #d1d5db;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
 }
 
 .stat-icon {
     width: 48px;
     height: 48px;
-    border-radius: 12px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 22px;
     margin-bottom: 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
 }
 
-.stat-icon.blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-.stat-icon.green { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
-.stat-icon.orange { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-.stat-icon.red { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.stat-icon.blue { background: #eff6ff; border-color: #dbeafe; }
+.stat-icon.blue i { color: #3b82f6; }
+.stat-icon.green { background: #f0fdf4; border-color: #dcfce7; }
+.stat-icon.green i { color: #22c55e; }
+.stat-icon.orange { background: #fff7ed; border-color: #fed7aa; }
+.stat-icon.orange i { color: #f97316; }
+.stat-icon.red { background: #fef2f2; border-color: #fecaca; }
+.stat-icon.red i { color: #ef4444; }
 
 .stat-value {
     font-size: 32px;
-    font-weight: 700;
-    color: #1e293b;
+    font-weight: 600;
+    color: #111827;
     margin-bottom: 4px;
 }
 
 .stat-label {
-    font-size: 14px;
-    color: #64748b;
+    font-size: 13px;
+    color: #6b7280;
     font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .stations-table-wrapper {
     background: white;
-    border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
     overflow: hidden;
 }
 
 .table-header {
-    padding: 24px 32px;
-    border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
 }
 
 .table-header h2 {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 600;
-    color: #1e293b;
+    color: #111827;
     margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.table-header h2 i {
+    color: #6b7280;
+    font-size: 14px;
 }
 
 .admin-table {
@@ -146,37 +170,41 @@
 }
 
 .admin-table thead th {
-    background: #f8fafc;
-    padding: 16px 20px;
+    background: #f9fafb;
+    padding: 14px 16px;
     text-align: left;
     font-weight: 600;
-    font-size: 13px;
-    color: #64748b;
+    font-size: 12px;
+    color: #6b7280;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .admin-table tbody tr {
-    border-bottom: 1px solid #f1f5f9;
-    transition: all 0.2s ease;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.15s ease;
 }
 
 .admin-table tbody tr:hover {
-    background: #f8fafc;
+    background: #f9fafb;
+}
+
+.admin-table tbody tr:last-child {
+    border-bottom: none;
 }
 
 .admin-table tbody td {
-    padding: 20px;
-    color: #334155;
+    padding: 16px;
+    color: #374151;
     font-size: 14px;
     vertical-align: middle;
 }
 
 .station-name {
     font-weight: 600;
-    color: #1e293b;
-    font-size: 15px;
+    color: #111827;
+    font-size: 14px;
 }
 
 .station-type-cell {
@@ -186,8 +214,8 @@
 }
 
 .station-type-icon {
-    font-size: 24px;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    font-size: 20px;
+    opacity: 0.9;
 }
 
 .load-indicator {
@@ -198,148 +226,147 @@
 
 .load-bar-container {
     flex: 1;
-    height: 10px;
-    background: #e5e7eb;
-    border-radius: 10px;
+    height: 8px;
+    background: #f3f4f6;
+    border-radius: 6px;
     overflow: hidden;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+    border: 1px solid #e5e7eb;
 }
 
 .load-bar {
     height: 100%;
-    border-radius: 10px;
-    transition: all 0.4s ease;
-    background: linear-gradient(90deg, #10b981, #059669);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    background: #22c55e;
 }
 
 .load-bar.warning {
-    background: linear-gradient(90deg, #f59e0b, #d97706);
+    background: #f59e0b;
 }
 
 .load-bar.danger {
-    background: linear-gradient(90deg, #ef4444, #dc2626);
+    background: #ef4444;
 }
 
 .load-percentage {
-    font-weight: 700;
-    font-size: 14px;
-    min-width: 50px;
+    font-weight: 600;
+    font-size: 13px;
+    min-width: 45px;
     text-align: right;
 }
 
-.load-percentage.normal { color: #10b981; }
+.load-percentage.normal { color: #22c55e; }
 .load-percentage.warning { color: #f59e0b; }
 .load-percentage.danger { color: #ef4444; }
 
 .action-buttons {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     justify-content: center;
 }
 
 .action-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 16px;
+    transition: all 0.2s ease;
+    font-size: 14px;
     text-decoration: none;
+    background: #ffffff;
 }
 
 .action-btn.edit {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    color: #3b82f6;
 }
 
 .action-btn.edit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+    background: #eff6ff;
+    border-color: #3b82f6;
 }
 
 .action-btn.toggle {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: white;
+    color: #6b7280;
 }
 
 .action-btn.toggle:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(245, 158, 11, 0.4);
+    background: #f3f4f6;
+    border-color: #6b7280;
 }
 
 .action-btn.delete {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
+    color: #ef4444;
 }
 
 .action-btn.delete:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(239, 68, 68, 0.4);
+    background: #fef2f2;
+    border-color: #ef4444;
 }
 
 .badge {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .badge-success {
-    background: #d1fae5;
-    color: #065f46;
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #dcfce7;
 }
 
 .badge-success::before {
     content: "●";
-    font-size: 16px;
-    color: #10b981;
+    font-size: 12px;
+    color: #22c55e;
 }
 
 .badge-danger {
-    background: #fee2e2;
+    background: #fef2f2;
     color: #991b1b;
+    border: 1px solid #fecaca;
 }
 
 .badge-danger::before {
     content: "●";
-    font-size: 16px;
+    font-size: 12px;
     color: #ef4444;
 }
 
 .empty-state {
     text-align: center;
-    padding: 80px 40px;
-    color: #94a3b8;
+    padding: 64px 40px;
+    color: #9ca3af;
 }
 
 .empty-state i {
-    font-size: 64px;
-    opacity: 0.3;
-    margin-bottom: 24px;
+    font-size: 48px;
+    opacity: 0.4;
+    margin-bottom: 20px;
     display: block;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #d1d5db;
 }
 
 .empty-state h3 {
-    font-size: 20px;
-    color: #64748b;
-    margin: 0 0 12px 0;
+    font-size: 18px;
+    color: #374151;
+    margin: 0 0 8px 0;
+    font-weight: 600;
 }
 
 .empty-state p {
-    font-size: 15px;
+    font-size: 14px;
+    color: #6b7280;
     margin: 0 0 24px 0;
 }
 
@@ -347,24 +374,24 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 32px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 10px 24px;
+    background: #111827;
     color: white;
-    border-radius: 10px;
+    border-radius: 8px;
     text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-size: 14px;
 }
 
 .empty-state-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    background: #1f2937;
     color: white;
 }
 
 .operating-hours {
     font-size: 13px;
-    color: #64748b;
+    color: #6b7280;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -372,6 +399,7 @@
 
 .operating-hours i {
     font-size: 12px;
+    color: #9ca3af;
 }
 </style>
 @endsection
@@ -400,28 +428,28 @@
     <div class="stations-stats">
         <div class="stat-card">
             <div class="stat-icon blue">
-                <i class="fas fa-store" style="color: white;"></i>
+                <i class="fas fa-store"></i>
             </div>
             <div class="stat-value">{{ $stations->count() }}</div>
             <div class="stat-label">Total Stations</div>
         </div>
         <div class="stat-card">
             <div class="stat-icon green">
-                <i class="fas fa-check-circle" style="color: white;"></i>
+                <i class="fas fa-check-circle"></i>
             </div>
             <div class="stat-value">{{ $stations->where('is_active', true)->count() }}</div>
             <div class="stat-label">Active Stations</div>
         </div>
         <div class="stat-card">
             <div class="stat-icon orange">
-                <i class="fas fa-exclamation-triangle" style="color: white;"></i>
+                <i class="fas fa-exclamation-triangle"></i>
             </div>
             <div class="stat-value">{{ $stations->filter(function($s) { return $s->isApproachingCapacity(); })->count() }}</div>
             <div class="stat-label">Busy Stations</div>
         </div>
         <div class="stat-card">
             <div class="stat-icon red">
-                <i class="fas fa-fire" style="color: white;"></i>
+                <i class="fas fa-fire"></i>
             </div>
             <div class="stat-value">{{ $stations->filter(function($s) { return $s->isOverloaded(); })->count() }}</div>
             <div class="stat-label">Overloaded</div>

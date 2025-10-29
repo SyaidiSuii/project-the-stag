@@ -302,7 +302,7 @@
             <p>Table {{ $session->table->table_number }}</p>
         </div>
 
-        <a href="{{ secure_url(route('qr.menu', ['session' => $session->session_code], false)) }}" class="back-button">
+        <a href="{{ secure_url(route('qr.guest.menu', ['session' => $session->session_code], false)) }}" class="back-button">
             <i class="fas fa-arrow-left"></i> Back to Menu
         </a>
 
@@ -348,7 +348,7 @@
             <div class="empty-cart-icon">🛒</div>
             <div class="empty-cart-text">Your cart is empty</div>
             <p>Add some delicious items from the menu to get started!</p>
-            <a href="{{ secure_url(route('qr.menu', ['session' => $session->session_code], false)) }}" class="checkout-btn" style="margin-top: 20px; display: inline-block;">
+            <a href="{{ secure_url(route('qr.guest.menu', ['session' => $session->session_code], false)) }}" class="checkout-btn" style="margin-top: 20px; display: inline-block;">
                 <i class="fas fa-utensils"></i> Browse Menu
             </a>
         </div>
@@ -598,7 +598,7 @@
             if (!isLeavingPage) {
                 // User pressed back button, show confirmation
                 history.pushState({page: 'cart'}, '', '');
-                backLinkHref = '{{ route("qr.menu", ["session" => $session->session_code]) }}';
+                backLinkHref = '{{ route("qr.guest.menu", ["session" => $session->session_code]) }}';
                 backConfirmModal.style.display = 'flex';
             }
         });

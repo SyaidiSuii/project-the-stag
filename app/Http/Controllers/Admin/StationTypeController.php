@@ -74,7 +74,8 @@ class StationTypeController extends Controller
      */
     public function create()
     {
-        return view('admin.kitchen.station-types.create');
+        $station = null;
+        return view('admin.kitchen.stations.form', compact('station'));
     }
 
     /**

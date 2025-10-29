@@ -68,6 +68,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
 
     // Unified Menu Page
     Route::get('/menu', [\App\Http\Controllers\Customer\MenuController::class, 'index'])->name('menu.index');
+    Route::get('/menu/fast-items', [\App\Http\Controllers\Customer\MenuController::class, 'fastItems'])->name('menu.fast-items');
     Route::get('/menu/data', [\App\Http\Controllers\Customer\MenuController::class, 'getMenuData'])->name('menu.data');
     Route::get('/menu/kitchen-status', [\App\Http\Controllers\Customer\MenuController::class, 'getKitchenStatus'])->name('menu.kitchen-status');
 
@@ -280,6 +281,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // Kitchen Stations
             Route::prefix('stations')->name('stations.')->group(function () {
                 Route::get('/', [\App\Http\Controllers\Admin\StationTypeController::class, 'index'])->name('index');
+                Route::get('/create', [\App\Http\Controllers\Admin\StationTypeController::class, 'create'])->name('form');
                 Route::get('/{station}/edit', [\App\Http\Controllers\Admin\StationTypeController::class, 'edit'])->name('edit');
                 Route::get('/{station}', [\App\Http\Controllers\Admin\StationTypeController::class, 'show'])->name('detail');
                 Route::post('/', [\App\Http\Controllers\Admin\StationTypeController::class, 'store'])->name('store');

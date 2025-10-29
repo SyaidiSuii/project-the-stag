@@ -17,7 +17,7 @@
       <div class="logo">🦌</div>
       <h1 class="header-title">The Stag - SmartDine</h1>
     </div>
-    <a href="{{ secure_url(route('qr.menu', ['session' => $session->session_code], false)) }}" class="back-link">
+    <a href="{{ secure_url(route('qr.guest.menu', ['session' => $session->session_code], false)) }}" class="back-link">
       <i class="fas fa-arrow-left"></i> Back to Menu
     </a>
   </header>
@@ -333,7 +333,13 @@
             },
             body: JSON.stringify(paymentData)
           })
-          .then(response => response.json())
+          .then(response => {
+            // Check if response is ok and is JSON
+            if (!response.ok) {
+              throw new Error('Payment request failed with status: ' + response.status);
+            }
+            return response.json();
+          })
           .then(data => {
             console.log('Payment response:', data);
 
@@ -371,7 +377,7 @@
       // Success modal button
       if (successOkBtn) {
         successOkBtn.addEventListener('click', function() {
-          window.location.href = '{{ secure_url(route("qr.menu", ["session" => $session->session_code], false)) }}';
+          window.location.href = '{{ secure_url(route("qr.guest.menu", ["session" => $session->session_code], false)) }}';
         });
       }
 
@@ -421,7 +427,7 @@
         if (!isLeavingPage) {
           // User pressed back button, show confirmation
           history.pushState({page: 'payment'}, '', '');
-          backLinkHref = '{{ route("qr.menu", ["session" => $session->session_code]) }}';
+          backLinkHref = '{{ route("qr.guest.menu", ["session" => $session->session_code]) }}';
           backConfirmModal.style.display = 'flex';
         }
       });
