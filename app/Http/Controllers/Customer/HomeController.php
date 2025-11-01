@@ -31,7 +31,7 @@ class HomeController extends Controller
         $promotionHeaderSection = HomepageContent::bySection('promotion')->active()->first();
         
         // Get AI Recommendations or Popular Items
-        $recommendedItems = [];
+        $recommendedItems = collect(); // Initialize as empty Collection
         if (Auth::check()) {
             // Logged in: Get personalized recommendations
             try {
@@ -59,7 +59,7 @@ class HomeController extends Controller
                 ->with('category')
                 ->orderBy('rating_average', 'desc')
                 ->orderBy('is_featured', 'desc')
-                ->limit(6)
+                ->limit(5)  // Max 5 items for guests
                 ->get();
         }
 

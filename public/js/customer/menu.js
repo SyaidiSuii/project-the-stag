@@ -32,6 +32,7 @@ if (menuData && menuData.length > 0) {
         if (catIndex === 0 && itemIndex === 0) {
           console.log('Debug [menu.js]: First menu item raw data:', item);
           console.log('Debug [menu.js]: First menu item ID:', item.id, 'Type:', typeof item.id);
+          console.log('Debug [menu.js]: First menu item RATING:', 'avg:', item.rating_average, 'count:', item.rating_count);
         }
 
         const menuItem = {
@@ -46,7 +47,10 @@ if (menuData && menuData.length > 0) {
           stock_quantity: item.stock_quantity,
           // Item discount support
           has_discount: item.has_discount || false,
-          discount_info: item.discount_info || null
+          discount_info: item.discount_info || null,
+          // Rating support
+          rating_average: item.rating_average || 0,
+          rating_count: item.rating_count || 0
         };
 
         // Debug first processed item
@@ -229,10 +233,49 @@ function createMenuCard(item) {
     priceHtml = `<div class="food-price">RM ${formatPrice(item.price)}</div>`;
   }
 
+  // Build rating stars HTML
+  let ratingHtml = '';
+  
+  // Debug rating data
+  console.log('Debug [createMenuCard]: Item rating - ', item.name, '| avg:', item.rating_average, '| count:', item.rating_count);
+  
+  if (item.rating_count && item.rating_count > 0) {
+    const avgRating = parseFloat(item.rating_average) || 0;
+    const fullStars = Math.floor(avgRating);
+    const hasHalfStar = avgRating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    let starsHtml = '';
+    // Full stars - with inline gold color
+    for (let i = 0; i < fullStars; i++) {
+      starsHtml += '<i class="fas fa-star" style="color: #fbbf24;"></i>';
+    }
+    // Half star - with inline gold color
+    if (hasHalfStar) {
+      starsHtml += '<i class="fas fa-star-half-alt" style="color: #fbbf24;"></i>';
+    }
+    // Empty stars - with inline grey color
+    for (let i = 0; i < emptyStars; i++) {
+      starsHtml += '<i class="far fa-star" style="color: #d1d5db;"></i>';
+    }
+
+    ratingHtml = `
+      <div class="food-rating" style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+        <div class="rating-stars" style="display: flex; gap: 2px;">${starsHtml}</div>
+        <span class="rating-text" style="font-size: 0.85rem; color: #6b7280; font-weight: 600; white-space: nowrap;">${avgRating.toFixed(1)} (${item.rating_count})</span>
+      </div>
+    `;
+    
+    console.log('Debug [createMenuCard]: Rating HTML generated for', item.name);
+  } else {
+    console.log('Debug [createMenuCard]: No rating for', item.name, '- skipping rating display');
+  }
+
   let cardContent = `
     <div class="food-image ${isDrink ? 'drink-style' : ''}">${imageHtml}</div>
     <div class="food-name">${item.name}</div>
     ${priceHtml}
+    ${ratingHtml}
     ${description ? `<div class="food-description">${description}</div>` : ''}
     ${actionsHtml}
   `;
@@ -758,10 +801,22 @@ document.addEventListener('click', async function(e) {
 
   // Clear all button
   if (e.target.id === 'clearAllBtn') {
+    const button = e.target;
+    
+    // Prevent double-click
+    if (button.disabled) return;
+    
     const cartData = await window.cartManager.getCart();
     const cartItems = Array.isArray(cartData) ? cartData : (cartData.cart || []);
 
     if (cartItems.length > 0) {
+      // Show loading state immediately
+      const originalText = button.textContent;
+      button.textContent = 'Clearing...';
+      button.disabled = true;
+      button.style.opacity = '0.6';
+      button.style.pointerEvents = 'none';
+      
       const confirmed = await showConfirm(
         'Clear All Items?',
         'Are you sure you want to remove all items from your cart?',
@@ -769,12 +824,21 @@ document.addEventListener('click', async function(e) {
         'Clear All',
         'Cancel'
       );
+      
       if (confirmed) {
         await window.cartManager.clearCart();
         updateCartBadge();
         updateCartDisplay();
         Toast.success('Cart Cleared', 'All items have been removed from your cart');
       }
+      
+      // Restore button state
+      button.textContent = originalText;
+      button.disabled = false;
+      button.style.opacity = '1';
+      button.style.pointerEvents = 'auto';
+    } else {
+      Toast.info('Empty Cart', 'Your cart is already empty');
     }
   }
 
@@ -885,12 +949,12 @@ document.addEventListener('click', async function(e) {
       const item = regularItems[index];
       const newQuantity = item.quantity + change;
 
-      // Call updateItem - backend will check if locked
+      // Call updateItem
       const result = await window.cartManager.updateItem(item.id, newQuantity);
 
-      // Check if item is locked (backend returned error)
-      if (result && !result.success && result.is_locked) {
-        Toast.error('Cannot Modify', result.message || 'This item is part of a promotion and cannot be modified individually.');
+      // If backend returns error, show it
+      if (result && !result.success) {
+        Toast.error('Error', result.message || 'Failed to update item quantity');
         return;
       }
 

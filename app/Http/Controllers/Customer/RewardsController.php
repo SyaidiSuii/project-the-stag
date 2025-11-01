@@ -9,7 +9,8 @@ use App\Models\CheckinSetting;
 use App\Models\User;
 use App\Models\LoyaltyTier;
 use App\Models\Order;
-use App\Models\VoucherCollection;
+// PHASE 2.1: VoucherCollection deprecated - use VoucherTemplate with source_type='collection'
+// use App\Models\VoucherCollection;
 use App\Models\SpecialEvent;
 use App\Models\Achievement;
 use App\Models\BonusPointChallenge;
@@ -19,34 +20,43 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
+// PHASE 3: Import Loyalty Services
+use App\Services\Loyalty\LoyaltyService;
+use App\Services\Loyalty\RewardRedemptionService;
+use App\Services\Loyalty\VoucherService;
+
 class RewardsController extends Controller
 {
+    // PHASE 3: Inject services via constructor
+    protected LoyaltyService $loyaltyService;
+    protected RewardRedemptionService $rewardService;
+    protected VoucherService $voucherService;
+
+    public function __construct(
+        LoyaltyService $loyaltyService,
+        RewardRedemptionService $rewardService,
+        VoucherService $voucherService
+    ) {
+        $this->loyaltyService = $loyaltyService;
+        $this->rewardService = $rewardService;
+        $this->voucherService = $voucherService;
+    }
     public function index()
     {
         if (Auth::check()) {
             $user = Auth::user();
 
-            // Get available rewards (active rewards only)
             // Get customer profile
             $customerProfile = $user->customerProfile;
 
-            // Get all active rewards
-            $allRewards = Reward::where('is_active', true)
-                ->orderBy('points_required', 'asc')
-                ->get();
-
-            // Filter out rewards that user has already redeemed
-            if ($customerProfile) {
-                $redeemedRewardIds = CustomerReward::where('customer_profile_id', $customerProfile->id)
-                    ->pluck('reward_id')
-                    ->unique()
-                    ->toArray();
-
-                // Only show rewards that haven't been redeemed yet
-                $allRewards = $allRewards->filter(function($reward) use ($redeemedRewardIds) {
-                    return !in_array($reward->id, $redeemedRewardIds);
-                });
-            }
+            // PHASE 7: Use RewardRedemptionService to get available rewards
+            // This automatically filters by:
+            // - Active status
+            // - Tier requirements (tier-exclusive rewards)
+            // - Usage limits
+            // - Expiry dates
+            // - Max redemptions
+            $allRewards = $this->rewardService->getAvailableRewards($user, onlyAffordable: false);
 
             // Limit to first 4 for main display
             $availableRewards = $allRewards->take(4);
@@ -87,7 +97,9 @@ class RewardsController extends Controller
                     ->unique();
             }
 
-            $voucherCollections = VoucherCollection::active()
+            // PHASE 2.1: Use unified VoucherTemplate with source_type='collection'
+            $voucherCollections = VoucherTemplate::collectionVouchers()
+                ->active()
                 ->valid()
                 ->whereNotIn('name', $collectedVoucherNames)
                 ->orderBy('spending_requirement', 'asc')
@@ -169,81 +181,41 @@ class RewardsController extends Controller
 
         $reward = Reward::findOrFail($request->reward_id);
 
-        // Check if reward is active
-        if (!$reward->is_active) {
-            return response()->json(['success' => false, 'message' => 'This reward is no longer available']);
-        }
-
-        // Check if user has enough points
-        $userPoints = $user->points_balance ?? 0;
-        if ($userPoints < $reward->points_required) {
-            return response()->json(['success' => false, 'message' => 'Insufficient points']);
-        }
-
-        // Process redemption with database transaction
+        // PHASE 3: Use RewardRedemptionService instead of direct model operations
         try {
-            \DB::beginTransaction();
+            // Service handles all validation and business logic
+            $customerReward = $this->rewardService->redeemReward($user, $reward);
 
-            // Deduct points from user
-            $user->decrement('points_balance', $reward->points_required);
-
-            // Calculate expiry date based on expiry_days
-            $expiryDate = $reward->expiry_days ? now()->addDays($reward->expiry_days) : null;
-
-            // Create redemption record
-            $customerReward = CustomerReward::create([
-                'customer_profile_id' => $customerProfile->id,
-                'reward_id' => $reward->id,
-                'points_spent' => $reward->points_required,
-                'status' => 'active',
-                'claimed_at' => now(),
-                'expires_at' => $expiryDate
-            ]);
-
-            // If reward has voucher template, create a CustomerVoucher for cart usage
-            if ($reward->voucher_template_id) {
-                $voucherTemplate = $reward->voucherTemplate;
-
-                if ($voucherTemplate) {
-                    $customerVoucher = CustomerVoucher::create([
-                        'customer_profile_id' => $customerProfile->id,
-                        'voucher_template_id' => $voucherTemplate->id,
-                        'source' => 'reward',
-                        'status' => 'active',
-                        'expiry_date' => $expiryDate
-                    ]);
-
-                    logger()->info('Voucher created from reward redemption', [
+            // If reward has voucher template, issue voucher
+            if ($reward->voucher_template_id && $reward->voucherTemplate) {
+                try {
+                    $this->voucherService->issueVoucher(
+                        $user,
+                        $reward->voucherTemplate,
+                        'reward'
+                    );
+                } catch (\Exception $e) {
+                    // Log but don't fail the whole redemption
+                    logger()->warning('Failed to issue voucher for reward', [
                         'customer_reward_id' => $customerReward->id,
-                        'customer_voucher_id' => $customerVoucher->id,
-                        'voucher_template_id' => $voucherTemplate->id,
-                        'reward_id' => $reward->id
+                        'reward_id' => $reward->id,
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
-
-            \DB::commit();
 
             $message = $this->getRedemptionMessage($reward);
 
             return response()->json([
                 'success' => true,
                 'message' => $message,
-                'new_balance' => $user->fresh()->points_balance ?? 0
+                'new_balance' => $this->loyaltyService->getBalance($user)
             ]);
+
         } catch (\Exception $e) {
-            \DB::rollBack();
-
-            logger()->error('Reward redemption failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'reward_id' => $reward->id,
-                'user_id' => $user->id
-            ]);
-
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to redeem reward: ' . $e->getMessage()
+                'message' => $e->getMessage()
             ]);
         }
     }
@@ -283,9 +255,12 @@ class RewardsController extends Controller
         // Get points for the NEW streak position (the day they're checking in for)
         $earnedPoints = $dailyPoints[$newStreak] ?? 5;
 
-        // Update user data
+        // PHASE 3: Use LoyaltyService for points award
         try {
-            $user->increment('points_balance', $earnedPoints);
+            // Award points through service (handles transaction logging automatically)
+            $this->loyaltyService->awardCheckInPoints($user, $earnedPoints);
+
+            // Update user checkin data
             $user->update([
                 'last_checkin_date' => $today,
                 'checkin_streak' => $newStreak
@@ -295,13 +270,16 @@ class RewardsController extends Controller
                 'success' => true,
                 'message' => "🎉 Check-in successful! +{$earnedPoints} points earned!",
                 'points_earned' => $earnedPoints,
-                'new_balance' => $user->fresh()->points_balance,
+                'new_balance' => $this->loyaltyService->getBalance($user),
                 'streak' => $newStreak,
                 'checked_in_today' => true
             ]);
+
         } catch (\Exception $e) {
-            \Log::error('Check-in error: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Failed to process check-in: ' . $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to process check-in: ' . $e->getMessage()
+            ]);
         }
     }
 
@@ -354,7 +332,7 @@ class RewardsController extends Controller
     public function collectVoucher(Request $request)
     {
         $request->validate([
-            'voucher_collection_id' => 'required|exists:voucher_collections,id'
+            'voucher_collection_id' => 'required|exists:voucher_templates,id'
         ]);
 
         $user = Auth::user();
@@ -367,81 +345,46 @@ class RewardsController extends Controller
             return response()->json(['success' => false, 'message' => 'Customer profile not found']);
         }
 
-        $voucherCollection = VoucherCollection::findOrFail($request->voucher_collection_id);
+        $voucherTemplate = VoucherTemplate::collectionVouchers()
+            ->findOrFail($request->voucher_collection_id);
 
-        // Check if user already collected this voucher
-        $existingVoucher = CustomerVoucher::whereHas('voucherTemplate', function($query) use ($voucherCollection) {
-                $query->where('name', $voucherCollection->name);
-            })
-            ->where('customer_profile_id', $customerProfile->id)
-            ->where('status', 'active')
-            ->first();
+        // PHASE 3: Use VoucherService for voucher issuance
+        try {
+            // Service handles all validation (spending requirement, usage limits, etc.)
+            $customerVoucher = $this->voucherService->issueVoucher(
+                $user,
+                $voucherTemplate,
+                'collection'
+            );
 
-        if ($existingVoucher) {
+            $expiryDate = $customerVoucher->expiry_date
+                ? Carbon::parse($customerVoucher->expiry_date)
+                : null;
+
+            return response()->json([
+                'success' => true,
+                'message' => sprintf('Congratulations! You\'ve collected %s voucher!', $voucherTemplate->name),
+                'voucher' => [
+                    'id' => $customerVoucher->id,
+                    'code' => $customerVoucher->voucher_code,
+                    'name' => $voucherTemplate->name,
+                    'expiry_date' => $expiryDate ? $expiryDate->format('M j, Y') : 'No expiry'
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            // Log full error for debugging
+            \Log::error('Voucher collection failed', [
+                'user_id' => $user->id,
+                'template_id' => $request->voucher_collection_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'You have already collected this voucher!'
+                'message' => $e->getMessage()
             ]);
         }
-
-        // Check if user meets spending requirement
-        $userSpending = $this->calculateUserSpending($user->id);
-
-        if ($userSpending < $voucherCollection->spending_requirement) {
-            $amountNeeded = $voucherCollection->spending_requirement - $userSpending;
-            return response()->json([
-                'success' => false,
-                'message' => sprintf('Spend RM%.2f more to unlock this voucher!', $amountNeeded)
-            ]);
-        }
-
-        // Find or create voucher template for this collection
-        $voucherTemplate = \App\Models\VoucherTemplate::firstOrCreate(
-            [
-                'name' => $voucherCollection->name,
-                'discount_type' => $voucherCollection->voucher_type === 'percentage' ? 'percentage' : 'fixed',
-                'discount_value' => $voucherCollection->voucher_value
-            ],
-            [
-                'title' => $voucherCollection->name,
-                'description' => $voucherCollection->description ?? 'Voucher from collection',
-                'minimum_spend' => $voucherCollection->spending_requirement,
-                'expiry_days' => 30, // Default 30 days validity
-                'max_uses_per_user' => 1,
-                'is_active' => true
-            ]
-        );
-
-        // Create customer voucher
-        $expiryDate = $voucherCollection->valid_until
-            ? Carbon::parse($voucherCollection->valid_until)
-            : now()->addDays($voucherTemplate->expiry_days ?? 30);
-
-        $customerVoucher = CustomerVoucher::create([
-            'customer_profile_id' => $customerProfile->id,
-            'voucher_template_id' => $voucherTemplate->id,
-            'source' => 'collection',
-            'status' => 'active',
-            'expiry_date' => $expiryDate
-        ]);
-
-        logger()->info('Voucher collected', [
-            'user_id' => $user->id,
-            'voucher_collection_id' => $voucherCollection->id,
-            'customer_voucher_id' => $customerVoucher->id,
-            'voucher_template_id' => $voucherTemplate->id
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => sprintf('Congratulations! You\'ve collected %s voucher!', $voucherCollection->name),
-            'spending' => $userSpending,
-            'requirement' => $voucherCollection->spending_requirement,
-            'voucher' => [
-                'id' => $customerVoucher->id,
-                'name' => $voucherTemplate->name,
-                'expiry_date' => $expiryDate->format('M j, Y')
-            ]
-        ]);
     }
 }

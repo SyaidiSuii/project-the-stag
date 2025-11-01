@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Spatie\Permission\Models\Role;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -37,10 +38,12 @@ class AuthenticatedSessionController extends Controller
         // Auto-promote first admin/manager to super admin if none exists
         $user = auth()->user();
         if ($user && $user->hasAnyRole(['admin', 'manager'])) {
-            $superAdminExists = \App\Models\User::where('is_super_admin', true)->exists();
+            // Check if any user has super-admin role
+            $superAdminRole = Role::where('name', 'super-admin')->first();
+            $hasSuperAdmin = $superAdminRole && $superAdminRole->users()->exists();
 
-            if (!$superAdminExists) {
-                $user->update(['is_super_admin' => true]);
+            if (!$hasSuperAdmin) {
+                $user->assignRole('super-admin');
                 session()->flash('success', 'You have been automatically promoted to Super Admin as the first admin user!');
             }
         }

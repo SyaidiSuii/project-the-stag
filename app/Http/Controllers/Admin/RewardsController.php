@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\{Reward, CustomerReward, User, Achievement, VoucherCollection, BonusPointChallenge, CheckinSetting, SpecialEvent, RewardsContent, LoyaltyTier, MenuItem, VoucherTemplate};
+// PHASE 2.1: VoucherCollection deprecated - use VoucherTemplate with source_type='collection'
+use App\Models\{Reward, CustomerReward, User, Achievement, BonusPointChallenge, CheckinSetting, SpecialEvent, RewardsContent, LoyaltyTier, MenuItem, VoucherTemplate};
 
 class RewardsController extends Controller
 {
@@ -40,17 +41,22 @@ class RewardsController extends Controller
 
         // Additional sections data
         $achievements = Achievement::orderBy('created_at', 'desc')->get();
-        $voucherCollections = VoucherCollection::orderBy('created_at', 'desc')->get();
+        // PHASE 2.1: Use unified VoucherTemplate with source_type='collection'
+        $voucherCollections = VoucherTemplate::collectionVouchers()->orderBy('created_at', 'desc')->get();
         $bonusPointsChallenges = BonusPointChallenge::orderBy('created_at', 'desc')->get();
         $voucherTemplates = VoucherTemplate::withCount('rewards')->orderBy('created_at', 'desc')->get();
 
         // Menu items for promotions
         $menuItems = MenuItem::where('is_available', true)->orderBy('name')->get();
 
+        // PHASE 4: Add empty arrays for compatibility (view has fallbacks with ?? [])
+        $promotions = []; // Deprecated/not used
+        $vouchers = [];   // Use voucherTemplates instead
+
         return view('admin.rewards.index', compact(
             'rewards', 'redemptions', 'members', 'checkinSettings', 'specialEvents',
             'rewardsContent', 'loyaltyTiers', 'achievements', 'voucherCollections',
-            'bonusPointsChallenges', 'menuItems', 'voucherTemplates'
+            'bonusPointsChallenges', 'menuItems', 'voucherTemplates', 'promotions', 'vouchers'
         ));
     }
 
@@ -366,7 +372,7 @@ class RewardsController extends Controller
         return response()->json(['success' => true, 'message' => 'Bonus point challenge deleted successfully']);
     }
 
-    // Voucher Collection Management
+    // PHASE 2.1: Voucher Collection Management (using unified VoucherTemplate)
     public function storeVoucherCollection(Request $request)
     {
         $request->validate([
@@ -377,19 +383,22 @@ class RewardsController extends Controller
             'valid_until' => 'nullable|date|after:today',
         ]);
 
-        VoucherCollection::create([
+        // PHASE 2.1: Create using unified VoucherTemplate with source_type='collection'
+        VoucherTemplate::create([
             'name' => $request->name,
+            'title' => $request->name,
+            'source_type' => 'collection',
+            'discount_type' => $request->voucher_type === 'percentage' ? 'percentage' : 'fixed',
+            'discount_value' => $request->voucher_value,
             'spending_requirement' => $request->spending_requirement,
-            'voucher_type' => $request->voucher_type,
-            'voucher_value' => $request->voucher_value,
             'valid_until' => $request->valid_until,
-            'status' => 'active',
+            'is_active' => true,
         ]);
 
         return response()->json(['success' => true, 'message' => 'Voucher collection added successfully']);
     }
 
-    public function updateVoucherCollection(Request $request, VoucherCollection $voucherCollection)
+    public function updateVoucherCollection(Request $request, VoucherTemplate $voucherCollection)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -400,12 +409,21 @@ class RewardsController extends Controller
             'status' => 'required|in:active,inactive',
         ]);
 
-        $voucherCollection->update($request->all());
+        // PHASE 2.1: Update using unified VoucherTemplate
+        $voucherCollection->update([
+            'name' => $request->name,
+            'title' => $request->name,
+            'discount_type' => $request->voucher_type === 'percentage' ? 'percentage' : 'fixed',
+            'discount_value' => $request->voucher_value,
+            'spending_requirement' => $request->spending_requirement,
+            'valid_until' => $request->valid_until,
+            'is_active' => $request->status === 'active',
+        ]);
 
         return response()->json(['success' => true, 'message' => 'Voucher collection updated successfully']);
     }
 
-    public function destroyVoucherCollection(VoucherCollection $voucherCollection)
+    public function destroyVoucherCollection(VoucherTemplate $voucherCollection)
     {
         $voucherCollection->delete();
         return response()->json(['success' => true, 'message' => 'Voucher collection deleted successfully']);
@@ -692,9 +710,10 @@ class RewardsController extends Controller
     }
 
     // === VOUCHER COLLECTIONS SECTION ===
+    // PHASE 2.1: Using unified VoucherTemplate with source_type='collection'
     public function voucherCollectionsIndex()
     {
-        $collections = VoucherCollection::orderBy('created_at', 'desc')->get();
+        $collections = VoucherTemplate::collectionVouchers()->orderBy('created_at', 'desc')->get();
         return view('admin.rewards.voucher-collections.index', compact('collections'));
     }
 
@@ -708,33 +727,61 @@ class RewardsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'spending_requirement' => 'nullable|numeric|min:0',
+            'discount_type' => 'nullable|in:percentage,fixed',
+            'discount_value' => 'nullable|numeric|min:0',
+            'valid_until' => 'nullable|date|after:today',
         ]);
 
-        VoucherCollection::create($request->all());
+        // PHASE 2.1: Create using unified VoucherTemplate
+        VoucherTemplate::create([
+            'name' => $request->name,
+            'title' => $request->name,
+            'description' => $request->description,
+            'source_type' => 'collection',
+            'discount_type' => $request->discount_type ?? 'percentage',
+            'discount_value' => $request->discount_value ?? 0,
+            'spending_requirement' => $request->spending_requirement ?? 0,
+            'valid_until' => $request->valid_until,
+            'is_active' => true,
+        ]);
 
         return redirect()->route('admin.rewards.voucher-collections.index')
             ->with('success', 'Voucher collection created successfully!');
     }
 
-    public function voucherCollectionsEdit(VoucherCollection $collection)
+    public function voucherCollectionsEdit(VoucherTemplate $collection)
     {
         return view('admin.rewards.voucher-collections.form', compact('collection'));
     }
 
-    public function voucherCollectionsUpdate(Request $request, VoucherCollection $collection)
+    public function voucherCollectionsUpdate(Request $request, VoucherTemplate $collection)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'spending_requirement' => 'nullable|numeric|min:0',
+            'discount_type' => 'nullable|in:percentage,fixed',
+            'discount_value' => 'nullable|numeric|min:0',
+            'valid_until' => 'nullable|date',
         ]);
 
-        $collection->update($request->all());
+        // PHASE 2.1: Update using unified VoucherTemplate
+        $collection->update([
+            'name' => $request->name,
+            'title' => $request->name,
+            'description' => $request->description,
+            'discount_type' => $request->discount_type ?? 'percentage',
+            'discount_value' => $request->discount_value ?? 0,
+            'spending_requirement' => $request->spending_requirement ?? 0,
+            'valid_until' => $request->valid_until,
+        ]);
 
         return redirect()->route('admin.rewards.voucher-collections.index')
             ->with('success', 'Voucher collection updated successfully!');
     }
 
-    public function voucherCollectionsDestroy(VoucherCollection $collection)
+    public function voucherCollectionsDestroy(VoucherTemplate $collection)
     {
         $collection->delete();
         return redirect()->route('admin.rewards.voucher-collections.index')
@@ -938,9 +985,9 @@ class RewardsController extends Controller
             ->paginate(20);
 
         // Get voucher usage (redeemed vouchers)
+        // PHASE 2.4: redeemed_at removed, use used_at only
         $voucherUsage = \App\Models\CustomerVoucher::with(['customerProfile.user', 'voucherTemplate', 'order'])
             ->orderBy('used_at', 'desc')
-            ->orderBy('redeemed_at', 'desc')
             ->paginate(20);
 
         return view('admin.rewards.redemptions.index', compact('redemptions', 'voucherUsage'));

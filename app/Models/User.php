@@ -29,9 +29,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'phone_number',
         'is_active',
-        'is_super_admin',
         'dob',
         'points_balance',
+        'loyalty_tier_id',
         'last_checkin_date',
         'checkin_streak',
         'user_id',
@@ -146,6 +146,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(CustomerProfile::class);
     }
 
+    public function loyaltyTier()
+    {
+        return $this->belongsTo(LoyaltyTier::class, 'loyalty_tier_id');
+    }
+
     public function orders()
     {
         return $this->hasMany(Order::class);
@@ -172,7 +177,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function canViewAllStations()
     {
-        return $this->hasAnyRole(['admin', 'manager']) || $this->is_super_admin;
+        return $this->hasAnyRole(['admin', 'manager', 'super-admin']);
     }
 
     /**

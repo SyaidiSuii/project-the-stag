@@ -450,8 +450,8 @@ class MenuItem extends Model
             return $this->category->default_station_type;
         }
 
-        // Default to hot kitchen
-        return 'hot_kitchen';
+        // Default to general kitchen
+        return 'general_kitchen';
     }
 
     /**
@@ -491,8 +491,7 @@ class MenuItem extends Model
     public function getStationIconAttribute()
     {
         return match($this->effective_station_type) {
-            'hot_kitchen' => '🔥',
-            'cold_kitchen' => '🥗',
+            'general_kitchen' => '🍴',
             'drinks' => '🍹',
             'desserts' => '🍰',
             default => '🍴'
@@ -505,11 +504,10 @@ class MenuItem extends Model
     public function getStationDisplayNameAttribute()
     {
         return match($this->effective_station_type) {
-            'hot_kitchen' => 'Hot Cooking',
-            'cold_kitchen' => 'Cold Prep & Salads',
-            'drinks' => 'Beverages & Drinks',
-            'desserts' => 'Desserts & Pastries',
-            default => 'General Kitchen'
+            'general_kitchen' => 'Main Kitchen',
+            'drinks' => 'Drinks Bar',
+            'desserts' => 'Dessert Station',
+            default => 'Main Kitchen'
         };
     }
 }

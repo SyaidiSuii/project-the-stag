@@ -65,7 +65,6 @@
             </select>
             <select class="filter-select" id="tableTypeFilter">
                 <option value="">All Types</option>
-                <option value="indoor" {{ request('table_type') == 'indoor' ? 'selected' : '' }}>Indoor</option>
                 <option value="outdoor" {{ request('table_type') == 'outdoor' ? 'selected' : '' }}>Outdoor</option>
                 <option value="vip" {{ request('table_type') == 'vip' ? 'selected' : '' }}>VIP</option>
             </select>

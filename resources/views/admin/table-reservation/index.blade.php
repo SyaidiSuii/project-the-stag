@@ -264,18 +264,15 @@
     // Check for session messages on page load
     document.addEventListener('DOMContentLoaded', function() {
         @if(session('message'))
-        showNotification('{{ session('
-            message ') }}', 'success');
+        showNotification('{{ session('message') }}', 'success');
         @endif
 
         @if(session('success'))
-        showNotification('{{ session('
-            success ') }}', 'success');
+        showNotification('{{ session('success') }}', 'success');
         @endif
 
         @if(session('error'))
-        showNotification('{{ session('
-            error ') }}', 'error');
+        showNotification('{{ session('error') }}', 'error');
         @endif
     });
 
@@ -339,7 +336,7 @@
         // Create a form and submit it
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = `/admin/table-reservation/${bookingId}/status`;
+        form.action = `/admin/table-reservation/${bookingId}/update-status`;
 
         // Add CSRF token
         const csrfToken = document.createElement('input');

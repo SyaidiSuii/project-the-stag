@@ -506,50 +506,12 @@ const AppData = {
     }
 
     // ===== Render User's Vouchers =====
+    // DISABLED: User vouchers are now rendered server-side from database
+    // This function is kept for backward compatibility but does nothing
     function renderMyVouchers() {
-      const container = document.getElementById('myVoucherList');
-      const empty = document.getElementById('noVoucher');
-      const seeAllBtn = document.getElementById('seeAllVouchersBtn');
-
-      if (vouchers.length === 0) {
-        empty.style.display = 'block';
-        container.style.display = 'none';
-        if (seeAllBtn) seeAllBtn.style.display = 'none';
-        return;
-      }
-
-      empty.style.display = 'none';
-      container.style.display = 'grid';
-      container.innerHTML = '';
-
-      // Show only first 6 vouchers
-      const displayVouchers = vouchers.slice(0, 6);
-
-      displayVouchers.forEach((voucher, index) => {
-        const voucherEl = document.createElement('div');
-        voucherEl.className = 'voucher-card bounce';
-        voucherEl.innerHTML = `
-          <div class="voucher-name">${voucher.name}</div>
-          <div class="voucher-description">${voucher.description || voucher.type}</div>
-          <div class="voucher-expires">Expires: ${voucher.expires}</div>
-          <button onclick="useVoucher(${index})" class="voucher-use-btn">
-            Use Now
-          </button>
-        `;
-        container.appendChild(voucherEl);
-
-        // Remove bounce animation after it completes
-        setTimeout(() => voucherEl.classList.remove('bounce'), 1000);
-      });
-
-      // Show/hide "See All" button
-      if (seeAllBtn) {
-        if (vouchers.length > 6) {
-          seeAllBtn.style.display = 'block';
-        } else {
-          seeAllBtn.style.display = 'none';
-        }
-      }
+      // Do nothing - vouchers are rendered server-side via Blade template
+      // Server renders real data from CustomerVoucher model
+      return;
     }
 
     // ===== Use Voucher =====
@@ -576,6 +538,13 @@ const AppData = {
     // ===== Achievements System =====
     function renderAchievements() {
       const container = document.getElementById('achievementGrid');
+
+      // Check if container exists before rendering
+      if (!container) {
+        console.log('Achievement grid not found, skipping...');
+        return;
+      }
+
       const achievements = [
         { id: 'first_checkin', name: '🌟 First Steps', desc: 'Complete your first check-in', completed: true },
         { id: 'streak_3', name: '🔥 On Fire!', desc: 'Check-in 3 days in a row', completed: checkinStreak >= 3 },
@@ -808,15 +777,15 @@ const AppData = {
       updatePointsDisplay();
       initializeCheckin();
       setupCheckin();
-      renderPointsRewards();
-      renderVoucherCollection();
-      addDemoVouchers();
-      renderMyVouchers();
+      // renderPointsRewards(); // DISABLED: Points rewards now rendered server-side from database
+      // renderVoucherCollection(); // DISABLED: Voucher collections now rendered server-side from database
+      // addDemoVouchers(); // DISABLED: User vouchers now rendered server-side from database
+      // renderMyVouchers(); // DISABLED: User vouchers now rendered server-side from database
       renderAchievements();
       updateLoyaltyProgress();
       setupSearch();
       addInteractiveEffects();
-      renderSpecialEvents();
+      // renderSpecialEvents(); // DISABLED: Special events now rendered server-side from database
       
       // Welcome message
       setTimeout(() => {
@@ -991,45 +960,27 @@ const AppData = {
 
     // ===== All Vouchers Modal Functions =====
     function showAllVouchersModal() {
+      // Modal content is already rendered server-side in the Blade template
+      // Just show the modal
       const modal = document.getElementById('allVouchersModal');
-      const modalBody = modal.querySelector('.modal-body .voucher-grid');
-
-      // Clear existing content
-      modalBody.innerHTML = '';
-
-      // Render all vouchers in modal
-      vouchers.forEach((voucher, index) => {
-        const voucherEl = document.createElement('div');
-        voucherEl.className = 'voucher-card';
-        voucherEl.innerHTML = `
-          <div class="voucher-name">${voucher.name}</div>
-          <div class="voucher-description">${voucher.description || voucher.type}</div>
-          <div class="voucher-expires">Expires: ${voucher.expires}</div>
-          <button onclick="useVoucherFromModal(${index})" class="voucher-use-btn">
-            Use Now
-          </button>
-        `;
-        modalBody.appendChild(voucherEl);
-      });
-
-      modal.style.display = 'block';
+      if (modal) {
+        modal.style.display = 'flex';
+      }
     }
 
     function closeAllVouchersModal() {
-      document.getElementById('allVouchersModal').style.display = 'none';
+      const modal = document.getElementById('allVouchersModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
     }
 
-    function useVoucherFromModal(index) {
-      // Close modal first
-      closeAllVouchersModal();
-      // Then use the voucher
-      useVoucher(index);
-    }
+    // REMOVED: useVoucherFromModal - vouchers are managed server-side
+    // Vouchers are applied through cart system, not localStorage
 
     // Make functions globally available
     window.showAllVouchersModal = showAllVouchersModal;
     window.closeAllVouchersModal = closeAllVouchersModal;
-    window.useVoucherFromModal = useVoucherFromModal;
 
     // Close modal when clicking outside
     window.onclick = function(event) {

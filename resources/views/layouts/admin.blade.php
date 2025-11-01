@@ -148,45 +148,9 @@
                     class="admin-nav-subitem {{ request()->routeIs('admin.promotions.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">Promotions</div>
                 </a>
-                <a href="{{ route('admin.rewards.rewards.index') }}"
-                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.rewards.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.rewards.index') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">Rewards</div>
-                </a>
-                <a href="{{ route('admin.rewards.voucher-templates.index') }}"
-                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.voucher-templates.*') ? 'active' : '' }}">
-                    <div class="admin-nav-text">Voucher Templates</div>
-                </a>
-                <a href="{{ route('admin.rewards.checkin.index') }}"
-                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.checkin.*') ? 'active' : '' }}">
-                    <div class="admin-nav-text">Check-in Settings</div>
-                </a>
-                <a href="{{ route('admin.rewards.special-events.index') }}"
-                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.special-events.*') ? 'active' : '' }}">
-                    <div class="admin-nav-text">Special Events</div>
-                </a>
-                <a href="{{ route('admin.rewards.loyalty-tiers.index') }}"
-                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.loyalty-tiers.*') ? 'active' : '' }}">
-                    <div class="admin-nav-text">Tiers & Levels</div>
-                </a>
-                <a href="{{ route('admin.rewards.redemptions.index') }}"
-                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.redemptions.*') ? 'active' : '' }}">
-                    <div class="admin-nav-text">Redemptions</div>
-                </a>
-                <a href="{{ route('admin.rewards.members.index') }}"
-                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.members.*') ? 'active' : '' }}">
-                    <div class="admin-nav-text">Members</div>
-                </a>
-                <a href="{{ route('admin.rewards.achievements.index') }}"
-                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.achievements.*') ? 'active' : '' }}">
-                    <div class="admin-nav-text">Achievements</div>
-                </a>
-                <a href="{{ route('admin.rewards.voucher-collections.index') }}"
-                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.voucher-collections.*') ? 'active' : '' }}">
-                    <div class="admin-nav-text">Voucher Collections</div>
-                </a>
-                <a href="{{ route('admin.rewards.bonus-challenges.index') }}"
-                    class="admin-nav-subitem {{ request()->routeIs('admin.rewards.bonus-challenges.*') ? 'active' : '' }}">
-                    <div class="admin-nav-text">Bonus Challenges</div>
                 </a>
             </div>
 

@@ -410,7 +410,7 @@ class TableLayoutConfigController extends Controller
         $request->validate([
             'table_number' => 'required|string|unique:tables,table_number',
             'capacity' => 'required|integer|min:1|max:50',
-            'table_type' => 'required|in:indoor,outdoor,vip',
+            'table_type' => 'required|in:outdoor,vip',
             'x' => 'required|numeric',
             'y' => 'required|numeric',
         ]);
@@ -445,7 +445,7 @@ class TableLayoutConfigController extends Controller
         $request->validate([
             'table_number' => 'required|string|unique:tables,table_number,' . $table->id,
             'capacity' => 'required|integer|min:1|max:50',
-            'table_type' => 'required|in:indoor,outdoor,vip',
+            'table_type' => 'required|in:outdoor,vip',
         ]);
 
         $table->update([

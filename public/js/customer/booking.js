@@ -66,6 +66,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const tableId = this.dataset.id;
             const capacity = this.dataset.capacity;
             const isVVIP = this.classList.contains('vvip');
+            
+            console.log('🏛️ Table Selected:', {
+                id: tableId,
+                capacity: capacity,
+                isVVIP: isVVIP,
+                classList: this.classList.toString()
+            });
 
             // Update selected table info
             selectedTable = {
@@ -403,14 +410,27 @@ document.addEventListener('DOMContentLoaded', function() {
         const cartTotalText = document.getElementById('cartTotal').textContent;
         const cartTotal = parseFloat(cartTotalText.replace('RM ', '').replace(',', '')) || 0;
         
+        console.log('🔍 DEBUG - Cart Total:', cartTotal);
+        console.log('🔍 DEBUG - Selected Table:', selectedTable);
+        console.log('🔍 DEBUG - Is VVIP?:', selectedTable.isVVIP);
+        
         // Calculate booking fee (if any)
         let bookingFee = 0;
         if (selectedTable.isVVIP) {
-            bookingFee = 50.00; // VVIP booking fee
+            // VVIP booking fee: RM 10 per hour (default 1 hour minimum)
+            const durationHours = 1; // Default booking duration
+            bookingFee = 10.00 * durationHours; // RM 10 total
+            console.log('✅ VVIP Fee Calculated:', bookingFee, 'for', durationHours, 'hours');
+        } else {
+            console.log('❌ Not VVIP table - no fee');
         }
+        
+        console.log('💰 Final Booking Fee:', bookingFee);
         
         // Calculate total
         const totalAmount = cartTotal + bookingFee;
+        
+        console.log('💵 Total Amount (Cart + Fee):', totalAmount);
         
         // Update modal summary
         document.getElementById('summaryTable').textContent = selectedTable.id;
@@ -443,14 +463,21 @@ document.addEventListener('DOMContentLoaded', function() {
         if (bookingFeeEl) {
             if (bookingFee > 0) {
                 bookingFeeEl.style.display = 'flex';
-                bookingFeeEl.querySelector('strong').textContent = `RM ${bookingFee.toFixed(2)}`;
+                const feeAmount = `RM ${bookingFee.toFixed(2)}`;
+                bookingFeeEl.querySelector('strong').textContent = feeAmount;
+                console.log('📝 Updated Booking Fee Display to:', feeAmount);
             } else {
                 bookingFeeEl.style.display = 'none';
+                console.log('🚫 Hiding booking fee (zero)');
             }
+        } else {
+            console.error('❗ bookingFeeEl not found!');
         }
         
         // Update total
-        document.getElementById('summaryTotal').textContent = `RM ${totalAmount.toFixed(2)}`;
+        const totalText = `RM ${totalAmount.toFixed(2)}`;
+        document.getElementById('summaryTotal').textContent = totalText;
+        console.log('📝 Updated Total Display to:', totalText);
 
         // Show modal with accessibility support
         bookingModal.style.display = 'flex';

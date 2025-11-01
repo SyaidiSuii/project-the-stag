@@ -52,7 +52,7 @@ class TableReservation extends Model
                     $date = now()->format('Ymd'); // 20250920
                     $random = strtoupper(Str::random(4)); // XYZ1
                     $code = $prefix . '-' . $date . '-' . $random;
-                } while (static::where('confirmation_code', $code)->exists());
+                } while (static::withTrashed()->where('confirmation_code', $code)->exists()); // Check including soft-deleted records
                 $reservation->confirmation_code = $code;
             }
         });
@@ -88,6 +88,11 @@ class TableReservation extends Model
                 if (!$table) return; // Safety check
                 
                 switch ($reservation->status) {
+                    case 'confirmed':
+                        // Update table status to occupied when admin confirms booking
+                        $table->update(['status' => 'occupied']);
+                        break;
+                        
                     case 'seated':
                         // Create table session when customer is seated
                         if (!$table->hasActiveSession()) {
@@ -99,21 +104,29 @@ class TableReservation extends Model
                                 'notes' => 'Auto-created from reservation: ' . $reservation->confirmation_code,
                             ]);
                             
-                            // Update table status
+                            // Ensure table status is occupied
                             $table->update(['status' => 'occupied']);
                         }
                         break;
                         
                     case 'completed':
-                        // Complete table session when reservation is completed
+                    case 'cancelled':
+                        // Complete table session when reservation is completed or cancelled
                         $activeSession = $table->currentSession;
                         if ($activeSession && $activeSession->reservation_id == $reservation->id) {
                             $activeSession->complete();
-                            
-                            // Set table back to available if no other active sessions
-                            if (!$table->hasActiveSession()) {
-                                $table->update(['status' => 'available']);
-                            }
+                        }
+                        
+                        // Check if there are any other active reservations for this table
+                        $hasOtherReservations = static::where('table_id', $table->id)
+                            ->whereIn('status', ['confirmed', 'pending'])
+                            ->where('id', '!=', $reservation->id)
+                            ->where('booking_date', '>=', now()->toDateString())
+                            ->exists();
+                        
+                        // Set table back to available if no other active sessions and no other reservations
+                        if (!$table->hasActiveSession() && !$hasOtherReservations) {
+                            $table->update(['status' => 'available']);
                         }
                         break;
                 }

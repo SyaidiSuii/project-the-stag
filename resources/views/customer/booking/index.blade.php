@@ -38,6 +38,7 @@
       <div class="vvip-section">
         <div class="vvip-badge"><i class="fas fa-crown"></i> PREMIUM EXPERIENCE</div>
         <p class="vvip-description">Our exclusive VVIP Room offers privacy, premium service, and an unforgettable dining experience for up to 12 guests.</p>
+        <p class="vvip-description" style="margin-top: 0.5rem; color: #ffd700; font-weight: 600;"><i class="fas fa-tag"></i> Booking Fee: RM 10/hour (1 hour minimum = RM 10)</p>
       </div>
       
       <!-- Floor Layout -->
@@ -49,7 +50,7 @@
           </div>
           <div class="legend-item">
             <div class="legend-dot occupied"></div>
-            <span>Occupied (QR Active)</span>
+            <span>Occupied</span>
           </div>
           <div class="legend-item">
             <div class="legend-dot reserved"></div>
@@ -66,10 +67,6 @@
           <div class="legend-item">
             <div class="legend-dot selected"></div>
             <span>Selected</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot indoor"></div>
-            <span>Indoor</span>
           </div>
           <div class="legend-item">
             <div class="legend-dot outdoor"></div>
@@ -97,8 +94,8 @@
                   // Size: capacity < 5 = small (rectangle), capacity >= 5 = large (square)
                   $sizeClass = $table->capacity < 5 ? 'rectangle' : 'square';
 
-                  // Color: based on table type
-                  $colorClass = $table->table_type === 'outdoor' ? 'outdoor-color' : 'indoor-color';
+                  // Color: based on table type (outdoor or vip only)
+                  $colorClass = $table->table_type === 'outdoor' ? 'outdoor-color' : '';
                 }
 
                 $tableClass = trim($sizeClass . ' ' . $colorClass);
@@ -162,7 +159,7 @@
               <div class="input-group">
                 <label for="bookingDate">Date</label>
                 <span class="input-icon" aria-hidden="true"><i class="fas fa-calendar-alt"></i></span>
-                <input type="date" id="bookingDate" min="{{ date('Y-m-d') }}" aria-required="true" aria-describedby="bookingDateHelp">
+                <input type="date" id="bookingDate" min="{{ date('Y-m-d') }}" value="{{ date('Y-m-d') }}" aria-required="true" aria-describedby="bookingDateHelp">
                 <span id="bookingDateHelp" class="sr-only">Select your reservation date. Must be today or a future date.</span>
               </div>
               <div class="input-group">
@@ -315,7 +312,7 @@
           <strong>RM 0.00</strong>
         </div>
         <div class="summary-row" id="summaryBookingFee" style="display: none;">
-          <span>VVIP Booking Fee:</span>
+          <span>VVIP Booking Fee (1hr):</span>
           <strong>RM 0.00</strong>
         </div>
         <div class="summary-row">
@@ -349,5 +346,5 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/customer/booking.js') }}"></script>
+<script src="{{ asset('js/customer/booking.js') }}?v={{ time() }}"></script>
 @endsection

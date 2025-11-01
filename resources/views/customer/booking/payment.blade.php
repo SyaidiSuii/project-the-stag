@@ -124,11 +124,11 @@
         @if($orderData['is_vvip'])
           <div class="total-line">
             <span class="total-label">Food & Beverages</span>
-            <span class="total-amount">RM {{ number_format($orderData['total_amount'] - 50, 2) }}</span>
+            <span class="total-amount">RM {{ number_format($orderData['total_amount'] - 10, 2) }}</span>
           </div>
           <div class="total-line" style="color: #ffd700;">
-            <span class="total-label"><i class="fas fa-crown"></i> VVIP Booking Fee</span>
-            <span class="total-amount">RM 50.00</span>
+            <span class="total-label"><i class="fas fa-crown"></i> VVIP Booking Fee (1hr)</span>
+            <span class="total-amount">RM 10.00</span>
           </div>
         @endif
         <div class="total-line grand-total">

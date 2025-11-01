@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Observers\UserObserver; // PHASE 1.5: Import UserObserver
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Auth\Notifications\VerifyEmail;
@@ -17,7 +18,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // PHASE 3 & 7: Register Loyalty Services as Singletons
+        $this->app->singleton(\App\Services\Loyalty\LoyaltyService::class);
+        $this->app->singleton(\App\Services\Loyalty\RewardRedemptionService::class);
+        $this->app->singleton(\App\Services\Loyalty\VoucherService::class);
+        $this->app->singleton(\App\Services\Loyalty\TierService::class); // PHASE 7
     }
 
     /**
@@ -25,6 +30,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // PHASE 1.5: Register UserObserver for automatic audit logging
+        User::observe(UserObserver::class);
+
         // Force HTTPS in production
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
@@ -51,6 +59,11 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::define('access-roles', function (User $user) {
             return $user->hasRole('Admin');
+        });
+
+        // Give super-admin role all permissions automatically
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole('super-admin') ? true : null;
         });
     }
 }

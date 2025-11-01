@@ -4,13 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity; // PHASE 1.6: Activity logging
+use Spatie\Activitylog\LogOptions;
 
 class Reward extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, LogsActivity; // PHASE 1.6: Added activity logging
 
     protected $fillable = [
-        'name',           // Alias for title
+        // 'name', // REMOVED: Phase 2.4 - Redundant with 'title'
         'title',
         'description',
         'reward_type',
@@ -18,6 +21,8 @@ class Reward extends Model
         'minimum_order',
         'points_required',
         'voucher_template_id',
+        'menu_item_id', // For product type - which menu item is given free
+        'required_tier_id', // PHASE 7: Tier-exclusive rewards
         'expiry_days',
         'usage_limit',
         'max_redemptions',
@@ -39,11 +44,12 @@ class Reward extends Model
     ];
 
     /**
-     * Get name attribute (alias for title)
+     * PHASE 2.4: Get name attribute (alias for title for backward compatibility)
+     * The 'name' column was removed, but we keep this accessor for legacy code
      */
     public function getNameAttribute()
     {
-        return $this->attributes['name'] ?? $this->attributes['title'] ?? null;
+        return $this->attributes['title'] ?? null;
     }
 
     /**
@@ -64,8 +70,37 @@ class Reward extends Model
         return $this->belongsTo(VoucherTemplate::class);
     }
 
+    /**
+     * Menu item for "product" type rewards
+     */
+    public function menuItem()
+    {
+        return $this->belongsTo(MenuItem::class);
+    }
+
+    /**
+     * PHASE 7: Tier-exclusive rewards relationship
+     * Defines minimum loyalty tier required to redeem this reward
+     */
+    public function requiredTier()
+    {
+        return $this->belongsTo(LoyaltyTier::class, 'required_tier_id');
+    }
+
     public function customerRewards()
     {
         return $this->hasMany(CustomerReward::class);
+    }
+
+    /**
+     * PHASE 1.6: Configure activity logging
+     * Logs all changes to rewards for admin audit trail
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['title', 'description', 'reward_type', 'points_required', 'is_active', 'reward_value', 'usage_limit', 'expires_at'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

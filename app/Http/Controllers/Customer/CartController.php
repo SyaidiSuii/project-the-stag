@@ -344,10 +344,11 @@ class CartController extends Controller
                 return response()->json(['error' => 'Item not found in cart'], 404);
             }
 
-            // Check if item is part of a promotion (LOCK CHECK for guest)
+            // Check if item is part of a BUNDLE/COMBO promotion (LOCK CHECK for guest)
+            // Item discount promotions (promotion_id without promotion_group_id) CAN be modified
             $cartItem = $cart[$existingIndex];
-            if (isset($cartItem['promotion_id']) && $cartItem['promotion_id']) {
-                // Load promotion info for better error message
+            if (isset($cartItem['promotion_id']) && $cartItem['promotion_id'] && isset($cartItem['promotion_group_id']) && $cartItem['promotion_group_id']) {
+                // This is a bundle/combo/buy-x-free-y item - LOCKED
                 $promotion = Promotion::find($cartItem['promotion_id']);
                 $promotionName = $promotion ? $promotion->name : 'this promotion';
 
@@ -388,9 +389,10 @@ class CartController extends Controller
             return response()->json(['error' => 'Item not found in cart'], 404);
         }
 
-        // LOCK CHECK: Prevent modification of promotion items
-        if ($cartItem->promotion_id) {
-            // Load promotion for better error message
+        // LOCK CHECK: Prevent modification of BUNDLE/COMBO promotion items only
+        // Item discount promotions (promotion_id without promotion_group_id) CAN be modified
+        if ($cartItem->promotion_id && $cartItem->promotion_group_id) {
+            // This is a bundle/combo/buy-x-free-y item - LOCKED
             $promotion = $cartItem->promotion;
             $promotionName = $promotion ? $promotion->name : 'this promotion';
 
@@ -1481,6 +1483,86 @@ class CartController extends Controller
         return response()->json([
             'success' => true,
             'voucher' => null
+        ]);
+    }
+
+    /**
+     * Get available free products for current user
+     */
+    public function getAvailableFreeProducts()
+    {
+        $user = Auth::user();
+        if (!$user || !$user->customerProfile) {
+            return response()->json(['success' => false, 'message' => 'Please login', 'free_products' => []]);
+        }
+
+        $freeProducts = \App\Models\CustomerFreeProduct::where('customer_profile_id', $user->customerProfile->id)
+            ->available()
+            ->with(['menuItem', 'reward'])
+            ->get()
+            ->map(function($fp) {
+                return [
+                    'id' => $fp->id,
+                    'menu_item_id' => $fp->menu_item_id,
+                    'menu_item_name' => $fp->menuItem->name ?? 'Unknown Item',
+                    'menu_item_image' => $fp->menuItem->image_url ?? null,
+                    'reward_title' => $fp->reward->title ?? 'Free Product',
+                    'expires_at' => $fp->expires_at ? $fp->expires_at->format('M j, Y') : null,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'free_products' => $freeProducts
+        ]);
+    }
+
+    /**
+     * Add free product to cart
+     */
+    public function addFreeProduct(Request $request)
+    {
+        $validated = $request->validate([
+            'free_product_id' => 'required|exists:customer_free_products,id'
+        ]);
+
+        $user = Auth::user();
+        if (!$user || !$user->customerProfile) {
+            return response()->json(['success' => false, 'message' => 'Please login'], 401);
+        }
+
+        $freeProduct = \App\Models\CustomerFreeProduct::with('menuItem')
+            ->findOrFail($validated['free_product_id']);
+
+        // Verify ownership
+        if ($freeProduct->customer_profile_id != $user->customerProfile->id) {
+            return response()->json(['success' => false, 'message' => 'Invalid free product'], 403);
+        }
+
+        // Verify availability
+        if (!$freeProduct->isAvailable()) {
+            return response()->json(['success' => false, 'message' => 'This free product is no longer available'], 400);
+        }
+
+        $menuItem = $freeProduct->menuItem;
+        if (!$menuItem || !$menuItem->is_available) {
+            return response()->json(['success' => false, 'message' => 'This item is currently unavailable'], 400);
+        }
+
+        // Add to cart with price = 0 and link to free_product_id
+        UserCart::create([
+            'user_id' => $user->id,
+            'menu_item_id' => $menuItem->id,
+            'quantity' => 1,
+            'unit_price' => 0.00, // Free!
+            'special_notes' => 'Free product from reward redemption',
+            'free_product_id' => $freeProduct->id, // Track which free product entitlement was used
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $menuItem->name . ' added to cart (FREE!)',
+            'cart_count' => UserCart::getCartCount($user->id)
         ]);
     }
 }

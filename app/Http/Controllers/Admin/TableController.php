@@ -88,7 +88,7 @@ class TableController extends Controller
             'coordinates' => 'nullable|array', // Ensures coordinates is an array if present
             'coordinates.lat' => 'nullable|numeric|between:-90,90', // Validates latitude
             'coordinates.lng' => 'nullable|numeric|between:-180,180', // Validates longitude
-            'table_type' => 'required|in:indoor,outdoor,vip',
+            'table_type' => 'required|in:outdoor,vip',
             'amenities' => 'nullable|array', // Ensures amenities is an array if present
             'amenities.*' => ['string', Rule::in($amenitiesList)], // Validates each amenity
             'is_active' => 'nullable|boolean',
@@ -155,7 +155,7 @@ class TableController extends Controller
             'coordinates' => 'nullable|array',
             'coordinates.lat' => 'nullable|numeric|between:-90,90',
             'coordinates.lng' => 'nullable|numeric|between:-180,180',
-            'table_type' => 'required|in:indoor,outdoor,vip',
+            'table_type' => 'required|in:outdoor,vip',
             'amenities' => 'nullable|array',
             'amenities.*' => ['string', Rule::in($amenitiesList)],
             'is_active' => 'nullable|boolean',

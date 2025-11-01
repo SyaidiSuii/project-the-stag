@@ -16,7 +16,7 @@ class CustomerProfile extends Model
         'name',
         'date_of_birth',
         'address',
-        'loyalty_points',
+        // 'loyalty_points', // REMOVED: Use users.points_balance instead (Phase 1.1)
         'photo',
         'preferred_contact',
         'dietary_preferences',
@@ -24,6 +24,7 @@ class CustomerProfile extends Model
         'total_spent',
         'visit_count',
         'customer_id',
+        'loyalty_tier_id',
     ];
 
     protected $casts = [
@@ -31,7 +32,7 @@ class CustomerProfile extends Model
         'dietary_preferences' => 'array',
         'last_visit' => 'datetime',
         'total_spent' => 'decimal:2',
-        'loyalty_points' => 'integer',
+        // 'loyalty_points' => 'integer', // REMOVED: Use users.points_balance instead (Phase 1.1)
         'visit_count' => 'integer',
     ];
 
@@ -80,14 +81,17 @@ class CustomerProfile extends Model
     }
 
     /**
-     * Update the customer's loyalty tier based on their total spending
+     * Update the customer's total spending and loyalty tier based on paid orders
      */
-    public function updateLoyaltyTier()
+    public function updateTotalSpendingAndTier()
     {
         // Calculate total spending from paid orders
         $totalSpending = \App\Models\Order::where('user_id', $this->user_id)
             ->where('payment_status', 'paid')
             ->sum('total_amount');
+
+        // Update total_spent
+        $this->update(['total_spent' => $totalSpending]);
 
         // Find the appropriate tier
         $tier = \App\Models\LoyaltyTier::active()
@@ -95,11 +99,34 @@ class CustomerProfile extends Model
             ->orderBy('minimum_spending', 'desc')
             ->first();
 
+        // Update loyalty tier if changed
         if ($tier && $this->loyalty_tier_id !== $tier->id) {
             $this->update(['loyalty_tier_id' => $tier->id]);
         }
 
         return $tier;
+    }
+
+    /**
+     * Update the customer's loyalty tier based on their total spending
+     * @deprecated Use updateTotalSpendingAndTier() instead
+     */
+    public function updateLoyaltyTier()
+    {
+        return $this->updateTotalSpendingAndTier();
+    }
+
+    /**
+     * Add spending to customer profile
+     * @param float $amount
+     */
+    public function addSpending(float $amount)
+    {
+        $currentSpent = $this->total_spent ?? 0;
+        $this->update(['total_spent' => $currentSpent + $amount]);
+
+        // Also update loyalty tier if spending increased
+        $this->updateTotalSpendingAndTier();
     }
 
     /**

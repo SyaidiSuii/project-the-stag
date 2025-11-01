@@ -14,6 +14,18 @@ use App\Listeners\UpdateAnalyticsOnRewardRedeemed;
 use App\Listeners\UpdateAnalyticsOnTableBooking;
 use App\Listeners\RefreshAnalyticsData;
 
+// PHASE 5: Loyalty Events and Listeners
+use App\Events\Loyalty\PointsAwarded;
+use App\Events\Loyalty\RewardRedeemed;
+use App\Events\Loyalty\VoucherIssued;
+use App\Listeners\Loyalty\SendPointsAwardedNotification;
+use App\Listeners\Loyalty\SendRewardRedeemedNotification;
+use App\Listeners\Loyalty\SendVoucherIssuedNotification;
+
+// PHASE 7: Advanced Loyalty Events
+use App\Events\Loyalty\TierUpgraded;
+use App\Listeners\Loyalty\SendTierUpgradedNotification;
+
 class EventServiceProvider extends ServiceProvider
 {
     /**
@@ -37,6 +49,22 @@ class EventServiceProvider extends ServiceProvider
         // 🔥 GENERIC ANALYTICS REFRESH EVENT - handles all revenue-affecting scenarios
         AnalyticsRefreshEvent::class => [
             RefreshAnalyticsData::class,
+        ],
+
+        // PHASE 5: Loyalty Program Events
+        PointsAwarded::class => [
+            SendPointsAwardedNotification::class,
+        ],
+        RewardRedeemed::class => [
+            SendRewardRedeemedNotification::class,
+        ],
+        VoucherIssued::class => [
+            SendVoucherIssuedNotification::class,
+        ],
+
+        // PHASE 7: Advanced Loyalty Features
+        TierUpgraded::class => [
+            SendTierUpgradedNotification::class,
         ],
     ];
 

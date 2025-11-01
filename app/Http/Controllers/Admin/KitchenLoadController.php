@@ -291,7 +291,7 @@ class KitchenLoadController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'station_type' => 'required|in:hot_kitchen,cold_kitchen,drinks,desserts,grill,bakery,salad_bar,pastry',
+            'station_type' => 'required|in:general_kitchen,drinks,desserts',
             'max_capacity' => 'required|integer|min:1',
             'operating_hours' => 'nullable|array',
             'sort_order' => 'nullable|integer',
