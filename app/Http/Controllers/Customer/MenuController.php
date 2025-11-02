@@ -7,6 +7,7 @@ use App\Models\MenuItem;
 use App\Models\Category;
 use App\Models\Promotion;
 use App\Models\KitchenStation;
+use App\Models\Order;
 use App\Services\RecommendationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
