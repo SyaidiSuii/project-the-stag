@@ -306,6 +306,28 @@ class PaymentController extends Controller
                     $order->autoCreateETA();
                 }
 
+                // 🔥 KITCHEN LOAD BALANCING: Auto-distribute order to stations
+                // Distribute immediately so kitchen can start preparing
+                if ($order->items->count() > 0 && !in_array($order->order_status, ['cancelled', 'completed'])) {
+                    try {
+                        $distributionService = app(\App\Services\Kitchen\OrderDistributionService::class);
+                        $distributionService->distributeOrder($order->fresh()->load('items.menuItem.category.defaultStation', 'items.menuItem.stationOverride'));
+
+                        logger()->info('✅ Counter order distributed to kitchen stations', [
+                            'order_id' => $order->id,
+                            'confirmation_code' => $order->confirmation_code,
+                            'items_count' => $order->items->count()
+                        ]);
+                    } catch (\Exception $e) {
+                        logger()->error('❌ Failed to distribute counter order to kitchen', [
+                            'order_id' => $order->id,
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                        // Don't fail the order creation, just log the error
+                    }
+                }
+
                 // Create counter payment record
                 $paymentData = [
                     'payment_method' => 'counter',

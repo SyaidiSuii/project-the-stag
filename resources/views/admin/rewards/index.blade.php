@@ -643,8 +643,9 @@
                     <thead>
                         <tr>
                             <th>Challenge Name</th>
-                            <th>Condition</th>
+                            <th>Type & Requirement</th>
                             <th>Bonus Points</th>
+                            <th>Claims</th>
                             <th>End Date</th>
                             <th>Status</th>
                             <th>Actions</th>
@@ -661,11 +662,35 @@
                                 </div>
                                 @endif
                             </td>
-                            <td>{{ $challenge->condition }}</td>
+                            <td>
+                                <div style="font-size: 0.9rem;">
+                                    <strong style="color: var(--brand);">{{ ucfirst(str_replace('_', ' ', $challenge->condition_type ?? 'orders')) }}</strong>
+                                </div>
+                                <div style="font-size: 0.85rem; color: var(--text-2); margin-top: 2px;">
+                                    @if($challenge->condition_type === 'spending')
+                                        Min: RM{{ number_format($challenge->min_requirement ?? 1, 2) }}
+                                    @else
+                                        Min: {{ $challenge->min_requirement ?? 1 }}
+                                    @endif
+                                </div>
+                            </td>
                             <td>
                                 <span class="badge" style="background: var(--success);">
                                     +{{ $challenge->bonus_points }} pts
                                 </span>
+                            </td>
+                            <td>
+                                <div style="font-size: 0.9rem;">
+                                    <strong>{{ $challenge->current_claims ?? 0 }}</strong>
+                                    @if(($challenge->max_claims_total ?? 0) > 0)
+                                        / {{ $challenge->max_claims_total }}
+                                    @endif
+                                </div>
+                                @if(($challenge->max_claims_per_user ?? 1) > 0)
+                                <div style="font-size: 0.75rem; color: var(--text-3); margin-top: 2px;">
+                                    Max {{ $challenge->max_claims_per_user }}/user
+                                </div>
+                                @endif
                             </td>
                             <td>
                                 @if($challenge->end_date)

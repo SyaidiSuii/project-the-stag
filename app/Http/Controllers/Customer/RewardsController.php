@@ -387,4 +387,73 @@ class RewardsController extends Controller
             ]);
         }
     }
+
+    /**
+     * Claim bonus point challenge
+     */
+    public function claimBonusChallenge(Request $request)
+    {
+        $request->validate([
+            'challenge_id' => 'required|exists:bonus_point_challenges,id'
+        ]);
+
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Please login to claim bonus points']);
+        }
+
+        $challenge = \App\Models\BonusPointChallenge::findOrFail($request->challenge_id);
+
+        // Use model method to check eligibility
+        $eligibility = $challenge->isEligibleFor($user);
+        if (!$eligibility['eligible']) {
+            return response()->json([
+                'success' => false,
+                'message' => $eligibility['reason']
+            ]);
+        }
+
+        // Award points using LoyaltyService and record claim
+        try {
+            \DB::transaction(function() use ($user, $challenge) {
+                // Award points
+                $this->loyaltyService->awardPoints(
+                    $user,
+                    $challenge->bonus_points,
+                    'bonus_challenge',
+                    "Bonus Challenge: {$challenge->name}"
+                );
+
+                // Record the claim
+                \App\Models\UserBonusChallengeCall::create([
+                    'user_id' => $user->id,
+                    'bonus_point_challenge_id' => $challenge->id,
+                    'points_awarded' => $challenge->bonus_points,
+                ]);
+
+                // Increment total claims counter
+                $challenge->increment('current_claims');
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => sprintf('Congratulations! You earned %d bonus points from "%s"!', $challenge->bonus_points, $challenge->name),
+                'points_earned' => $challenge->bonus_points,
+                'new_balance' => $this->loyaltyService->getBalance($user)
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Bonus challenge claim failed', [
+                'user_id' => $user->id,
+                'challenge_id' => $request->challenge_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to claim bonus points: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

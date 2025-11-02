@@ -19,7 +19,8 @@ const AppData = {
     let points = rewardsData.isAuthenticated ? rewardsData.points : AppData.get('points', 245);
     let lastCheckinDate = rewardsData.isAuthenticated ? rewardsData.lastCheckinDate : AppData.get('lastCheckinDate', null);
     let checkinStreak = rewardsData.isAuthenticated ? rewardsData.checkinStreak : AppData.get('checkinStreak', 0);
-    let vouchers = AppData.get('vouchers', []);
+    // REMOVED: Vouchers now managed server-side via database
+    let vouchers = [];
 
     // Determine if user can check in today (use local timezone, not UTC)
     const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD format in local timezone
@@ -474,35 +475,18 @@ const AppData = {
     }
 
     // ===== Voucher Collection =====
-    function collectVoucher(name, desc) {
-      // Check authentication before collecting voucher
-      if (window.requireAuth && !window.requireAuth('collect', function() {
-        performVoucherCollection(name, desc);
-      })) return;
-      
-      // If no requireAuth function, perform collection normally (for logged-in users)
-      if (!window.requireAuth) {
-        performVoucherCollection(name, desc);
-      }
-    }
-    
-    function performVoucherCollection(name, desc) {
-      const newVoucher = {
-        name: name,
-        description: desc,
-        expires: getExpiryDate(60),
-        type: 'spending'
-      };
-      
-      addVoucher(newVoucher);
-      showMessage(`🎉 Voucher collected: ${name}!`, 'success');
-    }
+    // REMOVED: Old localStorage-based voucher collection
+    // Now using server-side collection via collectVoucher() function in Blade template
+    // The Blade template (resources/views/customer/rewards/index.blade.php line 492)
+    // defines the real collectVoucher(collectionId, collectionName) function that calls the API
 
     // ===== Add Voucher to Collection =====
+    // REMOVED: Vouchers now managed server-side via database
+    // This function is kept for backward compatibility but does nothing
     function addVoucher(voucher) {
-      vouchers.push(voucher);
-      AppData.set('vouchers', vouchers);
-      renderMyVouchers();
+      // Do nothing - vouchers are managed server-side
+      console.log('⚠️ addVoucher() called but disabled - vouchers managed server-side');
+      return;
     }
 
     // ===== Render User's Vouchers =====
@@ -722,25 +706,11 @@ const AppData = {
     }
 
     // ===== Add Demo Vouchers =====
+    // REMOVED: Vouchers now managed server-side via database
     function addDemoVouchers() {
-        if (AppData.get('vouchers', []).length > 0) return; // Don't add if already exist
-        const demoVouchers = [
-            {
-            name: '🎉 Welcome Bonus',
-            description: 'New member special discount',
-            expires: getExpiryDate(15),
-            type: 'welcome'
-            },
-            {
-            name: '🍕 Weekend Special',
-            description: '20% off on weekends',
-            expires: getExpiryDate(7),
-            type: 'weekend'
-            }
-        ];
-      
-        vouchers.push(...demoVouchers);
-        AppData.set('vouchers', vouchers);
+        // Do nothing - vouchers are managed server-side
+        console.log('⚠️ addDemoVouchers() called but disabled - vouchers managed server-side');
+        return;
     }
 
     // ===== Update Loyalty Progress =====
@@ -1000,3 +970,103 @@ const AppData = {
         allVouchersModal.style.display = 'none';
       }
     }
+
+    // ===== Apply Reward to Cart =====
+    /**
+     * Apply redeemed reward to cart
+     * Handles both discount rewards and free item rewards
+     */
+    window.applyRewardToCart = function(redemptionId, rewardTitle, rewardType, discountPercentage, discountFixed, menuItemId) {
+      console.log('🎁 Applying reward to cart:', {
+        redemptionId,
+        rewardTitle,
+        rewardType,
+        discountPercentage,
+        discountFixed,
+        menuItemId
+      });
+
+      if (rewardType === 'product' && menuItemId) {
+        // Free item reward - save to localStorage and redirect to menu
+        const freeItemData = {
+          redemption_id: redemptionId,
+          title: rewardTitle,
+          type: 'free_item',
+          menu_item_id: menuItemId,
+          applied_at: new Date().toISOString()
+        };
+
+        console.log('💾 Saving to localStorage:', freeItemData);
+        localStorage.setItem('pending_free_item', JSON.stringify(freeItemData));
+
+        // Verify saved
+        const saved = localStorage.getItem('pending_free_item');
+        console.log('✅ Verified localStorage:', saved);
+
+        showMessage(`${rewardTitle} will be added to your cart!`, 'success');
+
+        // Redirect to menu page to auto-add the item
+        setTimeout(() => {
+          window.location.href = '/customer/food';
+        }, 1500);
+      } else {
+        // Discount reward - save to localStorage
+        const rewardData = {
+          redemption_id: redemptionId,
+          title: rewardTitle,
+          discount_type: discountPercentage > 0 ? 'percentage' : 'fixed',
+          discount_value: discountPercentage > 0 ? discountPercentage : discountFixed,
+          applied_at: new Date().toISOString()
+        };
+
+        localStorage.setItem('applied_reward', JSON.stringify(rewardData));
+
+        showMessage(`${rewardTitle} will be applied to your next order!`, 'success');
+
+        setTimeout(() => {
+          window.location.href = '/customer/food';
+        }, 1500);
+      }
+    };
+
+    // ===== Apply Free Item Voucher =====
+    /**
+     * Apply free item voucher from My Vouchers section
+     * For vouchers with discount_type = 'free_item'
+     */
+    window.applyFreeItemVoucher = function(voucherId, voucherTitle, applicableMenuItemIds) {
+      console.log('🎁 Applying free item voucher:', {
+        voucherId,
+        voucherTitle,
+        applicableMenuItemIds
+      });
+
+      if (!applicableMenuItemIds || applicableMenuItemIds.length === 0) {
+        showMessage('No items available for this voucher', 'error');
+        return;
+      }
+
+      // For now, just take the first applicable menu item
+      // In the future, could show a modal to let user choose
+      const menuItemId = applicableMenuItemIds[0];
+
+      // Save free item voucher data to localStorage
+      const freeItemData = {
+        voucher_id: voucherId,
+        title: voucherTitle,
+        type: 'free_item',
+        menu_item_id: menuItemId,
+        applied_at: new Date().toISOString()
+      };
+
+      localStorage.setItem('pending_free_item', JSON.stringify(freeItemData));
+
+      showMessage(`${voucherTitle} will be added to your cart!`, 'success');
+
+      // Redirect to menu page to auto-add the item
+      setTimeout(() => {
+        window.location.href = '/customer/food';
+      }, 1500);
+    };
+
+    console.log('✅ Rewards.js loaded successfully');

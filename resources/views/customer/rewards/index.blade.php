@@ -163,22 +163,70 @@
                 <p>Complete challenges to earn extra points!</p>
                 <div class="reward-list" id="bonusPointsList">
                     @if(isset($bonusChallenges) && $bonusChallenges->count() > 0)
+                        @php
+                            $hasEligibleChallenges = false;
+                        @endphp
                         @foreach($bonusChallenges as $challenge)
-                        <div class="reward-item">
-                            <div class="reward-info">
-                                <div class="reward-name">{{ $challenge->name }}</div>
-                                <div class="reward-requirement">{{ $challenge->description ?? $challenge->condition }}</div>
-                                @if($challenge->end_date)
-                                <div style="font-size: 0.8rem; color: var(--text-2); margin-top: 4px;">
-                                    Ends: {{ $challenge->end_date->format('M j, Y') }}
+                            @php
+                                $eligibility = $challenge->isEligibleFor($user);
+                            @endphp
+                            @if($eligibility['eligible'])
+                                @php
+                                    $hasEligibleChallenges = true;
+                                @endphp
+                                <div class="reward-item">
+                                    <div class="reward-info">
+                                        <div class="reward-name">{{ $challenge->name }}</div>
+                                        <div class="reward-requirement">
+                                            {{ $challenge->description ?? $challenge->condition }}
+                                            @if($challenge->condition_type && $challenge->min_requirement)
+                                                <br>
+                                                <span style="font-size: 0.85rem; color: var(--primary);">
+                                                    @if($challenge->condition_type === 'orders')
+                                                        Requires: {{ $challenge->min_requirement }} order{{ $challenge->min_requirement > 1 ? 's' : '' }}
+                                                    @elseif($challenge->condition_type === 'spending')
+                                                        Requires: RM{{ number_format($challenge->min_requirement, 2) }} spending
+                                                    @elseif($challenge->condition_type === 'visits')
+                                                        Requires: {{ $challenge->min_requirement }} visit{{ $challenge->min_requirement > 1 ? 's' : '' }}
+                                                    @elseif($challenge->condition_type === 'checkin_streak')
+                                                        Requires: {{ $challenge->min_requirement }}-day check-in streak
+                                                    @elseif($challenge->condition_type === 'referrals')
+                                                        Requires: {{ $challenge->min_requirement }} referral{{ $challenge->min_requirement > 1 ? 's' : '' }}
+                                                    @endif
+                                                </span>
+                                            @endif
+                                        </div>
+                                        @if($challenge->end_date)
+                                        <div style="font-size: 0.8rem; color: var(--text-2); margin-top: 4px;">
+                                            Ends: {{ $challenge->end_date->format('M j, Y') }}
+                                        </div>
+                                        @endif
+                                        @if($challenge->max_claims_per_user > 0)
+                                        <div style="font-size: 0.75rem; color: var(--text-2); margin-top: 4px;">
+                                            Remaining claims: {{ $challenge->max_claims_per_user - $challenge->getClaimCountByUser($user) }}
+                                        </div>
+                                        @endif
+                                    </div>
+                                    <button class="btn-secondary" onclick="claimBonusChallenge({{ $challenge->id }}, '{{ $challenge->name }}', {{ $challenge->bonus_points }})">
+                                        Claim +{{ $challenge->bonus_points }} pts
+                                    </button>
                                 </div>
-                                @endif
-                            </div>
-                            <button class="btn-secondary" onclick="showMessage('{{ $challenge->description ?? "Complete this challenge to earn bonus points!" }} 🎯')">+{{ $challenge->bonus_points }} pts</button>
-                        </div>
+                            @endif
                         @endforeach
+
+                        @if(!$hasEligibleChallenges)
+                        <div class="empty-state" style="padding: 1rem; text-align: center; color: var(--text-2); font-size: 0.9rem;">
+                            <p>No eligible challenges available</p>
+                            <p style="font-size: 0.8rem; margin-top: 0.5rem;">Complete more orders or activities to unlock new challenges!</p>
+                        </div>
+                        @endif
                     @else
                         <!-- Default/fallback challenges -->
+                        @php
+                            $userOrderCount = $user->orders()->where('payment_status', 'paid')->count();
+                        @endphp
+
+                        @if($userOrderCount === 0)
                         <div class="reward-item">
                             <div class="reward-info">
                                 <div class="reward-name">First Order Bonus</div>
@@ -186,6 +234,12 @@
                             </div>
                             <button class="btn-secondary" onclick="showMessage('Complete your first order to earn bonus points! 🎯')">+50 pts</button>
                         </div>
+                        @else
+                        <div class="empty-state" style="padding: 1rem; text-align: center; color: var(--text-2); font-size: 0.9rem;">
+                            <p>No active challenges available</p>
+                            <p style="font-size: 0.8rem; margin-top: 0.5rem;">Check back later for new bonus point opportunities!</p>
+                        </div>
+                        @endif
                     @endif
                 </div>
             </div>
@@ -229,7 +283,9 @@
                     </div>
                     <div class="voucher-body">
                         <h3>
-                            @if($voucher->voucherTemplate->discount_type === 'percentage')
+                            @if($voucher->voucherTemplate->discount_type === 'free_item')
+                                FREE ITEM
+                            @elseif($voucher->voucherTemplate->discount_type === 'percentage')
                                 {{ $voucher->voucherTemplate->discount_value }}% OFF
                             @else
                                 RM{{ number_format($voucher->voucherTemplate->discount_value, 2) }} OFF
@@ -241,7 +297,18 @@
                         @endif
                     </div>
                     <div class="voucher-footer">
+                        @if($voucher->voucherTemplate->discount_type === 'free_item')
+                        <button class="btn-primary"
+                            onclick="applyFreeItemVoucher(
+                                {{ $voucher->id }},
+                                '{{ addslashes($voucher->voucherTemplate->title ?? 'Free Item') }}',
+                                {{ json_encode($voucher->voucherTemplate->applicable_menu_item_ids ?? []) }}
+                            )">
+                            USE NOW
+                        </button>
+                        @else
                         <button class="btn-primary" onclick="window.location.href='{{ route('customer.menu.index') }}'">USE NOW</button>
+                        @endif
                     </div>
                 </div>
                 @endforeach
@@ -266,7 +333,7 @@
     <!-- My Rewards -->
     <div class="card">
         <h2>🎁 My Rewards</h2>
-        <p style="color: var(--text-2); margin-bottom: 1.5rem;">Your redeemed rewards - show to staff for claiming</p>
+        <p style="color: var(--text-2); margin-bottom: 1.5rem;">Your redeemed rewards - ready to use!</p>
         <div id="redeemedRewardsList">
             @if(isset($redeemedRewards) && $redeemedRewards->count() > 0)
             @foreach($redeemedRewards as $redemption)
@@ -277,9 +344,9 @@
                             {{ $redemption->reward->title ?? 'Reward' }}
                             <span class="status-badge {{ $redemption->status ?? 'active' }}">
                                 @if(($redemption->status ?? 'active') === 'redeemed')
-                                ✓ Claimed
+                                ✓ Used
                                 @else
-                                ⏳ Active
+                                ⏳ Ready
                                 @endif
                             </span>
                         </h4>
@@ -293,16 +360,34 @@
                 <div class="reward-actions">
                     @if(($redemption->status ?? 'active') === 'redeemed')
                     <div class="staff-note" style="background: var(--success); color: white; padding: 8px 12px; border-radius: 8px; font-weight: 600;">
-                        <small>✓ Already Claimed</small>
+                        <small>✓ Already Used</small>
                     </div>
                     @else
-                    <div class="barcode-container" onclick="showRewardBarcode('{{ $redemption->id }}', '{{ $redemption->reward->title ?? 'Reward' }}', '{{ $redemption->redemption_code ?? 'REWARD-'.str_pad($redemption->id, 8, '0', STR_PAD_LEFT) }}')">
-                        <i class="fas fa-barcode" style="font-size: 1.5rem;"></i>
-                        <div style="font-size: 0.85rem; margin-top: 4px;">Show Code</div>
+                    @if($redemption->reward->voucher_template_id)
+                    <!-- Reward with voucher - automatically issued, show info -->
+                    <div style="text-align: center; padding: 8px;">
+                        <div style="background: var(--success); color: white; padding: 8px 16px; border-radius: 8px; font-weight: 600; margin-bottom: 4px;">
+                            <i class="fas fa-check-circle"></i> Voucher Issued
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-3);">
+                            Check "My Vouchers" section
+                        </div>
                     </div>
-                    <div class="staff-note">
-                        <small>Show to staff</small>
-                    </div>
+                    @else
+                    <!-- Direct reward - apply to cart -->
+                    <button class="btn-secondary"
+                        onclick="applyRewardToCart(
+                            {{ $redemption->id }},
+                            '{{ addslashes($redemption->reward->title ?? 'Reward') }}',
+                            '{{ $redemption->reward->reward_type ?? 'discount' }}',
+                            {{ $redemption->reward->discount_type === 'percentage' ? $redemption->reward->discount_value : 0 }},
+                            {{ $redemption->reward->discount_type === 'fixed' ? $redemption->reward->discount_value : 0 }},
+                            {{ $redemption->reward->menu_item_id ?? 'null' }}
+                        )"
+                        style="width: 100%; padding: 10px;">
+                        <i class="fas fa-shopping-cart"></i> Apply to Cart
+                    </button>
+                    @endif
                     @endif
                 </div>
             </div>
@@ -445,7 +530,9 @@
                     </div>
                     <div class="voucher-body">
                         <h3>
-                            @if($voucher->voucherTemplate->discount_type === 'percentage')
+                            @if($voucher->voucherTemplate->discount_type === 'free_item')
+                                FREE ITEM
+                            @elseif($voucher->voucherTemplate->discount_type === 'percentage')
                                 {{ $voucher->voucherTemplate->discount_value }}% OFF
                             @else
                                 RM{{ number_format($voucher->voucherTemplate->discount_value, 2) }} OFF
@@ -457,7 +544,18 @@
                         @endif
                     </div>
                     <div class="voucher-footer">
+                        @if($voucher->voucherTemplate->discount_type === 'free_item')
+                        <button class="btn-primary"
+                            onclick="applyFreeItemVoucher(
+                                {{ $voucher->id }},
+                                '{{ addslashes($voucher->voucherTemplate->title ?? 'Free Item') }}',
+                                {{ json_encode($voucher->voucherTemplate->applicable_menu_item_ids ?? []) }}
+                            )">
+                            USE NOW
+                        </button>
+                        @else
                         <button class="btn-primary" onclick="window.location.href='{{ route('customer.menu.index') }}'">USE NOW</button>
+                        @endif
                     </div>
                 </div>
                 @endforeach
@@ -490,10 +588,14 @@
 
     // Collect Voucher Function
     function collectVoucher(collectionId, collectionName) {
+        console.log('🎟️ collectVoucher() called', { collectionId, collectionName });
+
         if (!window.rewardsData.isAuthenticated) {
             showMessage('Please login to collect vouchers', 'warning');
             return;
         }
+
+        console.log('📡 Sending API request to:', window.rewardsData.collectVoucherRoute);
 
         fetch(window.rewardsData.collectVoucherRoute, {
             method: 'POST',
@@ -503,8 +605,12 @@
             },
             body: JSON.stringify({ voucher_collection_id: collectionId })
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('📥 Response received:', response.status, response.statusText);
+            return response.json();
+        })
         .then(data => {
+            console.log('✅ Response data:', data);
             if (data.success) {
                 showMessage(data.message, 'success');
                 setTimeout(() => window.location.reload(), 2000);
@@ -513,8 +619,54 @@
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('❌ Fetch error:', error);
             showMessage('Failed to collect voucher. Please try again.', 'error');
+        });
+    }
+
+    // Claim Bonus Challenge Function
+    function claimBonusChallenge(challengeId, challengeName, bonusPoints) {
+        console.log('🎯 claimBonusChallenge() called', { challengeId, challengeName, bonusPoints });
+
+        if (!window.rewardsData.isAuthenticated) {
+            showMessage('Please login to claim bonus points', 'warning');
+            return;
+        }
+
+        console.log('📡 Sending API request to claim bonus challenge');
+
+        fetch('{{ route("customer.rewards.claimBonusChallenge") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': window.rewardsData.csrfToken
+            },
+            body: JSON.stringify({ challenge_id: challengeId })
+        })
+        .then(response => {
+            console.log('📥 Response received:', response.status, response.statusText);
+            return response.json();
+        })
+        .then(data => {
+            console.log('✅ Response data:', data);
+            if (data.success) {
+                showMessage(data.message, 'success');
+                // Update points display
+                if (data.new_balance) {
+                    const pointsEl = document.getElementById('points');
+                    if (pointsEl) {
+                        pointsEl.textContent = new Intl.NumberFormat().format(data.new_balance);
+                    }
+                }
+                // Reload page after 2 seconds
+                setTimeout(() => window.location.reload(), 2000);
+            } else {
+                showMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('❌ Fetch error:', error);
+            showMessage('Failed to claim bonus points. Please try again.', 'error');
         });
     }
 
@@ -589,5 +741,5 @@
 </script>
 <!-- JsBarcode Library -->
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-<script src="{{ asset('js/customer/rewards.js') }}"></script>
+<script src="{{ asset('js/customer/rewards.js') }}?v={{ time() }}"></script>
 @endsection

@@ -306,7 +306,7 @@
     }
     /* ===== Rating Stars ===== */
     .food-rating {
-      display: flex;
+      display: none !important;
       align-items: center;
       gap: 6px;
       margin-bottom: 12px;
@@ -804,6 +804,29 @@
       box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
       z-index: 10;
       white-space: nowrap;
+    }
+
+    /* Free Item Styling */
+    .cart-item.free-item {
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+      border: 2px solid #10b981;
+      box-shadow: 0 5px 20px rgba(16, 185, 129, 0.15);
+    }
+
+    .cart-item-free-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+      z-index: 10;
+      white-space: nowrap;
+      letter-spacing: 0.5px;
     }
     .cart-unavailable-warning {
       background: linear-gradient(135deg, #fef3c7, #fde68a);

@@ -95,12 +95,12 @@
                 @php
                   $hasReviews = $order->reviews()->exists();
                 @endphp
-                @if(!$hasReviews)
-                  <a href="{{ route('customer.orders.show', $order->id) }}#review-section" class="btn btn-success" style="text-decoration: none;">
+                @if(false && !$hasReviews)
+                  <a href="{{ route('customer.orders.show', $order->id) }}#review-section" class="btn btn-success" style="text-decoration: none; display: none;">
                     <i class="fas fa-star"></i> Rate Order
                   </a>
-                @else
-                  <span class="btn btn-secondary" style="cursor: default; opacity: 0.7;" title="You've already reviewed this order">
+                @elseif(false && $hasReviews)
+                  <span class="btn btn-secondary" style="cursor: default; opacity: 0.7; display: none;" title="You've already reviewed this order">
                     <i class="fas fa-check-circle"></i> Reviewed
                   </span>
                 @endif

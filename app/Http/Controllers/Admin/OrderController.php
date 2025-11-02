@@ -67,7 +67,8 @@ class OrderController extends Controller
             'table',
             'reservation',
             'items.menuItem.category',
-            'stationAssignments.station',
+            'stationAssignments.station.stationType',
+            'stationAssignments.orderItem.menuItem',
             'kitchenLoads.station'
         ])
         ->whereIn('order_status', ['pending', 'confirmed', 'preparing', 'ready'])

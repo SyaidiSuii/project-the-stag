@@ -398,9 +398,10 @@ class MenuController extends Controller
             'user_id' => null, // QR orders don't have user_id
             'table_id' => $session->table_id,
             'order_type' => 'dine_in', // QR orders are dine-in orders
-            'status' => 'pending',
+            'order_status' => 'pending', // Use order_status instead of status
             'total_amount' => $cartTotal,
             'payment_status' => 'pending',
+            'payment_method' => 'counter', // QR guests pay at restaurant (cash)
             'special_instructions' => $request->special_instructions,
             'guest_name' => $request->guest_name ?: 'Guest - Table ' . $session->table->table_number,
             'guest_phone' => $request->guest_phone,
@@ -415,13 +416,16 @@ class MenuController extends Controller
                 'menu_item_id' => $item['id'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['price'],
+                'original_price' => $item['price'], // Add original price
                 'total_price' => $item['price'] * $item['quantity'],
-                'status' => 'pending',
+                'item_status' => 'pending', // Use item_status instead of status
             ]);
         }
 
         // Distribute order to kitchen stations automatically
         try {
+            // Reload order with relationships before distributing
+            $order->load('items.menuItem.category.defaultStation', 'items.menuItem.stationOverride');
             $this->distributionService->distributeOrder($order);
             \Log::info("QR Order #{$order->confirmation_code} distributed to kitchen stations", [
                 'order_id' => $order->id,
@@ -431,7 +435,8 @@ class MenuController extends Controller
             \Log::warning('Failed to distribute QR order to stations', [
                 'order_id' => $order->id,
                 'confirmation_code' => $order->confirmation_code,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             // Don't fail the order, just log the warning
             // Order can still be processed manually if distribution fails

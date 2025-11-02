@@ -1103,8 +1103,8 @@
 
             <!-- Review Section (Only for completed/served orders and logged in users) -->
             @auth
-            @if(in_array($order->order_status, ['completed', 'served']))
-                <div class="review-section" id="review-section">
+            @if(false && in_array($order->order_status, ['completed', 'served']))
+                <div class="review-section" id="review-section" style="display: none;">
                     <div class="section-title">
                         <i class="fas fa-star"></i> Rate Your Order
                     </div>
@@ -1150,7 +1150,7 @@
                             <i class="fas fa-check-circle"></i> Thank you! You've already reviewed this order.
                         </div>
                     @elseif(!empty($reviewableItems))
-                        <form id="reviewForm" method="POST" action="{{ route('customer.reviews.store-batch') }}">
+                        <form id="reviewForm" method="POST" action="#" data-disabled-route="customer.reviews.store-batch">
                             @csrf
                             <input type="hidden" name="order_id" value="{{ $order->id }}">
 
@@ -1334,7 +1334,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 reviews: reviews
             };
 
-            fetch('{{ route("customer.reviews.store-batch") }}', {
+            // Rating feature disabled - route removed
+            console.warn('Rating feature is currently disabled');
+            alert('Rating feature is currently unavailable.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Reviews';
+            return;
+            
+            /* DISABLED - Rating feature hidden
+            fetch('#', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1342,6 +1350,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify(data)
             })
+            */
             .then(response => response.json())
             .then(data => {
                 if (data.success) {

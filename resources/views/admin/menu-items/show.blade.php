@@ -660,10 +660,12 @@
             </button>
         </form>
 
-        <button onclick="document.getElementById('rating-modal').style.display='flex'" class="action-btn action-btn-outlined">
+        @if(false)
+        <button onclick="document.getElementById('rating-modal').style.display='flex'" class="action-btn action-btn-outlined" style="display: none;">
             <i class="fas fa-star action-btn-icon"></i>
             <span class="action-btn-text">Add Rating</span>
         </button>
+        @endif
 
         <a href="{{ route('admin.menu-items.index') }}" class="action-btn">
             <i class="fas fa-arrow-left action-btn-icon"></i>
@@ -771,8 +773,9 @@
                 </div>
             </div>
 
-            <!-- Rating Card -->
-            <div class="info-card">
+            <!-- Rating Card - HIDDEN -->
+            @if(false && $menuItem->rating_count > 0)
+            <div class="info-card" style="display: none;">
                 <div class="info-card-header">
                     <div class="info-card-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
                         <i class="fas fa-star"></i>
@@ -805,6 +808,7 @@
                 </div>
                 @endif
             </div>
+            @endif
 
             <!-- Allergen Information Card -->
             <div class="info-card">
@@ -844,7 +848,8 @@
     </div>
 </div>
 
-<!-- Modern Rating Modal -->
+<!-- Modern Rating Modal - HIDDEN -->
+@if(false)
 <div id="rating-modal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
         <div class="modal-header-modern">
@@ -892,6 +897,7 @@
         </form>
     </div>
 </div>
+@endif
 
 @endsection
 

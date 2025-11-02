@@ -56,8 +56,8 @@
             @if($item->description)
               <div class="food-description">{{ Str::limit($item->description, 80) }}</div>
             @endif
-            @if($item->rating_count > 0)
-              <div class="food-rating">{{ $item->rating_display }}</div>
+            @if(false && $item->rating_count > 0)
+              <div class="food-rating" style="display: none;">{{ $item->rating_display }}</div>
             @endif
             <div class="food-actions">
               <button class="btn btn-order" data-item-id="{{ $item->id }}">Order Now</button>
@@ -90,8 +90,8 @@
               @if($item->description)
                 <div class="food-description">{{ Str::limit($item->description, 80) }}</div>
               @endif
-              @if($item->rating_count > 0)
-                <div class="food-rating">{{ $item->rating_display }}</div>
+              @if(false && $item->rating_count > 0)
+                <div class="food-rating" style="display: none;">{{ $item->rating_display }}</div>
               @endif
               @if($item->hasAllergens())
                 <div class="food-allergens">

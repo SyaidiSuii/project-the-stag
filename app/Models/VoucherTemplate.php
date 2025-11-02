@@ -17,6 +17,7 @@ class VoucherTemplate extends Model
         'source_type', // PHASE 2.1: Added for unified structure
         'discount_type',
         'discount_value',
+        'applicable_menu_item_ids', // For free_item type: which items can be free
         'minimum_spend',
         'max_discount',
         'spending_requirement', // PHASE 2.1: From VoucherCollection
@@ -30,6 +31,7 @@ class VoucherTemplate extends Model
 
     protected $casts = [
         'discount_value' => 'decimal:2',
+        'applicable_menu_item_ids' => 'array', // JSON array of menu item IDs
         'minimum_spend' => 'decimal:2',
         'max_discount' => 'decimal:2',
         'spending_requirement' => 'decimal:2', // PHASE 2.1
@@ -121,5 +123,31 @@ class VoucherTemplate extends Model
             ->count();
 
         return $totalUses >= $this->total_uses_limit;
+    }
+
+    /**
+     * Get applicable menu items for free_item type vouchers
+     */
+    public function applicableMenuItems()
+    {
+        if ($this->discount_type !== 'free_item' || empty($this->applicable_menu_item_ids)) {
+            return collect();
+        }
+
+        return MenuItem::whereIn('id', $this->applicable_menu_item_ids)
+            ->where('is_available', true)
+            ->get();
+    }
+
+    /**
+     * Check if a menu item is applicable for this free item voucher
+     */
+    public function isMenuItemApplicable(int $menuItemId): bool
+    {
+        if ($this->discount_type !== 'free_item') {
+            return false;
+        }
+
+        return in_array($menuItemId, $this->applicable_menu_item_ids ?? []);
     }
 }

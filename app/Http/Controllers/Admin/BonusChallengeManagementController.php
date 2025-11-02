@@ -36,12 +36,17 @@ class BonusChallengeManagementController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'condition' => 'required|string|max:255',
+            'condition_type' => 'required|in:orders,spending,visits,checkin_streak,referrals,custom',
+            'min_requirement' => 'required|integer|min:1',
             'bonus_points' => 'required|integer|min:1',
+            'max_claims_per_user' => 'required|integer|min:0',
+            'max_claims_total' => 'required|integer|min:0',
             'end_date' => 'nullable|date|after:today',
             'status' => 'required|in:active,inactive',
         ]);
 
         $data = $request->all();
+        $data['current_claims'] = 0; // Initialize counter
 
         BonusPointChallenge::create($data);
 
@@ -62,7 +67,11 @@ class BonusChallengeManagementController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'condition' => 'required|string|max:255',
+            'condition_type' => 'required|in:orders,spending,visits,checkin_streak,referrals,custom',
+            'min_requirement' => 'required|integer|min:1',
             'bonus_points' => 'required|integer|min:1',
+            'max_claims_per_user' => 'required|integer|min:0',
+            'max_claims_total' => 'required|integer|min:0',
             'end_date' => 'nullable|date|after:today',
             'status' => 'required|in:active,inactive',
         ]);

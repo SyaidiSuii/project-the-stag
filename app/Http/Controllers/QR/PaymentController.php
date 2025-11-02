@@ -72,7 +72,7 @@ class PaymentController extends Controller
         try {
             $validated = $request->validate([
                 'session_code' => 'required|exists:table_qrcodes,session_code',
-                'payment_method' => 'required|string|in:card,wallet,cash',
+                'payment_method' => 'required|string|in:cash',
                 'receipt_email' => 'nullable|email',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -90,6 +90,14 @@ class PaymentController extends Controller
                 'success' => false,
                 'message' => 'Validation error occurred.',
             ], 422);
+        }
+
+        // Enforce: QR guest orders can only use cash payment
+        if ($validated['payment_method'] !== 'cash') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Online payment is not available for table orders. Please pay at the restaurant.'
+            ], 400);
         }
 
         $session = TableQrcode::where('session_code', $validated['session_code'])
@@ -140,7 +148,28 @@ class PaymentController extends Controller
 
         // Refresh order to load relationships
         $order->refresh();
-        $order->load('items');
+        $order->load('items.menuItem.category.defaultStation', 'items.menuItem.stationOverride');
+
+        // 🔥 KITCHEN LOAD BALANCING: Auto-distribute order to stations
+        if ($order->items->count() > 0 && !in_array($order->order_status, ['cancelled', 'completed'])) {
+            try {
+                $distributionService = app(\App\Services\Kitchen\OrderDistributionService::class);
+                $distributionService->distributeOrder($order);
+
+                \Log::info('✅ QR Payment order distributed to kitchen stations', [
+                    'order_id' => $order->id,
+                    'confirmation_code' => $order->confirmation_code,
+                    'items_count' => $order->items->count()
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('❌ Failed to distribute QR payment order to kitchen', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                // Don't fail the order creation, just log the error
+            }
+        }
 
         // Clear cart
         session()->forget($cartKey);
@@ -320,6 +349,28 @@ class PaymentController extends Controller
                 'order_id' => $order->id,
                 'session' => $session->session_code
             ]);
+
+            // 🔥 KITCHEN LOAD BALANCING: Auto-distribute order to stations
+            if ($order->items()->count() > 0) {
+                try {
+                    $distributionService = app(\App\Services\Kitchen\OrderDistributionService::class);
+                    $order->load('items.menuItem.category.defaultStation', 'items.menuItem.stationOverride');
+                    $distributionService->distributeOrder($order);
+
+                    \Log::info('✅ QR online payment order distributed to kitchen stations', [
+                        'order_id' => $order->id,
+                        'confirmation_code' => $order->confirmation_code,
+                        'items_count' => $order->items()->count()
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::error('❌ Failed to distribute QR online payment order to kitchen', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    // Don't fail the order creation, just log the error
+                }
+            }
 
             // Redirect to confirmation with actual order ID
             return redirect()->route('qr.payment.confirmation', [

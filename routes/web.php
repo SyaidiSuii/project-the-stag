@@ -44,7 +44,7 @@ use App\Http\Controllers\Customer\PaymentController as CustomerPaymentController
 use App\Http\Controllers\Customer\CartController as CustomerCartController;
 use App\Http\Controllers\Customer\BookingPaymentController as CustomerBookingPaymentController;
 use App\Http\Controllers\Customer\PromotionController as CustomerPromotionController;
-use App\Http\Controllers\Customer\ReviewController as CustomerReviewController;
+// use App\Http\Controllers\Customer\ReviewController as CustomerReviewController; // DISABLED - Reviews/Ratings feature hidden
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\HappyBirthday;
@@ -101,6 +101,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::post('/rewards/redeem', [CustomerRewardsController::class, 'redeem'])->name('rewards.redeem');
     Route::post('/rewards/checkin', [CustomerRewardsController::class, 'checkin'])->name('rewards.checkin');
     Route::post('/rewards/collect-voucher', [CustomerRewardsController::class, 'collectVoucher'])->name('rewards.collectVoucher');
+    Route::post('/rewards/claim-bonus-challenge', [CustomerRewardsController::class, 'claimBonusChallenge'])->name('rewards.claimBonusChallenge');
 
     // Cart Voucher Routes
     Route::get('/cart/available-vouchers', [CustomerCartController::class, 'getAvailableVouchers'])->name('cart.availableVouchers');
@@ -161,20 +162,20 @@ Route::prefix('customer')->name('customer.')->group(function () {
         Route::get('/api/active-happy-hours', [CustomerPromotionController::class, 'activeHappyHours'])->name('api.active-happy-hours');
     });
 
-    // Reviews & Ratings routes
-    Route::prefix('reviews')->name('reviews.')->group(function () {
-        // View reviews
-        Route::get('/my-reviews', [CustomerReviewController::class, 'myReviews'])->name('my-reviews');
-        Route::get('/menu-item/{menuItemId}', [CustomerReviewController::class, 'showMenuItemReviews'])->name('menu-item');
-
-        // Submit reviews
-        Route::post('/store', [CustomerReviewController::class, 'store'])->name('store');
-        Route::post('/store-batch', [CustomerReviewController::class, 'storeBatch'])->name('store-batch');
-
-        // Update/Delete reviews
-        Route::put('/{reviewId}', [CustomerReviewController::class, 'update'])->name('update');
-        Route::delete('/{reviewId}', [CustomerReviewController::class, 'destroy'])->name('destroy');
-    });
+    // Reviews & Ratings routes - DISABLED
+    // Route::prefix('reviews')->name('reviews.')->group(function () {
+    //     // View reviews
+    //     Route::get('/my-reviews', [CustomerReviewController::class, 'myReviews'])->name('my-reviews');
+    //     Route::get('/menu-item/{menuItemId}', [CustomerReviewController::class, 'showMenuItemReviews'])->name('menu-item');
+    //
+    //     // Submit reviews
+    //     Route::post('/store', [CustomerReviewController::class, 'store'])->name('store');
+    //     Route::post('/store-batch', [CustomerReviewController::class, 'storeBatch'])->name('store-batch');
+    //
+    //     // Update/Delete reviews
+    //     Route::put('/{reviewId}', [CustomerReviewController::class, 'update'])->name('update');
+    //     Route::delete('/{reviewId}', [CustomerReviewController::class, 'destroy'])->name('destroy');
+    // });
 });
 
 // Payment Gateway Routes (Public - No Authentication Required)

@@ -206,7 +206,12 @@
 
     <div class="info-box">
         <h4><i class="fas fa-info-circle"></i> About Bonus Challenges</h4>
-        <p>Bonus challenges encourage specific customer behaviors by rewarding bonus points. Examples: "Order 3 times this week", "Try our new menu item", "Spend RM50 in one order".</p>
+        <p>Bonus challenges encourage specific customer behaviors by rewarding bonus points. The system automatically validates if customers meet requirements before allowing claims.</p>
+        <ul style="margin: 10px 0 0 20px; padding: 0;">
+            <li><strong>Challenge Type:</strong> What customers need to do (orders, spending, visits, etc.)</li>
+            <li><strong>Minimum Requirement:</strong> How much is needed (e.g., 1 order, RM50 spending)</li>
+            <li><strong>Claim Limits:</strong> Control how many times users can claim and total campaign budget</li>
+        </ul>
     </div>
 
     <form action="{{ isset($challenge) ? route('admin.rewards.bonus-challenges.update', $challenge->id) : route('admin.rewards.bonus-challenges.store') }}" method="POST">
@@ -234,8 +239,56 @@
             <div class="form-group">
                 <label for="condition">Condition/Requirement <span class="required">*</span></label>
                 <input type="text" id="condition" name="condition" value="{{ old('condition', $challenge->condition ?? '') }}" required>
-                <small>What the customer needs to do (e.g., "Order 3 times in 7 days", "Spend RM50 in one order")</small>
+                <small>Brief summary/display text for the requirement</small>
             </div>
+
+            <!-- Challenge Requirements -->
+            <h3 style="margin: 30px 0 20px; color: #333;">Challenge Requirements</h3>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="condition_type">Challenge Type <span class="required">*</span></label>
+                    <select id="condition_type" name="condition_type" required>
+                        <option value="orders" {{ old('condition_type', $challenge->condition_type ?? 'orders') == 'orders' ? 'selected' : '' }}>Orders Count</option>
+                        <option value="spending" {{ old('condition_type', $challenge->condition_type ?? '') == 'spending' ? 'selected' : '' }}>Total Spending (RM)</option>
+                        <option value="visits" {{ old('condition_type', $challenge->condition_type ?? '') == 'visits' ? 'selected' : '' }}>Visit Count</option>
+                        <option value="checkin_streak" {{ old('condition_type', $challenge->condition_type ?? '') == 'checkin_streak' ? 'selected' : '' }}>Check-in Streak</option>
+                        <option value="referrals" {{ old('condition_type', $challenge->condition_type ?? '') == 'referrals' ? 'selected' : '' }}>Referrals</option>
+                        <option value="custom" {{ old('condition_type', $challenge->condition_type ?? '') == 'custom' ? 'selected' : '' }}>Custom (Manual Verification)</option>
+                    </select>
+                    <small>Type of activity required</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="min_requirement">Minimum Requirement <span class="required">*</span></label>
+                    <input type="number" id="min_requirement" name="min_requirement" min="1" value="{{ old('min_requirement', $challenge->min_requirement ?? '1') }}" required>
+                    <small>Minimum value to complete (e.g., 1 order, RM50, 3 visits)</small>
+                </div>
+            </div>
+
+            <!-- Claim Limits -->
+            <h3 style="margin: 30px 0 20px; color: #333;">Claim Limits</h3>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="max_claims_per_user">Max Claims Per User <span class="required">*</span></label>
+                    <input type="number" id="max_claims_per_user" name="max_claims_per_user" min="0" value="{{ old('max_claims_per_user', $challenge->max_claims_per_user ?? '1') }}" required>
+                    <small>How many times each user can claim (0 = unlimited)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="max_claims_total">Max Total Claims <span class="required">*</span></label>
+                    <input type="number" id="max_claims_total" name="max_claims_total" min="0" value="{{ old('max_claims_total', $challenge->max_claims_total ?? '0') }}" required>
+                    <small>Total claims across all users (0 = unlimited)</small>
+                </div>
+            </div>
+
+            @if(isset($challenge) && $challenge->current_claims > 0)
+            <div class="info-box" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);">
+                <h4 style="color: var(--success);"><i class="fas fa-chart-line"></i> Current Statistics</h4>
+                <p><strong>Total Claims:</strong> {{ $challenge->current_claims }} times</p>
+            </div>
+            @endif
 
             <!-- Rewards & Duration -->
             <h3 style="margin: 30px 0 20px; color: #333;">Rewards & Duration</h3>

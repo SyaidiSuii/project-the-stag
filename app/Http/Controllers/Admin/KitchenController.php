@@ -147,7 +147,13 @@ class KitchenController extends Controller
             });
 
         // Get orders grouped by status
-        $ordersQuery = Order::with(['items.menuItem', 'table', 'user', 'stationAssignments.station.stationType'])
+        $ordersQuery = Order::with([
+            'items.menuItem',
+            'table',
+            'user',
+            'stationAssignments.station.stationType',
+            'stationAssignments.orderItem.menuItem'
+        ])
             ->whereIn('order_status', ['pending', 'confirmed', 'preparing', 'ready', 'completed'])
             ->orderBy('order_time', 'asc');
 

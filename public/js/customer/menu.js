@@ -761,28 +761,64 @@ function renderPromotionGroup(group) {
  */
 function renderRegularCartItem(item, index) {
   const isUnavailable = item.is_available === false;
+  const isFreeItem = item.is_free === true;
+
   const unavailableClass = isUnavailable ? ' unavailable' : '';
+  const freeItemClass = isFreeItem ? ' free-item' : '';
+
   const unavailableBadge = isUnavailable ? `
     <div class="cart-item-unavailable-badge">
       ${item.availability_message || 'Tidak Tersedia'}
     </div>
   ` : '';
 
+  const freeItemBadge = isFreeItem ? `
+    <div class="cart-item-free-badge">
+      FREE
+    </div>
+  ` : '';
+
+  // Display price for free items
+  let priceDisplay = item.price;
+  if (isFreeItem) {
+    priceDisplay = `
+      <span style="text-decoration: line-through; color: #999; font-size: 0.85em;">
+        RM${parseFloat(item.original_price || 0).toFixed(2)}
+      </span>
+      <span style="color: #10b981; font-weight: 600; margin-left: 8px;">
+        RM 0.00
+      </span>
+    `;
+  }
+
+  // For free items, disable quantity controls
+  const quantityControls = isFreeItem ? `
+    <div class="quantity-controls">
+      <span class="quantity" style="color: #10b981; font-weight: 600;">1 (FREE)</span>
+    </div>
+  ` : `
+    <div class="quantity-controls">
+      <button class="qty-btn" data-index="${index}" data-change="-1">−</button>
+      <span class="quantity">${item.quantity}</span>
+      <button class="qty-btn" data-index="${index}" data-change="1">+</button>
+    </div>
+  `;
+
   return `
-    <div class="cart-item${unavailableClass}">
+    <div class="cart-item${unavailableClass}${freeItemClass}">
       <div class="cart-item-image">
         ${item.image ? `<img src="${item.image}" alt="${item.name}">` : '🍽️'}
       </div>
       <div class="cart-item-details">
-        <div class="cart-item-name">${item.name}</div>
-        <div class="cart-item-price">${item.price}</div>
+        <div class="cart-item-name">
+          ${item.name}
+          ${isFreeItem && item.free_item_title ? `<div style="font-size: 0.75em; color: #10b981; margin-top: 4px;">🎁 ${item.free_item_title}</div>` : ''}
+        </div>
+        <div class="cart-item-price">${priceDisplay}</div>
       </div>
-      <div class="quantity-controls">
-        <button class="qty-btn" data-index="${index}" data-change="-1">−</button>
-        <span class="quantity">${item.quantity}</span>
-        <button class="qty-btn" data-index="${index}" data-change="1">+</button>
-      </div>
+      ${quantityControls}
       ${unavailableBadge}
+      ${freeItemBadge}
     </div>
   `;
 }
@@ -914,7 +950,8 @@ document.addEventListener('click', async function(e) {
       // Store only AVAILABLE cart items and order type for payment page
       sessionStorage.setItem('checkoutCart', JSON.stringify(availableItems));
       sessionStorage.setItem('selectedOrderType', orderType);
-      sessionStorage.setItem('selectedPaymentMethod', 'online'); // Default payment method
+      // Don't set payment method here - user will select on payment page
+      // (payment.js will handle default selection)
 
       // --- NEW: Store promo discount and final total for payment page ---
       // These values are already calculated and displayed in updateCartDisplay
@@ -1035,8 +1072,8 @@ document.addEventListener('click', function(e) {
       // Get order type from sessionStorage (set when user entered menu page)
       const orderType = sessionStorage.getItem('selectedOrderType') || 'dine_in';
 
-      // Payment method will be selected on payment page, default to 'online'
-      const paymentMethod = 'online';
+      // Remove hardcoded payment method - let user choose on payment page
+      // Payment method will be selected on payment page
 
       // Get special instructions
       const specialNotes = document.getElementById('order-notes')?.value || '';
@@ -1063,7 +1100,7 @@ document.addEventListener('click', function(e) {
         item_price: currentOrderItem.price,
         quantity: orderQuantity,
         notes: specialNotes,
-        payment_method: paymentMethod,
+        // Remove payment_method - let user choose on payment page
         order_type: orderType,
         total_amount: `RM ${totalAmount.toFixed(2)}`
       };
@@ -1079,7 +1116,8 @@ document.addEventListener('click', function(e) {
 
       console.log('Debug [menu.js]: Stored in sessionStorage:', sessionStorage.getItem('currentOrder'));
 
-      sessionStorage.setItem('selectedPaymentMethod', paymentMethod);
+      // Remove hardcoded payment method - let user choose on payment page
+      sessionStorage.removeItem('selectedPaymentMethod');
       sessionStorage.setItem('selectedOrderType', orderType);
 
       // Hide the modal immediately before redirect to prevent flash
@@ -1624,6 +1662,125 @@ async function loadExistingPromo() {
   }
 }
 
+// Check and auto-add pending free item from rewards
+async function checkAndAddPendingFreeItem(retryCount = 0) {
+  try {
+    const pendingFreeItem = localStorage.getItem('pending_free_item');
+
+    if (!pendingFreeItem) {
+      return; // No pending free item
+    }
+
+    const freeItemData = JSON.parse(pendingFreeItem);
+    console.log('🎁 Found pending free item:', freeItemData, '| Retry:', retryCount);
+
+    // Retry limit
+    const MAX_RETRIES = 10;
+    if (retryCount >= MAX_RETRIES) {
+      console.error('❌ Max retries reached. Clearing pending free item.');
+      localStorage.removeItem('pending_free_item');
+      Toast.error('Error', 'Failed to add free item. Please try again.');
+      return;
+    }
+
+    // Wait for menuData to be loaded if needed
+    if (!window.menuData || window.menuData.length === 0) {
+      console.log('⏳ Waiting for menuData to load...');
+      // Retry after a short delay
+      setTimeout(() => checkAndAddPendingFreeItem(retryCount + 1), 500);
+      return;
+    }
+
+    // Flatten menuData to get all menu items (menuData is array of categories with menuItems)
+    let allMenuItems = [];
+
+    console.log('🔍 Debug menuData structure:', window.menuData[0]);
+
+    // Check if menuData has nested menu_items (snake_case) or menuItems (camelCase)
+    const hasMenuItems = window.menuData[0]?.menu_items || window.menuData[0]?.menuItems;
+
+    if (hasMenuItems) {
+      // menuData is array of categories - flatten to get all items
+      window.menuData.forEach(category => {
+        const items = category.menu_items || category.menuItems || [];
+        if (Array.isArray(items)) {
+          allMenuItems = allMenuItems.concat(items);
+        }
+      });
+    } else {
+      // menuData is already flat array of items
+      allMenuItems = window.menuData;
+    }
+
+    console.log('📋 Total menu items available:', allMenuItems.length);
+    console.log('🔍 First 3 items:', allMenuItems.slice(0, 3).map(i => ({ id: i.id, name: i.name })));
+    console.log('🔍 Looking for menu item ID:', freeItemData.menu_item_id, 'Type:', typeof freeItemData.menu_item_id);
+
+    // Find the menu item
+    const menuItem = allMenuItems.find(item => {
+      console.log('Comparing:', item.id, '(', typeof item.id, ') with', freeItemData.menu_item_id, '(', typeof freeItemData.menu_item_id, ')');
+      return item.id == freeItemData.menu_item_id;
+    });
+
+    console.log('🔍 Menu item found?', !!menuItem, menuItem ? menuItem.name : 'NOT FOUND');
+
+    if (!menuItem) {
+      console.error('Menu item not found:', freeItemData.menu_item_id);
+      console.log('Available menu items:', allMenuItems.map(i => ({ id: i.id, name: i.name })));
+      localStorage.removeItem('pending_free_item');
+      Toast.error('Item Not Available', 'The free item is no longer available');
+      return;
+    }
+
+    // Check if cartManager is ready
+    console.log('🔍 cartManager check:', {
+      exists: !!window.cartManager,
+      type: typeof window.cartManager,
+      hasAddItem: window.cartManager && typeof window.cartManager.addItem,
+      addItemType: window.cartManager && typeof window.cartManager.addItem
+    });
+
+    if (!window.cartManager || typeof window.cartManager.addItem !== 'function') {
+      console.log('⏳ Waiting for cartManager to load...', 'Retry:', retryCount);
+      // Retry after a short delay
+      setTimeout(() => checkAndAddPendingFreeItem(retryCount + 1), 300);
+      return;
+    }
+
+    console.log('✅ Menu item found:', menuItem.name, 'ID:', menuItem.id);
+
+    // Add to cart with free item flag
+    const cartItem = {
+      id: menuItem.id,
+      name: menuItem.name,
+      price: 0, // Free item - price is 0
+      original_price: parseFloat(menuItem.price), // Save original price for display
+      quantity: 1,
+      category: menuItem.category || 'Food',
+      image: menuItem.image || '/images/default-food.jpg',
+      is_free: true, // Mark as free item
+      redemption_id: freeItemData.redemption_id, // Track which redemption this is from
+      free_item_title: freeItemData.title
+    };
+
+    console.log('🛒 Adding free item to cart:', cartItem);
+
+    // Add to cart
+    await window.cartManager.addItem(cartItem);
+
+    // Clear the pending free item
+    localStorage.removeItem('pending_free_item');
+
+    // Show success message
+    Toast.success('Free Item Added!', `${freeItemData.title} - ${menuItem.name} added to cart!`);
+
+  } catch (error) {
+    console.error('Error adding pending free item:', error);
+    localStorage.removeItem('pending_free_item');
+    Toast.error('Error', 'Failed to add free item to cart');
+  }
+}
+
 // Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   initializeMenuData();
@@ -1641,4 +1798,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize promo code functionality
   initPromoCodeListeners();
+
+  // Check for pending free item from rewards
+  checkAndAddPendingFreeItem();
 });

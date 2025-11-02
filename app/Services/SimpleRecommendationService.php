@@ -96,7 +96,7 @@ class SimpleRecommendationService
                 ->select('oi2.menu_item_id', DB::raw('COUNT(*) as frequency'))
                 ->groupBy('oi2.menu_item_id')
                 ->orderBy('frequency', 'desc')
-                ->limit(5)
+                ->limit(8) // Increased from 5 to get more companion items
                 ->pluck('menu_item_id')
                 ->toArray();
 
@@ -153,7 +153,7 @@ class SimpleRecommendationService
                     }
                 })
                 ->select('menu_items.id')
-                ->limit(5)
+                ->limit(8) // Increased from 5 for better recommendations
                 ->pluck('id')
                 ->toArray();
 
@@ -205,7 +205,7 @@ class SimpleRecommendationService
                           ->orWhere('categories.name', 'LIKE', '%appetizer%');
                 })
                 ->select('menu_items.id')
-                ->limit(5)
+                ->limit(8) // Increased from 5
                 ->pluck('id')
                 ->toArray();
 
@@ -236,7 +236,7 @@ class SimpleRecommendationService
                 ->select('menu_items.id', DB::raw('COUNT(*) as order_count'))
                 ->groupBy('menu_items.id')
                 ->orderBy('order_count', 'desc')
-                ->limit(5)
+                ->limit(10) // Increased from 5 to get more trending items
                 ->pluck('id')
                 ->toArray();
 
@@ -289,13 +289,13 @@ class SimpleRecommendationService
         $excludeItems = $excludeItems ?? [];
         $recommendations = [];
 
-        // Rule 1: Companion items
+        // Rule 1: Companion items (BOOSTED - rating feature disabled)
         $companionItems = $this->getCompanionItems($userId, $excludeItems);
         foreach ($companionItems as $itemId) {
             $recommendations[] = [
                 'menu_item_id' => $itemId,
                 'reason' => 'Frequently ordered with your favorites',
-                'score' => 0.9
+                'score' => 0.95 // Increased from 0.9
             ];
         }
 
@@ -311,43 +311,43 @@ class SimpleRecommendationService
                 $recommendations[] = [
                     'menu_item_id' => $itemId,
                     'reason' => "Perfect for {$timeOfDay}",
-                    'score' => 0.7
+                    'score' => 0.75 // Increased from 0.7
                 ];
             }
         }
 
-        // Rule 3: Category balance
+        // Rule 3: Category balance (BOOSTED - based on order history)
         $balancedItems = $this->getCategoryBalancedItems($userId, $excludeItems);
         foreach ($balancedItems as $itemId) {
             if (!in_array($itemId, array_column($recommendations, 'menu_item_id'))) {
                 $recommendations[] = [
                     'menu_item_id' => $itemId,
                     'reason' => 'Complements your usual orders',
-                    'score' => 0.6
+                    'score' => 0.70 // Increased from 0.6
                 ];
             }
         }
 
-        // Rule 4: Trending
+        // Rule 4: Trending (BOOSTED - based on recent orders)
         $trendingItems = $this->getTrendingItems($excludeItems);
         foreach ($trendingItems as $itemId) {
             if (!in_array($itemId, array_column($recommendations, 'menu_item_id'))) {
                 $recommendations[] = [
                     'menu_item_id' => $itemId,
                     'reason' => 'Trending this week',
-                    'score' => 0.5
+                    'score' => 0.65 // Increased from 0.5
                 ];
             }
         }
 
-        // Rule 5: Popular
+        // Rule 5: Popular (BOOSTED - based on order frequency)
         $popularItems = $this->getPopularItems(10, $excludeItems);
         foreach ($popularItems as $itemId) {
             if (!in_array($itemId, array_column($recommendations, 'menu_item_id'))) {
                 $recommendations[] = [
                     'menu_item_id' => $itemId,
                     'reason' => 'Customer favorite',
-                    'score' => 0.4
+                    'score' => 0.55 // Increased from 0.4
                 ];
             }
         }

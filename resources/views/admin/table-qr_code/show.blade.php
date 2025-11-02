@@ -505,6 +505,22 @@
                     <div class="stat-label">Duration</div>
                     <div class="stat-value" style="font-size: 20px;">{{ $tableQrcode->duration }} min</div>
                 </div>
+                @if($tableQrcode->status === 'active')
+                <div style="margin-top: 16px; padding: 16px; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-radius: 12px; border: 2px solid #3b82f6;">
+                    <div class="stat-label" style="color: #1e40af; margin-bottom: 8px;">QR Code URL</div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        @php
+                            $qrUrl = route('qr.menu') . '?session=' . $tableQrcode->session_code;
+                        @endphp
+                        <a href="{{ $qrUrl }}" target="_blank" style="color: #1e40af; text-decoration: none; word-break: break-all; font-size: 13px; font-weight: 500; flex: 1; min-width: 150px;">
+                            {{ $qrUrl }}
+                        </a>
+                        <button onclick="copyToClipboard('{{ $qrUrl }}')" style="background: #3b82f6; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; transition: all 0.2s ease;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
 
@@ -767,6 +783,14 @@
 
 @section('scripts')
 <script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        Toast.success('Success!', 'URL copied to clipboard');
+    }).catch(() => {
+        Toast.error('Error', 'Failed to copy URL');
+    });
+}
+
 function completeSession() {
     showConfirm(
         'Complete Session?',
