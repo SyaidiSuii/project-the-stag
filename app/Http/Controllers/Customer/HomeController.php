@@ -4,10 +4,20 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\HomepageContent;
+use App\Models\MenuItem;
+use App\Services\RecommendationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
+    protected $recommendationService;
+
+    public function __construct(RecommendationService $recommendationService)
+    {
+        $this->recommendationService = $recommendationService;
+    }
+
     /**
      * Display the customer homepage.
      */
@@ -19,18 +29,43 @@ class HomeController extends Controller
         $statsSection = HomepageContent::bySection('statistics')->active()->first();
         $contactSection = HomepageContent::bySection('contact')->active()->first();
         $promotionHeaderSection = HomepageContent::bySection('promotion')->active()->first();
-        $promotionSections = HomepageContent::bySection('promotion')->active()->ordered()->get();
+        
+        // Get AI Recommendations or Popular Items
+        $recommendedItems = collect(); // Initialize as empty Collection
+        if (Auth::check()) {
+            // Logged in: Get personalized recommendations
+            try {
+                $userId = Auth::id();
+                $recommendedItemIds = $this->recommendationService->getRecommendations($userId, 6);
+                
+                if (!empty($recommendedItemIds)) {
+                    $recommendedItems = MenuItem::whereIn('id', $recommendedItemIds)
+                        ->where('availability', true)
+                        ->with('category')
+                        ->get()
+                        ->sortBy(function($item) use ($recommendedItemIds) {
+                            return array_search($item->id, $recommendedItemIds);
+                        })
+                        ->values();
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to fetch AI recommendations for homepage: ' . $e->getMessage());
+            }
+        }
+        
+        // Fallback to popular items if no recommendations
+        if ($recommendedItems->isEmpty()) {
+            $recommendedItems = MenuItem::where('availability', true)
+                ->with('category')
+                ->orderBy('rating_average', 'desc')
+                ->orderBy('is_featured', 'desc')
+                ->limit(5)  // Max 5 items for guests
+                ->get();
+        }
 
         // Prepare data for the view
-        $promotions = $promotionSections->map(function($promo) {
-            return [
-                'name' => $promo->title,
-                'description' => $promo->content,
-                'price' => $promo->minimum_order_amount ?? 25.00,
-                'img' => $promo->image_url ?: '🍽️',
-                'link' => $promo->button_link ?: route('customer.menu.index')
-            ];
-        })->toArray();
+        // Remove old promotions mapping
+        // Now using AI recommendations
 
         $stats = [
             'menu_items' => $statsSection->stat1_value ?? '100+',
@@ -70,13 +105,15 @@ class HomeController extends Controller
             'btn2_text' => $aboutSection->about_secondary_button_text ?? 'Contact Us'
         ];
 
-        // Prepare promotion header data
+        // Prepare promotion header data (now for recommendations)
         $promotionHeader = [
-            'title' => $promotionHeaderSection->title ?? 'Featured Promotions',
-            'subtitle' => $promotionHeaderSection->subtitle ?? "Don't miss out on our limited-time offers and special deals!"
+            'title' => Auth::check() ? 'Recommended For You' : 'Popular Dishes',
+            'subtitle' => Auth::check() 
+                ? 'Based on your order history and preferences' 
+                : 'Try our most popular and highly-rated dishes!'
         ];
 
-        return view('customer.home.index', compact('hero', 'about', 'promotionHeader', 'promotions', 'stats', 'contact'));
+        return view('customer.home.index', compact('hero', 'about', 'promotionHeader', 'recommendedItems', 'stats', 'contact'));
     }
 
     /**

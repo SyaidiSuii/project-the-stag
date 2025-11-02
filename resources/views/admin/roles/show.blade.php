@@ -280,9 +280,7 @@
     // Delete confirmation
     function confirmDelete(roleId, roleName) {
         document.getElementById('roleName').textContent = roleName;
-        document.getElementById('deleteForm').action = '{{ route('
-        admin.roles.destroy ', '
-        ') }}/' + roleId;
+        document.getElementById('deleteForm').action = '{{ route('admin.roles.destroy', '') }}/' + roleId;
         document.getElementById('deleteModal').style.display = 'block';
     }
 

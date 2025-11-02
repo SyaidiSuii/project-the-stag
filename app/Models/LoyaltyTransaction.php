@@ -56,30 +56,36 @@ class LoyaltyTransaction extends Model
     }
 
     // Helper methods
+    /**
+     * PHASE 1.5: Updated to use users.points_balance instead of customer_profiles.loyalty_points
+     *
+     * @deprecated This method is deprecated. Points are now tracked via UserObserver automatically.
+     *             Use LoyaltyPointsService instead for manual point operations.
+     */
     public static function logTransaction($customerProfileId, $type, $pointsChange, $description, $referenceId = null, $referenceType = null)
     {
         $customerProfile = CustomerProfile::find($customerProfileId);
-        
+
         if (!$customerProfile) {
             return false;
         }
 
-        // Calculate new balance
-        $newBalance = $customerProfile->loyalty_points + $pointsChange;
-        
-        // Update customer profile points
-        $customerProfile->update(['loyalty_points' => $newBalance]);
+        // PHASE 1.5: Use users.points_balance instead of loyalty_points
+        $user = $customerProfile->user;
+        if (!$user) {
+            return false;
+        }
 
-        // Create transaction record
-        return self::create([
-            'customer_profile_id' => $customerProfileId,
-            'transaction_type' => $type,
-            'points_change' => $pointsChange,
-            'description' => $description,
-            'reference_id' => $referenceId,
-            'reference_type' => $referenceType,
-            'balance_after' => $newBalance,
-            'created_at' => now()
-        ]);
+        // Calculate new balance
+        $currentBalance = $user->points_balance ?? 0;
+        $newBalance = $currentBalance + $pointsChange;
+
+        // Update user points (this will trigger UserObserver)
+        $user->update(['points_balance' => $newBalance]);
+
+        // Note: Transaction record is now created automatically by UserObserver
+        // This method kept for backward compatibility but will be removed in Phase 3
+
+        return true;
     }
 }

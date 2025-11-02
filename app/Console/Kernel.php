@@ -24,6 +24,40 @@ class Kernel extends ConsoleKernel
         // Cleanup unavailable cart items (Shopee-style: 7 days)
         $schedule->command('cart:cleanup-unavailable')->dailyAt('02:00');
 
+        // PHASE 6: Loyalty Program Scheduled Tasks
+        // Expire old vouchers daily at 1:00 AM
+        $schedule->command('loyalty:expire-vouchers')
+            ->dailyAt('01:00')
+            ->onSuccess(function () {
+                \Log::info('Voucher expiry job completed successfully');
+            })
+            ->onFailure(function () {
+                \Log::error('Voucher expiry job failed');
+            });
+
+        // Expire old rewards daily at 2:00 AM
+        $schedule->command('loyalty:expire-rewards')
+            ->dailyAt('02:00')
+            ->onSuccess(function () {
+                \Log::info('Reward expiry job completed successfully');
+            })
+            ->onFailure(function () {
+                \Log::error('Reward expiry job failed');
+            });
+
+        // Verify points balance integrity weekly on Sunday at 3:00 AM
+        $schedule->command('loyalty:verify-balance')
+            ->weekly()
+            ->sundays()
+            ->at('03:00')
+            ->onSuccess(function () {
+                \Log::info('Points balance verification completed');
+            })
+            ->onFailure(function () {
+                \Log::error('Points balance verification found discrepancies');
+                // TODO: Send alert to admin
+            });
+
         // Keep old command for backward compatibility (will be deprecated)
         // $schedule->command('app:generate-sales-summary')->daily();
     }

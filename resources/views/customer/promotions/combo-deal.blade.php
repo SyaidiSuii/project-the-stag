@@ -430,6 +430,159 @@
         50% { opacity: 0.8; }
     }
 
+    /* Success/Error Modal Styles */
+    .message-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .message-modal {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease;
+        text-align: center;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .message-icon {
+        font-size: 64px;
+        margin-bottom: 24px;
+        animation: bounceIn 0.5s ease;
+    }
+
+    @keyframes bounceIn {
+        0% { transform: scale(0); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    .message-icon.success {
+        color: #16a34a;
+    }
+
+    .message-icon.error {
+        color: #dc2626;
+    }
+
+    .message-title {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 16px;
+        color: #1f2937;
+    }
+
+    .message-content {
+        font-size: 16px;
+        color: #6b7280;
+        line-height: 1.6;
+        margin-bottom: 28px;
+    }
+
+    .message-items {
+        background: #f9fafb;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 28px;
+        text-align: left;
+    }
+
+    .message-items-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #4b5563;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .message-items-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .message-items-list li {
+        padding: 8px 0;
+        color: #1f2937;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .message-items-list li:before {
+        content: '✓';
+        color: #16a34a;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .message-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .message-btn {
+        padding: 16px 32px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 120px;
+    }
+
+    .message-btn.primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .message-btn.primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .message-btn.secondary {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .message-btn.secondary:hover {
+        background: #e5e7eb;
+    }
+
     @media (max-width: 768px) {
         .hero-banner {
             padding: 32px 24px;
@@ -460,6 +613,26 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
+        }
+
+        .message-modal {
+            padding: 32px 24px;
+        }
+
+        .message-icon {
+            font-size: 48px;
+        }
+
+        .message-title {
+            font-size: 24px;
+        }
+
+        .message-buttons {
+            flex-direction: column;
+        }
+
+        .message-btn {
+            width: 100%;
         }
     }
 </style>
@@ -663,6 +836,66 @@
 </div>
 
 <script>
+// Show styled message modal
+function showMessageModal(type, title, message, items = null, onClose = null) {
+    const overlay = document.createElement('div');
+    overlay.className = 'message-overlay';
+
+    let itemsHTML = '';
+    if (items && items.length > 0) {
+        itemsHTML = `
+            <div class="message-items">
+                <div class="message-items-title">Items Added to Cart</div>
+                <ul class="message-items-list">
+                    ${items.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
+    const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    const iconType = type === 'success' ? 'success' : 'error';
+
+    overlay.innerHTML = `
+        <div class="message-modal">
+            <div class="message-icon ${iconType}">
+                <i class="fas ${iconClass}"></i>
+            </div>
+            <div class="message-title">${title}</div>
+            <div class="message-content">${message}</div>
+            ${itemsHTML}
+            <div class="message-buttons">
+                ${type === 'success' 
+                    ? '<button class="message-btn secondary" onclick="closeMessageModal()">Stay Here</button><button class="message-btn primary" onclick="goToMenu()">Go to Menu</button>' 
+                    : '<button class="message-btn primary" onclick="closeMessageModal()">OK</button>'
+                }
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Close on overlay click
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            closeMessageModal();
+            if (onClose) onClose();
+        }
+    });
+}
+
+function closeMessageModal() {
+    const overlay = document.querySelector('.message-overlay');
+    if (overlay) {
+        overlay.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => overlay.remove(), 300);
+    }
+}
+
+function goToMenu() {
+    window.location.href = '{{ route("customer.menu.index") }}';
+}
+
 async function addComboToCart() {
     const promotionId = {{ $promotion->id }};
     const button = event.target;
@@ -687,19 +920,30 @@ async function addComboToCart() {
         const data = await response.json();
 
         if (data.success) {
-            // Show success message
-            alert('✅ ' + data.message + '\n\nItems added:\n' + data.items_added.join('\n'));
-
-            // Redirect to menu or cart
-            window.location.href = '{{ route("customer.menu.index") }}';
+            // Show success modal
+            showMessageModal(
+                'success',
+                'Combo Added Successfully! 🎉',
+                data.message || 'The combo deal has been added to your cart.',
+                data.items_added || []
+            );
         } else {
-            alert('❌ ' + (data.message || 'Failed to add combo to cart'));
+            // Show error modal
+            showMessageModal(
+                'error',
+                'Unable to Add Combo',
+                data.message || 'Failed to add combo to cart. Please try again.'
+            );
             button.disabled = false;
             button.innerHTML = '<i class="fas fa-shopping-cart"></i> Add Combo to Cart - RM {{ number_format($comboPrice, 2) }}';
         }
     } catch (error) {
         console.error('Error adding combo to cart:', error);
-        alert('❌ An error occurred. Please try again.');
+        showMessageModal(
+            'error',
+            'Error Occurred',
+            'An unexpected error occurred. Please try again later.'
+        );
         button.disabled = false;
         button.innerHTML = '<i class="fas fa-shopping-cart"></i> Add Combo to Cart - RM {{ number_format($comboPrice, 2) }}';
     }

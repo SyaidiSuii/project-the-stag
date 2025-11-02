@@ -177,7 +177,8 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Debug: currentOrderData:', currentOrderData);
 
     // Get selected payment method and order type from cart checkout or Order Now
-    let selectedPaymentMethod = sessionStorage.getItem('selectedPaymentMethod') || 'online';
+    // Default to 'card' (online banking) if not set - will be selected in UI below
+    let selectedPaymentMethod = sessionStorage.getItem('selectedPaymentMethod') || 'card';
     let selectedOrderType = sessionStorage.getItem('selectedOrderType') || 'dine_in'; // Get from sessionStorage
 
     // IMPORTANT: Check currentOrder FIRST (single item "Order Now")
@@ -207,12 +208,11 @@ document.addEventListener('DOMContentLoaded', () => {
             price: singleOrder.item_price,
             quantity: singleOrder.quantity,
             notes: singleOrder.notes,
-            payment_method: singleOrder.payment_method
+            // Remove payment_method from order data - user will select on this page
         }];
-        selectedPaymentMethod = singleOrder.payment_method || 'online';
+        // Don't override payment method from order data - user selects on this page
         selectedOrderType = singleOrder.order_type || 'dine_in';
         console.log('Debug: Cart loaded from currentOrder (single item):', cart);
-        console.log('Debug: Payment method from order:', selectedPaymentMethod);
         console.log('Debug: Order type from order:', selectedOrderType);
     } else if (checkoutCartData) {
         cart = JSON.parse(checkoutCartData);
@@ -328,7 +328,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const cashDetails = document.getElementById('cash-payment-section');
     const receiptSection = document.getElementById('receipt-section');
 
-    let selectedMethod = 'card'; // Default to card (online banking)
+    // Use selectedPaymentMethod from above (defaults to 'card' if not set)
+    let selectedMethod = selectedPaymentMethod;
 
     // Get final total for button text (already calculated above)
     function getFinalTotal() {
@@ -342,6 +343,31 @@ document.addEventListener('DOMContentLoaded', () => {
         // Fallback calculation if session data is missing
         const subtotal = cart.reduce((acc, item) => acc + (parseFloat(item.price.match(/[\d.]+/)[0] || 0) * item.quantity), 0);
         return subtotal - promoDiscount - voucherDiscount;
+    }
+
+    // Set initial UI state based on selected method
+    if (selectedMethod === 'card') {
+        paymentMethods.forEach(m => {
+            if (m.getAttribute('data-method') === 'card') {
+                m.classList.add('selected');
+            } else {
+                m.classList.remove('selected');
+            }
+        });
+        if (cardDetails) cardDetails.style.display = 'block';
+        if (cashDetails) cashDetails.style.display = 'none';
+        if (receiptSection) receiptSection.style.display = 'block';
+    } else if (selectedMethod === 'cash') {
+        paymentMethods.forEach(m => {
+            if (m.getAttribute('data-method') === 'cash') {
+                m.classList.add('selected');
+            } else {
+                m.classList.remove('selected');
+            }
+        });
+        if (cardDetails) cardDetails.style.display = 'none';
+        if (cashDetails) cashDetails.style.display = 'block';
+        if (receiptSection) receiptSection.style.display = 'block';
     }
 
     // Handle payment method selection

@@ -54,21 +54,22 @@
 
             <div class="form-group">
                 <label>Default Kitchen Station</label>
-                <select name="default_station_type" class="form-control">
+                <select name="default_station_id" class="form-control">
                     <option value="">-- Inherit from parent --</option>
-                    <option value="hot_kitchen" {{ old('default_station_type', $category->default_station_type ?? '') == 'hot_kitchen' ? 'selected' : '' }}>
-                        🔥 Hot Cooking
-                    </option>
-                    <option value="cold_kitchen" {{ old('default_station_type', $category->default_station_type ?? '') == 'cold_kitchen' ? 'selected' : '' }}>
-                        🥗 Cold Prep & Salads
-                    </option>
-                    <option value="drinks" {{ old('default_station_type', $category->default_station_type ?? '') == 'drinks' ? 'selected' : '' }}>
-                        🍹 Beverages & Drinks
-                    </option>
-                    <option value="desserts" {{ old('default_station_type', $category->default_station_type ?? '') == 'desserts' ? 'selected' : '' }}>
-                        🍰 Desserts
-                    </option>
+                    @foreach(\App\Models\KitchenStation::where('is_active', true)->orderBy('name')->get() as $station)
+                        <option value="{{ $station->id }}" {{ old('default_station_id') == $station->id ? 'selected' : '' }}>
+                            @if($station->station_type == 'general_kitchen')
+                                🍴
+                            @elseif($station->station_type == 'drinks')
+                                🍹
+                            @elseif($station->station_type == 'desserts')
+                                🍰
+                            @endif
+                            {{ $station->name }} ({{ ucfirst(str_replace('_', ' ', $station->station_type)) }})
+                        </option>
+                    @endforeach
                 </select>
+                <small class="form-help">Select which kitchen station will handle items in this category</small>
             </div>
 
             <div class="form-group">

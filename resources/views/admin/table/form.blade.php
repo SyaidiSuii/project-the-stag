@@ -92,7 +92,6 @@
                         name="table_type"
                         class="form-control @error('table_type') is-invalid @enderror">
                         <option value="outdoor" {{ old('table_type', $table->table_type ?? 'outdoor') == 'outdoor' ? 'selected' : '' }}>Outdoor</option>
-                        <option value="indoor" {{ old('table_type', $table->table_type) == 'indoor' ? 'selected' : '' }}>Indoor</option>
                         <option value="vip" {{ old('table_type', $table->table_type) == 'vip' ? 'selected' : '' }}>VIP</option>
                     </select>
                     @if($errors->get('table_type'))

@@ -32,8 +32,8 @@ class SettingsController extends Controller
      */
     public function storeAdmin(Request $request)
     {
-        // Check if user is super admin
-        if (!auth()->user()->is_super_admin) {
+        // Check if user has super-admin role
+        if (!auth()->user()->hasRole('super-admin')) {
             return response()->json([
                 'success' => false,
                 'message' => 'Only Super Admin can create admin accounts.'
@@ -89,7 +89,7 @@ class SettingsController extends Controller
         $currentUser = auth()->user();
 
         // Regular admin can only edit themselves
-        if (!$currentUser->is_super_admin && $currentUser->id !== $admin->id) {
+        if (!$currentUser->hasRole('super-admin') && $currentUser->id !== $admin->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'You can only edit your own profile.'
@@ -115,7 +115,7 @@ class SettingsController extends Controller
         ];
 
         // Only super admin can change active status and role
-        if ($currentUser->is_super_admin) {
+        if ($currentUser->hasRole('super-admin')) {
             $updateData['is_active'] = $request->has('is_active') ? true : false;
 
             // Update role if changed
@@ -144,8 +144,8 @@ class SettingsController extends Controller
      */
     public function deleteAdmin($id)
     {
-        // Check if user is super admin
-        if (!auth()->user()->is_super_admin) {
+        // Check if user has super-admin role
+        if (!auth()->user()->hasRole('super-admin')) {
             return response()->json([
                 'success' => false,
                 'message' => 'Only Super Admin can delete admin accounts.'
@@ -185,8 +185,8 @@ class SettingsController extends Controller
      */
     public function toggleSuperAdmin($id)
     {
-        // Check if user is super admin
-        if (!auth()->user()->is_super_admin) {
+        // Check if user has super-admin role
+        if (!auth()->user()->hasRole('super-admin')) {
             return response()->json([
                 'success' => false,
                 'message' => 'Only Super Admin can change super admin status.'
@@ -211,12 +211,14 @@ class SettingsController extends Controller
             ], 400);
         }
 
-        // Toggle super admin status
-        $admin->update([
-            'is_super_admin' => !$admin->is_super_admin
-        ]);
-
-        $status = $admin->is_super_admin ? 'promoted to' : 'demoted from';
+        // Toggle super admin role
+        if ($admin->hasRole('super-admin')) {
+            $admin->removeRole('super-admin');
+            $status = 'demoted from';
+        } else {
+            $admin->assignRole('super-admin');
+            $status = 'promoted to';
+        }
 
         return response()->json([
             'success' => true,

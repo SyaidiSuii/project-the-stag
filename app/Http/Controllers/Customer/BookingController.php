@@ -20,18 +20,10 @@ class BookingController extends Controller
      */
     public function index()
     {
-        // Get all active tables with their active QR sessions
+        // Get all active tables (no status override needed)
         $tables = \App\Models\Table::where('is_active', true)
             ->with(['currentSession'])
-            ->get()
-            ->map(function ($table) {
-                // Check if table has an active QR session
-                if ($table->currentSession && $table->currentSession->isActive()) {
-                    // Mark table as occupied if it has an active QR session
-                    $table->status = 'occupied';
-                }
-                return $table;
-            });
+            ->get();
 
         // Get cart data if user is logged in
         $cartItems = [];
@@ -85,17 +77,8 @@ class BookingController extends Controller
                 ]);
             }
 
-            // Check for active QR session
-            if ($table->currentSession && $table->currentSession->isActive()) {
-                return response()->json([
-                    'available' => false,
-                    'message' => 'Table is currently occupied',
-                    'reason' => 'qr_session_active'
-                ]);
-            }
-
-            // Check table status
-            if (!in_array($table->status, ['available'])) {
+            // Check table status (allow booking on tables with QR sessions for future times)
+            if (!in_array($table->status, ['available', 'occupied'])) {
                 return response()->json([
                     'available' => false,
                     'message' => 'Table is not available: ' . $table->status,
@@ -267,9 +250,12 @@ class BookingController extends Controller
                           'Cancelled by customer on ' . now()->format('Y-m-d H:i:s')
             ]);
 
-            // If table status is reserved for this booking, make it available
-            if ($reservation->table && $reservation->table->status === 'reserved') {
-                $reservation->table->update(['status' => 'available']);
+            // If table is occupied/reserved from this booking, check if we should make it available
+            if ($reservation->table && in_array($reservation->table->status, ['occupied', 'reserved'])) {
+                // Only set to available if no active QR session
+                if (!$reservation->table->hasActiveSession()) {
+                    $reservation->table->update(['status' => 'available']);
+                }
             }
 
             // Cancel associated order if exists
@@ -315,20 +301,33 @@ class BookingController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the request
-        $request->validate([
-            'table_id' => 'required|exists:tables,table_number',
-            'booking_date' => 'required|date|after_or_equal:today',
-            'booking_time' => 'required',
-            'party_size' => 'required|integer|min:1|max:12',
-            'booking_type' => 'required|in:with-menu,table-only',
-            'guest_name' => 'required|string|max:255',
-            'guest_email' => 'required|email|max:255',
-            'guest_phone' => 'required|string|max:20'
+        // Log incoming request
+        \Log::info('🔵 Booking request received', [
+            'user_id' => auth()->id(),
+            'request_data' => $request->all()
         ]);
+
+        // Validate the request
+        try {
+            $request->validate([
+                'table_id' => 'required|exists:tables,table_number',
+                'booking_date' => 'required|date|after_or_equal:today',
+                'booking_time' => 'required',
+                'party_size' => 'required|integer|min:1|max:12',
+                'booking_type' => 'required|in:with-menu,table-only',
+                'guest_name' => 'required|string|max:255',
+                'guest_email' => 'required|email|max:255',
+                'guest_phone' => 'required|string|max:20'
+            ]);
+            \Log::info('✅ Validation passed');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('❌ Validation failed', ['errors' => $e->errors()]);
+            throw $e;
+        }
 
         try {
             DB::beginTransaction();
+            \Log::info('🔄 Transaction started');
 
             // Get the table by table_number with its current session
             $table = Table::where('table_number', $request->table_id)
@@ -336,8 +335,10 @@ class BookingController extends Controller
                 ->first();
 
             if (!$table) {
+                \Log::error('❌ Table not found', ['table_id' => $request->table_id]);
                 return response()->json(['success' => false, 'message' => 'Table not found'], 404);
             }
+            \Log::info('✅ Table found', ['table_id' => $table->id, 'table_number' => $table->table_number]);
 
             // Validate party size against table capacity
             if ($request->party_size > $table->capacity) {
@@ -370,16 +371,8 @@ class BookingController extends Controller
                 ], 400);
             }
 
-            // Check if table has an active QR session
-            if ($table->currentSession && $table->currentSession->isActive()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'This table is currently occupied with an active QR session. Please select another table.'
-                ], 400);
-            }
-
-            // Check if table is available for booking
-            if (!in_array($table->status, ['available'])) {
+            // Check if table is available for booking (allow tables with QR sessions to be booked for future times)
+            if (!in_array($table->status, ['available', 'occupied'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'This table is not available for booking. Status: ' . $table->status
@@ -419,6 +412,12 @@ class BookingController extends Controller
             $guestPhone = $request->guest_phone;
 
             // Create the table reservation
+            \Log::info('📝 Creating reservation', [
+                'table_id' => $table->id,
+                'booking_date' => $request->booking_date,
+                'booking_time' => $request->booking_time
+            ]);
+
             $reservation = TableReservation::create([
                 'user_id' => $user ? $user->id : null,
                 'table_id' => $table->id,
@@ -428,28 +427,39 @@ class BookingController extends Controller
                 'guest_email' => $guestEmail,
                 'guest_phone' => $guestPhone,
                 'party_size' => $request->party_size,
-                'status' => 'confirmed',
+                'status' => 'pending', // Pending until admin confirms
                 'special_requests' => $request->special_requests ?? null,
+            ]);
+
+            \Log::info('✅ Reservation created', [
+                'reservation_id' => $reservation->id,
+                'confirmation_code' => $reservation->confirmation_code
             ]);
 
             // If booking with menu, create an order with cart items
             if ($request->booking_type === 'with-menu' && $user) {
+                \Log::info('🍽️ Booking with menu - checking cart');
                 $cartItems = UserCart::with('menuItem')
                     ->where('user_id', $user->id)
                     ->get();
 
                 if ($cartItems->count() > 0) {
+                    \Log::info('📦 Cart has items', ['count' => $cartItems->count()]);
                     // Calculate total
                     $totalAmount = UserCart::getCartTotal($user->id);
                     
                     // Add VVIP booking fee if applicable
                     $bookingFee = 0;
                     if ($table->table_type === 'vip') {
-                        $bookingFee = 50.00;
+                        // VVIP booking fee: RM 10 per hour (default 1 hour minimum)
+                        $durationHours = 1; // Default booking duration
+                        $bookingFee = 10.00 * $durationHours;
                         $totalAmount += $bookingFee;
+                        \Log::info('💎 VVIP booking fee added', ['fee' => $bookingFee, 'duration_hours' => $durationHours]);
                     }
 
-                    // Create order
+                    // Create order (confirmation_code will be auto-generated by Order model boot method)
+                    \Log::info('📝 Creating order', ['total_amount' => $totalAmount]);
                     $order = Order::create([
                         'user_id' => $user->id,
                         'table_id' => $table->id,
@@ -459,7 +469,11 @@ class BookingController extends Controller
                         'payment_status' => 'unpaid',
                         'total_amount' => $totalAmount,
                         'reservation_id' => $reservation->id,
-                        'confirmation_code' => Order::generateConfirmationCode(),
+                    ]);
+
+                    \Log::info('✅ Order created', [
+                        'order_id' => $order->id,
+                        'confirmation_code' => $order->confirmation_code
                     ]);
 
                     // Create order items from cart
@@ -479,25 +493,39 @@ class BookingController extends Controller
                 }
             }
 
-            // Update table status to reserved
-            $table->update(['status' => 'reserved']);
+            // Note: Table status will be updated to 'occupied' only when admin confirms the booking
+            // Status remains 'available' for pending bookings to allow other bookings at different times
 
             DB::commit();
+            \Log::info('✅ Transaction committed successfully');
+
+            \Log::info('🎉 Booking completed successfully', [
+                'reservation_id' => $reservation->id,
+                'confirmation_code' => $reservation->confirmation_code
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Booking confirmed successfully!',
+                'message' => 'Booking request submitted successfully! Please wait for admin confirmation.',
                 'reservation' => [
                     'confirmation_code' => $reservation->confirmation_code,
                     'booking_date' => $reservation->booking_date->format('Y-m-d'),
                     'booking_time' => $reservation->booking_time,
                     'table_number' => $table->table_number,
+                    'status' => 'pending',
                 ],
                 'redirect_url' => route('customer.orders.index')
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            
+            \Log::error('❌ Booking failed with exception', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
             return response()->json([
                 'success' => false,

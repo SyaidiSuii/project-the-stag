@@ -42,7 +42,14 @@ class OrdersController extends Controller
     {
         $userId = Auth::id();
 
-        $order = Order::with(['items.menuItem', 'items.promotion', 'table', 'user', 'payment'])
+        $order = Order::with([
+                'items.menuItem', 
+                'items.promotion', 
+                'table', 
+                'user', 
+                'payment', 
+                'promotionUsageLogs.promotion'
+            ])
             ->where('id', $orderId)
             ->where('user_id', $userId) // Ensure customer can only see their own orders
             ->first();
@@ -69,6 +76,7 @@ class OrdersController extends Controller
         // Group items by combo_group_id (for bundle/combo/buy-x-free-y)
         $regularItems = [];
         $promotionGroups = [];
+        $itemDiscounts = []; // For individual item discounts
 
         foreach ($order->items as $item) {
             // Check if item is part of a combo/bundle using combo_group_id
@@ -97,6 +105,10 @@ class OrdersController extends Controller
                     $promotionGroups[$groupId]['original_total_price'] += $originalTotal;
                     $promotionGroups[$groupId]['savings'] += ($originalTotal - $item->total_price);
                 }
+            } 
+            // Check for individual item discounts (not part of combo)
+            elseif ($item->promotion_id && $item->discount_amount > 0) {
+                $itemDiscounts[] = $item;
             } else {
                 $regularItems[] = $item;
             }
@@ -104,11 +116,16 @@ class OrdersController extends Controller
 
         $promotionGroups = array_values($promotionGroups);
 
+        // Get order-level promotions (promo codes)
+        $orderPromotions = $order->promotionUsageLogs->pluck('promotion')->unique('id');
+
         // DEBUG: Log final grouping results
         \Log::info('Order Details - Final Grouping Results', [
             'order_id' => $order->id,
             'promotion_groups_count' => count($promotionGroups),
             'regular_items_count' => count($regularItems),
+            'item_discounts_count' => count($itemDiscounts),
+            'order_promotions_count' => $orderPromotions->count(),
             'promotion_groups' => collect($promotionGroups)->map(fn($g) => [
                 'group_id' => $g['group_id'],
                 'promotion_name' => $g['promotion']->name ?? 'Unknown',
@@ -118,7 +135,7 @@ class OrdersController extends Controller
             ]),
         ]);
 
-        return view('customer.order.show', compact('order', 'regularItems', 'promotionGroups'));
+        return view('customer.order.show', compact('order', 'regularItems', 'promotionGroups', 'itemDiscounts', 'orderPromotions'));
     }
 
     /**

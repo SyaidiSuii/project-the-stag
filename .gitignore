@@ -8,6 +8,10 @@
 .env
 .env.backup
 .env.production
+
+# Python AI Services
+/ai-service/
+/ai_recommend/
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml

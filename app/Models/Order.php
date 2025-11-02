@@ -206,6 +206,14 @@ class Order extends Model
         return $this->hasMany(LoadBalancingLog::class);
     }
 
+    /**
+     * Get promotion usage logs for this order
+     */
+    public function promotionUsageLogs()
+    {
+        return $this->hasMany(PromotionUsageLog::class);
+    }
+
     // Helper methods
     public function isQROrder()
     {
@@ -332,7 +340,7 @@ class Order extends Model
             $random = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 4)); // 4 chars
 
             $code = "{$prefix}-{$date}-{$random}";
-        } while (self::where('confirmation_code', $code)->exists());
+        } while (self::withTrashed()->where('confirmation_code', $code)->exists()); // Check including soft-deleted records
 
         return $code;
     }

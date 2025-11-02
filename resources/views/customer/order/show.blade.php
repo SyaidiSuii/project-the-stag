@@ -332,6 +332,77 @@
     color: #8b5cf6;
 }
 
+/* Item Discount Styles */
+.item-discount-group {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 2px solid #fbbf24;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.15);
+}
+
+.item-discount-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(251, 191, 36, 0.3);
+}
+
+.item-discount-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.item-discount-title i {
+    color: #f59e0b;
+    font-size: 20px;
+}
+
+.item-discount-badge {
+    background: #f59e0b;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.item-discount-savings {
+    font-size: 14px;
+    font-weight: 700;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.item-discount-savings i {
+    font-size: 16px;
+}
+
+.item-discount-items {
+    margin-bottom: 16px;
+}
+
+.item-discount-item {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(251, 191, 36, 0.3) !important;
+    margin-bottom: 12px;
+}
+
+.item-discount-item:last-child {
+    margin-bottom: 0;
+}
+
 .order-item {
     display: flex;
     gap: 20px;
@@ -872,6 +943,119 @@
                 </div>
                 @endforeach
 
+                {{-- Item Discounts --}}
+                @if(count($itemDiscounts) > 0)
+                    @php
+                        $totalItemDiscountSavings = 0;
+                        foreach($itemDiscounts as $item) {
+                            $totalItemDiscountSavings += ($item->discount_amount * $item->quantity);
+                        }
+                    @endphp
+                    <div class="item-discount-group">
+                        <div class="item-discount-header">
+                            <div class="item-discount-title">
+                                <i class="fas fa-percent"></i>
+                                <span>Item Discounts</span>
+                                <span class="item-discount-badge">Discount</span>
+                            </div>
+                            @if($totalItemDiscountSavings > 0)
+                            <div class="item-discount-savings">
+                                <i class="fas fa-tag"></i> Saved RM {{ number_format($totalItemDiscountSavings, 2) }}
+                            </div>
+                            @endif
+                        </div>
+
+                        <div class="item-discount-items">
+                            @foreach($itemDiscounts as $item)
+                            <div class="order-item item-discount-item">
+                                @if($item->menuItem && $item->menuItem->image_url)
+                                <img src="{{ $item->menuItem->image_url }}" alt="{{ $item->menuItem->name }}" class="item-image">
+                                @else
+                                <div class="item-image" style="background: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-utensils" style="font-size: 32px; color: #9ca3af;"></i>
+                                </div>
+                                @endif
+                                <div class="item-details">
+                                    <div class="item-name">
+                                        {{ $item->menuItem->name ?? 'Unknown Item' }}
+                                    </div>
+                                    <div class="item-unit-price">
+                                        RM {{ number_format($item->unit_price, 2) }} (x{{ $item->quantity }})
+                                        @if($item->original_price && $item->original_price > $item->unit_price)
+                                        <span class="original-price">RM {{ number_format($item->original_price, 2) }}</span>
+                                        @endif
+                                    </div>
+                                    @if($item->promotion)
+                                    <div class="item-notes">
+                                        <i class="fas fa-tag"></i> {{ $item->promotion->name }}
+                                    </div>
+                                    @endif
+                                </div>
+                                <div class="item-price">RM {{ number_format($item->total_price, 2) }}</div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Order-Level Promotions --}}
+                @if($orderPromotions->count() > 0)
+                    @foreach($orderPromotions as $promotion)
+                        @if($promotion)
+                        <div class="item-discount-group">
+                            <div class="item-discount-header">
+                                <div class="item-discount-title">
+                                    <i class="fas fa-ticket-alt"></i>
+                                    <span>{{ $promotion->name }}</span>
+                                    <span class="item-discount-badge">{{ $promotion->type_label }}</span>
+                                </div>
+                                @php
+                                    $promoUsage = $order->promotionUsageLogs->where('promotion_id', $promotion->id)->first();
+                                    $discountAmount = $promoUsage ? $promoUsage->discount_amount : 0;
+                                @endphp
+                                @if($discountAmount > 0)
+                                <div class="item-discount-savings">
+                                    <i class="fas fa-tag"></i> Saved RM {{ number_format($discountAmount, 2) }}
+                                </div>
+                                @endif
+                            </div>
+                            
+                            <div class="item-discount-items">
+                                <div class="order-item item-discount-item">
+                                    <div class="item-image" style="background: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-ticket-alt" style="font-size: 32px; color: #9ca3af;"></i>
+                                    </div>
+                                    <div class="item-details">
+                                        <div class="item-name">
+                                            Promo Code Applied
+                                        </div>
+                                        <div class="item-unit-price">
+                                            Code: <strong>{{ $promotion->promo_code ?? 'N/A' }}</strong>
+                                        </div>
+                                        @if($promotion->discount_type === 'percentage')
+                                        <div class="item-notes">
+                                            <i class="fas fa-percent"></i> {{ number_format($promotion->discount_value, 0) }}% OFF
+                                        </div>
+                                        @else
+                                        <div class="item-notes">
+                                            <i class="fas fa-money-bill"></i> RM {{ number_format($promotion->discount_value, 2) }} OFF
+                                        </div>
+                                        @endif
+                                    </div>
+                                    <div class="item-price">
+                                        @if($discountAmount > 0)
+                                            -RM {{ number_format($discountAmount, 2) }}
+                                        @else
+                                            RM 0.00
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    @endforeach
+                @endif
+
                 {{-- Regular Items --}}
                 @foreach($regularItems as $item)
                 <div class="order-item">
@@ -919,8 +1103,8 @@
 
             <!-- Review Section (Only for completed/served orders and logged in users) -->
             @auth
-            @if(in_array($order->order_status, ['completed', 'served']))
-                <div class="review-section" id="review-section">
+            @if(false && in_array($order->order_status, ['completed', 'served']))
+                <div class="review-section" id="review-section" style="display: none;">
                     <div class="section-title">
                         <i class="fas fa-star"></i> Rate Your Order
                     </div>
@@ -966,7 +1150,7 @@
                             <i class="fas fa-check-circle"></i> Thank you! You've already reviewed this order.
                         </div>
                     @elseif(!empty($reviewableItems))
-                        <form id="reviewForm" method="POST" action="{{ route('customer.reviews.store-batch') }}">
+                        <form id="reviewForm" method="POST" action="#" data-disabled-route="customer.reviews.store-batch">
                             @csrf
                             <input type="hidden" name="order_id" value="{{ $order->id }}">
 
@@ -1150,7 +1334,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 reviews: reviews
             };
 
-            fetch('{{ route("customer.reviews.store-batch") }}', {
+            // Rating feature disabled - route removed
+            console.warn('Rating feature is currently disabled');
+            alert('Rating feature is currently unavailable.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Reviews';
+            return;
+            
+            /* DISABLED - Rating feature hidden
+            fetch('#', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1158,6 +1350,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify(data)
             })
+            */
             .then(response => response.json())
             .then(data => {
                 if (data.success) {

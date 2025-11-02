@@ -453,15 +453,50 @@ class PaymentService
                         $order->autoCreateETA();
                     }
 
+                    // 🔥 KITCHEN LOAD BALANCING: Auto-distribute order to stations
+                    // Distribute immediately so kitchen can start preparing
+                    if ($order->items->count() > 0 && !in_array($order->order_status, ['cancelled', 'completed'])) {
+                        try {
+                            $distributionService = app(\App\Services\Kitchen\OrderDistributionService::class);
+                            $distributionService->distributeOrder($order->fresh()->load('items.menuItem.category.defaultStation', 'items.menuItem.stationOverride'));
+
+                            \Log::info('✅ Payment gateway order distributed to kitchen stations', [
+                                'order_id' => $order->id,
+                                'confirmation_code' => $order->confirmation_code,
+                                'items_count' => $order->items->count(),
+                                'payment_method' => $pendingOrderData['payment_method']
+                            ]);
+                        } catch (\Exception $e) {
+                            \Log::error('❌ Failed to distribute payment gateway order to kitchen', [
+                                'order_id' => $order->id,
+                                'error' => $e->getMessage(),
+                                'trace' => $e->getTraceAsString()
+                            ]);
+                            // Don't fail the order creation, just log the error
+                        }
+                    }
+
                     // Link payment to order
                     $payment->update(['order_id' => $order->id]);
 
                     // Award points to user if authenticated (1 point per RM1 spent)
+                    // AND update customer profile total_spent
                     if ($pendingOrderData['user_id']) {
                         $user = \App\Models\User::find($pendingOrderData['user_id']);
                         if ($user) {
                             $points = floor($pendingOrderData['total_amount']); // 1 point per RM1
                             $user->addPoints($points, 'Order #' . $order->confirmation_code);
+
+                            // Update customer profile total spending
+                            if ($user->customerProfile) {
+                                $user->customerProfile->addSpending($pendingOrderData['total_amount']);
+                                \Log::info('Customer profile total_spent updated', [
+                                    'user_id' => $user->id,
+                                    'order_id' => $order->id,
+                                    'amount' => $pendingOrderData['total_amount'],
+                                    'new_total_spent' => $user->customerProfile->fresh()->total_spent
+                                ]);
+                            }
                         }
                     }
 

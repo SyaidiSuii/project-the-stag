@@ -46,8 +46,8 @@
               // Size: capacity < 5 = small (rectangle), capacity >= 5 = large (square)
               $sizeClass = $table->capacity < 5 ? 'rectangle' : 'square';
 
-              // Color: based on table type
-              $colorClass = $table->table_type === 'outdoor' ? 'outdoor-color' : 'indoor-color';
+              // Color: based on table type (outdoor or vip only)
+              $colorClass = $table->table_type === 'outdoor' ? 'outdoor-color' : '';
             }
 
             $tableClass = trim($sizeClass . ' ' . $colorClass);
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({
                     table_number: tableName,
                     capacity: capacity,
-                    table_type: shape === 'vvip' ? 'vip' : (shape === 'rectangle' ? 'outdoor' : (shape === 'round' ? 'indoor' : 'indoor'))
+                    table_type: shape === 'vvip' ? 'vip' : 'outdoor'
                 })
             })
             .then(response => response.json())
@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } else {
             // Add new table - map shape to table_type
-            const tableType = shape === 'vvip' ? 'vip' : (shape === 'rectangle' ? 'outdoor' : (shape === 'round' ? 'indoor' : 'indoor'));
+            const tableType = shape === 'vvip' ? 'vip' : 'outdoor';
 
             fetch('{{ route("admin.api.table-layouts.add-table") }}', {
                 method: 'POST',

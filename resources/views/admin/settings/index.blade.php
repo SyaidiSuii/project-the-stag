@@ -327,7 +327,7 @@
         <div class="settings-section" id="users-section" style="display: block;">
             <h2 class="settings-section-title">Admin Management</h2>
 
-            @if($currentUser->is_super_admin)
+            @if($currentUser->hasRole('super-admin'))
                 <div class="form-actions">
                     <button class="admin-btn btn-primary" id="addUserBtn">
                         <i class="fas fa-user-plus"></i>
@@ -345,7 +345,7 @@
                         <div class="user-info">
                             <div class="user-name">
                                 {{ $admin->name }}
-                                <span class="user-role">{{ $admin->id === $currentUser->id ? 'Me' : ($admin->is_super_admin ? 'Restaurant Manager' : 'Admin') }}</span>
+                                <span class="user-role">{{ $admin->id === $currentUser->id ? 'Me' : ($admin->hasRole('super-admin') ? 'Restaurant Manager' : 'Admin') }}</span>
                             </div>
                             <div class="user-email">{{ $admin->email }}</div>
                             @if($admin->phone_number)
@@ -353,13 +353,13 @@
                             @endif
                         </div>
                         <div class="user-actions">
-                            @if($currentUser->is_super_admin || $currentUser->id === $admin->id)
+                            @if($currentUser->hasRole('super-admin') || $currentUser->id === $admin->id)
                                 <button class="admin-btn btn-icon edit-admin" data-id="{{ $admin->id }}" title="Edit Admin">
                                     <i class="fas fa-edit"></i>
                                 </button>
                             @endif
 
-                            @if($currentUser->is_super_admin && $admin->id !== $currentUser->id)
+                            @if($currentUser->hasRole('super-admin') && $admin->id !== $currentUser->id)
                                 <button class="admin-btn btn-icon delete-admin" data-id="{{ $admin->id }}" title="Delete Admin">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>

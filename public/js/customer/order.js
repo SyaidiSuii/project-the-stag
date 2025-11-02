@@ -11,7 +11,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show confirmation dialog
             const confirmed = await showConfirm(
                 'Cancel Booking?',
-                `Are you sure you want to cancel this booking?\n\n${confirmationCode}\n\nThis action cannot be undone.`,
+                `Are you sure you want to cancel this booking?
+
+${confirmationCode}
+
+This action cannot be undone.`,
                 'danger',
                 'Cancel Booking',
                 'Keep Booking'
@@ -23,28 +27,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Cancel Order Functionality (existing)
-    const cancelOrderButtons = document.querySelectorAll('.cancel-booking-btn[data-order-id]');
-    
-    cancelOrderButtons.forEach(button => {
-        button.addEventListener('click', async function() {
-            const orderId = this.dataset.orderId;
-            const confirmationCode = this.closest('.order-card').querySelector('h3').textContent.trim();
-
-            // Show confirmation dialog
-            const confirmed = await showConfirm(
-                'Cancel Order?',
-                `Are you sure you want to cancel this order?\n\n${confirmationCode}\n\nThis action cannot be undone.`,
-                'danger',
-                'Cancel Order',
-                'Keep Order'
-            );
-
-            if (confirmed) {
-                cancelOrder(orderId, this);
-            }
-        });
-    });
+    // Cancel Order Functionality - REMOVED
+    // Event listener now handled in index.blade.php inline script
+    // to avoid duplicate event handlers
 
     /**
      * Cancel a booking reservation
@@ -100,9 +85,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Cancel an order
+     * Cancel an order - EXPORTED TO WINDOW
+     * This function is called from the event handler in index.blade.php
      */
-    async function cancelOrder(orderId, buttonElement) {
+    window.cancelOrderFromExternal = async function(orderId, buttonElement) {
         const originalText = buttonElement.innerHTML;
         
         try {
@@ -155,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
             buttonElement.innerHTML = originalText;
             buttonElement.disabled = false;
         }
-    }
+    };
 
     /**
      * Show toast notification (deprecated - now using global Toast system)

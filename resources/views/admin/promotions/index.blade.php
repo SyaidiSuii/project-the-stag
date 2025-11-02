@@ -713,18 +713,18 @@ function toggleStatus(id, type) {
 }
 
 // Show notifications from session
-document.addEventListener('DOMContentLoaded', function() {
-    @if(session('success'))
-        showNotification('{{ session('success') }}', 'success');
-    @endif
+// document.addEventListener('DOMContentLoaded', function() {
+//     @if(session('success'))
+//         showNotification('{{ session('success') }}', 'success');
+//     @endif
 
-    @if(session('error'))
-        showNotification('{{ session('error') }}', 'error');
-    @endif
+//     @if(session('error'))
+//         showNotification('{{ session('error') }}', 'error');
+//     @endif
 
-    @if(session('message'))
-        showNotification('{{ session('message') }}', 'success');
-    @endif
-});
+//     @if(session('message'))
+//         showNotification('{{ session('message') }}', 'success');
+//     @endif
+// });
 </script>
 @endsection

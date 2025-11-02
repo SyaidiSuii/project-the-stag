@@ -97,10 +97,13 @@
           <div class="quick-action-icon"><i class="fas fa-gift"></i></div>
           <div class="quick-action-text">My Rewards</div>
         </a>
-        <a href="{{ route('customer.reviews.my-reviews') }}" class="quick-action">
+        @if(false)
+        {{-- Rating feature disabled --}}
+        <a href="#" data-disabled-route="customer.reviews.my-reviews" class="quick-action" style="display: none;">
           <div class="quick-action-icon"><i class="fas fa-star"></i></div>
           <div class="quick-action-text">My Reviews</div>
         </a>
+        @endif
       </div>
     </div>
 

@@ -809,15 +809,14 @@
 
                         @php
                             // Filter items for current station only
-                            if ($order->stationAssignments && $order->stationAssignments->count() > 0) {
+                            if ($stationId && $order->stationAssignments && $order->stationAssignments->count() > 0) {
+                                // When filtering by specific station, show only that station's items
                                 $stationItems = $order->stationAssignments
-                                    ->when($stationId, function($assignments) use ($stationId) {
-                                        return $assignments->where('station_id', $stationId);
-                                    })
+                                    ->where('station_id', $stationId)
                                     ->pluck('orderItem')
                                     ->filter();
                             } else {
-                                // Fallback for orders without station assignments (e.g., QR/guest orders)
+                                // When viewing all stations, show all order items
                                 $stationItems = $order->items;
                             }
                         @endphp

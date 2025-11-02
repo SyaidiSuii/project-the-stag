@@ -50,29 +50,39 @@
     </div>
 </section>
 
-<!-- Promotion Section -->
+<!-- AI Recommendations Section -->
 <section class="section promotion" id="promotion">
-    <h2 id="promotionTitle">{{ $promotionHeader['title'] ?? 'Featured Promotions' }}</h2>
-    <p class="muted" id="promotionSubtitle">{{ $promotionHeader['subtitle'] ?? "Don't miss out on our limited-time offers and special deals!" }}</p>
-    <div class="cards" id="promotionGrid" role="list" aria-label="Featured promotions">
-        <!-- Default promotions - will be replaced by dynamic content if available -->
-        @if(isset($promotions) && count($promotions) > 0)
-            @foreach($promotions as $index => $promo)
+    <h2 id="promotionTitle">{{ $promotionHeader['title'] ?? 'Recommended For You' }}</h2>
+    <p class="muted" id="promotionSubtitle">{{ $promotionHeader['subtitle'] ?? 'Dishes specially selected for you' }}</p>
+    <div class="cards" id="promotionGrid" role="list" aria-label="Recommended dishes">
+        @if(isset($recommendedItems) && count($recommendedItems) > 0)
+            @foreach($recommendedItems as $index => $item)
                 <article class="card" role="listitem" style="animation-delay: {{ $index * 0.1 }}s">
-                    <div class="card-img" style="display:grid;place-items:center;font-size:4rem">{{ $promo['img'] ?? '🍽️' }}</div>
+                    @if($item->image)
+                        <div class="card-img" style="background-image: url('{{ asset('storage/' . $item->image) }}'); background-size: cover; background-position: center; height: 200px; border-radius: 12px 12px 0 0;"></div>
+                    @else
+                        <div class="card-img" style="display:grid;place-items:center;font-size:4rem;height:200px">
+                            {{ $item->category && strpos(strtolower($item->category->type), 'drink') !== false ? '🍹' : '🍽️' }}
+                        </div>
+                    @endif
                     <div class="card-body">
-                        <div class="card-title">{{ $promo['name'] ?? 'Special Dish' }}</div>
-                        <p class="card-description">{{ $promo['description'] ?? 'Delicious meal prepared with care.' }}</p>
-                        <div class="price">RM {{ number_format($promo['price'] ?? 25.00, 2) }}</div>
+                        <div class="card-title">{{ $item->name }}</div>
+                        <p class="card-description">
+                            @if($item->category)
+                                {{ $item->category->name }} • 
+                            @endif
+                            {{ Str::limit($item->description ?? 'Delicious dish prepared with care', 60) }}
+                        </p>
+                        <div class="price">RM {{ number_format($item->price, 2) }}</div>
                         <div class="card-actions">
-                            <a class="btn-muted" href="{{ $promo['link'] ?? route('customer.menu.index') }}">View Details</a>
-                            <a class="btn-primary" href="{{ $promo['link'] ?? route('customer.menu.index') }}">Order Now</a>
+                            <a class="btn-muted" href="{{ route('customer.menu.index') }}">View Menu</a>
+                            <button class="btn-primary" onclick="quickAddToCart({{ $item->id }}, {{ json_encode($item->name) }}, {{ $item->price }}, {{ json_encode($item->image ?? '') }})">Add to Cart</button>
                         </div>
                     </div>
                 </article>
             @endforeach
         @else
-            <!-- Default promotions when no data is available -->
+            <!-- Default popular items when no recommendations -->
             <article class="card" role="listitem">
                 <div class="card-img" style="display:grid;place-items:center;font-size:4rem">🥩</div>
                 <div class="card-body">
@@ -136,7 +146,7 @@
         @endif
     </div>
     <div class="promotion-cta">
-        <a href="{{ route('customer.menu.index') }}" class="btn-primary" id="promotionBtn">See Full Menu</a>
+        <a href="{{ route('customer.menu.index') }}" class="btn-primary" id="promotionBtn">Explore Full Menu</a>
     </div>
 </section>
 
@@ -259,6 +269,55 @@
         // Example: Track page views, analytics, etc.
         console.log('🏠 Homepage loaded successfully');
     });
+
+    // Quick Add to Cart Function for AI Recommendations
+    async function quickAddToCart(itemId, itemName, itemPrice, itemImage) {
+        @guest
+        // Redirect to login if not authenticated
+        window.location.href = '{{ route("login") }}?redirect=' + encodeURIComponent(window.location.href);
+        return;
+        @endguest
+
+        try {
+            const response = await fetch('/customer/cart/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    menu_item_id: itemId,
+                    quantity: 1
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Show success message
+                const toast = document.createElement('div');
+                toast.style.cssText = 'position:fixed;top:24px;right:24px;background:#10b981;color:white;padding:16px 24px;border-radius:12px;box-shadow:0 4px 16px rgba(16,185,129,0.3);z-index:9999;font-weight:600;animation:slideIn 0.3s ease;';
+                toast.textContent = `✅ ${itemName} added to cart!`;
+                document.body.appendChild(toast);
+
+                // Add animation
+                const style = document.createElement('style');
+                style.textContent = '@keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }';
+                document.head.appendChild(style);
+
+                setTimeout(() => {
+                    toast.style.animation = 'slideIn 0.3s ease reverse';
+                    setTimeout(() => toast.remove(), 300);
+                }, 2000);
+            } else {
+                throw new Error(data.message || 'Failed to add item');
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            alert('Error: ' + error.message);
+        }
+    }
 
     // --- Page Functionality ---
 

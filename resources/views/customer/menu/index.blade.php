@@ -197,7 +197,7 @@
       <div class="cart-modal-content">
         <div class="cart-modal-toolbar">
           <div class="cart-modal-count">Items: <span id="cart-count">0</span></div>
-          <button class="cart-modal-clear" id="clearAllBtn">Clear All</button>
+          <button class="cart-modal-clear" id="clearAllBtn" style="cursor: pointer; transition: all 0.2s ease;">Clear All</button>
         </div>
         <div class="cart-modal-items" id="cart-items">
           <!-- Cart items will be displayed here -->
@@ -1004,11 +1004,14 @@
 <script>
 // Define auth status BEFORE loading menu.js so it's available
 window.isAuthenticated = {{ Auth::check() ? 'true' : 'false' }};
+
+// Pass menu data from server to JavaScript
+window.menuData = @json($categories);
 </script>
 
-<script src="{{ asset('js/customer/cart-manager.js') }}"></script>
-<script src="{{ asset('js/customer/cart-voucher.js') }}"></script>
-<script src="{{ asset('js/customer/menu.js') }}"></script>
+<script src="{{ asset('js/customer/cart-manager.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('js/customer/cart-voucher.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('js/customer/menu.js') }}?v={{ time() }}"></script>
 <script>
 // Handle quick add item clicks from kitchen recommendations
 document.addEventListener('click', async function(e) {

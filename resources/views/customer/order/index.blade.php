@@ -95,12 +95,12 @@
                 @php
                   $hasReviews = $order->reviews()->exists();
                 @endphp
-                @if(!$hasReviews)
-                  <a href="{{ route('customer.orders.show', $order->id) }}#review-section" class="btn btn-success" style="text-decoration: none;">
+                @if(false && !$hasReviews)
+                  <a href="{{ route('customer.orders.show', $order->id) }}#review-section" class="btn btn-success" style="text-decoration: none; display: none;">
                     <i class="fas fa-star"></i> Rate Order
                   </a>
-                @else
-                  <span class="btn btn-secondary" style="cursor: default; opacity: 0.7;" title="You've already reviewed this order">
+                @elseif(false && $hasReviews)
+                  <span class="btn btn-secondary" style="cursor: default; opacity: 0.7; display: none;" title="You've already reviewed this order">
                     <i class="fas fa-check-circle"></i> Reviewed
                   </span>
                 @endif
@@ -568,42 +568,59 @@ document.addEventListener('DOMContentLoaded', function() {
         trackOrderModal.classList.remove('open');
     };
     
-    // Function to cancel order
-    function cancelOrder(orderId) {
-        // Show confirmation dialog
-        if (!confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
+    // Function to cancel order (expose as window global)
+    window.cancelOrder = async function(orderId) {
+        console.log('Cancel order clicked for ID:', orderId);
+        
+        // Find the order card to get confirmation code
+        const orderCard = document.querySelector(`.order-card .cancel-booking-btn[data-order-id="${orderId}"]`)?.closest('.order-card');
+        const confirmationCode = orderCard ? orderCard.dataset.id : `ORD-${orderId}`;
+        
+        // Show confirmation modal using the existing system
+        const confirmed = await showConfirm(
+            'Cancel Order?',
+            `Are you sure you want to cancel this order? Order #${confirmationCode} This action cannot be undone.`,
+            'danger',
+            'Cancel Order',
+            'Keep Order'
+        );
+        
+        if (!confirmed) {
             return;
         }
         
         console.log('Cancelling order ID:', orderId);
         
         // Send cancel request to server
-        fetch(`/customer/orders/${orderId}/cancel`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
+        try {
+            const response = await fetch(`/customer/orders/${orderId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+            
+            const data = await response.json();
             console.log('Cancel response:', data);
             
             if (data.success) {
-                // Show success message
-                alert('Order has been cancelled successfully.');
-                // Reload page to show updated status
-                location.reload();
+                // Show success message with Toast
+                Toast.success('Success', 'Order has been cancelled successfully.');
+                
+                // Reload page after a short delay
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
             } else {
                 // Show error message
-                alert('Error: ' + (data.error || data.message || 'Unable to cancel order. Please try again.'));
+                Toast.error('Error', data.error || data.message || 'Unable to cancel order. Please try again.');
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Error cancelling order:', error);
-            alert('Network error. Please check your connection and try again.');
-        });
-    }
+            Toast.error('Error', 'Network error. Please check your connection and try again.');
+        }
+    };
     
     // Function to show reorder modal
     function showReorderModal(orderId) {

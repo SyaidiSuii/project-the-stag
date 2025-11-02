@@ -12,7 +12,10 @@ class LoyaltyTier extends Model
 
     protected $fillable = [
         'name',
+        'order', // PHASE 7: Tier hierarchy order
         'minimum_spending',
+        'points_threshold', // PHASE 7: Points required for tier
+        'points_multiplier', // PHASE 7: Earning multiplier
         'color',
         'icon',
         'sort_order',
@@ -21,6 +24,9 @@ class LoyaltyTier extends Model
 
     protected $casts = [
         'minimum_spending' => 'decimal:2',
+        'points_threshold' => 'integer', // PHASE 7
+        'points_multiplier' => 'decimal:2', // PHASE 7
+        'order' => 'integer', // PHASE 7
         'is_active' => 'boolean'
     ];
 

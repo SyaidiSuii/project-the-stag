@@ -71,7 +71,10 @@ class TableQrcodeController extends Controller
      */
     public function create()
     {
-        $tables = Table::available()->get();
+        // Exclude VVIP tables from QR code generation
+        $tables = Table::available()
+                    ->where('table_type', '!=', 'vip')
+                    ->get();
         $tableQrcode = new TableQrcode();
         
         return view('admin.table-qr_code.create', compact('tables', 'tableQrcode'));
@@ -94,6 +97,13 @@ class TableQrcodeController extends Controller
 
         $table = Table::findOrFail($request->table_id);
         
+        // Prevent QR generation for VVIP tables
+        if ($table->table_type === 'vip') {
+            return redirect()->back()
+                ->withErrors(['table_id' => 'QR menu generation is not available for VVIP tables.'])
+                ->withInput();
+        }
+        
         // Create new session
         $session = $table->createSession([
             'started_at' => Carbon::parse($request->started_at),
@@ -104,8 +114,8 @@ class TableQrcodeController extends Controller
             'notes' => $request->notes,
         ]);
 
-        // Update table status to occupied
-        $table->update(['status' => 'occupied']);
+        // Note: Table status is NOT changed when QR session is created
+        // Status 'occupied' is only set when booking is confirmed
 
         return redirect()->route('admin.table-qrcodes.create')
                         ->with('message', 'Table session created successfully!')

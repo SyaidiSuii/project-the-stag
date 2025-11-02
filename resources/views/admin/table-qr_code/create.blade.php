@@ -382,6 +382,16 @@
                 QR Code Configuration
             </h3>
 
+            <!-- VVIP Table Notice -->
+            <div style="padding: 1rem; background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: var(--radius); margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: start; gap: 0.75rem;">
+                    <i class="fas fa-info-circle" style="color: #3b82f6; margin-top: 0.25rem;"></i>
+                    <div style="color: #1e40af; font-size: 0.9rem;">
+                        <strong>Note:</strong> VVIP tables are excluded from QR menu generation. VVIP guests will be served with personalized service.
+                    </div>
+                </div>
+            </div>
+
             <form id="qrGenerateForm" action="{{ route('admin.table-qrcodes.store') }}" method="POST">
                 @csrf
 

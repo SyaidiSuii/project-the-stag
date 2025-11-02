@@ -40,15 +40,14 @@ class AccountController extends Controller
             if (!$profile) {
                 $profile = $user->customerProfile()->create([
                     'name' => $user->name,
-                    'loyalty_points' => 0,
                     'visit_count' => 0,
                     'total_spent' => 0.00,
                 ]);
             }
-            
+
             // Get user stats with fallbacks
             $orderCount = $user->orders->count() ?? 0;
-            $loyaltyPoints = $profile->loyalty_points ?? 0;
+            $loyaltyPoints = $user->points_balance ?? 0; // PHASE 1.1: Use users.points_balance
             
             // Determine membership level based on points
             $membershipLevel = 'Bronze Member';
@@ -117,7 +116,6 @@ class AccountController extends Controller
         if (!$profile) {
             $profile = $user->customerProfile()->create([
                 'name' => $user->name,
-                'loyalty_points' => 0,
                 'visit_count' => 0,
                 'total_spent' => 0.00,
             ]);

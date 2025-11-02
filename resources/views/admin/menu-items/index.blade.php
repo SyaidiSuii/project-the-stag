@@ -93,7 +93,7 @@
                         <th class="th-item">Item Details</th>
                         <th class="th-category">Category</th>
                         <th class="th-price">Price</th>
-                        <th class="th-rating">Rating</th>
+                        {{-- <th class="th-rating">Rating</th> --}}
                         <th class="th-status">Status</th>
                         <th class="th-actions">Actions</th>
                     </tr>
@@ -139,8 +139,8 @@
                         <td class="cell-center">
                             <div class="price">RM {{ number_format($item->price, 2) }}</div>
                         </td>
-                        <td class="cell-center">
-                            @if($item->rating_count > 0)
+                        <td class="cell-center" style="display: none;">
+                            @if(false && $item->rating_count > 0)
                                 <div class="rating">
                                     <div class="rating-stars">
                                         @for($i = 1; $i <= 5; $i++)
@@ -326,7 +326,7 @@
                         <th class="th-item">Item Details</th>
                         <th class="th-category">Category</th>
                         <th class="th-price">Price</th>
-                        <th class="th-rating">Rating</th>
+                        {{-- <th class="th-rating">Rating</th> --}}
                         <th class="th-status">Status</th>
                         <th class="th-actions">Actions</th>
                     </tr>
@@ -372,8 +372,8 @@
                         <td class="cell-center">
                             <div class="price">RM {{ number_format($item->price, 2) }}</div>
                         </td>
-                        <td class="cell-center">
-                            @if($item->rating_count > 0)
+                        <td class="cell-center" style="display: none;">
+                            @if(false && $item->rating_count > 0)
                                 <div class="rating">
                                     <div class="rating-stars">
                                         @for($i = 1; $i <= 5; $i++)
@@ -539,7 +539,7 @@
                         <th class="th-item">Item Details</th>
                         <th class="th-category">Category</th>
                         <th class="th-price">Price</th>
-                        <th class="th-rating">Rating</th>
+                        {{-- <th class="th-rating">Rating</th> --}}
                         <th class="th-status">Status</th>
                         <th class="th-actions">Actions</th>
                     </tr>
@@ -585,8 +585,8 @@
                         <td class="cell-center">
                             <div class="price">RM {{ number_format($item->price, 2) }}</div>
                         </td>
-                        <td class="cell-center">
-                            @if($item->rating_count > 0)
+                        <td class="cell-center" style="display: none;">
+                            @if(false && $item->rating_count > 0)
                                 <div class="rating">
                                     <div class="rating-stars">
                                         @for($i = 1; $i <= 5; $i++)

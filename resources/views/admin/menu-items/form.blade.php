@@ -273,8 +273,8 @@
             </div>
         </div>
 
-        @if($menuItem->id)
-        <div class="form-row">
+        @if(false && $menuItem->id)
+        <div class="form-row" style="display: none;">
             <div class="form-group">
                 <label class="form-label">Current Rating</label>
                 <div class="rating-display">

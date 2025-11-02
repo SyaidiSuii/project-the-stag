@@ -6,6 +6,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * DEPRECATED: VoucherCollection Model
+ *
+ * @deprecated since Phase 2.1 - Use VoucherTemplate with source_type='collection' instead
+ *
+ * This model is kept for backward compatibility only. All new voucher implementations
+ * should use the unified VoucherTemplate model which now supports both reward-based
+ * and collection-based vouchers through the 'source_type' field.
+ *
+ * Migration Path:
+ * - Existing voucher_collections data will be migrated to voucher_templates
+ * - Use VoucherTemplate::where('source_type', 'collection') for collection vouchers
+ * - This model will be removed in a future version
+ *
+ * @see VoucherTemplate
+ */
 class VoucherCollection extends Model
 {
     use HasFactory, SoftDeletes;
