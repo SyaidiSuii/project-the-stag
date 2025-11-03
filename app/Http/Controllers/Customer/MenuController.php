@@ -26,20 +26,31 @@ class MenuController extends Controller
      */
     public function index(Request $request)
     {
-        // Get QR parameters (table number, order type, session code)
+        // Get QR parameters from URL (table number, order type, session code)
         $tableNumber = $request->get('table');
         $orderType = $request->get('order_type');
         $sessionCode = $request->get('session');
 
-        // Store parameters in session for later use during checkout
+        // Store parameters in session for persistence across navigation
         if ($tableNumber) {
-            session(['qr_table_number' => $tableNumber]);
+            session(['dining_table' => $tableNumber, 'qr_table_number' => $tableNumber]);
         }
         if ($orderType) {
             session(['order_type' => $orderType]);
         }
         if ($sessionCode) {
-            session(['qr_session_code' => $sessionCode]);
+            session(['qr_session' => $sessionCode, 'qr_session_code' => $sessionCode]);
+        }
+
+        // If no URL params, try to restore from session (user returned to menu)
+        if (!$tableNumber && session('dining_table')) {
+            $tableNumber = session('dining_table');
+        }
+        if (!$orderType && session('order_type')) {
+            $orderType = session('order_type');
+        }
+        if (!$sessionCode && session('qr_session')) {
+            $sessionCode = session('qr_session');
         }
 
         // If no order type specified (direct access, not from QR), default to takeaway

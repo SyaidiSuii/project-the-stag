@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\HomepageContent;
 use App\Models\MenuItem;
+use App\Models\CustomerFeedback;
+use App\Models\Order;
 use App\Services\RecommendationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -108,12 +110,29 @@ class HomeController extends Controller
         // Prepare promotion header data (now for recommendations)
         $promotionHeader = [
             'title' => Auth::check() ? 'Recommended For You' : 'Popular Dishes',
-            'subtitle' => Auth::check() 
-                ? 'Based on your order history and preferences' 
+            'subtitle' => Auth::check()
+                ? 'Based on your order history and preferences'
                 : 'Try our most popular and highly-rated dishes!'
         ];
 
-        return view('customer.home.index', compact('hero', 'about', 'promotionHeader', 'recommendedItems', 'stats', 'contact'));
+        // Calculate remaining feedback submissions
+        $feedbackInfo = null;
+        if (Auth::check()) {
+            $totalOrders = Order::where('user_id', Auth::id())
+                ->whereIn('order_status', ['completed', 'delivered'])
+                ->count();
+            $existingFeedbacks = CustomerFeedback::where('user_id', Auth::id())->count();
+            $remainingFeedbacks = max(0, $totalOrders - $existingFeedbacks);
+
+            $feedbackInfo = [
+                'total_orders' => $totalOrders,
+                'submitted' => $existingFeedbacks,
+                'remaining' => $remainingFeedbacks,
+                'can_submit' => $remainingFeedbacks > 0
+            ];
+        }
+
+        return view('customer.home.index', compact('hero', 'about', 'promotionHeader', 'recommendedItems', 'stats', 'contact', 'feedbackInfo'));
     }
 
     /**
@@ -121,18 +140,44 @@ class HomeController extends Controller
      */
     public function storeFeedback(Request $request)
     {
+        // Check if user is logged in
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Please login to submit feedback.');
+        }
+
+        $user = Auth::user();
+
+        // Count total completed orders
+        $totalOrders = Order::where('user_id', $user->id)
+            ->whereIn('order_status', ['completed', 'delivered'])
+            ->count();
+
+        // Count existing feedbacks
+        $existingFeedbacks = CustomerFeedback::where('user_id', $user->id)->count();
+
+        // Check if user can submit more feedback (limited to number of orders)
+        if ($existingFeedbacks >= $totalOrders) {
+            return redirect()->route('customer.home.index')
+                ->with('feedback_error', 'You have reached the maximum number of feedbacks. You can submit one feedback per completed order.');
+        }
+
         $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
             'name' => 'required|string|max:255',
-            'contact' => 'nullable|string|max:255',
-            'subject' => 'nullable|string|max:255',
+            'email' => 'required|email|max:255',
             'message' => 'required|string|max:1000'
         ]);
 
-        // For now, we'll just store in session/log
-        // Later this can be moved to database
-        
-        session()->flash('feedback_success', 'Thank you! Your feedback has been submitted successfully.');
+        // Create feedback
+        CustomerFeedback::create([
+            'user_id' => $user->id,
+            'rating' => $request->rating,
+            'name' => $request->name,
+            'email' => $request->email,
+            'message' => $request->message,
+        ]);
 
-        return redirect()->route('customer.home.index')->with('feedback_success', 'Thank you! Your feedback has been submitted successfully.');
+        return redirect()->route('customer.home.index')
+            ->with('feedback_success', 'Thank you for your feedback! Your review has been submitted successfully.');
     }
 }

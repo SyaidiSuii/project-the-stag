@@ -202,20 +202,48 @@
         <div class="feedback">
             <h3 id="feedbackTitle">{{ $contact['feedback_title'] ?? 'Share Your Feedback' }}</h3>
             <p class="muted" id="feedbackSubtitle">{{ $contact['feedback_subtitle'] ?? 'Help us improve by sharing your dining experience with us.' }}</p>
-            <form id="feedbackForm" action="{{ route('customer.feedback.store') }}" method="POST">
+
+            @if($feedbackInfo && !$feedbackInfo['can_submit'])
+                <div style="padding: 16px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="margin: 0; color: #92400e; font-weight: 600;">
+                        <i class="fas fa-info-circle"></i> You have submitted {{ $feedbackInfo['submitted'] }} feedback(s) for your {{ $feedbackInfo['total_orders'] }} completed order(s).
+                    </p>
+                    <p style="margin: 8px 0 0 0; color: #92400e; font-size: 14px;">
+                        Complete more orders to submit additional feedback!
+                    </p>
+                </div>
+            @elseif($feedbackInfo)
+                <div style="padding: 12px 16px; background: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="margin: 0; color: #1e40af; font-size: 14px;">
+                        <i class="fas fa-info-circle"></i> You can submit <strong>{{ $feedbackInfo['remaining'] }}</strong> more feedback(s) based on your completed orders.
+                    </p>
+                </div>
+            @endif
+
+            <form id="feedbackForm" action="{{ route('customer.feedback.store') }}" method="POST" @if($feedbackInfo && !$feedbackInfo['can_submit']) style="pointer-events: none; opacity: 0.6;" @endif>
                 @csrf
                 <div class="grid-two-narrow">
+                    <!-- Star Rating Section -->
+                    <div class="row span2">
+                        <label for="fbRating">Rate Your Experience <span style="color: #dc2626;">*</span></label>
+                        <div class="star-rating" id="starRating">
+                            <i class="far fa-star" data-rating="1"></i>
+                            <i class="far fa-star" data-rating="2"></i>
+                            <i class="far fa-star" data-rating="3"></i>
+                            <i class="far fa-star" data-rating="4"></i>
+                            <i class="far fa-star" data-rating="5"></i>
+                        </div>
+                        <input type="hidden" id="fbRating" name="rating" value="" required />
+                        <small class="rating-text" id="ratingText" style="display: none; margin-top: 8px; color: #6b7280;"></small>
+                    </div>
+
                     <div class="row">
                         <label for="fbName">Name</label>
-                        <input type="text" id="fbName" name="name" placeholder="Your name" required />
+                        <input type="text" id="fbName" name="name" placeholder="Your name" value="{{ Auth::check() ? Auth::user()->name : '' }}" required />
                     </div>
                     <div class="row">
-                        <label for="fbContact">Contact</label>
-                        <input type="text" id="fbContact" name="contact" placeholder="Phone or email" />
-                    </div>
-                    <div class="row span2">
-                        <label for="fbSubject">Subject</label>
-                        <input type="text" id="fbSubject" name="subject" placeholder="Feedback subject" />
+                        <label for="fbContact">Email</label>
+                        <input type="email" id="fbContact" name="email" placeholder="your@email.com" value="{{ Auth::check() ? Auth::user()->email : '' }}" required />
                     </div>
                     <div class="row span2">
                         <label for="fbMessage">Message</label>
@@ -227,14 +255,6 @@
                     <button type="submit" class="btn-primary">Submit Feedback</button>
                 </div>
             </form>
-            <p class="form-note" id="fbNote">
-                @if(session('feedback_success'))
-                    <span style="color: #16a34a;">{{ session('feedback_success') }}</span>
-                @endif
-                @if(session('feedback_error'))
-                    <span style="color: #dc2626;">{{ session('feedback_error') }}</span>
-                @endif
-            </p>
         </div>
     </div>
 </section>
@@ -265,9 +285,22 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Any homepage-specific JavaScript can go here
         // The main functionality is handled by customer-design.js
-        
+
         // Example: Track page views, analytics, etc.
         console.log('🏠 Homepage loaded successfully');
+
+        // Show session messages as Toast
+        @if(session('feedback_success'))
+            if (typeof Toast !== 'undefined') {
+                Toast.success('Feedback Submitted!', '{{ session('feedback_success') }}');
+            }
+        @endif
+
+        @if(session('feedback_error'))
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Error', '{{ session('feedback_error') }}');
+            }
+        @endif
     });
 
     // Quick Add to Cart Function for AI Recommendations
@@ -315,7 +348,11 @@
             }
         } catch (error) {
             console.error('Error adding to cart:', error);
-            alert('Error: ' + error.message);
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Error', 'Error: ' + error.message);
+            } else {
+                alert('Error: ' + error.message);
+            }
         }
     }
 
@@ -369,6 +406,159 @@ function initializeScrollFeatures() {
     observer.observe(el);
   });
 }
+
+// Star Rating Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const starRating = document.getElementById('starRating');
+    const ratingInput = document.getElementById('fbRating');
+    const ratingText = document.getElementById('ratingText');
+    const stars = starRating.querySelectorAll('i');
+    const feedbackForm = document.getElementById('feedbackForm');
+
+    let selectedRating = 0;
+
+    const ratingLabels = {
+        1: 'Poor - Not satisfied',
+        2: 'Fair - Below expectations',
+        3: 'Good - Met expectations',
+        4: 'Very Good - Exceeded expectations',
+        5: 'Excellent - Outstanding!'
+    };
+
+    // Star hover effect
+    stars.forEach((star, index) => {
+        star.addEventListener('mouseenter', function() {
+            highlightStars(index + 1);
+            ratingText.textContent = ratingLabels[index + 1];
+            ratingText.style.display = 'block';
+        });
+    });
+
+    starRating.addEventListener('mouseleave', function() {
+        if (selectedRating > 0) {
+            highlightStars(selectedRating);
+            ratingText.textContent = ratingLabels[selectedRating];
+        } else {
+            clearStars();
+            ratingText.style.display = 'none';
+        }
+    });
+
+    // Star click to select
+    stars.forEach((star, index) => {
+        star.addEventListener('click', function() {
+            selectedRating = index + 1;
+            ratingInput.value = selectedRating;
+            highlightStars(selectedRating);
+            ratingText.textContent = ratingLabels[selectedRating];
+            ratingText.style.display = 'block';
+            ratingText.style.color = '#8b5cf6';
+            ratingText.style.fontWeight = '600';
+        });
+    });
+
+    function highlightStars(count) {
+        stars.forEach((star, index) => {
+            if (index < count) {
+                star.classList.remove('far');
+                star.classList.add('fas');
+                star.style.color = '#fbbf24';
+            } else {
+                star.classList.remove('fas');
+                star.classList.add('far');
+                star.style.color = '#d1d5db';
+            }
+        });
+    }
+
+    function clearStars() {
+        stars.forEach(star => {
+            star.classList.remove('fas');
+            star.classList.add('far');
+            star.style.color = '#d1d5db';
+        });
+    }
+
+    // Form submission validation
+    feedbackForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        @guest
+        // User not logged in
+        if (typeof Toast !== 'undefined') {
+            Toast.warning('Login Required', 'Please login to submit feedback.');
+        } else {
+            alert('Please login to submit feedback.');
+        }
+        setTimeout(() => {
+            window.location.href = '{{ route("login") }}?redirect=' + encodeURIComponent(window.location.href);
+        }, 1500);
+        return false;
+        @endguest
+
+        @if($feedbackInfo && !$feedbackInfo['can_submit'])
+        // User has reached feedback limit
+        if (typeof Toast !== 'undefined') {
+            Toast.info('Feedback Limit Reached', 'You have submitted all available feedbacks. Complete more orders to submit additional feedback.');
+        } else {
+            alert('You have reached the maximum number of feedbacks. Complete more orders to submit additional feedback.');
+        }
+        return false;
+        @endif
+
+        // Check if rating is selected
+        if (!ratingInput.value || ratingInput.value === '') {
+            if (typeof Toast !== 'undefined') {
+                Toast.warning('Rating Required', 'Please rate your experience before submitting.');
+            } else {
+                alert('Please rate your experience before submitting.');
+            }
+            starRating.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+
+        // Submit the form
+        this.submit();
+    });
+
+    // Clear button functionality
+    document.getElementById('btnClear').addEventListener('click', function() {
+        feedbackForm.reset();
+        selectedRating = 0;
+        clearStars();
+        ratingText.style.display = 'none';
+        ratingInput.value = '';
+    });
+});
 </script>
+
+<style>
+.star-rating {
+    display: flex;
+    gap: 8px;
+    font-size: 32px;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.star-rating i {
+    color: #d1d5db;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.star-rating i:hover {
+    transform: scale(1.2);
+}
+
+.star-rating i.fas {
+    color: #fbbf24;
+}
+
+.rating-text {
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 8px;
+}
+</style>
 
 @endsection

@@ -795,29 +795,59 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await response.json();
             
             if (result.success) {
-                alert(result.message);
+                if (typeof Toast !== 'undefined') {
+                    Toast.success('Added to Cart', result.message);
+                } else {
+                    alert(result.message);
+                }
                 closeReorderModal();
-                
+
                 // Redirect to food page to show cart
-                window.location.href = '/customer/food?showCart=true';
+                setTimeout(() => {
+                    window.location.href = '/customer/food?showCart=true';
+                }, 500);
             } else {
-                alert(result.message || 'Failed to add items to cart');
+                if (typeof Toast !== 'undefined') {
+                    Toast.error('Failed', result.message || 'Failed to add items to cart');
+                } else {
+                    alert(result.message || 'Failed to add items to cart');
+                }
             }
-            
+
         } catch (error) {
             console.error('Error adding to cart:', error);
-            alert('Error adding items to cart. Please try again.');
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Error', 'Error adding items to cart. Please try again.');
+            } else {
+                alert('Error adding items to cart. Please try again.');
+            }
         }
     };
     
     // Function to order now (skip cart review)
     window.orderNow = async function(orderId) {
         console.log('Order now:', orderId);
-        
-        if (!confirm('Order these items immediately? You will skip cart review.')) {
+
+        // Use modern confirmation modal
+        const confirmed = await new Promise((resolve) => {
+            if (typeof showConfirm === 'function') {
+                showConfirm(
+                    'Order Now?',
+                    'Order these items immediately? You will skip cart review.',
+                    'info',
+                    'Order Now',
+                    'Cancel'
+                ).then(resolve);
+            } else {
+                // Fallback to native confirm
+                resolve(confirm('Order these items immediately? You will skip cart review.'));
+            }
+        });
+
+        if (!confirmed) {
             return;
         }
-        
+
         try {
             // Get the reorder data and proceed to checkout
             const response = await fetch(`/customer/orders/${orderId}/reorder`);
@@ -841,11 +871,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Redirect to payment page
                 window.location.href = '/customer/payment';
             } else {
-                alert('No available items to order.');
+                if (typeof Toast !== 'undefined') {
+                    Toast.warning('No Items', 'No available items to order.');
+                } else {
+                    alert('No available items to order.');
+                }
             }
         } catch (error) {
             console.error('Error processing order:', error);
-            alert('Error processing order. Please try again.');
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Error', 'Error processing order. Please try again.');
+            } else {
+                alert('Error processing order. Please try again.');
+            }
         }
     };
     

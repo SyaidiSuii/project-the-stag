@@ -600,17 +600,40 @@ if (deleteAccountForm) {
             return false;
         }
 
-        if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
-            e.preventDefault();
-            return false;
-        }
+        e.preventDefault();
 
-        // Show loading state
-        const submitBtn = document.getElementById('confirmDeleteBtn');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting Account...';
+        // Use modern confirmation modal
+        if (typeof showConfirm === 'function') {
+            showConfirm(
+                'Delete Account?',
+                'Are you absolutely sure you want to delete your account? This action cannot be undone.',
+                'danger',
+                'Delete Account',
+                'Cancel'
+            ).then(confirmed => {
+                if (confirmed) {
+                    // Show loading state
+                    const submitBtn = document.getElementById('confirmDeleteBtn');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+                    }
+                    // Submit form
+                    e.target.submit();
+                }
+            });
+        } else {
+            // Fallback to native confirm
+            if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
+                const submitBtn = document.getElementById('confirmDeleteBtn');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+                }
+                e.target.submit();
+            }
+        }
     });
-}
 
 // Logout confirmation with toast
 function confirmLogout() {

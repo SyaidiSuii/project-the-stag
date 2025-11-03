@@ -1134,14 +1134,33 @@ const ChatBot = {
         });
     },
 
-    confirmClearHistory() {
+    async confirmClearHistory() {
         if (!this.sessionToken) {
-            alert('No active chat session to clear.');
+            if (typeof Toast !== 'undefined') {
+                Toast.warning('No Session', 'No active chat session to clear.');
+            } else {
+                alert('No active chat session to clear.');
+            }
             return;
         }
 
-        if (confirm('Are you sure you want to clear all chat history? This action cannot be undone.')) {
-            this.clearHistory();
+        // Use modern confirmation modal
+        if (typeof showConfirm === 'function') {
+            const confirmed = await showConfirm(
+                'Clear Chat History?',
+                'Are you sure you want to clear all chat history? This action cannot be undone.',
+                'warning',
+                'Clear History',
+                'Cancel'
+            );
+            if (confirmed) {
+                this.clearHistory();
+            }
+        } else {
+            // Fallback to native confirm
+            if (confirm('Are you sure you want to clear all chat history? This action cannot be undone.')) {
+                this.clearHistory();
+            }
         }
     },
 
@@ -1178,9 +1197,13 @@ const ChatBot = {
 
                 console.log(`Successfully cleared ${data.deleted_count} messages from view`);
 
-                // Optional: Show toast notification
+                // Show toast notification
                 setTimeout(() => {
-                    alert(`✓ Chat cleared! You can start a fresh conversation.`);
+                    if (typeof Toast !== 'undefined') {
+                        Toast.success('Chat Cleared!', 'You can start a fresh conversation.');
+                    } else {
+                        alert(`✓ Chat cleared! You can start a fresh conversation.`);
+                    }
                 }, 300);
             } else {
                 this.showError(data.error || 'Failed to clear chat history');
