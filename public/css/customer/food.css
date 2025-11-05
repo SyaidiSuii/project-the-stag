@@ -185,14 +185,16 @@
       grid-template-columns: repeat(5, 1fr); 
       gap: 18px; 
     }
-    .food-card { 
-      background: white; 
-      border-radius: var(--radius); 
-      padding: 18px; 
-      box-shadow: var(--shadow); 
-      transition: all 0.4s ease; 
+    .food-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      transition: all 0.4s ease;
       border: 1px solid var(--muted);
       position: relative;
+      display: flex;
+      flex-direction: column;
     }
     .food-card::before {
       content: '';
@@ -357,9 +359,10 @@
       z-index: 2;
       box-shadow: 0 2px 5px rgba(255, 107, 53, 0.3);
     }
-    .food-actions { 
-      display: flex; 
-      gap: 10px; 
+    .food-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
     }
     .btn { 
       padding: 10px 16px; 
@@ -1286,58 +1289,238 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
+    /* ===== RESPONSIVE DESIGN ===== */
+
     @media (max-width: 1400px) {
-      .food-grid { 
-        grid-template-columns: repeat(3, 1fr); 
+      .food-grid {
+        grid-template-columns: repeat(3, 1fr);
       }
     }
+
     @media (max-width: 1200px) {
-      body { 
-        padding-left: 0; 
+      body {
+        padding-left: 0;
         flex-direction: column;
       }
     }
-    /* Major layout shift for mobile */
+
+    /* Tablet (768px - 992px) */
+    @media (max-width: 992px) {
+      .food-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+      /* Food Cards - Tablet */
+      .food-card { padding: 16px; border-radius: 18px; }
+      .food-image { height: 140px; font-size: 2.75rem; border-radius: 16px; }
+      .food-name { font-size: 17px; }
+      .food-category { font-size: 11px; padding: 4px 9px; border-radius: 9px; }
+      .food-description { font-size: 13px; }
+      .food-price { font-size: 19px; }
+      .food-actions .btn { padding: 10px 18px; font-size: 13px; border-radius: 10px; }
+
+      /* Tabs - Tablet */
+      .tabs-container { padding: 14px; gap: 10px; border-radius: 18px; }
+      .tab { padding: 10px 18px; font-size: 13px; border-radius: 12px; }
+      .tab i { font-size: 17px; }
+
+      /* Search - Tablet */
+      .search-container { padding: 14px; border-radius: 18px; }
+      .search-bar { padding: 10px 14px; font-size: 14px; border-radius: 20px; }
+      .search-bar i { font-size: 17px; }
+
+      /* Cart FAB - Tablet */
+      .cart-fab { width: 62px; height: 62px; font-size: 28px; border-radius: 17px; }
+      .cart-badge { width: 25px; height: 25px; font-size: 12px; }
+
+      /* Order Type FAB - Tablet */
+      .order-type-fab { padding: 11px 19px; font-size: 13px; border-radius: 23px; }
+      .order-type-fab i { font-size: 17px; }
+
+      /* Modals - Tablet */
+      .modal-content { padding: 20px; border-radius: 20px; }
+      .modal-header h2 { font-size: 20px; }
+      .addon-item { padding: 11px; font-size: 13px; border-radius: 10px; }
+    }
+
+    /* Mobile (481px - 768px) */
     @media (max-width: 768px) {
-      .main-content { order: 2; } /* Show after cart */
-      
-      /* Adjust FAB position for mobile */
+      .main-content { order: 2; padding: 16px; }
+      .food-grid { grid-template-columns: 1fr; gap: 14px; }
+
+      /* Food Cards - Mobile */
+      .food-card {
+        padding: 14px;
+        border-radius: 16px;
+        display: flex;
+        gap: 12px;
+      }
+      .food-image {
+        width: 100px;
+        height: 100px;
+        font-size: 2.5rem;
+        border-radius: 14px;
+        flex-shrink: 0;
+      }
+      .food-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .food-name { font-size: 15px; margin-bottom: 4px; }
+      .food-category { font-size: 10px; padding: 3px 8px; border-radius: 8px; margin-bottom: 5px; }
+      .food-description { font-size: 12px; line-height: 1.4; margin-bottom: 8px; }
+      .food-price { font-size: 16px; margin-bottom: 10px; }
+      .food-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+      }
+      .food-actions { gap: 7px; }
+      .food-actions .btn { padding: 8px 14px; font-size: 12px; border-radius: 10px; }
+
+      /* Tabs - Mobile */
+      .tabs-container { padding: 12px; gap: 8px; border-radius: 16px; }
+      .tab { padding: 9px 16px; font-size: 12px; border-radius: 11px; }
+      .tab i { font-size: 15px; }
+
+      /* Search - Mobile */
+      .search-container { padding: 12px; border-radius: 16px; }
+      .search-bar { padding: 9px 12px; font-size: 13px; border-radius: 18px; }
+      .search-bar i { font-size: 15px; }
+
+      /* Cart FAB - Mobile */
       .cart-fab {
-        bottom: 90px; /* Above bottom nav */
-        right: 20px;
-        width: 60px;
-        height: 60px;
-        font-size: 26px;
+        bottom: 110px;
+        right: 16px;
+        width: 56px;
+        height: 56px;
+        font-size: 25px;
+        border-radius: 16px;
       }
       .cart-fab.logged-out {
-        bottom: 20px; /* Lower position on mobile when not logged in */
+        bottom: 110px;
       }
+      .cart-badge { width: 23px; height: 23px; font-size: 11px; }
+
+      /* Order Type FAB - Mobile */
+      .order-type-fab {
+        padding: 10px 17px;
+        font-size: 12px;
+        border-radius: 21px;
+        top: 20px;
+        right: 20px;
+      }
+      .order-type-fab i { font-size: 16px; }
+      .order-type-text { font-size: 12px; }
+
+      /* Cart Modal - Mobile */
       .cart-modal-container {
         width: 95%;
         max-height: 85vh;
-        border-radius: 20px;
+        border-radius: 18px;
       }
+      .cart-modal-header { padding: 1.2rem 1.3rem; }
+      .cart-modal-title { font-size: 1.3rem; }
+      .cart-modal-close { width: 36px; height: 36px; font-size: 18px; }
+      .cart-modal-content { padding: 0.9rem; }
+      .cart-modal-footer { padding: 0.9rem; }
+      .cart-item { padding: 0.85rem; border-radius: 12px; }
+      .cart-item-name { font-size: 0.9rem; }
+      .cart-item-price { font-size: 0.85rem; }
+      .qty-btn { width: 26px; height: 26px; font-size: 0.75rem; }
+      .cart-total-amount { font-size: 1.1rem; }
+      .cart-modal-checkout { padding: 0.85rem; font-size: 0.95rem; border-radius: 16px; }
+
+      /* Addon Modal - Mobile */
+      .addon-item { padding: 10px; font-size: 12px; border-radius: 9px; }
+      .addon-price { font-size: 12px; }
     }
-    @media (max-width: 600px) {
-      .main-content { padding: 15px; }
-      .tab { padding: 8px 10px; font-size: 11px; }
-      .cart-modal-content {
-        padding: 1rem;
-      }
-      .cart-modal-footer {
-        padding: 1rem;
-      }
-    }
+
+    /* Small Mobile (< 480px) */
     @media (max-width: 480px) {
-      .food-grid { grid-template-columns: 1fr; }
+      .main-content { padding: 12px; }
+      .food-grid { grid-template-columns: 1fr; gap: 12px; }
+
+      /* Food Cards - Small Mobile */
+      .food-card {
+        flex-direction: column;
+        padding: 12px;
+        border-radius: 14px;
+      }
+      .food-image {
+        width: 100%;
+        height: 150px;
+        font-size: 2.25rem;
+        border-radius: 12px;
+      }
+      .food-name { font-size: 14px; }
+      .food-category { font-size: 9px; padding: 2px 7px; border-radius: 7px; }
+      .food-description { font-size: 11px; line-height: 1.5; }
+      .food-price { font-size: 15px; }
+      .food-actions { gap: 6px; }
+      .food-actions .btn { padding: 7px 12px; font-size: 11px; border-radius: 8px; }
+
+      /* Tabs - Small Mobile */
+      .tabs-container { padding: 10px; gap: 7px; border-radius: 14px; }
+      .tab { padding: 8px 14px; font-size: 11px; border-radius: 10px; }
+      .tab i { font-size: 14px; }
+
+      /* Search - Small Mobile */
+      .search-container { padding: 10px; border-radius: 14px; }
+      .search-bar { padding: 8px 11px; font-size: 12px; border-radius: 16px; }
+      .search-bar i { font-size: 14px; }
+
+      /* Cart FAB - Small Mobile */
+      .cart-fab {
+        width: 52px;
+        height: 52px;
+        bottom: 95px;
+        right: 12px;
+        font-size: 23px;
+        border-radius: 15px;
+      }
+      .cart-badge { width: 21px; height: 21px; font-size: 10px; }
+
+      /* Order Type FAB - Small Mobile */
+      .order-type-fab {
+        padding: 9px 15px;
+        font-size: 11px;
+        border-radius: 19px;
+        top: 15px;
+        right: 15px;
+      }
+      .order-type-fab i { font-size: 14px; }
+      .order-type-text { font-size: 11px; }
+
+      /* Cart Modal - Small Mobile */
+      .cart-modal-container { border-radius: 16px; }
+      .cart-modal-header { padding: 1.1rem 1.2rem; }
+      .cart-modal-title { font-size: 1.2rem; }
+      .cart-modal-close { width: 34px; height: 34px; font-size: 17px; }
+      .cart-modal-content { padding: 0.8rem; }
+      .cart-modal-footer { padding: 0.8rem; }
       .cart-item {
+        padding: 0.75rem;
+        border-radius: 11px;
         flex-wrap: wrap;
       }
       .cart-item-details {
         width: 100%;
         margin-bottom: 0.5rem;
       }
+      .cart-item-name { font-size: 0.85rem; }
+      .cart-item-price { font-size: 0.8rem; }
       .quantity-controls {
         margin-left: auto;
       }
+      .qty-btn { width: 24px; height: 24px; font-size: 0.7rem; border-radius: 7px; }
+      .quantity { font-size: 0.9rem; }
+      .cart-total-label { font-size: 0.75rem; }
+      .cart-total-amount { font-size: 1rem; }
+      .cart-modal-checkout { padding: 0.8rem; font-size: 0.9rem; border-radius: 14px; }
+
+      /* Addon Modal - Small Mobile */
+      .addon-item { padding: 9px; font-size: 11px; border-radius: 8px; }
+      .addon-price { font-size: 11px; }
+      .modal-actions .btn { padding: 9px 16px; font-size: 11px; border-radius: 9px; }
     }

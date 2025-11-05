@@ -1159,35 +1159,601 @@
     display: flex;
 }
 
-/* ===== Responsive Design ===== */
-    @media (max-width: 1200px) {
-      body {
-        padding-right: 0;
-        flex-direction: column;
-      }
-      .orders-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
-    }
+/* ===== RESPONSIVE DESIGN ===== */
 
-    @media (max-width: 768px) {
-      .main-content { padding: 0; }
-      .order-card, .booking-card { padding: 15px; }
-      .tab { padding: 8px 10px; font-size: 11px; }
+/* Tablet (768px - 992px) - ~20-25% size reduction */
+@media (max-width: 992px) {
+  .main-content { padding: 18px; }
 
-      .cart-title-icon {
-        font-size: 1.2rem; 
-      }
+  /* Header & Titles - Tablet */
+  .header-section { padding: 18px 0; margin-bottom: 18px; }
+  .category-title { font-size: 1.75rem; }
+  .subcategory-title { font-size: 1.55rem; border-left: 5px solid var(--accent); padding-left: 14px; margin: 26px 0 18px; }
 
-      .cart-title {
-        font-size: 1.4rem; 
-      }
+  /* Search Bar - Tablet */
+  .search-bar { border-radius: 22px; padding: 7px 11px; }
+  .search-input { height: 36px; font-size: 13px; padding: 0 36px 0 32px; }
+  .search-icon { left: 13px; font-size: 14px; }
+  .clear-btn { font-size: 14px; padding: 5px; }
 
-      .detail-header h3 {
-        font-size: 1.4rem; 
-      }
-    }
+  /* Tabs - Tablet */
+  .category-tabs { gap: 7px; margin-bottom: 14px; }
+  .tab { padding: 9px 14px; font-size: 12px; border-radius: 18px; border-width: 2px; }
 
-    @media (max-width: 600px) {
-      .main-content { padding: 15px; }
-      .order-card, .booking-card { padding: 15px; }
-      .tab { padding: 8px 10px; font-size: 11px; }
-    }
+  /* Orders Grid - Tablet */
+  .orders-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+
+  /* Order/Booking Cards - Tablet */
+  .order-card, .booking-card {
+    padding: 18px;
+    border-radius: 18px;
+    border-width: 1px;
+  }
+  .order-card::before, .booking-card::before { height: 4px; }
+
+  .order-header, .booking-header {
+    margin-bottom: 13px;
+    padding-bottom: 13px;
+    border-bottom-width: 1px;
+  }
+
+  .order-info h3, .booking-info h3 { font-size: 1rem; margin-bottom: 3px; }
+  .order-date { font-size: 0.8rem; }
+
+  /* Status Badges - Tablet */
+  .order-statuses { gap: 5px; }
+  .payment-status {
+    padding: 3px 9px;
+    border-radius: 11px;
+    font-size: 0.65rem;
+  }
+  .payment-status i { font-size: 0.6rem; }
+
+  .order-status {
+    padding: 5px 11px;
+    border-radius: 13px;
+    font-size: 0.7rem;
+    border-width: 2px;
+  }
+
+  .payment-success, .payment-warning, .payment-info, .payment-secondary, .payment-danger {
+    padding: 0px 9px;
+    border-radius: 13px;
+    font-size: 0.7rem;
+    border-width: 2px;
+  }
+
+  /* Order Items - Tablet */
+  .order-items { margin-bottom: 13px; }
+  .order-items h4 { font-size: 0.8rem; margin-bottom: 7px; }
+  .item-list { max-height: 135px; padding-right: 4px; }
+  .item-list li { padding: 4px 0; font-size: 0.75rem; border-bottom-width: 1px; }
+  .item-name { font-weight: 600; }
+  .item-qty { font-weight: 500; }
+
+  /* Order Total - Tablet */
+  .order-total {
+    padding: 11px 0;
+    border-top-width: 2px;
+    margin-top: 9px;
+  }
+  .total-label { font-size: 0.8rem; }
+  .total-amount { font-size: 1rem; }
+
+  /* Buttons - Tablet */
+  .order-actions { gap: 7px; margin-top: 13px; }
+  .btn {
+    padding: 6px 13px;
+    font-size: 0.7rem;
+    border-radius: 9px;
+    border-width: 2px;
+  }
+
+  /* Booking Details - Tablet */
+  .booking-detail { gap: 9px; margin-bottom: 9px; font-size: 0.85rem; }
+  .booking-detail-icon { width: 18px; font-size: 1.1rem; }
+
+  /* Modal - Tablet */
+  .cart-sidebar {
+    max-width: 450px;
+    height: 85vh;
+    border-radius: 18px;
+  }
+  .cart-header-section { padding: 1.1rem 1.1rem 0.7rem; margin-bottom: 0.9rem; }
+  .cart-title-section { gap: 0.55rem; }
+  .cart-title-icon { font-size: 1.6rem; margin-right: 0.45rem; }
+  .cart-title { font-size: 1.35rem; }
+  .close-cart-btn { font-size: 22px; }
+
+  .cart-content { padding: 1.8rem; }
+  .cart-content-icon { font-size: 3.5rem; margin-bottom: 0.9rem; }
+  .cart-content-text { font-size: 1rem; margin-bottom: 0.45rem; }
+  .cart-content-subtext { font-size: 0.85rem; }
+
+  /* Detail Card - Tablet */
+  .detail-card {
+    padding: 22px;
+    gap: 18px;
+    margin: 18px auto;
+    border-radius: 18px;
+    border-width: 1px;
+  }
+  .detail-header { gap: 13px; padding-bottom: 13px; border-bottom-width: 2px; }
+  .detail-header h3 { font-size: 1.35rem; }
+  .detail-icon { font-size: 2.2rem; }
+
+  .detail-body { gap: 18px; }
+  .detail-section {
+    padding: 13px;
+    border-radius: 13px;
+    border-width: 1px;
+  }
+  .detail-section h4 {
+    font-size: 1rem;
+    margin-bottom: 9px;
+    padding-bottom: 7px;
+    border-bottom-width: 1px;
+  }
+  .detail-section p { font-size: 0.9rem; margin-bottom: 7px; }
+
+  .detail-item-list { max-height: 180px; padding-right: 4px; }
+  .detail-item { padding: 7px 0; font-size: 0.85rem; border-bottom-width: 1px; }
+
+  .detail-actions { gap: 9px; padding-top: 13px; border-top-width: 1px; }
+  .detail-actions .btn { min-width: 110px; }
+
+  /* Empty State - Tablet */
+  .empty-state { padding: 2.7rem 0.9rem; }
+  .empty-state-icon { font-size: 3.5rem; margin-bottom: 0.9rem; }
+  .empty-state-text { font-size: 1.1rem; margin-bottom: 0.45rem; }
+  .empty-state-subtext { font-size: 0.95rem; }
+
+  .no-orders-message, .no-bookings-message {
+    margin: 2.7rem auto;
+    padding: 2.7rem 1.8rem;
+    max-width: 450px;
+    border-radius: 18px;
+    border-width: 2px;
+  }
+  .empty-state-title { font-size: 1.6rem; margin-bottom: 0.7rem; }
+  .empty-state-description { font-size: 0.95rem; max-width: 320px; }
+  .empty-state-cta {
+    padding: 11px 29px;
+    font-size: 0.9rem;
+    border-radius: 13px;
+    gap: 9px;
+  }
+  .empty-state-cta .btn-icon { font-size: 1.1rem; }
+
+  /* Additional Modal Components - Tablet */
+  .detail-items-text { padding: 0.7rem; border-radius: 5px; margin: 0.45rem 0; }
+  .tracking-progress { margin: 0.9rem 0; }
+  .progress-bar { height: 7px; border-radius: 3px; }
+  .progress-text { font-size: 0.82rem; margin: 0.45rem 0; }
+  .loading-spinner { width: 36px; height: 36px; border-width: 3px; }
+
+  /* Notification Toast - Tablet */
+  .notification-toast {
+    bottom: 82px;
+    padding: 9px 18px;
+    border-radius: 7px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Mobile (481px - 768px) - ~35-40% size reduction */
+@media (max-width: 768px) {
+  .main-content { padding: 16px; }
+
+  /* Header & Titles - Mobile */
+  .header-section { padding: 16px 0; margin-bottom: 16px; }
+  .category-title { font-size: 1.4rem; }
+  .subcategory-title { font-size: 1.25rem; border-left: 4px solid var(--accent); padding-left: 12px; margin: 22px 0 16px; }
+  .category-section { margin-bottom: 32px; }
+
+  /* Search Bar - Mobile */
+  .search-bar-container { margin-bottom: 14px; }
+  .search-bar {
+    border-radius: 20px;
+    padding: 6px 10px;
+    border-width: 1px;
+  }
+  .search-input { height: 32px; font-size: 12px; padding: 0 32px 0 28px; border-radius: 18px; }
+  .search-icon { left: 11px; font-size: 13px; }
+  .clear-btn { font-size: 13px; padding: 5px; border-radius: 5px; }
+
+  /* Tabs - Mobile */
+  .category-tabs {
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 0 10px 10px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .category-tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 8px 12px;
+    font-size: 11px;
+    border-radius: 16px;
+    border-width: 2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Orders Grid - Mobile */
+  .orders-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  /* Order/Booking Cards - Mobile */
+  .order-card, .booking-card {
+    padding: 14px;
+    border-radius: 16px;
+    border-width: 1px;
+  }
+  .order-card::before, .booking-card::before { height: 3px; }
+
+  .order-header, .booking-header {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom-width: 1px;
+    gap: 8px;
+  }
+
+  .order-info h3, .booking-info h3 { font-size: 0.9rem; margin-bottom: 3px; }
+  .order-date { font-size: 0.75rem; }
+
+  /* Status Badges - Mobile */
+  .order-statuses { gap: 5px; align-items: flex-start; }
+  .payment-status {
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.6rem;
+  }
+  .payment-status i { font-size: 0.55rem; }
+
+  .order-status {
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    border-width: 2px;
+  }
+
+  .payment-success, .payment-warning, .payment-info, .payment-secondary, .payment-danger {
+    padding: 0px 8px;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    border-width: 2px;
+  }
+
+  /* Order Items - Mobile */
+  .order-items { margin-bottom: 12px; }
+  .order-items h4 { font-size: 0.75rem; margin-bottom: 7px; }
+  .item-list { max-height: 120px; padding-right: 3px; }
+  .item-list li { padding: 4px 0; font-size: 0.7rem; border-bottom-width: 1px; }
+
+  /* Order Total - Mobile */
+  .order-total {
+    padding: 10px 0;
+    border-top-width: 2px;
+    margin-top: 8px;
+  }
+  .total-label { font-size: 0.75rem; }
+  .total-amount { font-size: 0.95rem; }
+
+  /* Buttons - Mobile */
+  .order-actions {
+    gap: 6px;
+    margin-top: 12px;
+    width: 100%;
+    justify-content: stretch;
+  }
+  .btn {
+    padding: 6px 12px;
+    font-size: 0.65rem;
+    border-radius: 8px;
+    border-width: 2px;
+  }
+
+  /* Booking Details - Mobile */
+  .booking-detail { gap: 8px; margin-bottom: 8px; font-size: 0.8rem; }
+  .booking-detail-icon { width: 16px; font-size: 1rem; }
+
+  /* Modal - Mobile */
+  .popup { padding-top: 3vh; }
+  .cart-sidebar {
+    max-width: 450px;
+    width: 92%;
+    height: 88vh;
+    border-radius: 16px;
+  }
+  .cart-header-section { padding: 1rem 1rem 0.65rem; margin-bottom: 0.85rem; }
+  .cart-title-section { gap: 0.5rem; }
+  .cart-title-icon { font-size: 1.4rem; margin-right: 0.4rem; }
+  .cart-title { font-size: 1.2rem; }
+  .close-cart-btn { font-size: 20px; }
+
+  .cart-content { padding: 1.6rem; }
+  .cart-content-icon { font-size: 3rem; margin-bottom: 0.8rem; }
+  .cart-content-text { font-size: 0.95rem; margin-bottom: 0.4rem; }
+  .cart-content-subtext { font-size: 0.8rem; }
+
+  /* Detail Card - Mobile */
+  .detail-card {
+    padding: 18px;
+    gap: 16px;
+    margin: 16px auto;
+    max-width: 550px;
+    border-radius: 16px;
+    border-width: 1px;
+  }
+  .detail-header { gap: 12px; padding-bottom: 12px; border-bottom-width: 2px; }
+  .detail-header h3 { font-size: 1.2rem; }
+  .detail-icon { font-size: 1.9rem; }
+
+  .detail-body { gap: 16px; }
+  .detail-section {
+    padding: 12px;
+    border-radius: 12px;
+    border-width: 1px;
+  }
+  .detail-section h4 {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom-width: 1px;
+  }
+  .detail-section p { font-size: 0.85rem; margin-bottom: 6px; }
+
+  .detail-item-list { max-height: 160px; padding-right: 3px; }
+  .detail-item { padding: 6px 0; font-size: 0.8rem; border-bottom-width: 1px; }
+
+  .detail-actions { gap: 8px; padding-top: 12px; border-top-width: 1px; }
+  .detail-actions .btn { min-width: 100px; }
+
+  /* Empty State - Mobile */
+  .empty-state { padding: 2.4rem 0.8rem; }
+  .empty-state-icon { font-size: 3rem; margin-bottom: 0.8rem; }
+  .empty-state-text { font-size: 1rem; margin-bottom: 0.4rem; }
+  .empty-state-subtext { font-size: 0.85rem; }
+
+  .no-orders-message, .no-bookings-message {
+    margin: 2.4rem auto;
+    padding: 2.4rem 1.6rem;
+    max-width: 420px;
+    border-radius: 16px;
+    border-width: 2px;
+  }
+  .empty-state-title { font-size: 1.45rem; margin-bottom: 0.65rem; }
+  .empty-state-description { font-size: 0.9rem; max-width: 300px; }
+  .empty-state-cta {
+    padding: 10px 26px;
+    font-size: 0.85rem;
+    border-radius: 12px;
+    gap: 8px;
+  }
+  .empty-state-cta .btn-icon { font-size: 1rem; }
+
+  /* Additional Modal Components - Mobile */
+  .detail-items-text { padding: 0.65rem; border-radius: 5px; margin: 0.4rem 0; }
+  .tracking-progress { margin: 0.8rem 0; }
+  .progress-bar { height: 6px; border-radius: 3px; }
+  .progress-text { font-size: 0.8rem; margin: 0.4rem 0; }
+  .loading-spinner { width: 32px; height: 32px; border-width: 3px; margin: 16px auto; }
+  .loading-text, .empty-message, .error-message { font-size: 1rem; margin-top: 8px; }
+
+  /* Notification Toast - Mobile */
+  .notification-toast {
+    bottom: 75px;
+    padding: 8px 16px;
+    border-radius: 7px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Small Mobile (< 480px) - ~45-50% size reduction */
+@media (max-width: 480px) {
+  .main-content { padding: 12px; }
+
+  /* Header & Titles - Small Mobile */
+  .header-section { padding: 14px 0; margin-bottom: 14px; }
+  .category-title { font-size: 1.2rem; }
+  .subcategory-title { font-size: 1.1rem; border-left: 3px solid var(--accent); padding-left: 10px; margin: 18px 0 14px; }
+  .category-section { margin-bottom: 28px; }
+
+  /* Search Bar - Small Mobile */
+  .search-bar-container { margin-bottom: 12px; }
+  .search-bar {
+    border-radius: 18px;
+    padding: 5px 9px;
+    border-width: 1px;
+  }
+  .search-input { height: 28px; font-size: 11px; padding: 0 28px 0 26px; border-radius: 16px; }
+  .search-icon { left: 10px; font-size: 12px; }
+  .clear-btn { font-size: 12px; padding: 4px; border-radius: 5px; }
+
+  /* Tabs - Small Mobile */
+  .category-tabs {
+    gap: 5px;
+    margin-bottom: 12px;
+    padding: 0 8px 8px;
+  }
+  .tab {
+    padding: 7px 10px;
+    font-size: 10px;
+    border-radius: 14px;
+    border-width: 2px;
+  }
+
+  /* Orders Grid - Small Mobile */
+  .orders-grid { gap: 12px; }
+
+  /* Order/Booking Cards - Small Mobile */
+  .order-card, .booking-card {
+    padding: 12px;
+    border-radius: 14px;
+    border-width: 1px;
+  }
+  .order-card::before, .booking-card::before { height: 3px; }
+
+  .order-header, .booking-header {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom-width: 1px;
+    gap: 6px;
+  }
+
+  .order-info h3, .booking-info h3 { font-size: 0.8rem; margin-bottom: 2px; }
+  .order-date { font-size: 0.7rem; }
+
+  /* Status Badges - Small Mobile */
+  .order-statuses { gap: 4px; }
+  .payment-status {
+    padding: 2px 7px;
+    border-radius: 9px;
+    font-size: 0.55rem;
+  }
+  .payment-status i { font-size: 0.5rem; }
+
+  .order-status {
+    padding: 4px 9px;
+    border-radius: 11px;
+    font-size: 0.6rem;
+    border-width: 2px;
+  }
+
+  .payment-success, .payment-warning, .payment-info, .payment-secondary, .payment-danger {
+    padding: 0px 7px;
+    border-radius: 11px;
+    font-size: 0.6rem;
+    border-width: 2px;
+  }
+
+  /* Order Items - Small Mobile */
+  .order-items { margin-bottom: 10px; }
+  .order-items h4 { font-size: 0.7rem; margin-bottom: 6px; }
+  .item-list { max-height: 100px; padding-right: 3px; }
+  .item-list li { padding: 3px 0; font-size: 0.65rem; border-bottom-width: 1px; }
+
+  /* Order Total - Small Mobile */
+  .order-total {
+    padding: 9px 0;
+    border-top-width: 2px;
+    margin-top: 7px;
+  }
+  .total-label { font-size: 0.7rem; }
+  .total-amount { font-size: 0.85rem; }
+
+  /* Buttons - Small Mobile */
+  .order-actions {
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .btn {
+    width: 100%;
+    padding: 7px 10px;
+    font-size: 0.6rem;
+    border-radius: 8px;
+    border-width: 2px;
+  }
+
+  /* Booking Details - Small Mobile */
+  .booking-detail { gap: 7px; margin-bottom: 7px; font-size: 0.75rem; }
+  .booking-detail-icon { width: 15px; font-size: 0.95rem; }
+
+  /* Modal - Small Mobile */
+  .popup { padding-top: 2vh; }
+  .cart-sidebar {
+    width: 95%;
+    max-width: 400px;
+    height: 90vh;
+    border-radius: 14px;
+  }
+  .cart-header-section { padding: 0.9rem 0.9rem 0.6rem; margin-bottom: 0.75rem; }
+  .cart-title-section { gap: 0.45rem; }
+  .cart-title-icon { font-size: 1.2rem; margin-right: 0.35rem; }
+  .cart-title { font-size: 1.05rem; }
+  .close-cart-btn { font-size: 18px; }
+
+  .cart-content { padding: 1.4rem; }
+  .cart-content-icon { font-size: 2.5rem; margin-bottom: 0.7rem; }
+  .cart-content-text { font-size: 0.85rem; margin-bottom: 0.35rem; }
+  .cart-content-subtext { font-size: 0.75rem; }
+
+  /* Detail Card - Small Mobile */
+  .detail-card {
+    padding: 16px;
+    gap: 14px;
+    margin: 14px auto;
+    border-radius: 14px;
+    border-width: 1px;
+  }
+  .detail-header { gap: 10px; padding-bottom: 10px; border-bottom-width: 2px; }
+  .detail-header h3 { font-size: 1.05rem; }
+  .detail-icon { font-size: 1.7rem; }
+
+  .detail-body { gap: 14px; }
+  .detail-section {
+    padding: 10px;
+    border-radius: 10px;
+    border-width: 1px;
+  }
+  .detail-section h4 {
+    font-size: 0.85rem;
+    margin-bottom: 7px;
+    padding-bottom: 5px;
+    border-bottom-width: 1px;
+  }
+  .detail-section p { font-size: 0.8rem; margin-bottom: 6px; }
+
+  .detail-item-list { max-height: 140px; padding-right: 3px; }
+  .detail-item { padding: 6px 0; font-size: 0.75rem; border-bottom-width: 1px; }
+
+  .detail-actions { gap: 7px; padding-top: 10px; border-top-width: 1px; }
+  .detail-actions .btn { min-width: 90px; }
+
+  /* Empty State - Small Mobile */
+  .empty-state { padding: 2rem 0.7rem; }
+  .empty-state-icon { font-size: 2.5rem; margin-bottom: 0.7rem; }
+  .empty-state-text { font-size: 0.9rem; margin-bottom: 0.35rem; }
+  .empty-state-subtext { font-size: 0.8rem; }
+
+  .no-orders-message, .no-bookings-message {
+    margin: 2rem auto;
+    padding: 2rem 1.4rem;
+    max-width: 380px;
+    border-radius: 14px;
+    border-width: 2px;
+  }
+  .empty-state-title { font-size: 1.25rem; margin-bottom: 0.6rem; }
+  .empty-state-description { font-size: 0.85rem; max-width: 280px; }
+  .empty-state-cta {
+    padding: 9px 24px;
+    font-size: 0.8rem;
+    border-radius: 11px;
+    gap: 7px;
+  }
+  .empty-state-cta .btn-icon { font-size: 0.95rem; }
+
+  /* Additional Modal Components - Small Mobile */
+  .detail-items-text { padding: 0.6rem; border-radius: 5px; margin: 0.35rem 0; }
+  .tracking-progress { margin: 0.7rem 0; }
+  .progress-bar { height: 6px; border-radius: 3px; }
+  .progress-text { font-size: 0.75rem; margin: 0.35rem 0; }
+  .loading-spinner { width: 28px; height: 28px; border-width: 3px; margin: 14px auto; }
+  .loading-text, .empty-message, .error-message { font-size: 0.95rem; margin-top: 7px; }
+
+  /* Notification Toast - Small Mobile */
+  .notification-toast {
+    bottom: 70px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+  }
+}

@@ -1042,34 +1042,749 @@
       animation: float 3s ease-in-out infinite;
   }
 
-  /* ===== Responsive ===== */
-  @media (max-width: 1200px) {
-      .grid-four {
-          grid-template-columns: repeat(3, 1fr);
-      }
+  /* ===== RESPONSIVE DESIGN ===== */
+
+  /* Tablet (768px - 992px) - ~20-25% size reduction */
+  @media (max-width: 992px) {
+    .main-content { padding: 18px; }
+
+    /* Header & Titles - Tablet */
+    .header-section { padding: 18px 0; margin-bottom: 18px; }
+    .category-title { font-size: 1.75rem; margin-bottom: 14px; }
+
+    /* Notification Bell - Tablet */
+    .notification-bell {
+      top: 18px;
+      right: 18px;
+      width: 44px;
+      height: 44px;
+      border-radius: 11px;
+      font-size: 18px;
+    }
+    .notification-bell .badge {
+      top: -3px;
+      right: -3px;
+      width: 18px;
+      height: 18px;
+      font-size: 11px;
+    }
+
+    /* Search Bar - Tablet */
+    .search-bar-container { margin-bottom: 14px; }
+    .search-bar { border-radius: 22px; padding: 7px 11px; }
+    .search-input { height: 36px; font-size: 13px; padding: 0 36px 0 32px; border-radius: 18px; }
+    .search-icon { left: 13px; font-size: 14px; }
+    .clear-btn { font-size: 14px; padding: 5px; border-radius: 5px; }
+
+    /* Grid Layouts - Tablet */
+    .grid-two { gap: 18px; margin-bottom: 22px; }
+    .grid-three { grid-template-columns: repeat(2, 1fr); gap: 18px; margin-bottom: 22px; }
+    .grid-four { grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 22px; }
+
+    /* Cards - Tablet */
+    .card {
+      padding: 22px;
+      margin-bottom: 22px;
+      border-radius: 18px;
+      border-width: 1px;
+    }
+    .card::before { height: 3px; }
+    .card h2 { margin-bottom: 14px; font-size: 1.35rem; }
+    .card h3 { margin-bottom: 11px; font-size: 1.1rem; }
+    .card p { font-size: 0.9rem; margin-bottom: 14px; }
+
+    /* Points Card - Tablet */
+    .points-display { padding: 18px; border-radius: 14px; margin-bottom: 18px; border-width: 1px; }
+    .points-number { font-size: 2.7rem; margin: 11px 0; }
+    .points-label { font-size: 0.95rem; }
+
+    /* Check-in Track - Tablet */
+    .checkin-track {
+      gap: 11px;
+      margin: 18px 0;
+      padding: 14px;
+      border-radius: 14px;
+      border-width: 1px;
+    }
+    .day {
+      padding: 13px 7px;
+      border-radius: 13px;
+      font-size: 0.75rem;
+      border-width: 2px;
+      min-height: 72px;
+    }
+    .day.completed::after {
+      width: 14px;
+      height: 14px;
+      font-size: 9px;
+    }
+    .day-points { font-size: 0.85rem; }
+    .day-label { font-size: 0.7rem; }
+    .day-number { font-size: 0.6rem; }
+
+    /* Buttons - Tablet */
+    .btn-primary {
+      padding: 13px 18px;
+      border-radius: 11px;
+      font-size: 0.9rem;
+    }
+    .btn-secondary {
+      padding: 9px 14px;
+      border-radius: 9px;
+      font-size: 0.8rem;
+    }
+    .redeem-btn { padding: 11px 16px; font-size: 0.85rem; min-width: 90px; }
+
+    /* Reward Items - Tablet */
+    .reward-list { gap: 14px; max-height: 410px; }
+    .reward-item {
+      padding: 14px;
+      border-radius: 11px;
+      border-width: 2px;
+    }
+    .reward-item .reward-name { font-size: 0.95rem; margin-bottom: 3px; }
+    .reward-item .reward-cost, .reward-item .reward-requirement {
+      font-size: 0.8rem;
+      margin-bottom: 3px;
+    }
+    .reward-item .reward-terms { font-size: 0.75rem; margin-top: 2px; }
+    .redemption-method { margin-top: 7px; margin-bottom: 3px; }
+    .redemption-method small { font-size: 0.75rem; }
+
+    /* Voucher Cards - Tablet */
+    .voucher-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+    .voucher-card {
+      border-radius: 18px;
+      padding: 18px;
+      border-width: 3px;
+    }
+    .voucher-card::before { font-size: 45px; top: -13px; right: -13px; }
+    .voucher-name { font-size: 1.1rem; margin-bottom: 7px; }
+    .voucher-description { font-size: 0.85rem; margin-bottom: 7px; }
+    .voucher-expires { font-size: 0.75rem; }
+    .voucher-use-btn {
+      margin-top: 14px;
+      padding: 9px 14px;
+      border-radius: 7px;
+      font-size: 0.8rem;
+    }
+
+    /* Empty State - Tablet */
+    .empty-state { padding: 54px 18px; }
+    .empty-state .icon { font-size: 3.5rem; margin-bottom: 14px; }
+    .empty-state h3 { margin-bottom: 11px; font-size: 1.15rem; }
+    .empty-state p { font-size: 0.95rem; }
+
+    /* Redeemed Rewards - Tablet */
+    .redeemed-reward-item {
+      padding: 14px;
+      border-width: 2px;
+      border-radius: 14px;
+      margin-bottom: 11px;
+    }
+    .redeemed-reward-item .reward-details h4 { margin-bottom: 3px; font-size: 1rem; }
+    .redeemed-reward-item .reward-details p { margin-bottom: 7px; font-size: 0.85rem; }
+    .redeemed-reward-item .reward-meta { gap: 11px; font-size: 0.75rem; }
+    .status-badge { padding: 3px 7px; border-radius: 7px; font-size: 0.65rem; margin-left: 7px; }
+    .redeemed-reward-item .reward-actions { gap: 7px; }
+    .qr-code { padding: 7px 14px; border-radius: 7px; font-size: 0.85rem; }
+    .staff-note { font-size: 0.75rem; }
+
+    /* Progress Bar - Tablet */
+    .progress-container { border-radius: 11px; height: 11px; margin: 11px 0; }
+    .progress-bar { border-radius: 11px; }
+
+    /* Loyalty Status - Tablet */
+    .loyalty-level { font-size: 1rem; margin-bottom: 7px; }
+    .loyalty-benefits {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 11px;
+      border-width: 2px;
+    }
+    .loyalty-benefits h4 { margin-bottom: 11px; font-size: 0.95rem; }
+    .loyalty-benefits ul { margin-left: 18px; }
+    .loyalty-benefits li { margin-bottom: 5px; }
+
+    /* Special Events - Tablet */
+    .special-events { border-width: 3px; }
+    .event-item {
+      padding: 14px;
+      border-radius: 11px;
+      margin-bottom: 11px;
+      border-width: 2px;
+    }
+    .event-title { margin-bottom: 3px; font-size: 1rem; }
+    .event-description { font-size: 0.85rem; }
+    .event-status {
+      padding: 5px 11px;
+      border-radius: 5px;
+      font-size: 0.7rem;
+    }
+
+    /* Achievements - Tablet */
+    .achievement-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+    .achievement-item {
+      padding: 14px;
+      border-radius: 11px;
+      border-width: 2px;
+    }
+    .achievement-item.completed::before { height: 3px; }
+    .achievement-title { margin-bottom: 7px; font-size: 0.95rem; }
+    .achievement-desc { font-size: 0.8rem; margin-bottom: 11px; }
+    .achievement-status { font-size: 0.75rem; }
+
+    /* Modal - Tablet */
+    .modal-content {
+      margin: 2.5% auto;
+      border-radius: 14px;
+      max-height: 87vh;
+    }
+    .modal-header {
+      padding: 22px 22px 14px 22px;
+      border-bottom-width: 2px;
+    }
+    .modal-header h2 { font-size: 1.35rem; }
+    .close-btn {
+      font-size: 1.35rem;
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+    }
+    .modal-body {
+      padding: 14px 22px 22px 22px;
+      max-height: 72vh;
+    }
+
+    /* Confirmation Modal - Tablet */
+    .confirmation-modal {
+      border-radius: 18px;
+      padding: 1.8rem;
+      max-width: 360px;
+    }
+    .confirmation-title { font-size: 1.35rem; margin-bottom: 0.9rem; }
+    .confirmation-message { margin-bottom: 1.8rem; }
+    .confirmation-buttons { gap: 0.9rem; }
+    .confirmation-btn { padding: 0.7rem 1.8rem; border-radius: 11px; }
+
+    /* Toast - Tablet */
+    .toast {
+      top: 18px;
+      right: 18px;
+      padding: 14px 22px;
+      border-radius: 11px;
+      max-width: 320px;
+      font-size: 13px;
+    }
+
+    /* Misc - Tablet */
+    .see-all-btn {
+      padding: 11px 22px;
+      border-radius: 7px;
+      font-size: 0.85rem;
+      gap: 7px;
+    }
+    .barcode-container {
+      border-width: 2px;
+      border-radius: 11px;
+      padding: 14px 18px;
+    }
+    .barcode-container i { margin-bottom: 3px; }
   }
 
+  /* Mobile (481px - 768px) - ~35-40% size reduction */
+  @media (max-width: 768px) {
+    .main-content { padding: 16px; }
 
-  @media (max-width: 600px) {
-      .main-content {
-          padding: 15px;
-      }
+    /* Header & Titles - Mobile */
+    .header-section { padding: 16px 0; margin-bottom: 16px; }
+    .category-title { font-size: 1.4rem; margin-bottom: 14px; }
 
-      .grid-three, .grid-four {
-          grid-template-columns: 1fr;
-      }
+    /* Notification Bell - Mobile */
+    .notification-bell {
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+    .notification-bell .badge {
+      top: -3px;
+      right: -3px;
+      width: 16px;
+      height: 16px;
+      font-size: 10px;
+    }
 
-      .voucher-grid {
-          grid-template-columns: 1fr;
-      }
+    /* Search Bar - Mobile */
+    .search-bar-container { margin-bottom: 14px; }
+    .search-bar { border-radius: 20px; padding: 6px 10px; border-width: 1px; }
+    .search-input { height: 32px; font-size: 12px; padding: 0 32px 0 28px; border-radius: 18px; }
+    .search-icon { left: 11px; font-size: 13px; }
+    .clear-btn { font-size: 13px; padding: 5px; border-radius: 5px; }
 
-      .achievement-grid {
-          grid-template-columns: 1fr;
-      }
+    /* Grid Layouts - Mobile */
+    .grid-two, .grid-three, .grid-four { grid-template-columns: 1fr; gap: 14px; margin-bottom: 20px; }
 
-      .checkin-track {
-          grid-template-columns: repeat(3, 1fr);
-      }
+    /* Cards - Mobile */
+    .card {
+      padding: 18px;
+      margin-bottom: 20px;
+      border-radius: 16px;
+      border-width: 1px;
+    }
+    .card::before { height: 3px; }
+    .card h2 { margin-bottom: 14px; font-size: 1.2rem; }
+    .card h3 { margin-bottom: 10px; font-size: 1rem; }
+    .card p { font-size: 0.85rem; margin-bottom: 14px; }
+
+    /* Points Card - Mobile */
+    .points-display { padding: 16px; border-radius: 14px; margin-bottom: 16px; border-width: 1px; }
+    .points-number { font-size: 2.25rem; margin: 10px 0; }
+    .points-label { font-size: 0.9rem; }
+
+    /* Check-in Track - Mobile */
+    .checkin-track {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin: 16px 0;
+      padding: 14px;
+      border-radius: 14px;
+      border-width: 1px;
+    }
+    .day {
+      padding: 12px 6px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      border-width: 2px;
+      min-height: 65px;
+    }
+    .day.completed::after {
+      width: 13px;
+      height: 13px;
+      font-size: 8px;
+    }
+    .day-points { font-size: 0.8rem; }
+    .day-label { font-size: 0.65rem; }
+    .day-number { font-size: 0.55rem; }
+
+    /* Buttons - Mobile */
+    .btn-primary {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+    }
+    .btn-secondary {
+      padding: 8px 13px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+    }
+    .redeem-btn { padding: 10px 14px; font-size: 0.8rem; min-width: 85px; }
+
+    /* Reward Items - Mobile */
+    .reward-list { gap: 14px; max-height: 370px; }
+    .reward-item {
+      padding: 14px;
+      border-radius: 10px;
+      border-width: 2px;
+    }
+    .reward-item .reward-name { font-size: 0.9rem; margin-bottom: 3px; }
+    .reward-item .reward-cost, .reward-item .reward-requirement {
+      font-size: 0.75rem;
+      margin-bottom: 3px;
+    }
+    .reward-item .reward-terms { font-size: 0.7rem; margin-top: 2px; }
+    .redemption-method { margin-top: 7px; margin-bottom: 3px; }
+    .redemption-method small { font-size: 0.7rem; }
+
+    /* Voucher Cards - Mobile */
+    .voucher-grid { grid-template-columns: 1fr; gap: 14px; }
+    .voucher-card {
+      border-radius: 16px;
+      padding: 16px;
+      border-width: 2px;
+    }
+    .voucher-card::before { font-size: 40px; top: -12px; right: -12px; }
+    .voucher-name { font-size: 1rem; margin-bottom: 7px; }
+    .voucher-description { font-size: 0.8rem; margin-bottom: 7px; }
+    .voucher-expires { font-size: 0.7rem; }
+    .voucher-use-btn {
+      margin-top: 14px;
+      padding: 8px 13px;
+      border-radius: 7px;
+      font-size: 0.75rem;
+    }
+
+    /* Empty State - Mobile */
+    .empty-state { padding: 48px 16px; }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 14px; }
+    .empty-state h3 { margin-bottom: 10px; font-size: 1.05rem; }
+    .empty-state p { font-size: 0.9rem; }
+
+    /* Redeemed Rewards - Mobile */
+    .redeemed-reward-item {
+      padding: 14px;
+      border-width: 2px;
+      border-radius: 14px;
+      margin-bottom: 10px;
+    }
+    .redeemed-reward-item .reward-details h4 { margin-bottom: 3px; font-size: 0.95rem; }
+    .redeemed-reward-item .reward-details p { margin-bottom: 7px; font-size: 0.8rem; }
+    .redeemed-reward-item .reward-meta { gap: 10px; font-size: 0.7rem; }
+    .status-badge { padding: 3px 7px; border-radius: 7px; font-size: 0.6rem; margin-left: 7px; }
+    .redeemed-reward-item .reward-actions { gap: 7px; }
+    .qr-code { padding: 7px 13px; border-radius: 7px; font-size: 0.8rem; }
+    .staff-note { font-size: 0.7rem; }
+
+    /* Progress Bar - Mobile */
+    .progress-container { border-radius: 10px; height: 10px; margin: 10px 0; }
+    .progress-bar { border-radius: 10px; }
+
+    /* Loyalty Status - Mobile */
+    .loyalty-level { font-size: 0.95rem; margin-bottom: 7px; }
+    .loyalty-benefits {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      border-width: 2px;
+    }
+    .loyalty-benefits h4 { margin-bottom: 10px; font-size: 0.9rem; }
+    .loyalty-benefits ul { margin-left: 16px; }
+    .loyalty-benefits li { margin-bottom: 5px; }
+
+    /* Special Events - Mobile */
+    .special-events { border-width: 2px; }
+    .event-item {
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      border-width: 2px;
+    }
+    .event-title { margin-bottom: 3px; font-size: 0.95rem; }
+    .event-description { font-size: 0.8rem; }
+    .event-status {
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 0.65rem;
+    }
+
+    /* Achievements - Mobile */
+    .achievement-grid { grid-template-columns: 1fr; gap: 14px; }
+    .achievement-item {
+      padding: 14px;
+      border-radius: 10px;
+      border-width: 2px;
+    }
+    .achievement-item.completed::before { height: 3px; }
+    .achievement-title { margin-bottom: 7px; font-size: 0.9rem; }
+    .achievement-desc { font-size: 0.75rem; margin-bottom: 10px; }
+    .achievement-status { font-size: 0.7rem; }
+
+    /* Modal - Mobile */
+    .modal-content {
+      margin: 2% auto;
+      border-radius: 14px;
+      max-height: 90vh;
+    }
+    .modal-header {
+      padding: 20px 20px 14px 20px;
+      border-bottom-width: 2px;
+    }
+    .modal-header h2 { font-size: 1.2rem; }
+    .close-btn {
+      font-size: 1.2rem;
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+    }
+    .modal-body {
+      padding: 14px 20px 20px 20px;
+      max-height: 74vh;
+    }
+
+    /* Confirmation Modal - Mobile */
+    .confirmation-modal {
+      border-radius: 16px;
+      padding: 1.6rem;
+      max-width: 340px;
+    }
+    .confirmation-title { font-size: 1.2rem; margin-bottom: 0.8rem; }
+    .confirmation-message { margin-bottom: 1.6rem; }
+    .confirmation-buttons { gap: 0.8rem; }
+    .confirmation-btn { padding: 0.65rem 1.6rem; border-radius: 10px; }
+
+    /* Toast - Mobile */
+    .toast {
+      top: 16px;
+      right: 16px;
+      padding: 14px 20px;
+      border-radius: 10px;
+      max-width: 300px;
+      font-size: 12px;
+    }
+
+    /* Misc - Mobile */
+    .see-all-btn {
+      padding: 10px 20px;
+      border-radius: 7px;
+      font-size: 0.8rem;
+      gap: 7px;
+    }
+    .barcode-container {
+      border-width: 2px;
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .barcode-container i { margin-bottom: 3px; }
+  }
+
+  /* Small Mobile (< 480px) - ~45-50% size reduction */
+  @media (max-width: 480px) {
+    .main-content { padding: 12px; }
+
+    /* Header & Titles - Small Mobile */
+    .header-section { padding: 14px 0; margin-bottom: 14px; }
+    .category-title { font-size: 1.2rem; margin-bottom: 12px; }
+
+    /* Notification Bell - Small Mobile */
+    .notification-bell {
+      top: 14px;
+      right: 14px;
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      font-size: 14px;
+    }
+    .notification-bell .badge {
+      top: -2px;
+      right: -2px;
+      width: 14px;
+      height: 14px;
+      font-size: 9px;
+    }
+
+    /* Search Bar - Small Mobile */
+    .search-bar-container { margin-bottom: 12px; }
+    .search-bar { border-radius: 18px; padding: 5px 9px; border-width: 1px; }
+    .search-input { height: 28px; font-size: 11px; padding: 0 28px 0 26px; border-radius: 16px; }
+    .search-icon { left: 10px; font-size: 12px; }
+    .clear-btn { font-size: 12px; padding: 4px; border-radius: 5px; }
+
+    /* Grid Layouts - Small Mobile */
+    .grid-two, .grid-three, .grid-four { gap: 12px; margin-bottom: 18px; }
+
+    /* Cards - Small Mobile */
+    .card {
+      padding: 16px;
+      margin-bottom: 18px;
+      border-radius: 14px;
+      border-width: 1px;
+    }
+    .card::before { height: 3px; }
+    .card h2 { margin-bottom: 12px; font-size: 1.05rem; }
+    .card h3 { margin-bottom: 10px; font-size: 0.9rem; }
+    .card p { font-size: 0.8rem; margin-bottom: 12px; }
+
+    /* Points Card - Small Mobile */
+    .points-display { padding: 14px; border-radius: 12px; margin-bottom: 14px; border-width: 1px; }
+    .points-number { font-size: 1.9rem; margin: 9px 0; }
+    .points-label { font-size: 0.85rem; }
+
+    /* Check-in Track - Small Mobile */
+    .checkin-track {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 14px 0;
+      padding: 12px;
+      border-radius: 12px;
+      border-width: 1px;
+    }
+    .day {
+      padding: 10px 5px;
+      border-radius: 10px;
+      font-size: 0.65rem;
+      border-width: 2px;
+      min-height: 58px;
+    }
+    .day.completed::after {
+      width: 12px;
+      height: 12px;
+      font-size: 7px;
+    }
+    .day-points { font-size: 0.75rem; }
+    .day-label { font-size: 0.6rem; }
+    .day-number { font-size: 0.5rem; }
+
+    /* Buttons - Small Mobile */
+    .btn-primary {
+      padding: 11px 14px;
+      border-radius: 9px;
+      font-size: 0.8rem;
+    }
+    .btn-secondary {
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 0.7rem;
+    }
+    .redeem-btn { padding: 9px 13px; font-size: 0.75rem; min-width: 80px; }
+
+    /* Reward Items - Small Mobile */
+    .reward-list { gap: 12px; max-height: 330px; }
+    .reward-item {
+      padding: 12px;
+      border-radius: 10px;
+      border-width: 2px;
+    }
+    .reward-item .reward-name { font-size: 0.85rem; margin-bottom: 2px; }
+    .reward-item .reward-cost, .reward-item .reward-requirement {
+      font-size: 0.7rem;
+      margin-bottom: 2px;
+    }
+    .reward-item .reward-terms { font-size: 0.65rem; margin-top: 2px; }
+    .redemption-method { margin-top: 6px; margin-bottom: 2px; }
+    .redemption-method small { font-size: 0.65rem; }
+
+    /* Voucher Cards - Small Mobile */
+    .voucher-grid { gap: 12px; }
+    .voucher-card {
+      border-radius: 14px;
+      padding: 14px;
+      border-width: 2px;
+    }
+    .voucher-card::before { font-size: 36px; top: -11px; right: -11px; }
+    .voucher-name { font-size: 0.95rem; margin-bottom: 6px; }
+    .voucher-description { font-size: 0.75rem; margin-bottom: 6px; }
+    .voucher-expires { font-size: 0.65rem; }
+    .voucher-use-btn {
+      margin-top: 12px;
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+    }
+
+    /* Empty State - Small Mobile */
+    .empty-state { padding: 40px 14px; }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .empty-state h3 { margin-bottom: 10px; font-size: 0.95rem; }
+    .empty-state p { font-size: 0.85rem; }
+
+    /* Redeemed Rewards - Small Mobile */
+    .redeemed-reward-item {
+      padding: 12px;
+      border-width: 2px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+    .redeemed-reward-item .reward-details h4 { margin-bottom: 2px; font-size: 0.9rem; }
+    .redeemed-reward-item .reward-details p { margin-bottom: 6px; font-size: 0.75rem; }
+    .redeemed-reward-item .reward-meta { gap: 9px; font-size: 0.65rem; }
+    .status-badge { padding: 2px 6px; border-radius: 6px; font-size: 0.55rem; margin-left: 6px; }
+    .redeemed-reward-item .reward-actions { gap: 6px; }
+    .qr-code { padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; }
+    .staff-note { font-size: 0.65rem; }
+
+    /* Progress Bar - Small Mobile */
+    .progress-container { border-radius: 10px; height: 9px; margin: 9px 0; }
+    .progress-bar { border-radius: 10px; }
+
+    /* Loyalty Status - Small Mobile */
+    .loyalty-level { font-size: 0.9rem; margin-bottom: 6px; }
+    .loyalty-benefits {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 10px;
+      border-width: 2px;
+    }
+    .loyalty-benefits h4 { margin-bottom: 9px; font-size: 0.85rem; }
+    .loyalty-benefits ul { margin-left: 14px; }
+    .loyalty-benefits li { margin-bottom: 4px; }
+
+    /* Special Events - Small Mobile */
+    .special-events { border-width: 2px; }
+    .event-item {
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      border-width: 2px;
+    }
+    .event-title { margin-bottom: 2px; font-size: 0.9rem; }
+    .event-description { font-size: 0.75rem; }
+    .event-status {
+      padding: 4px 9px;
+      border-radius: 5px;
+      font-size: 0.6rem;
+    }
+
+    /* Achievements - Small Mobile */
+    .achievement-grid { gap: 12px; }
+    .achievement-item {
+      padding: 12px;
+      border-radius: 10px;
+      border-width: 2px;
+    }
+    .achievement-item.completed::before { height: 3px; }
+    .achievement-title { margin-bottom: 6px; font-size: 0.85rem; }
+    .achievement-desc { font-size: 0.7rem; margin-bottom: 10px; }
+    .achievement-status { font-size: 0.65rem; }
+
+    /* Modal - Small Mobile */
+    .modal-content {
+      margin: 2% auto;
+      border-radius: 12px;
+      width: 95%;
+      max-height: 92vh;
+    }
+    .modal-header {
+      padding: 18px 18px 12px 18px;
+      border-bottom-width: 2px;
+    }
+    .modal-header h2 { font-size: 1.05rem; }
+    .close-btn {
+      font-size: 1.1rem;
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+    }
+    .modal-body {
+      padding: 12px 18px 18px 18px;
+      max-height: 76vh;
+    }
+
+    /* Confirmation Modal - Small Mobile */
+    .confirmation-modal {
+      border-radius: 14px;
+      padding: 1.4rem;
+      max-width: 320px;
+    }
+    .confirmation-title { font-size: 1.05rem; margin-bottom: 0.7rem; }
+    .confirmation-message { margin-bottom: 1.4rem; }
+    .confirmation-buttons { gap: 0.7rem; }
+    .confirmation-btn { padding: 0.6rem 1.4rem; border-radius: 9px; }
+
+    /* Toast - Small Mobile */
+    .toast {
+      top: 14px;
+      right: 14px;
+      padding: 12px 18px;
+      border-radius: 9px;
+      max-width: 280px;
+      font-size: 11px;
+    }
+
+    /* Misc - Small Mobile */
+    .see-all-btn {
+      padding: 9px 18px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      gap: 6px;
+    }
+    .barcode-container {
+      border-width: 2px;
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .barcode-container i { margin-bottom: 2px; }
   }
 
   /* ===== Check-in Animations ===== */
