@@ -28,10 +28,18 @@ class RewardsController extends Controller
             ->limit(20)
             ->get();
 
-        $members = User::whereNotNull('points_balance')
+        // FIXED: Load members with customerProfile for proper tier calculation
+        $members = User::with('customerProfile')
+            ->whereNotNull('points_balance')
             ->orderBy('points_balance', 'desc')
             ->limit(20)
             ->get();
+
+        // FIXED: Calculate real-time tier for each member using TierService
+        $tierService = app(\App\Services\Loyalty\TierService::class);
+        $members->each(function($member) use ($tierService) {
+            $member->calculatedTier = $tierService->calculateEligibleTier($member);
+        });
 
         // Rewards system data
         $checkinSettings = CheckinSetting::first();
@@ -994,12 +1002,54 @@ class RewardsController extends Controller
     }
 
     // Members
-    public function membersIndex()
+    public function membersIndex(Request $request)
     {
-        $members = User::with('customerProfile.loyaltyTier')
-            ->whereNotNull('points_balance')
-            ->orderBy('points_balance', 'desc')
-            ->paginate(20);
-        return view('admin.rewards.members.index', compact('members'));
+        // Calculate stats
+        $stats = [
+            'total_members' => User::whereNotNull('points_balance')->count(),
+            'total_points' => User::sum('points_balance') ?? 0,
+            'avg_points' => User::whereNotNull('points_balance')->avg('points_balance') ?? 0,
+            'total_spending' => \App\Models\CustomerProfile::sum('total_spent') ?? 0,
+        ];
+
+        // FIXED: Load members with customerProfile for proper tier calculation
+        $query = User::with('customerProfile')
+            ->whereNotNull('points_balance');
+
+        // Handle search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Handle sorting
+        $sortField = $request->get('sort', 'points_balance');
+        $sortDirection = $request->get('direction', 'desc');
+        $query->orderBy($sortField, $sortDirection);
+
+        // Get all members first (before filtering by tier)
+        $members = $query->paginate(20);
+
+        // FIXED: Calculate real-time tier for each member using TierService
+        $tierService = app(\App\Services\Loyalty\TierService::class);
+        $members->getCollection()->transform(function($member) use ($tierService) {
+            $member->calculatedTier = $tierService->calculateEligibleTier($member);
+            return $member;
+        });
+
+        // FIXED: Handle tier filtering AFTER calculating tiers
+        if ($request->filled('tier_id') && $request->tier_id !== 'all') {
+            $tierId = (int) $request->tier_id;
+            $members->setCollection(
+                $members->getCollection()->filter(function($member) use ($tierId) {
+                    return $member->calculatedTier && $member->calculatedTier->id === $tierId;
+                })
+            );
+        }
+
+        return view('admin.rewards.members.index', compact('members', 'stats'));
     }
 }

@@ -5,6 +5,7 @@ namespace App\Services\Loyalty;
 use App\Models\User;
 use App\Models\Reward;
 use App\Models\CustomerReward;
+use App\Models\CustomerVoucher;
 use App\Models\CustomerProfile;
 use App\Events\Loyalty\RewardRedeemed; // PHASE 5: Event import
 use Illuminate\Support\Facades\DB;
@@ -75,27 +76,37 @@ class RewardRedemptionService
                 'expires_at' => $reward->expiry_days ? now()->addDays($reward->expiry_days) : null,
             ]);
 
-            // Handle voucher type rewards - auto-generate customer voucher
+            // FIX: Create CustomerVoucher record for voucher-type rewards
+            // This ensures customer gets a proper voucher_code that can be applied to cart
             if ($reward->reward_type === 'voucher' && $reward->voucher_template_id) {
-                $voucherTemplate = \App\Models\VoucherTemplate::find($reward->voucher_template_id);
-                if ($voucherTemplate) {
-                    \App\Models\CustomerVoucher::create([
-                        'customer_profile_id' => $customerProfile->id,
-                        'voucher_template_id' => $voucherTemplate->id,
-                        'status' => 'active',
-                        'expiry_date' => $voucherTemplate->expiry_days
-                            ? now()->addDays($voucherTemplate->expiry_days)
-                            : null,
-                    ]);
+                // Generate unique voucher code
+                $voucherCode = 'RWD-' . strtoupper(uniqid());
 
-                    Log::info('Voucher auto-generated from reward redemption', [
-                        'customer_reward_id' => $customerReward->id,
-                        'voucher_template_id' => $voucherTemplate->id,
-                    ]);
-                }
+                // Create CustomerVoucher record with the actual voucher code
+                $customerVoucher = CustomerVoucher::create([
+                    'customer_profile_id' => $customerProfile->id,
+                    'voucher_template_id' => $reward->voucher_template_id,
+                    'voucher_code' => $voucherCode,
+                    'status' => 'active',
+                    'source' => 'reward', // Mark as reward-issued voucher
+                    'expiry_date' => $reward->expiry_days ? now()->addDays($reward->expiry_days)->toDateString() : null,
+                    'redeemed_at' => null,
+                ]);
+
+                // Update CustomerReward with voucher_code for reference
+                $customerReward->update([
+                    'redemption_code' => $voucherCode
+                ]);
+
+                Log::info('Voucher-type reward: CustomerVoucher created', [
+                    'customer_reward_id' => $customerReward->id,
+                    'customer_voucher_id' => $customerVoucher->id,
+                    'voucher_code' => $voucherCode,
+                    'voucher_template_id' => $reward->voucher_template_id,
+                ]);
             }
 
-            // Handle bonus points type rewards
+            // Handle bonus points type rewards (instant redemption)
             if ($reward->reward_type === 'points' && $reward->reward_value > 0) {
                 $this->loyaltyService->awardPoints(
                     $user,
@@ -105,7 +116,13 @@ class RewardRedemptionService
                     $reward->id
                 );
 
-                Log::info('Bonus points awarded from reward redemption', [
+                // Mark as redeemed immediately since benefit is instant
+                $customerReward->update([
+                    'status' => 'redeemed',
+                    'redeemed_at' => now()
+                ]);
+
+                Log::info('Bonus points awarded from reward redemption - marked as redeemed', [
                     'customer_reward_id' => $customerReward->id,
                     'bonus_points' => $reward->reward_value,
                 ]);

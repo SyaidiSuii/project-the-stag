@@ -14,6 +14,7 @@ class OrderItem extends Model
         'order_id',
         'menu_item_id',
         'promotion_id',
+        'customer_reward_id', // Links free items to their reward redemption
         'is_combo_item',
         'combo_group_id',
         'quantity',

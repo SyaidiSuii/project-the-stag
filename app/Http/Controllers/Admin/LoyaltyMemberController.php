@@ -55,7 +55,10 @@ class LoyaltyMemberController extends Controller
 
         $members = $query->paginate(20);
 
-        // Statistics
+        // Ensure calculatedTier is available in view
+        $members->each(function($member) {
+            $member->calculatedTier; // Access to trigger attribute calculation
+        });
         $stats = [
             'total_members' => User::whereNotNull('points_balance')->count(),
             'total_points' => User::sum('points_balance'),
@@ -198,34 +201,46 @@ class LoyaltyMemberController extends Controller
 
         $filename = 'loyalty_members_' . now()->format('Y-m-d_His') . '.csv';
 
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-        ];
-
-        $callback = function() use ($members) {
+        return response()->streamDownload(function() use ($members) {
             $file = fopen('php://output', 'w');
-
+            
+            // Add UTF-8 BOM for Excel
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Add separator hint for Excel
+            fwrite($file, "sep=;\n");
+            
             // Header row
-            fputcsv($file, ['ID', 'Name', 'Email', 'Points Balance', 'Loyalty Tier', 'Total Spent', 'Visit Count', 'Joined Date']);
-
+            fputcsv($file, [
+                'Member ID',
+                'Full Name',
+                'Email Address',
+                'Current Loyalty Tier',
+                'Points Balance',
+                'Total Spent (RM)',
+                'Visit Count',
+                'Join Date',
+                'Last Updated'
+            ], ';');
+            
             // Data rows
             foreach ($members as $member) {
                 fputcsv($file, [
                     $member->id,
                     $member->name,
                     $member->email,
-                    $member->points_balance ?? 0,
-                    $member->loyaltyTier->name ?? 'N/A',
-                    $member->customerProfile->total_spent ?? 0,
+                    $member->calculatedTier->name ?? 'No Tier',
+                    number_format($member->points_balance ?? 0, 0),
+                    number_format($member->customerProfile->total_spent ?? 0, 2),
                     $member->customerProfile->visit_count ?? 0,
                     $member->created_at->format('Y-m-d'),
-                ]);
+                    $member->updated_at->format('Y-m-d H:i'),
+                ], ';');
             }
-
+            
             fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=utf-8',
+        ]);
     }
 }

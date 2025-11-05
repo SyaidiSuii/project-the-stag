@@ -38,7 +38,7 @@
       <div class="vvip-section">
         <div class="vvip-badge"><i class="fas fa-crown"></i> PREMIUM EXPERIENCE</div>
         <p class="vvip-description">Our exclusive VVIP Room offers privacy, premium service, and an unforgettable dining experience for up to 12 guests.</p>
-        <p class="vvip-description" style="margin-top: 0.5rem; color: #ffd700; font-weight: 600;"><i class="fas fa-tag"></i> Booking Fee: RM 10/hour (1 hour minimum = RM 10)</p>
+        <p class="vvip-description" style="margin-top: 0.5rem; color: #ff0000; font-weight: 600;"><i class="fas fa-tag"></i> Booking Fee: RM 10/hour (1 hour minimum = RM 10)</p>
       </div>
       
       <!-- Floor Layout -->

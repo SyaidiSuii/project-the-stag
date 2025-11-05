@@ -64,7 +64,7 @@ class User extends Authenticatable implements MustVerifyEmail
      *
      * @var array
      */
-    protected $appends = ['display_id'];
+    protected $appends = ['display_id', 'calculatedTier'];
 
     /**
      * Boot the model.
@@ -291,6 +291,36 @@ class User extends Authenticatable implements MustVerifyEmail
             ->where('minimum_spending', '<=', $totalSpending)
             ->orderBy('minimum_spending', 'desc')
             ->first();
+    }
+
+    /**
+     * Calculate tier in real-time based on current points and spending
+     * This attribute computes tier dynamically instead of using stored loyalty_tier_id
+     * BOTH points_threshold AND minimum_spending must be met (AND logic)
+     */
+    public function getCalculatedTierAttribute()
+    {
+        $currentPoints = $this->points_balance ?? 0;
+        $totalSpending = $this->customerProfile->total_spent ?? 0;
+
+        // Get all active tiers ordered by priority (highest order first)
+        $tiers = LoyaltyTier::active()
+            ->orderBy('order', 'desc')
+            ->get();
+
+        // Find the highest tier user qualifies for
+        // BOTH conditions must be met: points_threshold AND minimum_spending
+        foreach ($tiers as $tier) {
+            $meetsPoints = $tier->points_threshold && $currentPoints >= $tier->points_threshold;
+            $meetsSpending = $tier->minimum_spending && $totalSpending >= $tier->minimum_spending;
+
+            // Both conditions required (AND logic)
+            if ($meetsPoints && $meetsSpending) {
+                return $tier; // Return highest tier first
+            }
+        }
+
+        return null; // No tier qualifies
     }
 
     /**

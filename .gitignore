@@ -32,6 +32,7 @@ yarn-error.log
 .claude
 .CLAUDE.md
 CLAUDE.md
+GEMINI.md
 /.github/CLAUDE.md
 /.github/copilot-instructions.md
 /ai-service/

@@ -10,6 +10,7 @@ use App\Models\MenuItem;
 use App\Models\Promotion;
 use App\Models\CustomerVoucher;
 use App\Models\Order;
+use App\Models\CustomerReward;
 use App\Services\Promotions\PromotionService;
 
 class CartController extends Controller
@@ -98,6 +99,7 @@ class CartController extends Controller
                 // IMPORTANT: Include promotion tracking fields for checkout
                 'promotion_id' => $item->promotion_id,
                 'promotion_group_id' => $item->promotion_group_id,
+                'customer_reward_id' => $item->customer_reward_id, // For marking reward as redeemed
             ];
 
             // Group items by promotion_group_id
@@ -201,10 +203,14 @@ class CartController extends Controller
         $validated = $request->validate([
             'menu_item_id' => 'required|exists:menu_items,id',
             'quantity' => 'required|integer|min:1',
-            'special_notes' => 'nullable|string'
+            'special_notes' => 'nullable|string',
+            'is_free_item' => 'nullable|boolean',
+            'redemption_id' => 'nullable|integer',
+            'free_item_title' => 'nullable|string',
         ]);
 
         $menuItem = MenuItem::find($validated['menu_item_id']);
+        $isFreeItem = $validated['is_free_item'] ?? false;
 
         // Check for active item discount promotion
         $itemDiscount = $this->getActiveItemDiscount($validated['menu_item_id']);
@@ -220,8 +226,17 @@ class CartController extends Controller
         $unitPrice = $menuItem->price;  // Default: original price
         $promotionId = null;
 
-        if ($itemDiscount) {
-            // Apply item discount
+        // Override price for free items from rewards
+        if ($isFreeItem) {
+            $unitPrice = 0.00;
+            \Log::info('Free item from reward redemption', [
+                'menu_item_id' => $validated['menu_item_id'],
+                'menu_item_name' => $menuItem->name,
+                'redemption_id' => $validated['redemption_id'] ?? null,
+                'free_item_title' => $validated['free_item_title'] ?? null,
+            ]);
+        } elseif ($itemDiscount) {
+            // Apply item discount (only if not free item)
             if ($itemDiscount['discount_type'] === 'percentage') {
                 $discountAmount = ($menuItem->price * $itemDiscount['discount_value']) / 100;
                 $unitPrice = $menuItem->price - $discountAmount;
@@ -246,23 +261,27 @@ class CartController extends Controller
         if (!Auth::check()) {
             $cart = session('guest_cart', []);
 
-            // Check if item already exists in cart (regular items only, not bundle items)
-            $existingIndex = collect($cart)->search(function ($item) use ($validated) {
+            // Check if item already exists in cart (regular items only, not bundle/free items)
+            $existingIndex = collect($cart)->search(function ($item) use ($validated, $isFreeItem) {
                 return $item['menu_item_id'] == $validated['menu_item_id']
-                    && !isset($item['promotion_id']);  // Only match non-promotion items
+                    && !isset($item['promotion_id'])  // Only match non-promotion items
+                    && ($item['is_free_item'] ?? false) === $isFreeItem;  // Match free item status
             });
 
-            if ($existingIndex !== false) {
-                // Update existing item quantity
+            if ($existingIndex !== false && !$isFreeItem) {
+                // Update existing item quantity (but NOT for free items - those are always qty 1)
                 $cart[$existingIndex]['quantity'] += $validated['quantity'];
             } else {
                 // Add new item to cart
                 $cart[] = [
                     'menu_item_id' => $validated['menu_item_id'],
                     'quantity' => $validated['quantity'],
-                    'unit_price' => $unitPrice,  // Use discounted price if applicable
+                    'unit_price' => $unitPrice,  // Use discounted price if applicable or 0 for free
                     'special_notes' => $validated['special_notes'] ?? null,
                     'promotion_id' => $promotionId,  // Track item discount promotion
+                    'is_free_item' => $isFreeItem,
+                    'redemption_id' => $validated['redemption_id'] ?? null,
+                    'free_item_title' => $validated['free_item_title'] ?? null,
                 ];
             }
 
@@ -276,21 +295,22 @@ class CartController extends Controller
         }
 
         // Logged in users - store in database
-        // IMPORTANT: Only match regular items (without promotion_id)
-        // This ensures bundle items and regular items are treated separately
+        // IMPORTANT: Only match regular items (without promotion_id and not free items)
+        // This ensures bundle items, free items, and regular items are treated separately
         $cartItem = UserCart::withTrashed()
             ->where('user_id', Auth::id())
             ->where('menu_item_id', $validated['menu_item_id'])
             ->whereNull('promotion_id')  // Only match non-promotion items
+            ->where('is_free_item', false)  // Only match non-free items
             ->first();
 
-        if ($cartItem) {
+        if ($cartItem && !$isFreeItem) {
             if ($cartItem->trashed()) {
                 // Restore soft deleted item and update quantity
                 $cartItem->restore();
                 $cartItem->quantity = $validated['quantity'];
             } else {
-                // Update quantity if item exists and is not soft deleted
+                // Update quantity if item exists and is not soft deleted (NOT for free items)
                 $cartItem->quantity += $validated['quantity'];
             }
 
@@ -307,14 +327,16 @@ class CartController extends Controller
                 'promotion_id' => $promotionId,
             ]);
         } else {
-            // Create new cart item
+            // Create new cart item (or always create for free items)
             UserCart::create([
                 'user_id' => Auth::id(),
                 'menu_item_id' => $validated['menu_item_id'],
                 'quantity' => $validated['quantity'],
-                'unit_price' => $unitPrice,  // Use discounted price if applicable
-                'special_notes' => $validated['special_notes'] ?? null,
+                'unit_price' => $unitPrice,  // Use discounted price if applicable or 0 for free
+                'special_notes' => $validated['special_notes'] ?? $isFreeItem ? 'Free item from reward: ' . ($validated['free_item_title'] ?? 'Reward') : null,
                 'promotion_id' => $promotionId,  // Track item discount promotion
+                'is_free_item' => $isFreeItem,
+                'customer_reward_id' => $validated['redemption_id'] ?? null, // Link to reward redemption
             ]);
         }
 
@@ -1331,43 +1353,86 @@ class CartController extends Controller
     /**
      * Get available vouchers for current user
      */
+    /**
+     * Get available vouchers and rewards for current user
+     */
+    /**
+     * PHASE 8: Get available vouchers and rewards (consolidated to customer_rewards only)
+     */
     public function getAvailableVouchers()
     {
         $user = Auth::user();
         if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Please login']);
+            return response()->json(['success' => false, 'message' => 'Please login', 'vouchers' => [], 'rewards' => []]);
         }
 
         $customerProfile = $user->customerProfile;
         if (!$customerProfile) {
-            return response()->json(['success' => false, 'vouchers' => []]);
+            return response()->json(['success' => false, 'vouchers' => [], 'rewards' => []]);
         }
 
-        // Get user's active vouchers
-        $vouchers = CustomerVoucher::where('customer_profile_id', $customerProfile->id)
+        // PHASE 8: Consolidated to customer_rewards only
+        // Get ALL user's active rewards from customer_rewards table
+        // Includes both: product-type (free items) and voucher-type rewards
+        $rewards = CustomerReward::where('customer_profile_id', $customerProfile->id)
             ->where('status', 'active')
             ->where(function($query) {
-                $query->whereNull('expiry_date')
-                    ->orWhere('expiry_date', '>=', now());
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>=', now());
             })
-            ->with('voucherTemplate')
+            ->with(['reward', 'reward.menuItem', 'reward.voucherTemplate'])
+            ->whereHas('reward', function($query) {
+                // Get both product-type and voucher-type rewards
+                $query->where(function($q) {
+                    $q->where('reward_type', 'product')
+                      ->whereNotNull('menu_item_id');
+                })->orWhere(function($q) {
+                    $q->where('reward_type', 'voucher')
+                      ->whereNotNull('voucher_template_id');
+                });
+            })
             ->get()
-            ->map(function($voucher) {
-                return [
-                    'id' => $voucher->id,
-                    'name' => $voucher->voucherTemplate->name ?? 'Voucher',
-                    'description' => $voucher->voucherTemplate->description ?? '',
-                    'discount_type' => $voucher->voucherTemplate->discount_type ?? 'fixed',
-                    'discount_value' => $voucher->voucherTemplate->discount_value ?? 0,
-                    'minimum_spend' => $voucher->voucherTemplate->minimum_spend ?? 0,
-                    'expiry_date' => $voucher->expiry_date ? $voucher->expiry_date->format('M j, Y') : null,
-                    'source' => $voucher->source ?? 'collection',
-                ];
-            });
+            ->map(function($reward) {
+                // Different formatting for product-type vs voucher-type
+                if ($reward->reward->reward_type === 'product' && $reward->reward->menu_item_id) {
+                    // Product-type reward: Free item
+                    return [
+                        'id' => 'reward_' . $reward->id,
+                        'type' => 'reward',
+                        'name' => 'FREE: ' . ($reward->reward->menuItem->name ?? 'Menu Item'),
+                        'description' => 'Free item from redeemed reward',
+                        'discount_type' => 'free_item',
+                        'discount_value' => 0,
+                        'menu_item_id' => $reward->reward->menu_item_id,
+                        'minimum_spend' => 0,
+                        'expiry_date' => $reward->expires_at ? $reward->expires_at->format('M j, Y') : null,
+                        'source' => 'reward',
+                    ];
+                } elseif ($reward->reward->reward_type === 'voucher' && $reward->reward->voucher_template_id) {
+                    // Voucher-type reward: Discount voucher from reward
+                    $voucherTemplate = $reward->reward->voucherTemplate;
+                    return [
+                        'id' => 'reward_' . $reward->id,
+                        'type' => 'reward',
+                        'name' => $voucherTemplate->name ?? 'Voucher Reward',
+                        'description' => $voucherTemplate->description ?? 'Discount from reward redemption',
+                        'discount_type' => $voucherTemplate->discount_type ?? 'fixed',
+                        'discount_value' => $voucherTemplate->discount_value ?? 0,
+                        'minimum_spend' => $voucherTemplate->minimum_spend ?? 0,
+                        'expiry_date' => $reward->expires_at ? $reward->expires_at->format('M j, Y') : null,
+                        'source' => 'reward',
+                    ];
+                }
+                // Skip other reward types
+                return null;
+            })
+            ->filter(); // Remove null values
 
+        // Return all rewards (both product-type and voucher-type) in the rewards array
         return response()->json([
             'success' => true,
-            'vouchers' => $vouchers
+            'vouchers' => [], // Empty - all consolidated to rewards
+            'rewards' => $rewards->values()
         ]);
     }
 
@@ -1434,6 +1499,7 @@ class CartController extends Controller
         // Store voucher in session
         session(['applied_voucher' => [
             'id' => $voucher->id,
+            'voucher_code' => $voucher->voucher_code,
             'name' => $voucher->voucherTemplate->name ?? 'Voucher',
             'description' => $voucher->voucherTemplate->description ?? '',
             'discount' => $discount,

@@ -139,15 +139,6 @@ class MenuItem extends Model
     }
 
     /**
-     * Get all happy hour deals that include this menu item
-     */
-    public function happyHourDeals()
-    {
-        return $this->belongsToMany(HappyHourDeal::class, 'happy_hour_deal_items')
-            ->withTimestamps();
-    }
-
-    /**
      * Get all promotions that include this menu item
      */
     public function promotions()

@@ -1,4 +1,4 @@
-// ===== Enhanced SmartDine Rewards System =====
+// ===== Enhanced SmartDine Rewards System =====// IMPORTANT: This file uses VANILLA JAVASCRIPT ONLY - No jQuery dependency!// All jQuery code has been commented out to prevent $ is not function errors// Use vanilla JavaScript event listeners instead
 
 const AppData = {
       get: function(key, defaultValue) {
@@ -47,42 +47,36 @@ const AppData = {
         const dayEl = document.createElement('div');
         dayEl.className = 'day';
 
-        // Backend logic: after check-in, checkin_streak is incremented and saved
-        // So checkin_streak represents the last completed day (0-6)
-        // Example: If streak is 1, you completed Day 2 (index 1), next is Day 3 (index 2)
-
-        if (checkedInToday) {
-          // Already checked in today - checkin_streak is the index they just completed
-          if (index <= checkinStreak) {
+        // Backend logic: checkin_streak is the total consecutive days (1, 2, 3, ... unlimited)
+        // We display 7 days cycle (Day 1-7) based on position in week
+        // cyclePosition maps: streak 1→0, 2→1, 3→2, ..., 7→6, 8→0 (repeat cycle)
+        
+        if (checkinStreak === 0 && !checkedInToday) {
+          // User never checked in before - show Day 1 as active (ready to check in)
+          if (index === 0) {
+            dayEl.classList.add('active');
+          } else {
+            dayEl.classList.add('locked');
+          }
+        } else if (checkedInToday) {
+          // Already checked in today - show completed days up to current position
+          const currentCyclePosition = (checkinStreak - 1) % 7;
+          if (index <= currentCyclePosition) {
             dayEl.classList.add('completed');
           } else {
             dayEl.classList.add('locked');
           }
         } else {
-          // Haven't checked in today yet
-          // If lastCheckinDate is null (never checked in), checkin_streak will be 0, show day 0 as active
-          // If lastCheckinDate exists (checked in before), show completed days and next day as active
-
-          if (lastCheckinDate === null) {
-            // Never checked in before - show day 0 as active
-            if (index === 0) {
-              dayEl.classList.add('active');
-            } else {
-              dayEl.classList.add('locked');
-            }
+          // Has streak but haven't checked in today - show progress and next day
+          const currentCyclePosition = (checkinStreak - 1) % 7;
+          const nextCyclePosition = checkinStreak % 7;
+          
+          if (index <= currentCyclePosition) {
+            dayEl.classList.add('completed');
+          } else if (index === nextCyclePosition) {
+            dayEl.classList.add('active');
           } else {
-            // Checked in before
-            // checkin_streak is the last completed day (0-6)
-            // Next day to check in is (checkinStreak + 1)
-            const nextDayIndex = (checkinStreak + 1) % 7;
-
-            if (index <= checkinStreak) {
-              dayEl.classList.add('completed');
-            } else if (index === nextDayIndex) {
-              dayEl.classList.add('active');
-            } else {
-              dayEl.classList.add('locked');
-            }
+            dayEl.classList.add('locked');
           }
         }
 
@@ -104,20 +98,24 @@ const AppData = {
       let message = '';
       let showMessage = false;
       
-      // Calculate actual streak days (streak is 0-indexed, so add 1 for display)
-      const displayStreak = checkedInToday ? checkinStreak + 1 : checkinStreak;
+      // checkinStreak is now the total consecutive days (1, 2, 3, ..., unlimited)
+      // Display shows actual streak count
+      const displayStreak = checkinStreak;
 
       if (checkinStreak === 0 && !checkedInToday) {
         message = '🌟 Start your check-in streak today!';
         showMessage = true;
-      } else if (checkinStreak > 0 && checkinStreak < 7 && !checkedInToday) {
-        message = `🔥 Current streak: ${displayStreak} days! Keep it going!`;
+      } else if (checkinStreak > 0 && !checkedInToday) {
+        message = `🔥 Current streak: ${displayStreak} day${displayStreak === 1 ? '' : 's'}! Keep it going!`;
         showMessage = true;
-      } else if (checkinStreak >= 6 && checkedInToday) {
-        message = '🏆 Perfect week! Your streak will reset for new rewards!';
-        showMessage = true;
-      } else if (checkedInToday) {
-        message = `✅ Checked in! Streak: ${displayStreak} day${displayStreak === 1 ? '' : 's'}`;
+      } else if (checkinStreak > 0 && checkedInToday) {
+        // Show current streak after check-in
+        const weekNumber = Math.floor((checkinStreak - 1) / 7) + 1;
+        if (checkinStreak % 7 === 0) {
+          message = `🏆 Week ${weekNumber} completed! ${checkinStreak} day streak!`;
+        } else {
+          message = `✅ Checked in! Streak: ${displayStreak} day${displayStreak === 1 ? '' : 's'}`;
+        }
         showMessage = true;
       }
       
@@ -254,6 +252,12 @@ const AppData = {
                   renderPointsRewards();
                   updateStreakStatus();
 
+                  // Check if streak milestone reached → trigger fire animation
+                  const streakMilestones = window.rewardsData?.checkinSettings?.streak_milestones || [7, 14, 30, 60, 100];
+                  if (streakMilestones.includes(checkinStreak)) {
+                    showStreakFireAnimation(checkinStreak);
+                  }
+
                   // Add glow effect to streak track if it's a significant milestone
                   if (checkinStreak >= 3) {
                     const track = document.getElementById('checkinTrack');
@@ -284,10 +288,14 @@ const AppData = {
             showMessage('Failed to process check-in. Please try again.', 'error');
           });
         } else {
+          // Guest mode check-in (for demo)
           let guestCheckinPoints = (window.rewardsData && window.rewardsData.checkinSettings && window.rewardsData.checkinSettings.daily_points)
             ? window.rewardsData.checkinSettings.daily_points
             : [25, 5, 5, 10, 10, 15, 20];
-          const earnedPoints = guestCheckinPoints[checkinStreak] || 5;
+          
+          // Calculate cycle position for guest mode (0-6)
+          const cyclePosition = checkinStreak % 7;
+          const earnedPoints = guestCheckinPoints[cyclePosition] || 5;
 
           // Create floating points and confetti animations
           createFloatingPoints(earnedPoints, btn);
@@ -301,10 +309,12 @@ const AppData = {
             }
 
             points += earnedPoints;
-            checkinStreak = (checkinStreak + 1) % 7; // Cycle through the week
+            checkinStreak = checkinStreak + 1; // Increment streak (no reset)
+            checkedInToday = true;
+            lastCheckinDate = new Date().toLocaleDateString('en-CA');
 
             AppData.set('points', points);
-            AppData.set('lastCheckinDate', new Date().toISOString().split('T')[0]);
+            AppData.set('lastCheckinDate', lastCheckinDate);
             AppData.set('checkinStreak', checkinStreak);
 
             updatePointsDisplay();
@@ -315,7 +325,7 @@ const AppData = {
               updateStreakStatus();
 
               // Add glow effect to streak track if it's a significant milestone
-              if (checkinStreak >= 3) {
+              if (checkinStreak % 7 === 0) {
                 const track = document.getElementById('checkinTrack');
                 track.classList.add('streak-glow');
                 setTimeout(() => track.classList.remove('streak-glow'), 4500);
@@ -945,18 +955,36 @@ const AppData = {
       }
     }
 
+    // All Rewards Modal Functions
+    function viewAllRewards() {
+      const modal = document.getElementById('allRewardsModal');
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+    }
+
+    function closeAllRewardsModal() {
+      const modal = document.getElementById('allRewardsModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+
     // REMOVED: useVoucherFromModal - vouchers are managed server-side
     // Vouchers are applied through cart system, not localStorage
 
     // Make functions globally available
     window.showAllVouchersModal = showAllVouchersModal;
     window.closeAllVouchersModal = closeAllVouchersModal;
+    window.viewAllRewards = viewAllRewards;
+    window.closeAllRewardsModal = closeAllRewardsModal;
 
     // Close modal when clicking outside
     window.onclick = function(event) {
       const exchangeModal = document.getElementById('exchangePointsModal');
       const myRewardsModal = document.getElementById('myRewardsModal');
       const allVouchersModal = document.getElementById('allVouchersModal');
+      const allRewardsModal = document.getElementById('allRewardsModal');
 
       if (event.target == exchangeModal) {
         exchangeModal.style.display = 'none';
@@ -969,6 +997,10 @@ const AppData = {
       if (event.target == allVouchersModal) {
         allVouchersModal.style.display = 'none';
       }
+
+      if (event.target == allRewardsModal) {
+        allRewardsModal.style.display = 'none';
+      }
     }
 
     // ===== Apply Reward to Cart =====
@@ -976,7 +1008,7 @@ const AppData = {
      * Apply redeemed reward to cart
      * Handles both discount rewards and free item rewards
      */
-    window.applyRewardToCart = function(redemptionId, rewardTitle, rewardType, discountPercentage, discountFixed, menuItemId) {
+    window.applyRewardToCart = async function(redemptionId, rewardTitle, rewardType, discountPercentage, discountFixed, menuItemId) {
       console.log('🎁 Applying reward to cart:', {
         redemptionId,
         rewardTitle,
@@ -987,28 +1019,55 @@ const AppData = {
       });
 
       if (rewardType === 'product' && menuItemId) {
-        // Free item reward - save to localStorage and redirect to menu
-        const freeItemData = {
-          redemption_id: redemptionId,
-          title: rewardTitle,
-          type: 'free_item',
-          menu_item_id: menuItemId,
-          applied_at: new Date().toISOString()
-        };
+        // Free item reward - mark as pending first, then save to localStorage and redirect
+        try {
+          // Mark reward status as pending
+          const response = await fetch('/customer/rewards/mark-pending', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+              redemption_id: redemptionId
+            })
+          });
 
-        console.log('💾 Saving to localStorage:', freeItemData);
-        localStorage.setItem('pending_free_item', JSON.stringify(freeItemData));
+          const result = await response.json();
 
-        // Verify saved
-        const saved = localStorage.getItem('pending_free_item');
-        console.log('✅ Verified localStorage:', saved);
+          if (!result.success) {
+            showMessage(result.message || 'Failed to apply reward', 'error');
+            return;
+          }
 
-        showMessage(`${rewardTitle} will be added to your cart!`, 'success');
+          console.log('✅ Reward status updated to pending');
 
-        // Redirect to menu page to auto-add the item
-        setTimeout(() => {
-          window.location.href = '/customer/food';
-        }, 1500);
+          // Now save to localStorage for auto-add in menu page
+          const freeItemData = {
+            redemption_id: redemptionId,
+            title: rewardTitle,
+            type: 'free_item',
+            menu_item_id: menuItemId,
+            applied_at: new Date().toISOString()
+          };
+
+          console.log('💾 Saving to localStorage:', freeItemData);
+          localStorage.setItem('pending_free_item', JSON.stringify(freeItemData));
+
+          // Verify saved
+          const saved = localStorage.getItem('pending_free_item');
+          console.log('✅ Verified localStorage:', saved);
+
+          showMessage(`${rewardTitle} will be added to your cart!`, 'success');
+
+          // Redirect to menu page to auto-add the item
+          setTimeout(() => {
+            window.location.href = '/customer/food';
+          }, 1500);
+        } catch (error) {
+          console.error('Error marking reward as pending:', error);
+          showMessage('Failed to apply reward. Please try again.', 'error');
+        }
       } else {
         // Discount reward - save to localStorage
         const rewardData = {
@@ -1070,3 +1129,305 @@ const AppData = {
     };
 
     console.log('✅ Rewards.js loaded successfully');
+
+// Export showMessage as global function for use in other scripts
+window.showMessage = showMessage;
+
+
+// ===== VOUCHER-TYPE REWARD HANDLER =====
+// New implementation for handling voucher-type rewards from admin
+window.rewardHandler = {
+    state: {
+        loading: false,
+        appliedVouchers: []
+    },
+
+    async applyVoucherReward(customerRewardId, voucherCode, voucherName) {
+        try {
+            this.setLoading(true);
+            console.log('Applying voucher reward:', { customerRewardId, voucherCode });
+
+            // Get voucher details
+            const rewardResponse = await fetch('/customer/rewards/apply-voucher', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({ customer_reward_id: customerRewardId })
+            });
+
+            const rewardResult = await rewardResponse.json();
+            if (!rewardResult.success) {
+                throw new Error(rewardResult.message);
+            }
+
+            // Apply voucher to cart
+            const cartResponse = await fetch('/customer/cart/apply-voucher', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({ voucher_id: rewardResult.voucher_id })
+            });
+
+            const cartResult = await cartResponse.json();
+            if (!cartResult.success) {
+                throw new Error(cartResult.message);
+            }
+
+            this.showSuccess(`Voucher "${voucherName}" applied successfully!`);
+            return true;
+
+        } catch (error) {
+            console.error('Error:', error);
+            this.showError('Failed to apply voucher: ' + error.message);
+            return false;
+        } finally {
+            this.setLoading(false);
+        }
+    },
+
+    async copyVoucherCode(voucherCode) {
+        try {
+            await navigator.clipboard.writeText(voucherCode);
+            this.showSuccess('Voucher code copied!');
+            return true;
+        } catch (error) {
+            this.showError('Failed to copy code');
+            return false;
+        }
+    },
+
+    setLoading(isLoading) {
+        this.state.loading = isLoading;
+        const buttons = document.querySelectorAll('.apply-reward-btn');
+        buttons.forEach(btn => {
+            btn.disabled = isLoading;
+            btn.innerHTML = isLoading 
+                ? '<i class="fas fa-spinner fa-spin"></i> Applying...'
+                : '<i class="fas fa-shopping-cart"></i> Apply to Cart';
+        });
+    },
+
+    showSuccess(message) {
+        if (window.showMessage) window.showMessage(message, 'success');
+    },
+
+    showError(message) {
+        if (window.showMessage) window.showMessage(message, 'error');
+    }
+};
+
+// ===== JQUERY CODE COMMENTED OUT (No jQuery dependency) =====
+// These jQuery event handlers have been disabled to prevent $ is not function errors
+// All functionality moved to vanilla JavaScript handlers below
+
+/*
+// Event delegation (DISABLED - using vanilla JS below)
+$(document).on('.apply-reward-btn', function(e) {
+    e.preventDefault();
+    const btn = $(this);
+    const customerRewardId = btn.data('customer-reward-id');
+    const voucherCode = btn.data('voucher-code');
+    
+    if (customerRewardId && voucherCode && !rewardHandler.state.loading) {
+        const voucherName = btn.closest('.reward-info, .redeemed-reward-item').find('h4').text().trim();
+        rewardHandler.applyVoucherReward(customerRewardId, voucherCode, voucherName);
+    }
+});
+
+$(document).on('.copy-voucher-btn', function(e) {
+    e.preventDefault();
+    const voucherCode = $(this).data('voucher-code');
+    rewardHandler.copyVoucherCode(voucherCode);
+    
+    const btn = $(this);
+    const originalText = btn.html();
+    btn.html('<i class="fas fa-check"></i> Copied!');
+    setTimeout(() => btn.html(originalText), 2000);
+});
+*/
+
+console.log('✅ Old jQuery handlers commented out - using vanilla JS below');
+
+// ===== SIMPLE VOUCHER-TYPE HANDLER =====// Simple handler untuk voucher-type rewards - redirect ke menu instead of apply// DISABLED: This section uses jQuery - using vanilla JS version below/*$(document).ready(function() {    // Voucher-type reward: Apply button → redirect ke menu    $(document).on('.click', '.apply-voucher-type-btn', function(e) {        e.preventDefault();        const btn = $(this);        const customerRewardId = btn.data('customer-reward-id');        const rewardTitle = btn.data('reward-title');        if (!customerRewardId) {            if (window.showMessage) {                window.showMessage('Invalid reward', 'error');            }            return;        }        console.log('Voucher-type reward: Apply to Cart → Redirect to menu', {            customerRewardId,            rewardTitle        });        // Show success message        if (window.showMessage) {            window.showMessage(`${rewardTitle} ready to use! Redirecting to menu...`, 'success');        }        // Redirect to menu page        setTimeout(() => {            window.location.href = '/customer/food';        }, 1000);    });});*/console.log('✅ jQuery version commented out - vanilla JS version loaded below');
+
+console.log('✅ Simple voucher-type reward handler loaded');
+
+// ===== VANILLA JAVASCRIPT FIX (No jQuery dependency) =====
+// Fixed: Replace jQuery code with vanilla JavaScript to avoid $ is not function error
+
+// Initialize when DOM is ready (vanilla JS equivalent of $(document).ready())
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initVoucherHandlers);
+} else {
+    initVoucherHandlers();
+}
+
+function initVoucherHandlers() {
+    console.log('🔄 Initializing voucher-type handlers (vanilla JS)...');
+
+    // Event delegation untuk .apply-voucher-type-btn
+    document.addEventListener('click', function(e) {
+        // Check if clicked element is .apply-voucher-type-btn or inside it
+        const btn = e.target.closest('.apply-voucher-type-btn');
+        if (!btn) return;
+
+        e.preventDefault();
+
+        const customerRewardId = btn.dataset.customerRewardId;
+        const rewardTitle = btn.dataset.rewardTitle;
+
+        if (!customerRewardId) {
+            if (window.showMessage) {
+                window.showMessage('Invalid reward', 'error');
+            }
+            return;
+        }
+
+        console.log('✅ Voucher-type reward: Apply to Cart → Redirect to menu', {
+            customerRewardId,
+            rewardTitle
+        });
+
+        // Show success message
+        if (window.showMessage) {
+            window.showMessage(`${rewardTitle} ready to use! Redirecting to menu...`, 'success');
+        }
+
+        // Disable button to prevent multiple clicks
+        btn.disabled = true;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting...';
+
+        // Redirect to menu page
+        setTimeout(() => {
+            window.location.href = '/customer/food';
+        }, 1000);
+    });
+
+    // Copy voucher code handler (vanilla JS)
+    document.addEventListener('click', function(e) {
+        const copyBtn = e.target.closest('.copy-voucher-btn');
+        if (!copyBtn) return;
+
+        e.preventDefault();
+        const voucherCode = copyBtn.dataset.voucherCode;
+
+        if (voucherCode && navigator.clipboard) {
+            navigator.clipboard.writeText(voucherCode).then(() => {
+                if (window.showMessage) {
+                    window.showMessage('Voucher code copied!', 'success');
+                }
+
+                // Update button text temporarily
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                }, 2000);
+            }).catch(() => {
+                if (window.showMessage) {
+                    window.showMessage('Failed to copy code', 'error');
+                }
+            });
+        }
+    });
+
+    console.log('✅ Voucher-type handlers initialized (vanilla JS)');
+}
+
+// Override jQuery-based handlers to prevent conflicts
+window.addEventListener('DOMContentLoaded', function() {
+    // Comment out jQuery handlers to avoid conflicts
+    /*
+    $(document).ready(function() {
+        $(document).on('click', '.apply-voucher-type-btn', function(e) {
+            // This jQuery version is disabled
+        });
+    });
+    */
+});
+
+console.log('✅ Vanilla JavaScript voucher handler loaded - NO jQuery dependency');
+
+// ===== STREAK FIRE ANIMATION (TikTok Style) =====
+function showStreakFireAnimation(streakDays) {
+    console.log(`🔥 Triggering fire animation for ${streakDays}-day streak!`);
+
+    // Create overlay container
+    const overlay = document.createElement('div');
+    overlay.className = 'streak-fire-overlay';
+    overlay.innerHTML = `
+        <div class="fire-animation-container">
+            <div class="fire-icon fire-gradient">🔥</div>
+            <div class="streak-count">${streakDays}</div>
+            <div class="streak-message">DAY STREAK!</div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Create fire particles
+    for (let i = 0; i < 30; i++) {
+        setTimeout(() => {
+            const particle = document.createElement('div');
+            particle.className = 'fire-particle';
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.animationDelay = `${Math.random() * 0.5}s`;
+            particle.style.setProperty('--random', Math.random());
+            overlay.querySelector('.fire-animation-container').appendChild(particle);
+
+            setTimeout(() => particle.remove(), 2000);
+        }, i * 50);
+    }
+
+    // Create confetti burst
+    createStreakConfetti();
+
+    // Play sound effect (optional)
+    playStreakSound();
+
+    // Remove overlay after animation
+    setTimeout(() => {
+        overlay.remove();
+    }, 3000);
+}
+
+function createStreakConfetti() {
+    const colors = ['#ff6b35', '#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#fbbf24'];
+    
+    for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.className = 'streak-confetti';
+            confetti.style.left = `${Math.random() * 100}%`;
+            confetti.style.top = '-10px';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.width = `${5 + Math.random() * 10}px`;
+            confetti.style.height = `${5 + Math.random() * 10}px`;
+            confetti.style.animationDuration = `${2 + Math.random() * 2}s`;
+            confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+            
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => confetti.remove(), 4000);
+        }, i * 30);
+    }
+}
+
+function playStreakSound() {
+    // Optional: Add sound effect
+    // You can add a fire/success sound here
+    try {
+        // Example: const audio = new Audio('/sounds/streak-fire.mp3');
+        // audio.play();
+    } catch (e) {
+        console.log('Sound not available');
+    }
+}
+
+// Make function globally available
+window.showStreakFireAnimation = showStreakFireAnimation;

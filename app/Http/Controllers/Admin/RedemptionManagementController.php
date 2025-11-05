@@ -135,17 +135,29 @@ class RedemptionManagementController extends Controller
 
         $filename = 'redemptions_' . now()->format('Y-m-d_His') . '.csv';
 
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-        ];
-
-        $callback = function() use ($redemptions) {
+        return response()->streamDownload(function() use ($redemptions) {
             $file = fopen('php://output', 'w');
-
+            
+            // Add UTF-8 BOM for Excel
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Add separator hint for Excel
+            fwrite($file, "sep=;\n");
+            
             // Header row
-            fputcsv($file, ['ID', 'Customer', 'Email', 'Reward', 'Points Spent', 'Status', 'Claimed At', 'Redeemed At', 'Expires At']);
-
+            fputcsv($file, [
+                'ID',
+                'Customer Name',
+                'Customer Email',
+                'Reward Title',
+                'Reward Type',
+                'Points Spent',
+                'Status',
+                'Claimed Date',
+                'Redeemed Date',
+                'Expiry Date'
+            ], ';');
+            
             // Data rows
             foreach ($redemptions as $redemption) {
                 fputcsv($file, [
@@ -153,17 +165,18 @@ class RedemptionManagementController extends Controller
                     $redemption->customerProfile->user->name ?? 'N/A',
                     $redemption->customerProfile->user->email ?? 'N/A',
                     $redemption->reward->title ?? 'N/A',
+                    ucfirst($redemption->reward->reward_type ?? 'N/A'),
                     $redemption->points_spent,
-                    $redemption->status,
-                    $redemption->claimed_at?->format('Y-m-d H:i:s'),
-                    $redemption->redeemed_at?->format('Y-m-d H:i:s'),
-                    $redemption->expires_at?->format('Y-m-d H:i:s'),
-                ]);
+                    ucfirst($redemption->status),
+                    $redemption->claimed_at ? $redemption->claimed_at->format('Y-m-d H:i') : 'Not Claimed',
+                    $redemption->redeemed_at ? $redemption->redeemed_at->format('Y-m-d H:i') : 'Not Redeemed',
+                    $redemption->expires_at ? $redemption->expires_at->format('Y-m-d') : 'No Expiry',
+                ], ';');
             }
-
+            
             fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=utf-8',
+        ]);
     }
 }

@@ -37,6 +37,10 @@ class Order extends Model
         // Unpaid order tracking
         'unpaid_alert_sent_at',
         'is_flagged_unpaid',
+        // Voucher discount tracking
+        'customer_voucher_id',
+        'voucher_discount',
+        'voucher_code',
     ];
 
     protected $casts = [
@@ -186,6 +190,11 @@ class Order extends Model
     public function reviews()
     {
         return $this->hasMany(MenuItemReview::class);
+    }
+
+    public function customerVoucher()
+    {
+        return $this->belongsTo(CustomerVoucher::class, 'customer_voucher_id');
     }
 
     /**

@@ -9,9 +9,10 @@ class CheckinSetting extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['daily_points'];
+    protected $fillable = ['daily_points', 'streak_milestones'];
 
     protected $casts = [
-        'daily_points' => 'array'
+        'daily_points' => 'array',
+        'streak_milestones' => 'array'
     ];
 }

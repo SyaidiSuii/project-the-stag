@@ -217,7 +217,8 @@
             @enderror
         </div>
 
-        <div class="form-group">
+        {{-- Allergens section hidden per requirements --}}
+        <div class="form-group" style="display: none;">
             <label class="form-label">Allergens</label>
             <div class="allergens-container">
                 @php

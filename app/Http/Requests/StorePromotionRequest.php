@@ -25,6 +25,7 @@ class StorePromotionRequest extends FormRequest
     {
         $rules = [
             'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
             'promotion_type' => 'required|in:promo_code,combo_deal,item_discount,buy_x_free_y,bundle,seasonal',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
@@ -162,14 +163,8 @@ class StorePromotionRequest extends FormRequest
                 }
             }
 
-            // If time range is set, at least one day should be selected
-            if (($this->filled('applicable_start_time') || $this->filled('applicable_end_time'))
-                && empty($this->applicable_days)) {
-                $validator->errors()->add(
-                    'applicable_days',
-                    'Please select at least one day when setting time restrictions.'
-                );
-            }
+            // Time-based restrictions are completely optional
+            // Users can set days without times, times without days, or neither
         });
     }
 }

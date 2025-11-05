@@ -20,11 +20,13 @@ class Promotion extends Model
 
     protected $fillable = [
         'name',
+        'description',
         'promotion_type',
         'promo_config',
         'image_path',
         'badge_text',
         'banner_color',
+        'banner_image',
         'promo_code',
         'discount_type',
         'discount_value',

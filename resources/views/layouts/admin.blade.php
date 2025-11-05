@@ -155,7 +155,7 @@
             </div>
 
             <!-- Stock Management Menu -->
-            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.stock.*') ? 'active' : '' }}" id="stockMenu">
+            {{-- <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.stock.*') ? 'active' : '' }}" id="stockMenu">
                 <div class="admin-nav-icon"><i class="fas fa-boxes"></i></div>
                 <div class="admin-nav-text">Stock Management</div>
                 <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
@@ -177,7 +177,7 @@
                     class="admin-nav-subitem {{ request()->routeIs('admin.stock.purchase-orders.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">Purchase Orders</div>
                 </a>
-            </div>
+            </div> --}}
 
             <!-- Role & Permission -->
             <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.roles.*') || request()->routeIs('admin.permissions.*') ? 'active' : '' }}" id="roleMenu">

@@ -130,12 +130,20 @@
                             </div>
                         </td>
                         <td class="cell-center">
-                            @if($member->loyaltyTier)
-                                <span class="status status-active" style="background: {{ $member->loyaltyTier->color ?? '#dbeafe' }}; color: white;">
-                                    {{ $member->loyaltyTier->name }}
+                            {{-- FIXED: Use calculatedTier (real-time) instead of loyaltyTier (static) --}}
+                            @if(isset($member->calculatedTier) && $member->calculatedTier)
+                                <span class="status status-active" style="background: {{ $member->calculatedTier->color ?? '#dbeafe' }}; color: white;">
+                                    {{ $member->calculatedTier->name }}
                                 </span>
                             @else
                                 <span class="status status-inactive">No Tier</span>
+                                {{-- DEBUG: Show why no tier --}}
+                                @if($member->email === 'admin@example.com')
+                                    <br><small style="color: #999;">
+                                        Points: {{ $member->points_balance ?? 0 }} |
+                                        Spent: RM {{ $member->customerProfile ? number_format($member->customerProfile->total_spent, 2) : 'NO PROFILE' }}
+                                    </small>
+                                @endif
                             @endif
                         </td>
                         <td class="cell-center">

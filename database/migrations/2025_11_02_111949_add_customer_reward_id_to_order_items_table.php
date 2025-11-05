@@ -1,0 +1,38 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * Add customer_reward_id to track which reward redemption this free item is from.
+     * This allows marking the CustomerReward as "redeemed" when payment is confirmed.
+     */
+    public function up(): void
+    {
+        Schema::table('order_items', function (Blueprint $table) {
+            // Add customer_reward_id to link free items to their reward redemption
+            $table->foreignId('customer_reward_id')
+                ->nullable()
+                ->after('promotion_id')
+                ->constrained('customer_rewards')
+                ->onDelete('set null')
+                ->comment('Links free item to its reward redemption for status tracking');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('order_items', function (Blueprint $table) {
+            $table->dropForeign(['customer_reward_id']);
+            $table->dropColumn('customer_reward_id');
+        });
+    }
+};
