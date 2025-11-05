@@ -217,14 +217,14 @@
 
         <!-- Voucher Selection Section (NEW) -->
         @if(Auth::check())
-        <div class="voucher-selection-section" style="margin-bottom: 1rem; padding: 1rem; background: #fef3c7; border: 2px dashed #f59e0b; border-radius: 12px;">
+        <div class="voucher-selection-section" style="margin-bottom: 1rem; padding: 1rem; background: #dbeafe; border: 2px dashed #3b82f6; border-radius: 12px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <i class="fas fa-ticket-alt" style="color: #f59e0b; font-size: 1.2rem;"></i>
-              <span style="font-weight: 700; color: #92400e; font-size: 0.95rem;">My Vouchers</span>
+              <i class="fas fa-gift" style="color: #3b82f6; font-size: 1.2rem;"></i>
+              <span style="font-weight: 700; color: #1e40af; font-size: 0.95rem;">My Rewards</span>
             </div>
-            <button id="select-voucher-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
-              Select
+            <button id="select-voucher-btn" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+              Claim
             </button>
           </div>
 
@@ -335,8 +335,8 @@
     <!-- Header -->
     <div style="padding: 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
       <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: #1f2937;">
-        <i class="fas fa-ticket-alt" style="color: #f59e0b; margin-right: 8px;"></i>
-        Select Voucher
+        <i class="fas fa-gift" style="color: #3b82f6; margin-right: 8px;"></i>
+        My Rewards
       </h3>
       <button id="closeVoucherModal" style="background: none; border: none; font-size: 24px; color: #9ca3af; cursor: pointer; width: 32px; height: 32px;">✕</button>
     </div>

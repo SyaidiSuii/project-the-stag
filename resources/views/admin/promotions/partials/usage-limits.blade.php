@@ -171,7 +171,7 @@
                    id="applicable_start_time"
                    name="applicable_start_time"
                    class="form-control"
-                   value="{{ old('applicable_start_time', isset($promotion) ? optional($promotion->applicable_start_time)->format('H:i') : '') }}">
+                   value="{{ old('applicable_start_time', isset($promotion) && $promotion->applicable_start_time ? substr($promotion->applicable_start_time, 0, 5) : '') }}">
             <small style="color: #6b7280; font-size: 0.85rem;">e.g., 15:00 for 3:00 PM</small>
         </div>
         <div class="form-group">
@@ -183,7 +183,7 @@
                    id="applicable_end_time"
                    name="applicable_end_time"
                    class="form-control"
-                   value="{{ old('applicable_end_time', isset($promotion) ? optional($promotion->applicable_end_time)->format('H:i') : '') }}">
+                   value="{{ old('applicable_end_time', isset($promotion) && $promotion->applicable_end_time ? substr($promotion->applicable_end_time, 0, 5) : '') }}">
             <small style="color: #6b7280; font-size: 0.85rem;">e.g., 17:00 for 5:00 PM</small>
         </div>
     </div>

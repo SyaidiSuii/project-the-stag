@@ -7,6 +7,193 @@
 let appliedVoucher = null;
 let availableVouchers = [];
 
+function getCsrfToken() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (!csrfToken || !csrfToken.content) {
+        console.error("CSRF token not found in meta tag");
+        return null;
+    }
+    return csrfToken.content;
+}
+
+// Show success overlay notification
+function showSuccessOverlay(message, duration = 2000) {
+    // Create overlay container
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    `;
+
+    // Create success card
+    const card = document.createElement('div');
+    card.style.cssText = `
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.4s ease;
+    `;
+
+    card.innerHTML = `
+        <div style="
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            animation: scaleIn 0.5s ease;
+        ">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        </div>
+        <h3 style="
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 12px;
+        ">Success!</h3>
+        <p style="
+            font-size: 16px;
+            color: #6b7280;
+            margin: 0;
+        ">${message}</p>
+    `;
+
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    // Add animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Auto close after duration
+    setTimeout(() => {
+        overlay.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => {
+            overlay.remove();
+            style.remove();
+        }, 300);
+    }, duration);
+}
+
+// Show error overlay notification
+function showErrorOverlay(message, duration = 3000) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    `;
+
+    const card = document.createElement('div');
+    card.style.cssText = `
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.4s ease;
+    `;
+
+    card.innerHTML = `
+        <div style="
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            animation: scaleIn 0.5s ease;
+        ">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+        </div>
+        <h3 style="
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 12px;
+        ">Oops!</h3>
+        <p style="
+            font-size: 16px;
+            color: #6b7280;
+            margin: 0;
+        ">${message}</p>
+    `;
+
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    // Auto close
+    setTimeout(() => {
+        overlay.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => overlay.remove(), 300);
+    }, duration);
+}
+
 // DOM Ready
 document.addEventListener('DOMContentLoaded', function() {
     initializeVoucherSystem();
@@ -51,15 +238,15 @@ function fetchAvailableVouchers() {
     fetch('/customer/cart/available-vouchers')
         .then(response => response.json())
         .then(data => {
-            if (data.success && data.vouchers && data.vouchers.length > 0) {
-                availableVouchers = data.vouchers;
-                renderVoucherList(data.vouchers);
+            if (data.success && data.rewards && data.rewards.length > 0) {
+                availableVouchers = data.rewards;
+                renderVoucherList(data.rewards);
             } else {
                 container.innerHTML = `
                     <div style="text-align: center; padding: 40px 20px; color: #9ca3af;">
                         <i class="fas fa-ticket-alt" style="font-size: 3rem; margin-bottom: 12px; display: block; opacity: 0.3;"></i>
-                        <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">No Vouchers Available</p>
-                        <p style="font-size: 0.9rem;">Collect vouchers from the Rewards page!</p>
+                        <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">No Rewards Available</p>
+                        <p style="font-size: 0.9rem;">Redeem rewards from the Rewards page!</p>
                     </div>
                 `;
             }
@@ -137,7 +324,11 @@ function renderVoucherList(vouchers) {
         const applyBtn = voucherCard.querySelector('.apply-voucher-btn');
         applyBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            applyVoucherToCart(voucher.id);
+            if (isReward) {
+                applyRewardToCartFromModal(voucher);
+            } else {
+                applyVoucherToCart(voucher.id);
+            }
         });
 
         container.appendChild(voucherCard);
@@ -175,14 +366,14 @@ function applyVoucherToCart(voucherId) {
             if (typeof showMessage === 'function') {
                 showMessage(data.message, 'success');
             } else {
-                alert(data.message);
+                showSuccessOverlay(data.message);
             }
         } else {
             // Show error
             if (typeof showMessage === 'function') {
                 showMessage(data.message, 'error');
             } else {
-                alert(data.message);
+                showErrorOverlay(data.message);
             }
             // Restore original content
             document.getElementById('voucherListContainer').innerHTML = originalContent;
@@ -193,7 +384,7 @@ function applyVoucherToCart(voucherId) {
         if (typeof showMessage === 'function') {
             showMessage('Failed to apply voucher. Please try again.', 'error');
         } else {
-            alert('Failed to apply voucher');
+            showErrorOverlay('Failed to apply voucher. Please try again.');
         }
         document.getElementById('voucherListContainer').innerHTML = originalContent;
     });
@@ -308,3 +499,78 @@ function loadAppliedVoucher() {
 window.applyVoucherToCart = applyVoucherToCart;
 window.removeVoucher = removeVoucher;
 window.getAppliedVoucher = () => appliedVoucher;
+
+window.applyRewardToCartFromModal = function(rewardData) {
+    const redemptionId = rewardData.id.replace("reward_", "");
+    if (rewardData.menu_item_id) {
+        processProductTypeReward(rewardData, redemptionId);
+    } else if (rewardData.discount_type && rewardData.discount_type !== "free_item") {
+        processVoucherTypeReward(rewardData, redemptionId);
+    }
+};
+
+async function processVoucherTypeReward(rewardData, redemptionId) {
+    try {
+        const csrfToken = getCsrfToken();
+        const response = await fetch("/customer/rewards/apply-voucher", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": csrfToken },
+            body: JSON.stringify({ customer_reward_id: redemptionId })
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message);
+        
+        const cartResponse = await fetch("/customer/cart/apply-voucher", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": csrfToken },
+            body: JSON.stringify({ voucher_id: result.voucher_id })
+        });
+        const cartResult = await cartResponse.json();
+        if (!cartResult.success) throw new Error(cartResult.message);
+
+        // Show success overlay
+        showSuccessOverlay("Voucher applied successfully!");
+
+        // Close modals and reload after animation
+        setTimeout(() => {
+            location.reload();
+        }, 2000);
+    } catch (error) {
+        console.error("Error:", error);
+        showErrorOverlay(error.message || "Failed to apply voucher");
+    }
+}
+
+function processProductTypeReward(rewardData, redemptionId) {
+    fetch("/customer/rewards/mark-pending", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": getCsrfToken() },
+        body: JSON.stringify({ redemption_id: redemptionId })
+    })
+    .then(r => r.json())
+    .then(result => {
+        if (result.success) {
+            fetch("/customer/cart/add", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": getCsrfToken() },
+                body: JSON.stringify({
+                    menu_item_id: rewardData.menu_item_id,
+                    quantity: 1,
+                    is_free_item: true,
+                    redemption_id: redemptionId,
+                    free_item_title: rewardData.name
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccessOverlay(rewardData.name + " added to cart!");
+                    setTimeout(() => location.reload(), 2000);
+                }
+            });
+        }
+    });
+}
+
+window.loadAvailableVouchers = () => location.reload();
+console.log("Functions restored");

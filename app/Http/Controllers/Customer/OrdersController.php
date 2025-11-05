@@ -43,12 +43,13 @@ class OrdersController extends Controller
         $userId = Auth::id();
 
         $order = Order::with([
-                'items.menuItem', 
-                'items.promotion', 
-                'table', 
-                'user', 
-                'payment', 
-                'promotionUsageLogs.promotion'
+                'items.menuItem',
+                'items.promotion',
+                'table',
+                'user',
+                'payment',
+                'promotionUsageLogs.promotion',
+                'customerVoucher.voucherTemplate' // Load voucher data
             ])
             ->where('id', $orderId)
             ->where('user_id', $userId) // Ensure customer can only see their own orders

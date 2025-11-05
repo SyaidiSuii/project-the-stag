@@ -50,16 +50,24 @@ class LoyaltySettingsController extends Controller
     public function updateCheckin(Request $request)
     {
         $request->validate([
-            'base_points' => 'required|integer|min:1|max:1000',
-            'streak_bonus' => 'nullable|integer|min:0|max:100',
-            'max_streak_bonus' => 'nullable|integer|min:0|max:1000',
-            'is_enabled' => 'nullable|boolean',
+            'daily_points' => 'required|array',
+            'daily_points.*' => 'required|integer|min:1|max:1000',
+            'streak_milestones' => 'nullable|string',
         ]);
 
         $settings = CheckinSetting::first();
 
-        $data = $request->only(['base_points', 'streak_bonus', 'max_streak_bonus']);
-        $data['is_enabled'] = $request->has('is_enabled');
+        // Parse streak milestones from comma-separated string
+        $milestones = [];
+        if ($request->streak_milestones) {
+            $milestones = array_map('intval', array_filter(array_map('trim', explode(',', $request->streak_milestones))));
+            sort($milestones); // Sort ascending
+        }
+
+        $data = [
+            'daily_points' => $request->daily_points,
+            'streak_milestones' => $milestones ?: [7, 14, 30, 60, 100] // Default milestones
+        ];
 
         if ($settings) {
             $settings->update($data);
@@ -67,9 +75,12 @@ class LoyaltySettingsController extends Controller
             CheckinSetting::create($data);
         }
 
+        \Cache::forget('checkin_settings');
+
         return redirect()
-            ->route('admin.checkin.index')
-            ->with('success', 'Check-in settings updated successfully');
+            ->route('admin.rewards.index')
+            ->with('success', 'Check-in settings updated successfully')
+            ->with('active_tab', 'checkin-settings');
     }
 
     // ==================== REWARDS CONTENT ====================

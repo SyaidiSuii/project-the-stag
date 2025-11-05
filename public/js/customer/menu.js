@@ -10,8 +10,8 @@ let currentAddToCartItem = null;
 let addToCartQuantity = 1;
 
 // Debug: Log the raw menuData from window
-console.log('Debug [menu.js init]: window.menuData =', window.menuData);
-console.log('Debug [menu.js init]: menuData length =', menuData ? menuData.length : 'null/undefined');
+// console.log('Debug [menu.js init]: window.menuData =', window.menuData);
+// console.log('Debug [menu.js init]: menuData length =', menuData ? menuData.length : 'null/undefined');
 
 // Helper function to safely format price
 function formatPrice(price) {
@@ -21,18 +21,18 @@ function formatPrice(price) {
 
 // Process database data into the expected format
 if (menuData && menuData.length > 0) {
-  console.log('Debug [menu.js]: Processing', menuData.length, 'categories');
+  // console.log('Debug [menu.js]: Processing', menuData.length, 'categories');
 
   menuData.forEach((category, catIndex) => {
-    console.log(`Debug [menu.js]: Category ${catIndex}: ${category.name}, type: ${category.type}, items: ${category.menu_items ? category.menu_items.length : 0}`);
+    // console.log(`Debug [menu.js]: Category ${catIndex}: ${category.name}, type: ${category.type}, items: ${category.menu_items ? category.menu_items.length : 0}`);
 
     if (category.menu_items && category.menu_items.length > 0) {
       category.menu_items.forEach((item, itemIndex) => {
         // Debug first item of first category
         if (catIndex === 0 && itemIndex === 0) {
-          console.log('Debug [menu.js]: First menu item raw data:', item);
-          console.log('Debug [menu.js]: First menu item ID:', item.id, 'Type:', typeof item.id);
-          console.log('Debug [menu.js]: First menu item RATING:', 'avg:', item.rating_average, 'count:', item.rating_count);
+          // console.log('Debug [menu.js]: First menu item raw data:', item);
+          // console.log('Debug [menu.js]: First menu item ID:', item.id, 'Type:', typeof item.id);
+          // console.log('Debug [menu.js]: First menu item RATING:', 'avg:', item.rating_average, 'count:', item.rating_count);
         }
 
         const menuItem = {
@@ -55,7 +55,7 @@ if (menuData && menuData.length > 0) {
 
         // Debug first processed item
         if (catIndex === 0 && itemIndex === 0) {
-          console.log('Debug [menu.js]: First menu item processed:', menuItem);
+          // console.log('Debug [menu.js]: First menu item processed:', menuItem);
         }
 
         if (category.type === 'food') {
@@ -74,10 +74,10 @@ if (menuData && menuData.length > 0) {
     }
   });
 
-  console.log('Debug [menu.js]: Processed - Food:', food.length, 'Drinks:', drinks.length, 'Set Meals:', setMeals.length);
-  if (food.length > 0) {
-    console.log('Debug [menu.js]: First food item after processing:', food[0]);
-  }
+  // console.log('Debug [menu.js]: Processed - Food:', food.length, 'Drinks:', drinks.length, 'Set Meals:', setMeals.length);
+  // if (food.length > 0) {
+    // console.log('Debug [menu.js]: First food item after processing:', food[0]);
+  // }
 }
 
 allCategories.sort();
@@ -237,7 +237,7 @@ function createMenuCard(item) {
   let ratingHtml = '';
   
   // Debug rating data
-  console.log('Debug [createMenuCard]: Item rating - ', item.name, '| avg:', item.rating_average, '| count:', item.rating_count);
+  // console.log('Debug [createMenuCard]: Item rating - ', item.name, '| avg:', item.rating_average, '| count:', item.rating_count);
   
   if (item.rating_count && item.rating_count > 0) {
     const avgRating = parseFloat(item.rating_average) || 0;
@@ -266,9 +266,9 @@ function createMenuCard(item) {
       </div>
     `;
     
-    console.log('Debug [createMenuCard]: Rating HTML generated for', item.name);
+    // console.log('Debug [createMenuCard]: Rating HTML generated for', item.name);
   } else {
-    console.log('Debug [createMenuCard]: No rating for', item.name, '- skipping rating display');
+    // console.log('Debug [createMenuCard]: No rating for', item.name, '- skipping rating display');
   }
 
   let cardContent = `
@@ -374,8 +374,8 @@ async function updateCartBadge() {
     ? cart.reduce((sum, item) => sum + item.quantity, 0)
     : (cartData.count || 0);
 
-  console.log('Debug [updateCartBadge]: Cart data:', cartData);
-  console.log('Debug [updateCartBadge]: Total quantity:', totalItems);
+  // console.log('Debug [updateCartBadge]: Cart data:', cartData);
+  // console.log('Debug [updateCartBadge]: Total quantity:', totalItems);
 
   cartBadge.textContent = totalItems;
   cartBadge.style.display = totalItems > 0 ? 'flex' : 'none';
@@ -509,18 +509,18 @@ async function updateCartDisplay() {
   const cartData = await window.cartManager.getCart();
 
   // DEBUG: Log full cart data structure
-  console.log('🔍 Debug [updateCartDisplay]: Full cartData:', cartData);
-  console.log('🔍 Debug [updateCartDisplay]: promotion_groups:', cartData.promotion_groups);
-  console.log('🔍 Debug [updateCartDisplay]: regular_items:', cartData.regular_items);
+  // console.log('🔍 Debug [updateCartDisplay]: Full cartData:', cartData);
+  // console.log('🔍 Debug [updateCartDisplay]: promotion_groups:', cartData.promotion_groups);
+  // console.log('🔍 Debug [updateCartDisplay]: regular_items:', cartData.regular_items);
 
   // Handle both formats: array (localStorage) or object with cart property (database)
   let cartItems = Array.isArray(cartData) ? cartData : (cartData.cart || []);
   const unavailableCount = cartData.unavailable_count || 0;
   const availableTotal = cartData.available_total || window.cartManager.getTotalPrice(cartItems);
 
-  console.log('Debug [updateCartDisplay]: Cart items:', cartItems);
-  console.log('Debug [updateCartDisplay]: Unavailable count:', unavailableCount);
-  console.log('Debug [updateCartDisplay]: Available total:', availableTotal);
+  // console.log('Debug [updateCartDisplay]: Cart items:', cartItems);
+  // console.log('Debug [updateCartDisplay]: Unavailable count:', unavailableCount);
+  // console.log('Debug [updateCartDisplay]: Available total:', availableTotal);
 
   const totalCartItems = window.cartManager.getTotalQuantity(cartItems);
   const availableItemsCount = cartItems.filter(item => item.is_available !== false).length;
@@ -533,12 +533,12 @@ async function updateCartDisplay() {
   const promoDiscount = parseFloat(cartData.promo_discount) || 0;
   const finalTotal = cartData.final_total !== undefined ? cartData.final_total : (subtotal - promoDiscount);
 
-  console.log('Cart totals:', {
-    subtotal,
-    promoDiscount,
-    finalTotal,
-    cartData_final_total: cartData.final_total
-  });
+  // console.log('Cart totals:', {
+    // subtotal,
+    // promoDiscount,
+    // finalTotal,
+    // cartData_final_total: cartData.final_total
+  // });
 
   // Update subtotal display
   const subtotalElement = document.getElementById('subtotal-amount');
@@ -761,7 +761,7 @@ function renderPromotionGroup(group) {
  */
 function renderRegularCartItem(item, index) {
   const isUnavailable = item.is_available === false;
-  const isFreeItem = item.is_free === true;
+  const isFreeItem = item.is_free_item === true || item.is_free === true; // Support both field names
 
   const unavailableClass = isUnavailable ? ' unavailable' : '';
   const freeItemClass = isFreeItem ? ' free-item' : '';
@@ -1082,13 +1082,13 @@ document.addEventListener('click', function(e) {
       const price = parseFloat(currentOrderItem.price.replace(/[^\d.]/g, '')) || 0;
       const totalAmount = price * orderQuantity;
 
-      console.log('Debug [menu.js]: Creating order data');
-      console.log('Debug [menu.js]: currentOrderItem:', currentOrderItem);
-      console.log('Debug [menu.js]: currentOrderItem.id:', currentOrderItem.id);
+      // console.log('Debug [menu.js]: Creating order data');
+      // console.log('Debug [menu.js]: currentOrderItem:', currentOrderItem);
+      // console.log('Debug [menu.js]: currentOrderItem.id:', currentOrderItem.id);
 
       // Validate that currentOrderItem has an ID
       if (!currentOrderItem || !currentOrderItem.id) {
-        console.error('Error: Cannot create order - menu item ID is missing!');
+        // console.error('Error: Cannot create order - menu item ID is missing!');
         alert('Sorry, there was an error with this item. Please refresh the page and try again.');
         return;
       }
@@ -1105,8 +1105,8 @@ document.addEventListener('click', function(e) {
         total_amount: `RM ${totalAmount.toFixed(2)}`
       };
 
-      console.log('Debug [menu.js]: orderData created:', orderData);
-      console.log('Debug [menu.js]: orderData.item_id:', orderData.item_id);
+      // console.log('Debug [menu.js]: orderData created:', orderData);
+      // console.log('Debug [menu.js]: orderData.item_id:', orderData.item_id);
 
       // Clear checkoutCart to avoid conflicts (Order Now is for single item only)
       sessionStorage.removeItem('checkoutCart');
@@ -1114,7 +1114,7 @@ document.addEventListener('click', function(e) {
       // Store as currentOrder (for single item Order Now flow)
       sessionStorage.setItem('currentOrder', JSON.stringify(orderData));
 
-      console.log('Debug [menu.js]: Stored in sessionStorage:', sessionStorage.getItem('currentOrder'));
+      // console.log('Debug [menu.js]: Stored in sessionStorage:', sessionStorage.getItem('currentOrder'));
 
       // Remove hardcoded payment method - let user choose on payment page
       sessionStorage.removeItem('selectedPaymentMethod');
@@ -1276,7 +1276,7 @@ async function quickAddToCart(itemId, itemName, itemPrice, itemImage) {
     // Use the showAddToCartModal function
     showAddToCartModal(itemId, itemName, priceText, '', imageUrl);
   } catch (error) {
-    console.error('Error in quickAddToCart:', error);
+    // console.error('Error in quickAddToCart:', error);
     Toast.error('Error', 'Failed to add item to cart');
   }
 }
@@ -1672,7 +1672,7 @@ async function checkAndAddPendingFreeItem(retryCount = 0) {
     }
 
     const freeItemData = JSON.parse(pendingFreeItem);
-    console.log('🎁 Found pending free item:', freeItemData, '| Retry:', retryCount);
+    // console.log('🎁 Found pending free item:', freeItemData, '| Retry:', retryCount);
 
     // Retry limit
     const MAX_RETRIES = 10;
@@ -1694,7 +1694,7 @@ async function checkAndAddPendingFreeItem(retryCount = 0) {
     // Flatten menuData to get all menu items (menuData is array of categories with menuItems)
     let allMenuItems = [];
 
-    console.log('🔍 Debug menuData structure:', window.menuData[0]);
+    // console.log('🔍 Debug menuData structure:', window.menuData[0]);
 
     // Check if menuData has nested menu_items (snake_case) or menuItems (camelCase)
     const hasMenuItems = window.menuData[0]?.menu_items || window.menuData[0]?.menuItems;
@@ -1712,17 +1712,17 @@ async function checkAndAddPendingFreeItem(retryCount = 0) {
       allMenuItems = window.menuData;
     }
 
-    console.log('📋 Total menu items available:', allMenuItems.length);
-    console.log('🔍 First 3 items:', allMenuItems.slice(0, 3).map(i => ({ id: i.id, name: i.name })));
-    console.log('🔍 Looking for menu item ID:', freeItemData.menu_item_id, 'Type:', typeof freeItemData.menu_item_id);
+    // console.log('📋 Total menu items available:', allMenuItems.length);
+    // console.log('🔍 First 3 items:', allMenuItems.slice(0, 3).map(i => ({ id: i.id, name: i.name })));
+    // console.log('🔍 Looking for menu item ID:', freeItemData.menu_item_id, 'Type:', typeof freeItemData.menu_item_id);
 
     // Find the menu item
     const menuItem = allMenuItems.find(item => {
-      console.log('Comparing:', item.id, '(', typeof item.id, ') with', freeItemData.menu_item_id, '(', typeof freeItemData.menu_item_id, ')');
+      // console.log('Comparing:', item.id, '(', typeof item.id, ') with', freeItemData.menu_item_id, '(', typeof freeItemData.menu_item_id, ')');
       return item.id == freeItemData.menu_item_id;
     });
 
-    console.log('🔍 Menu item found?', !!menuItem, menuItem ? menuItem.name : 'NOT FOUND');
+    // console.log('🔍 Menu item found?', !!menuItem, menuItem ? menuItem.name : 'NOT FOUND');
 
     if (!menuItem) {
       console.error('Menu item not found:', freeItemData.menu_item_id);
@@ -1733,12 +1733,12 @@ async function checkAndAddPendingFreeItem(retryCount = 0) {
     }
 
     // Check if cartManager is ready
-    console.log('🔍 cartManager check:', {
-      exists: !!window.cartManager,
-      type: typeof window.cartManager,
-      hasAddItem: window.cartManager && typeof window.cartManager.addItem,
-      addItemType: window.cartManager && typeof window.cartManager.addItem
-    });
+    // console.log('🔍 cartManager check:', {
+      // exists: !!window.cartManager,
+      // type: typeof window.cartManager,
+      // hasAddItem: window.cartManager && typeof window.cartManager.addItem,
+      // addItemType: window.cartManager && typeof window.cartManager.addItem
+    // });
 
     if (!window.cartManager || typeof window.cartManager.addItem !== 'function') {
       console.log('⏳ Waiting for cartManager to load...', 'Retry:', retryCount);
@@ -1747,7 +1747,7 @@ async function checkAndAddPendingFreeItem(retryCount = 0) {
       return;
     }
 
-    console.log('✅ Menu item found:', menuItem.name, 'ID:', menuItem.id);
+    // console.log('✅ Menu item found:', menuItem.name, 'ID:', menuItem.id);
 
     // Add to cart with free item flag
     const cartItem = {
@@ -1763,7 +1763,7 @@ async function checkAndAddPendingFreeItem(retryCount = 0) {
       free_item_title: freeItemData.title
     };
 
-    console.log('🛒 Adding free item to cart:', cartItem);
+    // console.log('🛒 Adding free item to cart:', cartItem);
 
     // Add to cart
     await window.cartManager.addItem(cartItem);

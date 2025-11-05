@@ -102,6 +102,8 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::post('/rewards/checkin', [CustomerRewardsController::class, 'checkin'])->name('rewards.checkin');
     Route::post('/rewards/collect-voucher', [CustomerRewardsController::class, 'collectVoucher'])->name('rewards.collectVoucher');
     Route::post('/rewards/claim-bonus-challenge', [CustomerRewardsController::class, 'claimBonusChallenge'])->name('rewards.claimBonusChallenge');
+    Route::post('/rewards/mark-pending', [CustomerRewardsController::class, 'markAsPending'])->name('rewards.markPending');
+    Route::post('/rewards/apply-voucher', [CustomerRewardsController::class, 'applyVoucherFromReward'])->name('rewards.applyVoucher');
 
     // Cart Voucher Routes
     Route::get('/cart/available-vouchers', [CustomerCartController::class, 'getAvailableVouchers'])->name('cart.availableVouchers');
@@ -155,11 +157,9 @@ Route::prefix('customer')->name('customer.')->group(function () {
         Route::get('/', [CustomerPromotionController::class, 'index'])->name('index');
         Route::get('/type/{type}', [CustomerPromotionController::class, 'byType'])->name('by-type');
         Route::get('/{id}', [CustomerPromotionController::class, 'show'])->name('show');
-        Route::get('/happy-hour/{id}', [CustomerPromotionController::class, 'showHappyHour'])->name('happy-hour');
         Route::post('/apply-promo', [CustomerPromotionController::class, 'applyPromoCode'])->name('apply-promo');
         Route::post('/remove-promo', [CustomerPromotionController::class, 'removePromoCode'])->name('remove-promo');
         Route::post('/best-promotion', [CustomerPromotionController::class, 'getBestPromotion'])->name('best-promotion');
-        Route::get('/api/active-happy-hours', [CustomerPromotionController::class, 'activeHappyHours'])->name('api.active-happy-hours');
     });
 
     // Reviews & Ratings routes - DISABLED
@@ -481,10 +481,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // ---------------------------------------------
             Route::prefix('redemptions')->name('redemptions.')->group(function () {
                 Route::get('/', [RedemptionManagementController::class, 'index'])->name('index');
+                Route::get('/export', [RedemptionManagementController::class, 'export'])->name('export');
                 Route::get('/{redemption}', [RedemptionManagementController::class, 'show'])->name('show');
                 Route::post('/{redemption}/mark-redeemed', [RedemptionManagementController::class, 'markAsRedeemed'])->name('mark-redeemed');
                 Route::post('/{redemption}/cancel', [RedemptionManagementController::class, 'cancel'])->name('cancel');
-                Route::get('/export/csv', [RedemptionManagementController::class, 'exportCSV'])->name('export');
             });
 
             // ---------------------------------------------
@@ -492,10 +492,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // ---------------------------------------------
             Route::prefix('members')->name('members.')->group(function () {
                 Route::get('/', [LoyaltyMemberController::class, 'index'])->name('index');
+                Route::get('/export', [LoyaltyMemberController::class, 'export'])->name('export');
                 Route::get('/{member}', [LoyaltyMemberController::class, 'show'])->name('show');
                 Route::post('/{member}/adjust-points', [LoyaltyMemberController::class, 'adjustPoints'])->name('adjust-points');
                 Route::post('/{member}/reset-points', [LoyaltyMemberController::class, 'resetPoints'])->name('reset-points');
-                Route::get('/export/csv', [LoyaltyMemberController::class, 'exportCSV'])->name('export');
             });
         });
 
@@ -602,14 +602,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{promotion}/stats', [AdminPromotionController::class, 'stats'])->name('stats');
             Route::get('/{promotion}/analytics', [AdminPromotionController::class, 'analytics'])->name('analytics');
             Route::post('/{promotion}/duplicate', [AdminPromotionController::class, 'duplicate'])->name('duplicate');
-
-            // Happy Hour Deals
-            Route::get('/happy-hour/create', [AdminPromotionController::class, 'createHappyHour'])->name('happy-hour.create');
-            Route::post('/happy-hour', [AdminPromotionController::class, 'storeHappyHour'])->name('happy-hour.store');
-            Route::get('/happy-hour/{happyHourDeal}/edit', [AdminPromotionController::class, 'editHappyHour'])->name('happy-hour.edit');
-            Route::put('/happy-hour/{happyHourDeal}', [AdminPromotionController::class, 'updateHappyHour'])->name('happy-hour.update');
-            Route::delete('/happy-hour/{happyHourDeal}', [AdminPromotionController::class, 'destroyHappyHour'])->name('happy-hour.destroy');
-            Route::post('/happy-hour/{happyHourDeal}/toggle-status', [AdminPromotionController::class, 'toggleHappyHourStatus'])->name('happy-hour.toggle-status');
         });
 
         // ---------------------------------------------

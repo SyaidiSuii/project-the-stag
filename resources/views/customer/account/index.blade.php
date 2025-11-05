@@ -285,27 +285,103 @@
         <ul class="info-list">
           <li class="info-item">
             <span class="info-label">Total Orders</span>
-            <span class="info-value">47</span>
+            <span class="info-value">{{ $orderCount }}</span>
           </li>
           <li class="info-item">
             <span class="info-label">Total Spent</span>
-            <span class="info-value">RM 2,340.50</span>
+            <span class="info-value">RM {{ number_format($totalSpent, 2) }}</span>
           </li>
           <li class="info-item">
             <span class="info-label">Favorite Dish</span>
-            <span class="info-value">Beef Steak</span>
+            <span class="info-value">{{ $favoriteDish }}</span>
           </li>
           <li class="info-item">
             <span class="info-label">Member Level</span>
-            <span class="info-value">Gold Member</span>
+            <span class="info-value">{{ $membershipLevel }}</span>
           </li>
           <li class="info-item">
             <span class="info-label">Loyalty Points</span>
-            <span class="info-value">1,240 pts</span>
+            <span class="info-value">{{ $loyaltyPoints }} pts</span>
           </li>
         </ul>
-        <div class="btn-group">
-          <a href="orders.html" class="btn btn-primary"><i class="fas fa-shopping-bag"></i> View All Orders</a>
+
+        @php
+            // FIXED: Same tier calculation logic as rewards page
+            $tierService = app(\App\Services\Loyalty\TierService::class);
+            $currentTier = $tierService->calculateEligibleTier($user);
+            $currentPoints = $user->points_balance ?? 0;
+
+            // Initialize variables
+            $progress = 0;
+            $nextTier = null;
+            $amountNeeded = 0;
+            $statusMessage = '';
+
+            // Find next tier in hierarchy
+            if ($currentTier) {
+                $nextTier = \App\Models\LoyaltyTier::where('order', '>', $currentTier->order)
+                    ->where('is_active', true)
+                    ->orderBy('order', 'asc')
+                    ->first();
+
+                if ($nextTier) {
+                    // Calculate progress from current tier to next tier
+                    $currentThreshold = $currentTier->points_threshold ?? 0;
+                    $nextThreshold = $nextTier->points_threshold ?? 0;
+                    $rangeSize = $nextThreshold - $currentThreshold;
+
+                    if ($rangeSize > 0) {
+                        $pointsInRange = $currentPoints - $currentThreshold;
+                        $progress = min(100, ($pointsInRange / $rangeSize) * 100);
+                    } else {
+                        $progress = 100;
+                    }
+
+                    $amountNeeded = max(0, $nextThreshold - $currentPoints);
+                    $statusMessage = "Earn {$amountNeeded} more points to reach {$nextTier->name}";
+                } else {
+                    // Max tier reached
+                    $progress = 100;
+                    $statusMessage = 'Maximum level achieved!';
+                }
+            } else {
+                // No tier yet - find first tier
+                $firstTier = \App\Models\LoyaltyTier::where('is_active', true)
+                    ->orderBy('order', 'asc')
+                    ->first();
+
+                if ($firstTier) {
+                    $nextTier = $firstTier;
+                    $progress = min(100, ($currentPoints / ($firstTier->points_threshold ?: 1)) * 100);
+                    $amountNeeded = max(0, $firstTier->points_threshold - $currentPoints);
+                    $statusMessage = "Earn {$amountNeeded} more points to reach {$firstTier->name}";
+                } else {
+                    $statusMessage = 'No tiers available';
+                }
+            }
+        @endphp
+
+        @if($currentTier || $nextTier)
+        <!-- Tier Progress Section -->
+        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-size: 0.875rem; color: #64748b; font-weight: 600;">Tier Progress</span>
+            <span style="font-size: 0.875rem; color: #475569; font-weight: 700;">{{ number_format($progress, 1) }}%</span>
+          </div>
+
+          <!-- Progress Bar -->
+          <div style="width: 100%; height: 8px; background: #e5e7eb; border-radius: 9999px; overflow: hidden; margin-bottom: 0.75rem;">
+            <div style="height: 100%; background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%); border-radius: 9999px; transition: width 0.5s ease; width: {{ $progress }}%;"></div>
+          </div>
+
+          <p style="font-size: 0.8125rem; color: #64748b; margin: 0;">
+            {{ $statusMessage }}
+          </p>
+        </div>
+        @endif
+
+        <div class="btn-group" style="margin-top: 1rem;">
+          <a href="{{ route('customer.orders.index') }}" class="btn btn-primary"><i class="fas fa-shopping-bag"></i> View All Orders</a>
         </div>
       </div>
     </div>

@@ -119,7 +119,7 @@
                                         <span class="prep-time">
                                             <i class="fas fa-clock"></i> {{ $item->preparation_time }}min
                                         </span>
-                                        @if($item->allergens && count($item->allergens) > 0)
+                                        @if(false && $item->allergens && count($item->allergens) > 0)
                                             <span class="allergens-count">
                                                 <i class="fas fa-exclamation-triangle text-warning"></i>
                                                 {{ count($item->allergens) }} allergen{{ count($item->allergens) > 1 ? 's' : '' }}
@@ -352,7 +352,7 @@
                                         <span class="prep-time">
                                             <i class="fas fa-clock"></i> {{ $item->preparation_time }}min
                                         </span>
-                                        @if($item->allergens && count($item->allergens) > 0)
+                                        @if(false && $item->allergens && count($item->allergens) > 0)
                                             <span class="allergens-count">
                                                 <i class="fas fa-exclamation-triangle text-warning"></i>
                                                 {{ count($item->allergens) }} allergen{{ count($item->allergens) > 1 ? 's' : '' }}
@@ -565,7 +565,7 @@
                                         <span class="prep-time">
                                             <i class="fas fa-clock"></i> {{ $item->preparation_time }}min
                                         </span>
-                                        @if($item->allergens && count($item->allergens) > 0)
+                                        @if(false && $item->allergens && count($item->allergens) > 0)
                                             <span class="allergens-count">
                                                 <i class="fas fa-exclamation-triangle text-warning"></i>
                                                 {{ count($item->allergens) }} allergen{{ count($item->allergens) > 1 ? 's' : '' }}

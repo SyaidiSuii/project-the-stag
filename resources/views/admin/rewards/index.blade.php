@@ -345,6 +345,21 @@
 
 @section('content')
 <div class="rewards-dashboard">
+    {{-- Success/Error Messages --}}
+    @if(session('success'))
+    <div style="background: var(--success); color: white; padding: 16px 20px; border-radius: var(--radius); margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+        <i class="fas fa-check-circle" style="font-size: 20px;"></i>
+        <span style="font-weight: 500;">{{ session('success') }}</span>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div style="background: var(--danger); color: white; padding: 16px 20px; border-radius: var(--radius); margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+        <i class="fas fa-exclamation-circle" style="font-size: 20px;"></i>
+        <span style="font-weight: 500;">{{ session('error') }}</span>
+    </div>
+    @endif
+
     {{-- <!-- Header -->
     <div class="rewards-header">
         <h1><i class="fas fa-gift"></i> Loyalty & Rewards Management</h1>
@@ -394,11 +409,14 @@
         <button class="tab-nav-item" data-tab="voucher-templates">
             <i class="fas fa-ticket-alt"></i> Voucher Templates
         </button>
-        <button class="tab-nav-item" data-tab="voucher-collections">
+        {{-- <button class="tab-nav-item" data-tab="voucher-collections">
             <i class="fas fa-layer-group"></i> Voucher Collections
-        </button>
+        </button> --}}
         <button class="tab-nav-item" data-tab="bonus-challenges">
             <i class="fas fa-star"></i> Bonus Challenges
+        </button>
+        <button class="tab-nav-item" data-tab="checkin-settings">
+            <i class="fas fa-calendar-check"></i> Check-in Settings
         </button>
         <button class="tab-nav-item" data-tab="tiers">
             <i class="fas fa-trophy"></i> Tiers & Levels
@@ -741,6 +759,122 @@
             @endif
         </div>
 
+        <!-- Check-in Settings Tab -->
+        <div class="tab-content" id="checkin-settings">
+            <div class="section-header">
+                <h2>Check-in Reward Settings</h2>
+            </div>
+
+            @php
+                $checkinSettings = $checkinSettings ?? \App\Models\CheckinSetting::first();
+                $dailyPoints = $checkinSettings ? $checkinSettings->daily_points : [25, 5, 5, 10, 10, 15, 20];
+            @endphp
+
+            <div class="table-container">
+                <form action="{{ route('admin.rewards.checkin.update') }}" method="POST">
+                    @csrf
+                    
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Day</th>
+                                <th style="width: 50%;">Points Reward</th>
+                                <th style="width: 30%;">Preview</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as $index => $dayName)
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 600; color: var(--text);">
+                                        {{ $dayName }}
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: var(--text-3); margin-top: 2px;">
+                                        Day {{ $index + 1 }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <input type="number" 
+                                               name="daily_points[{{ $index }}]" 
+                                               value="{{ $dailyPoints[$index] ?? 5 }}" 
+                                               min="0" 
+                                               max="1000"
+                                               class="form-control" 
+                                               style="width: 120px; padding: 8px 12px; border: 1px solid var(--muted); border-radius: 8px;"
+                                               required>
+                                        <span style="color: var(--text-2); font-weight: 500;">points</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: rgba(99, 102, 241, 0.1); border-radius: 8px;">
+                                        <i class="fas fa-gift" style="color: var(--brand);"></i>
+                                        <span style="font-weight: 600; color: var(--brand);">+{{ $dailyPoints[$index] ?? 5 }} pts</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+
+                    <div style="margin-top: 24px; padding: 20px; background: var(--bg); border-radius: var(--radius);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 8px;">
+                                    <i class="fas fa-info-circle" style="color: var(--brand);"></i> How It Works
+                                </h3>
+                                <ul style="margin: 0; padding-left: 20px; color: var(--text-2); font-size: 0.9rem;">
+                                    <li>Customers earn points by checking in daily</li>
+                                    <li>Streak continues indefinitely - no reset after 7 days</li>
+                                    <li>Bonus points cycle every 7 days (Week 1, Week 2, etc.)</li>
+                                    <li>Missing a day resets the streak back to Day 1</li>
+                                </ul>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.85rem; color: var(--text-3); margin-bottom: 8px;">
+                                    Total for 1 week:
+                                </div>
+                                <div style="font-size: 24px; font-weight: 700; color: var(--brand);">
+                                    {{ array_sum($dailyPoints) }} points
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Streak Milestones Settings -->
+                    <div style="margin-top: 20px; padding: 20px; background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(99, 102, 241, 0.1)); border-radius: var(--radius); border: 2px dashed var(--accent);">
+                        <h3 style="font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 16px;">
+                            <i class="fas fa-fire" style="color: var(--accent);"></i> Streak Fire Animation Milestones
+                        </h3>
+                        <p style="color: var(--text-2); font-size: 0.9rem; margin-bottom: 16px;">
+                            Set which streak days will trigger the fire overlay animation (like TikTok). Separate multiple days with commas.
+                        </p>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <label style="font-weight: 600; color: var(--text); min-width: 180px;">
+                                Animation Trigger Days:
+                            </label>
+                            <input type="text" 
+                                   name="streak_milestones" 
+                                   value="{{ isset($checkinSettings->streak_milestones) ? implode(', ', $checkinSettings->streak_milestones) : '7, 14, 30, 60, 100' }}" 
+                                   class="form-control" 
+                                   placeholder="e.g., 7, 14, 30, 60, 100"
+                                   style="flex: 1; padding: 10px 16px; border: 2px solid var(--accent); border-radius: 8px; font-weight: 500;">
+                        </div>
+                        <div style="margin-top: 12px; font-size: 0.85rem; color: var(--text-3);">
+                            <i class="fas fa-lightbulb" style="color: var(--warning);"></i> 
+                            <strong>Examples:</strong> Day 7 (1 week), Day 14 (2 weeks), Day 30 (1 month), Day 100 (100-day streak)
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 24px; text-align: right;">
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 32px;">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Tiers Tab -->
         <div class="tab-content" id="tiers">
             <div class="section-header">
@@ -892,8 +1026,9 @@
                         <td>{{ $member->email }}</td>
                         <td>{{ $member->points_balance ?? 0 }} points</td>
                         <td>
-                            @if($member->loyaltyTier)
-                                <span class="badge badge-info">{{ $member->loyaltyTier->name }}</span>
+                            {{-- FIXED: Use calculatedTier (real-time) instead of loyaltyTier (static) --}}
+                            @if(isset($member->calculatedTier) && $member->calculatedTier)
+                                <span class="badge badge-info">{{ $member->calculatedTier->name }}</span>
                             @else
                                 <span class="badge badge-warning">No tier</span>
                             @endif

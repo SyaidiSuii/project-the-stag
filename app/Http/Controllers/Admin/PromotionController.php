@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Promotion;
-use App\Models\HappyHourDeal;
 use App\Models\MenuItem;
 use App\Models\Category;
 use App\Services\Promotions\PromotionService;
@@ -308,131 +307,6 @@ class PromotionController extends Controller
             'success' => true,
             'is_active' => $promotion->is_active,
             'message' => 'Promotion status updated!'
-        ]);
-    }
-
-    // ===== Happy Hour Deals Management =====
-
-    /**
-     * Show the form for creating a new happy hour deal
-     */
-    public function createHappyHour()
-    {
-        $menuItems = MenuItem::where('is_available', true)
-            ->with('category')
-            ->orderBy('name')
-            ->get();
-
-        return view('admin.promotions.create-happy-hour', compact('menuItems'));
-    }
-
-    /**
-     * Store a newly created happy hour deal
-     */
-    public function storeHappyHour(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'discount_percentage' => 'required|numeric|min:0|max:100',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
-            'days_of_week' => 'required|array|min:1',
-            'days_of_week.*' => 'in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-            'menu_items' => 'required|array|min:1',
-            'menu_items.*' => 'exists:menu_items,id',
-            'is_active' => 'nullable|boolean'  // ✅ Add nullable!
-        ]);
-
-        $validated['is_active'] = $request->has('is_active');
-        $validated['start_time'] = $validated['start_time'] . ':00';
-        $validated['end_time'] = $validated['end_time'] . ':00';
-
-        $menuItems = $validated['menu_items'];
-        unset($validated['menu_items']);
-
-        $happyHourDeal = HappyHourDeal::create($validated);
-        $happyHourDeal->menuItems()->attach($menuItems);
-
-        return redirect()
-            ->route('admin.promotions.index')
-            ->with('success', 'Happy Hour Deal created successfully!');
-    }
-
-    /**
-     * Show the form for editing a happy hour deal
-     */
-    public function editHappyHour(HappyHourDeal $happyHourDeal)
-    {
-        $menuItems = MenuItem::where('is_available', true)
-            ->with('category')
-            ->orderBy('name')
-            ->get();
-
-        $selectedMenuItems = $happyHourDeal->menuItems->pluck('id')->toArray();
-
-        return view('admin.promotions.edit-happy-hour', compact(
-            'happyHourDeal',
-            'menuItems',
-            'selectedMenuItems'
-        ));
-    }
-
-    /**
-     * Update the specified happy hour deal
-     */
-    public function updateHappyHour(Request $request, HappyHourDeal $happyHourDeal)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'discount_percentage' => 'required|numeric|min:0|max:100',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
-            'days_of_week' => 'required|array|min:1',
-            'days_of_week.*' => 'in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-            'menu_items' => 'required|array|min:1',
-            'menu_items.*' => 'exists:menu_items,id',
-            'is_active' => 'nullable|boolean'  // ✅ Add nullable!
-        ]);
-
-        $validated['is_active'] = $request->has('is_active');
-        $validated['start_time'] = $validated['start_time'] . ':00';
-        $validated['end_time'] = $validated['end_time'] . ':00';
-
-        $menuItems = $validated['menu_items'];
-        unset($validated['menu_items']);
-
-        $happyHourDeal->update($validated);
-        $happyHourDeal->menuItems()->sync($menuItems);
-
-        return redirect()
-            ->route('admin.promotions.index')
-            ->with('success', 'Happy Hour Deal updated successfully!');
-    }
-
-    /**
-     * Remove the specified happy hour deal
-     */
-    public function destroyHappyHour(HappyHourDeal $happyHourDeal)
-    {
-        $happyHourDeal->menuItems()->detach();
-        $happyHourDeal->delete();
-
-        return redirect()
-            ->route('admin.promotions.index')
-            ->with('success', 'Happy Hour Deal deleted successfully!');
-    }
-
-    /**
-     * Toggle happy hour deal active status
-     */
-    public function toggleHappyHourStatus(HappyHourDeal $happyHourDeal)
-    {
-        $happyHourDeal->update(['is_active' => !$happyHourDeal->is_active]);
-
-        return response()->json([
-            'success' => true,
-            'is_active' => $happyHourDeal->is_active,
-            'message' => 'Happy Hour Deal status updated!'
         ]);
     }
 

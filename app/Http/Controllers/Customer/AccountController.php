@@ -23,6 +23,8 @@ class AccountController extends Controller
                 'user' => null,
                 'profile' => null,
                 'orderCount' => 0,
+                'totalSpent' => 0,
+                'favoriteDish' => 'None yet',
                 'loyaltyPoints' => '0',
                 'membershipLevel' => 'Guest',
                 'memberSince' => 'Not registered',
@@ -45,25 +47,75 @@ class AccountController extends Controller
                 ]);
             }
 
-            // Get user stats with fallbacks
-            $orderCount = $user->orders->count() ?? 0;
+            // Get user stats with fallbacks (exclude cancelled orders)
+            $orderCount = $user->orders()->where('order_status', '!=', 'cancelled')->count() ?? 0;
             $loyaltyPoints = $user->points_balance ?? 0; // PHASE 1.1: Use users.points_balance
-            
-            // Determine membership level based on points
-            $membershipLevel = 'Bronze Member';
-            if ($loyaltyPoints >= 2000) {
-                $membershipLevel = 'Gold Member';
-            } elseif ($loyaltyPoints >= 1000) {
-                $membershipLevel = 'Silver Member';
+
+            // Get total spent from customer profile (updated via background jobs)
+            $totalSpent = $profile->total_spent ?? 0;
+
+            // Find favorite dish - use AI recommendation (with fallback to manual calculation)
+            $favoriteDish = 'None yet';
+            if ($orderCount > 0) {
+                try {
+                    // Try AI recommendation first
+                    $recommendationService = app(\App\Services\RecommendationService::class);
+                    $recommendedItems = $recommendationService->getRecommendations($user->id, 1);
+
+                    if (!empty($recommendedItems)) {
+                        $topMenuItem = \App\Models\MenuItem::find($recommendedItems[0]);
+                        if ($topMenuItem) {
+                            $favoriteDish = $topMenuItem->name;
+                        }
+                    } else {
+                        // Fallback to manual calculation if no AI recommendations
+                        $mostOrderedItem = \App\Models\OrderItem::selectRaw('menu_item_id, SUM(quantity) as total_quantity')
+                            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                            ->where('orders.user_id', $user->id)
+                            ->where('orders.order_status', '!=', 'cancelled')
+                            ->groupBy('menu_item_id')
+                            ->orderBy('total_quantity', 'desc')
+                            ->first();
+
+                        if ($mostOrderedItem && $mostOrderedItem->menuItem) {
+                            $favoriteDish = $mostOrderedItem->menuItem->name;
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // If AI fails, fallback to manual calculation
+                    \Log::warning('AI recommendation failed for favorite dish, using fallback', [
+                        'user_id' => $user->id,
+                        'error' => $e->getMessage()
+                    ]);
+
+                    $mostOrderedItem = \App\Models\OrderItem::selectRaw('menu_item_id, SUM(quantity) as total_quantity')
+                        ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                        ->where('orders.user_id', $user->id)
+                        ->where('orders.order_status', '!=', 'cancelled')
+                        ->groupBy('menu_item_id')
+                        ->orderBy('total_quantity', 'desc')
+                        ->first();
+
+                    if ($mostOrderedItem && $mostOrderedItem->menuItem) {
+                        $favoriteDish = $mostOrderedItem->menuItem->name;
+                    }
+                }
             }
-            
+
+            // FIXED: Use TierService to calculate proper tier (same logic as rewards page)
+            $tierService = app(\App\Services\Loyalty\TierService::class);
+            $currentTier = $tierService->calculateEligibleTier($user);
+            $membershipLevel = $currentTier ? $currentTier->name : 'No Tier Yet';
+
             // Calculate member since with fallback
             $memberSince = $user->created_at ? $user->created_at->format('F Y') : 'Recently';
-            
+
             $data = [
                 'user' => $user,
                 'profile' => $profile,
                 'orderCount' => $orderCount,
+                'totalSpent' => $totalSpent,
+                'favoriteDish' => $favoriteDish,
                 'loyaltyPoints' => number_format($loyaltyPoints),
                 'membershipLevel' => $membershipLevel,
                 'memberSince' => $memberSince,
@@ -79,6 +131,8 @@ class AccountController extends Controller
                 'user' => $user,
                 'profile' => null,
                 'orderCount' => 0,
+                'totalSpent' => 0,
+                'favoriteDish' => 'None yet',
                 'loyaltyPoints' => '0',
                 'membershipLevel' => 'Bronze Member',
                 'memberSince' => 'Recently',

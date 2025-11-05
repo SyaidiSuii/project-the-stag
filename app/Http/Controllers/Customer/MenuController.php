@@ -242,6 +242,32 @@ class MenuController extends Controller
     }
 
     /**
+     * Display fast menu items page
+     */
+    public function fastItems()
+    {
+        // Get all categories
+        $categories = Category::with(['menuItems' => function ($query) {
+            $query->where('availability', true)->orderBy('name');
+        }])
+        ->orderBy('sort_order')
+        ->orderBy('name')
+        ->get();
+
+        // Get kitchen load status with recommended items
+        $status = $this->getKitchenLoadStatus();
+        $recommendedItems = $status['recommended_items'];
+
+        // Group recommended items by category
+        $itemsByCategory = $recommendedItems->groupBy('category_id')
+            ->map(function($items) {
+                return $items->sortBy('name')->values();
+            });
+
+        return view('customer.menu.fast-items', compact('recommendedItems', 'itemsByCategory', 'categories'));
+    }
+
+    /**
      * Get current kitchen load status with recommended menu items
      */
     private function getKitchenLoadStatus()

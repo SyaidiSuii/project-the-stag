@@ -182,27 +182,13 @@ class RewardsController extends Controller
         $reward = Reward::findOrFail($request->reward_id);
 
         // PHASE 3: Use RewardRedemptionService instead of direct model operations
+        // PHASE 8: Consolidated to customer_rewards only - no more auto-voucher issuance
         try {
             // Service handles all validation and business logic
             $customerReward = $this->rewardService->redeemReward($user, $reward);
 
-            // If reward has voucher template, issue voucher
-            if ($reward->voucher_template_id && $reward->voucherTemplate) {
-                try {
-                    $this->voucherService->issueVoucher(
-                        $user,
-                        $reward->voucherTemplate,
-                        'reward'
-                    );
-                } catch (\Exception $e) {
-                    // Log but don't fail the whole redemption
-                    logger()->warning('Failed to issue voucher for reward', [
-                        'customer_reward_id' => $customerReward->id,
-                        'reward_id' => $reward->id,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-            }
+            // Note: Voucher-type rewards are now stored directly in customer_rewards
+            // No separate customer_voucher record is created
 
             $message = $this->getRedemptionMessage($reward);
 
@@ -246,14 +232,15 @@ class RewardsController extends Controller
         $currentStreak = $user->checkin_streak ?? 0;
         if ($lastCheckin && $lastCheckin->diffInDays($today) === 1) {
             // Consecutive day - continue streak
-            $newStreak = ($currentStreak + 1) % 7; // Reset after 7 days
+            $newStreak = $currentStreak + 1;
         } else {
             // Not consecutive or first checkin - start/restart streak
-            $newStreak = 0;
+            $newStreak = 1; // Start from 1, not 0 (Day 1 check-in)
         }
 
-        // Get points for the NEW streak position (the day they're checking in for)
-        $earnedPoints = $dailyPoints[$newStreak] ?? 5;
+        // Get points based on position in 7-day cycle (0-6)
+        $cyclePosition = ($newStreak - 1) % 7; // Map streak 1→0, 2→1, ..., 7→6, 8→0, etc.
+        $earnedPoints = $dailyPoints[$cyclePosition] ?? 5;
 
         // PHASE 3: Use LoyaltyService for points award
         try {
@@ -272,7 +259,10 @@ class RewardsController extends Controller
                 'points_earned' => $earnedPoints,
                 'new_balance' => $this->loyaltyService->getBalance($user),
                 'streak' => $newStreak,
-                'checked_in_today' => true
+                'checked_in_today' => true,
+                'is_milestone' => $checkinSettings && isset($checkinSettings->streak_milestones) 
+                    ? in_array($newStreak, $checkinSettings->streak_milestones) 
+                    : in_array($newStreak, [7, 14, 30, 60, 100])
             ]);
 
         } catch (\Exception $e) {
@@ -454,6 +444,184 @@ class RewardsController extends Controller
                 'success' => false,
                 'message' => 'Failed to claim bonus points: ' . $e->getMessage()
             ]);
+        }
+    }
+
+    /**
+     * Mark a customer reward as pending when user applies it to cart
+     */
+    public function markAsPending(Request $request)
+    {
+        $request->validate([
+            'redemption_id' => 'required|exists:customer_rewards,id'
+        ]);
+
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Please login']);
+        }
+
+        try {
+            $customerReward = CustomerReward::findOrFail($request->redemption_id);
+
+            // Verify this reward belongs to the current user
+            $customerProfile = $user->customerProfile;
+            if (!$customerProfile || $customerReward->customer_profile_id !== $customerProfile->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access to this reward'
+                ]);
+            }
+
+            // Update status to pending (reward is in cart but not yet ordered)
+            $customerReward->update(['status' => 'pending']);
+
+            \Log::info('Customer reward marked as pending', [
+                'customer_reward_id' => $customerReward->id,
+                'user_id' => $user->id,
+                'reward_title' => $customerReward->reward->title ?? 'Unknown'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Reward status updated'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to mark reward as pending', [
+                'user_id' => $user->id,
+                'redemption_id' => $request->redemption_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update reward status: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Apply voucher from customer reward to cart
+     * Used for voucher-type rewards from admin
+     */
+    public function applyVoucherFromReward(Request $request)
+    {
+        try {
+            $request->validate([
+                'customer_reward_id' => 'required|exists:customer_rewards,id'
+            ]);
+
+            $user = Auth::user();
+            if (!$user || !$user->customerProfile) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please login to apply voucher'
+                ], 401);
+            }
+
+            // Find CustomerReward
+            $customerReward = CustomerReward::with('reward.voucherTemplate')
+                ->where('customer_profile_id', $user->customerProfile->id)
+                ->findOrFail($request->customer_reward_id);
+
+            // Check if reward is active
+            if ($customerReward->status !== 'active') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This reward is no longer active'
+                ], 400);
+            }
+
+            // Check if reward is voucher type
+            if ($customerReward->reward->reward_type !== 'voucher') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This reward is not a voucher type'
+                ], 400);
+            }
+
+            // Check if expired
+            if ($customerReward->expires_at && $customerReward->expires_at < now()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This reward has expired'
+                ], 400);
+            }
+
+            // FIX: If redemption_code is missing, create CustomerVoucher on-the-fly
+            $customerVoucher = null;
+
+            if ($customerReward->redemption_code) {
+                // Try to find existing CustomerVoucher by voucher_code
+                $customerVoucher = CustomerVoucher::where('customer_profile_id', $user->customerProfile->id)
+                    ->where('voucher_code', $customerReward->redemption_code)
+                    ->where('status', 'active')
+                    ->first();
+            }
+
+            // If no CustomerVoucher exists, create one now
+            if (!$customerVoucher && $customerReward->reward->voucher_template_id) {
+                \Log::info('Creating CustomerVoucher on-the-fly for voucher-type reward', [
+                    'customer_reward_id' => $customerReward->id,
+                    'reward_id' => $customerReward->reward_id,
+                    'voucher_template_id' => $customerReward->reward->voucher_template_id,
+                ]);
+
+                // Generate unique voucher code
+                $voucherCode = 'RWD-' . strtoupper(uniqid());
+
+                // Create CustomerVoucher record
+                $customerVoucher = CustomerVoucher::create([
+                    'customer_profile_id' => $user->customerProfile->id,
+                    'voucher_template_id' => $customerReward->reward->voucher_template_id,
+                    'voucher_code' => $voucherCode,
+                    'status' => 'active',
+                    'source' => 'reward',
+                    'expiry_date' => $customerReward->expires_at ? $customerReward->expires_at->toDateString() : null,
+                    'redeemed_at' => null,
+                ]);
+
+                // Update CustomerReward with the voucher code
+                $customerReward->update([
+                    'redemption_code' => $voucherCode
+                ]);
+
+                \Log::info('CustomerVoucher created on-the-fly', [
+                    'customer_voucher_id' => $customerVoucher->id,
+                    'voucher_code' => $voucherCode,
+                ]);
+            }
+
+            if (!$customerVoucher) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unable to create voucher. Please contact support.'
+                ], 500);
+            }
+
+            // Return voucher data for frontend to call CartController::applyVoucher
+            return response()->json([
+                'success' => true,
+                'message' => 'Voucher found',
+                'voucher_id' => $customerVoucher->id,
+                'voucher_code' => $customerVoucher->voucher_code,
+                'voucher_name' => $customerReward->reward->voucherTemplate->name ?? 'Reward Voucher'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to apply voucher from reward', [
+                'user_id' => $user->id ?? 'unknown',
+                'customer_reward_id' => $request->customer_reward_id ?? 'missing',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to apply voucher: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

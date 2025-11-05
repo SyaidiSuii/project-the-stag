@@ -23,6 +23,7 @@ class UserCart extends Model
         'promotion_id',
         'promotion_group_id',
         'is_free_item',
+        'customer_reward_id', // Links free items to their reward redemption
     ];
 
     protected $casts = [

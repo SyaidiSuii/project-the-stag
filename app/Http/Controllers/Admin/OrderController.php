@@ -720,6 +720,28 @@ class OrderController extends Controller
             }
         }
 
+        // Mark free item rewards as redeemed when payment status changed to 'paid'
+        if ($request->payment_status === 'paid' && $oldPaymentStatus !== 'paid') {
+            // Load order items to check for free rewards
+            $order->load('items');
+            foreach ($order->items as $orderItem) {
+                // Check if this order item is linked to a reward redemption
+                if ($orderItem->customer_reward_id) {
+                    $customerReward = \App\Models\CustomerReward::find($orderItem->customer_reward_id);
+                    if ($customerReward && $customerReward->status !== 'redeemed') {
+                        $customerReward->markAsRedeemed();
+
+                        logger()->info('Free item reward marked as redeemed (admin payment update)', [
+                            'customer_reward_id' => $customerReward->id,
+                            'order_id' => $order->id,
+                            'menu_item_id' => $orderItem->menu_item_id,
+                            'reward_title' => $customerReward->reward->title ?? 'Unknown'
+                        ]);
+                    }
+                }
+            }
+        }
+
         // 🔥 DISPATCH ANALYTICS REFRESH EVENT when payment status changes
         if ($oldPaymentStatus !== $request->payment_status) {
             event(new AnalyticsRefreshEvent(

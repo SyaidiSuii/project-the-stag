@@ -1019,7 +1019,7 @@
                                 </div>
                                 @endif
                             </div>
-                            
+
                             <div class="item-discount-items">
                                 <div class="order-item item-discount-item">
                                     <div class="item-image" style="background: #f3f4f6; display: flex; align-items: center; justify-content: center;">
@@ -1054,6 +1054,55 @@
                         </div>
                         @endif
                     @endforeach
+                @endif
+
+                {{-- Voucher Discount --}}
+                @if($order->customer_voucher_id && $order->voucher_discount > 0)
+                    <div class="item-discount-group">
+                        <div class="item-discount-header">
+                            <div class="item-discount-title">
+                                <i class="fas fa-gift"></i>
+                                <span>{{ $order->customerVoucher && $order->customerVoucher->voucherTemplate ? $order->customerVoucher->voucherTemplate->name : 'Reward Voucher' }}</span>
+                                <span class="item-discount-badge">VOUCHER</span>
+                            </div>
+                            <div class="item-discount-savings">
+                                <i class="fas fa-tag"></i> Saved RM {{ number_format($order->voucher_discount, 2) }}
+                            </div>
+                        </div>
+
+                        <div class="item-discount-items">
+                            <div class="order-item item-discount-item">
+                                <div class="item-image" style="background: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-gift" style="font-size: 32px; color: #9ca3af;"></i>
+                                </div>
+                                <div class="item-details">
+                                    <div class="item-name">
+                                        Voucher Discount Applied
+                                    </div>
+                                    <div class="item-unit-price">
+                                        Code: <strong>{{ $order->voucher_code ?? ($order->customerVoucher ? $order->customerVoucher->voucher_code : 'N/A') }}</strong>
+                                    </div>
+                                    @if($order->customerVoucher && $order->customerVoucher->voucherTemplate)
+                                        @php
+                                            $template = $order->customerVoucher->voucherTemplate;
+                                        @endphp
+                                        @if($template->discount_type === 'percentage')
+                                        <div class="item-notes">
+                                            <i class="fas fa-percent"></i> {{ number_format($template->discount_value, 0) }}% OFF
+                                        </div>
+                                        @else
+                                        <div class="item-notes">
+                                            <i class="fas fa-money-bill"></i> RM {{ number_format($template->discount_value, 2) }} OFF
+                                        </div>
+                                        @endif
+                                    @endif
+                                </div>
+                                <div class="item-price">
+                                    -RM {{ number_format($order->voucher_discount, 2) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 @endif
 
                 {{-- Regular Items --}}

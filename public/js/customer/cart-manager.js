@@ -75,17 +75,27 @@ class CartManager {
         console.log('Debug: Adding item to cart:', itemData);
 
         try {
+            const payload = {
+                menu_item_id: itemData.id,
+                quantity: itemData.quantity,
+                special_notes: itemData.notes
+            };
+
+            // Add free item fields if this is a free item
+            if (itemData.is_free) {
+                payload.is_free_item = true;
+                payload.redemption_id = itemData.redemption_id;
+                payload.free_item_title = itemData.free_item_title;
+                console.log('🎁 Adding FREE item to cart:', payload);
+            }
+
             const response = await fetch('/customer/cart/add', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': this.csrfToken,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    menu_item_id: itemData.id,
-                    quantity: itemData.quantity,
-                    special_notes: itemData.notes
-                })
+                body: JSON.stringify(payload)
             });
 
             console.log('Debug: Add item response status:', response.status);

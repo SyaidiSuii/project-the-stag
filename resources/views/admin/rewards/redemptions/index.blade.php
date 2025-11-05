@@ -49,7 +49,7 @@
     <div class="section-header">
         <h2 class="section-title">Customer Redemptions</h2>
         <div class="section-controls">
-            <a href="{{ route('admin.rewards.redemptions.export', request()->all()) }}" class="admin-btn btn-secondary">
+            <a href="{{ route('admin.rewards.redemptions.export') }}?{{ request()->getQueryString() }}" class="admin-btn btn-secondary">
                 <i class="fas fa-download"></i>
                 Export CSV
             </a>

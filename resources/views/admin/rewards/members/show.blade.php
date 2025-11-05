@@ -262,14 +262,14 @@
             <div class="admin-card-value">{{ $memberStats['total_redemptions'] ?? 0 }}</div>
             <div class="admin-card-desc">{{ $memberStats['active_redemptions'] ?? 0 }} active</div>
         </div>
-        <div class="admin-card">
+        {{-- <div class="admin-card">
             <div class="admin-card-header">
                 <div class="admin-card-title">Vouchers</div>
                 <div class="admin-card-icon icon-orange"><i class="fas fa-ticket-alt"></i></div>
             </div>
             <div class="admin-card-value">{{ $memberStats['total_vouchers'] ?? 0 }}</div>
             <div class="admin-card-desc">{{ $memberStats['active_vouchers'] ?? 0 }} active</div>
-        </div>
+        </div> --}}
     </div>
 
     <!-- Current Points Balance -->
@@ -313,9 +313,10 @@
         <div class="detail-row">
             <div class="detail-label">Loyalty Tier</div>
             <div class="detail-value">
-                @if($member->loyaltyTier)
-                    <span class="status status-active" style="background: {{ $member->loyaltyTier->color ?? '#6366f1' }}; color: white;">
-                        {{ $member->loyaltyTier->name }}
+                {{-- FIXED: Use calculatedTier (real-time) instead of loyaltyTier (static) --}}
+                @if($member->calculatedTier)
+                    <span class="status status-active" style="background: {{ $member->calculatedTier->color ?? '#6366f1' }}; color: white;">
+                        {{ $member->calculatedTier->name }}
                     </span>
                 @else
                     <span class="status status-inactive">No Tier Assigned</span>

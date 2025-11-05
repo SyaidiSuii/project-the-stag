@@ -22,13 +22,13 @@
     <!-- Header Section (Scrollable) -->
     <div class="header-section">
         <!-- Search Bar -->
-        <div class="search-bar-container" role="search">
+        {{-- <div class="search-bar-container" role="search">
             <div class="search-bar">
                 <span class="search-icon" aria-hidden="true">🔎</span>
                 <input type="text" class="search-input" placeholder="Search rewards, vouchers..." id="searchInput" aria-label="Search rewards" />
                 <button class="clear-btn" id="clearSearch" aria-label="Clear search">✕</button>
             </div>
-        </div>
+        </div> --}}
 
         <!-- Dynamic Category Title -->
         <h1 class="category-title" id="categoryTitle">My Rewards</h1>
@@ -44,7 +44,7 @@
                 <div class="points-label">Keep collecting! 🌟</div>
             </div>
 
-            <h3 id="checkin-header">📅 Daily Check-In Streak</h3>
+            <h3 id="checkin-header" style="color: rgba(255,255,255,0.9)">📅 Daily Check-In Streak</h3>
             <p id="checkin-desc" style="color: rgba(255,255,255,0.9); font-weight: 600;">
                 Check in daily to earn bonus points!
             </p>
@@ -109,7 +109,7 @@
         </div>
     </div>
 
-    <!-- Special Events -->
+    <!-- Special Events FUTURE PLAN -->
     @if(isset($specialEvents) && $specialEvents->count() > 0)
     <div class="card special-events">
         <h2 style="color: #92400e;">🎪 Special Events</h2>
@@ -132,121 +132,8 @@
     </div>
     @endif
 
-    <!-- Spending Rewards -->
-    <div class="card">
-        <h2>💰 Spend & Earn More</h2>
-        <div class="grid-two">
-            <div>
-                <h3>🎟️ Collect Vouchers</h3>
-                <p>Spend more to unlock exclusive vouchers!</p>
-                <div class="reward-list" id="voucherList">
-                    @if(isset($voucherCollections) && $voucherCollections->count() > 0)
-                        @foreach($voucherCollections as $collection)
-                        <div class="reward-item">
-                            <div class="reward-info">
-                                <div class="reward-name">{{ $collection->name }}</div>
-                                <div class="reward-requirement">{{ $collection->description ?? 'Exclusive voucher collection' }}</div>
-                                <div class="reward-requirement">Spend RM{{ number_format($collection->spending_requirement ?? 0, 2) }} or more</div>
-                            </div>
-                            <button class="btn-secondary" onclick="collectVoucher({{ $collection->id }}, '{{ $collection->name }}')">Collect</button>
-                        </div>
-                        @endforeach
-                    @else
-                        <div class="empty-state" style="padding: 1rem; text-align: center; color: var(--text-2); font-size: 0.9rem;">
-                            <p>No voucher collections available</p>
-                        </div>
-                    @endif
-                </div>
-            </div>
-            <div>
-                <h3>⭐ Earn Bonus Points</h3>
-                <p>Complete challenges to earn extra points!</p>
-                <div class="reward-list" id="bonusPointsList">
-                    @if(isset($bonusChallenges) && $bonusChallenges->count() > 0)
-                        @php
-                            $hasEligibleChallenges = false;
-                        @endphp
-                        @foreach($bonusChallenges as $challenge)
-                            @php
-                                $eligibility = $challenge->isEligibleFor($user);
-                            @endphp
-                            @if($eligibility['eligible'])
-                                @php
-                                    $hasEligibleChallenges = true;
-                                @endphp
-                                <div class="reward-item">
-                                    <div class="reward-info">
-                                        <div class="reward-name">{{ $challenge->name }}</div>
-                                        <div class="reward-requirement">
-                                            {{ $challenge->description ?? $challenge->condition }}
-                                            @if($challenge->condition_type && $challenge->min_requirement)
-                                                <br>
-                                                <span style="font-size: 0.85rem; color: var(--primary);">
-                                                    @if($challenge->condition_type === 'orders')
-                                                        Requires: {{ $challenge->min_requirement }} order{{ $challenge->min_requirement > 1 ? 's' : '' }}
-                                                    @elseif($challenge->condition_type === 'spending')
-                                                        Requires: RM{{ number_format($challenge->min_requirement, 2) }} spending
-                                                    @elseif($challenge->condition_type === 'visits')
-                                                        Requires: {{ $challenge->min_requirement }} visit{{ $challenge->min_requirement > 1 ? 's' : '' }}
-                                                    @elseif($challenge->condition_type === 'checkin_streak')
-                                                        Requires: {{ $challenge->min_requirement }}-day check-in streak
-                                                    @elseif($challenge->condition_type === 'referrals')
-                                                        Requires: {{ $challenge->min_requirement }} referral{{ $challenge->min_requirement > 1 ? 's' : '' }}
-                                                    @endif
-                                                </span>
-                                            @endif
-                                        </div>
-                                        @if($challenge->end_date)
-                                        <div style="font-size: 0.8rem; color: var(--text-2); margin-top: 4px;">
-                                            Ends: {{ $challenge->end_date->format('M j, Y') }}
-                                        </div>
-                                        @endif
-                                        @if($challenge->max_claims_per_user > 0)
-                                        <div style="font-size: 0.75rem; color: var(--text-2); margin-top: 4px;">
-                                            Remaining claims: {{ $challenge->max_claims_per_user - $challenge->getClaimCountByUser($user) }}
-                                        </div>
-                                        @endif
-                                    </div>
-                                    <button class="btn-secondary" onclick="claimBonusChallenge({{ $challenge->id }}, '{{ $challenge->name }}', {{ $challenge->bonus_points }})">
-                                        Claim +{{ $challenge->bonus_points }} pts
-                                    </button>
-                                </div>
-                            @endif
-                        @endforeach
 
-                        @if(!$hasEligibleChallenges)
-                        <div class="empty-state" style="padding: 1rem; text-align: center; color: var(--text-2); font-size: 0.9rem;">
-                            <p>No eligible challenges available</p>
-                            <p style="font-size: 0.8rem; margin-top: 0.5rem;">Complete more orders or activities to unlock new challenges!</p>
-                        </div>
-                        @endif
-                    @else
-                        <!-- Default/fallback challenges -->
-                        @php
-                            $userOrderCount = $user->orders()->where('payment_status', 'paid')->count();
-                        @endphp
-
-                        @if($userOrderCount === 0)
-                        <div class="reward-item">
-                            <div class="reward-info">
-                                <div class="reward-name">First Order Bonus</div>
-                                <div class="reward-requirement">Place your first order</div>
-                            </div>
-                            <button class="btn-secondary" onclick="showMessage('Complete your first order to earn bonus points! 🎯')">+50 pts</button>
-                        </div>
-                        @else
-                        <div class="empty-state" style="padding: 1rem; text-align: center; color: var(--text-2); font-size: 0.9rem;">
-                            <p>No active challenges available</p>
-                            <p style="font-size: 0.8rem; margin-top: 0.5rem;">Check back later for new bonus point opportunities!</p>
-                        </div>
-                        @endif
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Achievements -->
+    <!-- Achievements FUTURE PLAN -->
     @if(isset($achievements) && $achievements->count() > 0)
     <div class="card">
         <h2>🏆 Achievements</h2>
@@ -270,69 +157,16 @@
     </div>
     @endif
 
-    <!-- My Vouchers -->
-    <div class="card">
-        <h2>🎪 My Voucher Collection</h2>
-        <div id="myVoucherList" class="voucher-grid" style="display: {{ (isset($userVouchers) && $userVouchers->count() > 0) ? 'grid' : 'none' }}">
-            @if(isset($userVouchers) && $userVouchers->count() > 0)
-                @foreach($userVouchers->take(6) as $voucher)
-                <div class="voucher-card {{ $voucher->status }}">
-                    <div class="voucher-header">
-                        <span class="voucher-icon">🎁</span>
-                        <span class="voucher-type">{{ $voucher->voucherTemplate->name ?? 'Voucher' }}</span>
-                    </div>
-                    <div class="voucher-body">
-                        <h3>
-                            @if($voucher->voucherTemplate->discount_type === 'free_item')
-                                FREE ITEM
-                            @elseif($voucher->voucherTemplate->discount_type === 'percentage')
-                                {{ $voucher->voucherTemplate->discount_value }}% OFF
-                            @else
-                                RM{{ number_format($voucher->voucherTemplate->discount_value, 2) }} OFF
-                            @endif
-                        </h3>
-                        <p>{{ $voucher->voucherTemplate->description ?? 'Exclusive discount' }}</p>
-                        @if($voucher->expiry_date)
-                        <div class="voucher-expiry">Expires: {{ $voucher->expiry_date->format('M j, Y') }}</div>
-                        @endif
-                    </div>
-                    <div class="voucher-footer">
-                        @if($voucher->voucherTemplate->discount_type === 'free_item')
-                        <button class="btn-primary"
-                            onclick="applyFreeItemVoucher(
-                                {{ $voucher->id }},
-                                '{{ addslashes($voucher->voucherTemplate->title ?? 'Free Item') }}',
-                                {{ json_encode($voucher->voucherTemplate->applicable_menu_item_ids ?? []) }}
-                            )">
-                            USE NOW
-                        </button>
-                        @else
-                        <button class="btn-primary" onclick="window.location.href='{{ route('customer.menu.index') }}'">USE NOW</button>
-                        @endif
-                    </div>
-                </div>
-                @endforeach
-            @endif
-        </div>
-
-        <div id="noVoucher" class="empty-state" style="display: {{ (isset($userVouchers) && $userVouchers->count() > 0) ? 'none' : 'block' }}">
-            <div class="icon">🎫</div>
-            <h3>No vouchers yet</h3>
-            <p>Start collecting vouchers by spending more or completing challenges!</p>
-        </div>
-
-        @if(isset($userVouchers) && $userVouchers->count() > 6)
-        <div id="seeAllVouchersBtn" style="text-align: center; margin-top: 16px;">
-            <button class="see-all-btn" onclick="showAllVouchersModal()">
-                See All ({{ $userVouchers->count() }}) <i class="fas fa-arrow-right"></i>
-            </button>
-        </div>
-        @endif
-    </div>
-
     <!-- My Rewards -->
     <div class="card">
-        <h2>🎁 My Rewards</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <h2>🎁 My Rewards</h2>
+            @if(isset($allRedeemedRewards) && $allRedeemedRewards->count() > 2)
+            <button class="see-all-btn" onclick="viewAllRewards()" style="font-size: 0.9rem;">
+                View All ({{ $allRedeemedRewards->count() }}) <i class="fas fa-arrow-right"></i>
+            </button>
+            @endif
+        </div>
         <p style="color: var(--text-2); margin-bottom: 1.5rem;">Your redeemed rewards - ready to use!</p>
         <div id="redeemedRewardsList">
             @if(isset($redeemedRewards) && $redeemedRewards->count() > 0)
@@ -345,6 +179,8 @@
                             <span class="status-badge {{ $redemption->status ?? 'active' }}">
                                 @if(($redemption->status ?? 'active') === 'redeemed')
                                 ✓ Used
+                                @elseif(($redemption->status ?? 'active') === 'pending')
+                                🛒 In Cart
                                 @else
                                 ⏳ Ready
                                 @endif
@@ -362,17 +198,12 @@
                     <div class="staff-note" style="background: var(--success); color: white; padding: 8px 12px; border-radius: 8px; font-weight: 600;">
                         <small>✓ Already Used</small>
                     </div>
-                    @else
-                    @if($redemption->reward->voucher_template_id)
-                    <!-- Reward with voucher - automatically issued, show info -->
-                    <div style="text-align: center; padding: 8px;">
-                        <div style="background: var(--success); color: white; padding: 8px 16px; border-radius: 8px; font-weight: 600; margin-bottom: 4px;">
-                            <i class="fas fa-check-circle"></i> Voucher Issued
-                        </div>
-                        <div style="font-size: 0.75rem; color: var(--text-3);">
-                            Check "My Vouchers" section
-                        </div>
+                    @elseif(($redemption->status ?? 'active') === 'pending')
+                    <div class="staff-note" style="background: var(--warning); color: white; padding: 8px 12px; border-radius: 8px; font-weight: 600;">
+                        <small>🛒 Item in Cart</small>
                     </div>
+                    @else
+@if($redemption->reward->voucher_template_id)                    <!-- Reward with voucher - show apply button only -->                    <div style="padding: 8px;">                        <!-- Apply to Cart Button -->                        <button class="btn-primary apply-voucher-type-btn"                                data-customer-reward-id="{{ $redemption->id }}"                                data-reward-title="{{ addslashes($redemption->reward->title ?? 'Voucher Reward') }}"                                style="width: 100%; padding: 10px;">                            <i class="fas fa-shopping-cart"></i> Apply to Cart                        </button>                        <div style="font-size: 0.7rem; color: var(--text-3); text-align: center; margin-top: 4px;">                            Apply to your next order                        </div>                    </div>
                     @else
                     <!-- Direct reward - apply to cart -->
                     <button class="btn-secondary"
@@ -406,22 +237,50 @@
     <div class="card">
         <h2>👑 Loyalty Status</h2>
         @php
-            $currentTier = $user->loyaltyTier ?? null;
+            // Use TierService to calculate eligible tier based on current points
+            $tierService = app(\App\Services\Loyalty\TierService::class);
+            $currentTier = $tierService->calculateEligibleTier($user);
+            $currentPoints = $user->points_balance ?? 0;
+
+            // Find next tier in hierarchy
             $nextTier = null;
             $progress = 0;
             $amountNeeded = 0;
+            $progressFromCurrent = 0;
 
             if ($currentTier) {
-                // Find next tier
+                // Find next tier by order
                 $nextTier = \App\Models\LoyaltyTier::where('order', '>', $currentTier->order)
                     ->where('is_active', true)
                     ->orderBy('order', 'asc')
                     ->first();
 
                 if ($nextTier) {
-                    $currentPoints = $user->points_balance ?? 0;
-                    $progress = min(100, ($currentPoints / $nextTier->points_threshold) * 100);
-                    $amountNeeded = max(0, $nextTier->points_threshold - $currentPoints);
+                    // Calculate progress from current tier to next tier
+                    $currentThreshold = $currentTier->points_threshold ?? 0;
+                    $nextThreshold = $nextTier->points_threshold ?? 0;
+                    $rangeSize = $nextThreshold - $currentThreshold;
+
+                    if ($rangeSize > 0) {
+                        $pointsInRange = $currentPoints - $currentThreshold;
+                        $progress = min(100, ($pointsInRange / $rangeSize) * 100);
+                    }
+
+                    $amountNeeded = max(0, $nextThreshold - $currentPoints);
+                } else {
+                    // Max tier reached - show 100% progress
+                    $progress = 100;
+                }
+            } else {
+                // No tier yet - find first tier
+                $firstTier = \App\Models\LoyaltyTier::active()
+                    ->orderBy('order', 'asc')
+                    ->first();
+
+                if ($firstTier) {
+                    $nextTier = $firstTier;
+                    $progress = min(100, ($currentPoints / $firstTier->points_threshold) * 100);
+                    $amountNeeded = max(0, $firstTier->points_threshold - $currentPoints);
                 }
             }
         @endphp
@@ -441,11 +300,21 @@
         <div id="loyaltyStatus">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <div class="loyalty-level">
-                    Current Level: {{ $currentTier->name ?? 'Bronze' }} Member {{ $currentTier->icon ?? '🥉' }}
+                    @if($currentTier)
+                        Current Level: {{ $currentTier->name }} Member {{ $currentTier->icon }}
+                    @else
+                        Current Level: No Tier Yet
+                    @endif
                 </div>
-                @if($nextTier)
-                <div style="color: var(--text-2); font-weight: 700;">Next Level: {{ $nextTier->name }} Member {{ $nextTier->icon ?? '🥈' }}</div>
-                @else
+                @if($nextTier && $currentTier)
+                <div style="color: var(--text-2); font-weight: 700;">
+                    Next Level: {{ $nextTier->name }} Member {{ $nextTier->icon }}
+                </div>
+                @elseif($nextTier && !$currentTier)
+                <div style="color: var(--text-2); font-weight: 700;">
+                    Unlock: {{ $nextTier->name }} Member {{ $nextTier->icon }}
+                </div>
+                @elseif($currentTier && !$nextTier)
                 <div class="max-level-text" style="font-weight: 700;">Maximum Level Reached!</div>
                 @endif
             </div>
@@ -454,10 +323,12 @@
                 <div class="progress-bar" id="loyaltyProgress"></div>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-2); margin-top: 8px; font-weight: 700;">
-                <span>{{ number_format($user->points_balance ?? 0) }} points</span>
-                @if($nextTier)
-                <span>{{ number_format($amountNeeded) }} points needed for {{ $nextTier->name }}</span>
-                @else
+                <span>{{ number_format($currentPoints) }} points</span>
+                @if($nextTier && $currentTier)
+                <span>{{ number_format($amountNeeded) }} more for {{ $nextTier->name }}</span>
+                @elseif($nextTier && !$currentTier)
+                <span>{{ number_format($amountNeeded) }} points to unlock {{ $nextTier->name }}</span>
+                @elseif($currentTier && !$nextTier)
                 <span>Maximum level achieved! 🎉</span>
                 @endif
             </div>
@@ -509,61 +380,94 @@
     </div>
 </div>
 @endif
-
-<!-- All Vouchers Modal -->
-@if(isset($userVouchers) && $userVouchers->count() > 0)
-<div id="allVouchersModal" class="modal">
+<!-- All Rewards Modal -->
+<div id="allRewardsModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>🎪 All My Vouchers</h2>
-            <button class="close-btn" onclick="closeAllVouchersModal()">
+            <h2>🎁 All My Rewards</h2>
+            <button class="close-btn" onclick="closeAllRewardsModal()">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <div class="modal-body">
-            <div class="voucher-grid">
-                @foreach($userVouchers as $voucher)
-                <div class="voucher-card {{ $voucher->status }}">
-                    <div class="voucher-header">
-                        <span class="voucher-icon">🎁</span>
-                        <span class="voucher-type">{{ $voucher->voucherTemplate->name ?? 'Voucher' }}</span>
+            <div id="allRewardsList">
+                @if(isset($allRedeemedRewards) && $allRedeemedRewards->count() > 0)
+                @foreach($allRedeemedRewards as $redemption)
+                <div class="redeemed-reward-item status-{{ $redemption->status ?? 'pending' }}" style="margin-bottom: 1rem;">
+                    <div class="reward-info">
+                        <div class="reward-details">
+                            <h4>
+                                {{ $redemption->reward->title ?? 'Reward' }}
+                                <span class="status-badge {{ $redemption->status ?? 'active' }}">
+                                    @if(($redemption->status ?? 'active') === 'redeemed')
+                                    ✓ Used
+                                    @elseif(($redemption->status ?? 'active') === 'pending')
+                                    🛒 In Cart
+                                    @else
+                                    ⏳ Ready
+                                    @endif
+                                </span>
+                            </h4>
+                            <p>{{ $redemption->reward->description ?? '' }}</p>
+                            <div class="reward-meta">
+                                <span class="points-spent">{{ number_format($redemption->points_spent) }} points</span>
+                                <span class="redemption-date">{{ $redemption->created_at->format('M j, Y') }}</span>
+                                @if($redemption->redeemed_at)
+                                <span class="redeemed-date">Used: {{ $redemption->redeemed_at->format('M j, Y') }}</span>
+                                @endif
+                            </div>
+                        </div>
                     </div>
-                    <div class="voucher-body">
-                        <h3>
-                            @if($voucher->voucherTemplate->discount_type === 'free_item')
-                                FREE ITEM
-                            @elseif($voucher->voucherTemplate->discount_type === 'percentage')
-                                {{ $voucher->voucherTemplate->discount_value }}% OFF
-                            @else
-                                RM{{ number_format($voucher->voucherTemplate->discount_value, 2) }} OFF
-                            @endif
-                        </h3>
-                        <p>{{ $voucher->voucherTemplate->description ?? 'Exclusive discount' }}</p>
-                        @if($voucher->expiry_date)
-                        <div class="voucher-expiry">Expires: {{ $voucher->expiry_date->format('M j, Y') }}</div>
-                        @endif
-                    </div>
-                    <div class="voucher-footer">
-                        @if($voucher->voucherTemplate->discount_type === 'free_item')
-                        <button class="btn-primary"
-                            onclick="applyFreeItemVoucher(
-                                {{ $voucher->id }},
-                                '{{ addslashes($voucher->voucherTemplate->title ?? 'Free Item') }}',
-                                {{ json_encode($voucher->voucherTemplate->applicable_menu_item_ids ?? []) }}
-                            )">
-                            USE NOW
-                        </button>
+                    <div class="reward-actions">
+                        @if(($redemption->status ?? 'active') === 'redeemed')
+                        <div class="staff-note" style="background: var(--success); color: white; padding: 8px 12px; border-radius: 8px; font-weight: 600;">
+                            <small>✓ Already Used</small>
+                        </div>
+                        @elseif(($redemption->status ?? 'active') === 'pending')
+                        <div class="staff-note" style="background: var(--warning); color: white; padding: 8px 12px; border-radius: 8px; font-weight: 600;">
+                            <small>🛒 Item in Cart</small>
+                        </div>
                         @else
-                        <button class="btn-primary" onclick="window.location.href='{{ route('customer.menu.index') }}'">USE NOW</button>
+                        @if($redemption->reward->voucher_template_id)
+                        <!-- Reward with voucher - automatically issued, show info -->
+                        <div style="text-align: center; padding: 8px;">
+                            <div style="background: var(--success); color: white; padding: 8px 16px; border-radius: 8px; font-weight: 600; margin-bottom: 4px;">
+                                <i class="fas fa-check-circle"></i> Voucher Issued
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-3);">
+                                Available in your account
+                            </div>
+                        </div>
+                        @else
+                        <!-- Free item reward - show "Apply to Cart" button -->
+                        <button
+                            class="btn-primary"
+                            onclick="applyRewardToCart(
+                                {{ $redemption->id }},
+                                '{{ addslashes($redemption->reward->title) }}',
+                                '{{ $redemption->reward->type }}',
+                                {{ $redemption->reward->discount_percentage ?? 'null' }},
+                                {{ $redemption->reward->discount_fixed ?? 'null' }},
+                                {{ $redemption->reward->menu_item_id ?? 'null' }}
+                            )">
+                            APPLY TO CART
+                        </button>
+                        @endif
                         @endif
                     </div>
                 </div>
                 @endforeach
+                @else
+                <div class="empty-state">
+                    <div class="icon">🎁</div>
+                    <h3>No redeemed rewards yet</h3>
+                    <p>Start redeeming your points to see your rewards here!</p>
+                </div>
+                @endif
             </div>
         </div>
     </div>
 </div>
-@endif
 
 @endsection
 
@@ -677,15 +581,6 @@
 
     function closeExchangePointsModal() {
         document.getElementById('exchangePointsModal').style.display = 'none';
-    }
-
-    // Show All Vouchers Modal
-    function showAllVouchersModal() {
-        document.getElementById('allVouchersModal').style.display = 'flex';
-    }
-
-    function closeAllVouchersModal() {
-        document.getElementById('allVouchersModal').style.display = 'none';
     }
 
     // Show Barcode Modal

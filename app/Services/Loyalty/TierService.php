@@ -74,18 +74,18 @@ class TierService
     public function calculateEligibleTier(User $user): ?LoyaltyTier
     {
         $points = $user->points_balance ?? 0;
-        $spending = $user->customerProfile->total_spent ?? 0;
+        // FIXED: Proper null checking for customerProfile relationship
+        $spending = optional($user->customerProfile)->total_spent ?? 0;
 
-        // Get all active tiers ordered by min_points descending
+        // Get all active tiers ordered by points_threshold descending (highest first)
         $tiers = LoyaltyTier::active()
-            ->ordered()
-            ->orderBy('min_points', 'desc')
+            ->orderBy('points_threshold', 'desc')
             ->get();
 
         // Find highest tier user qualifies for
         foreach ($tiers as $tier) {
-            $meetsPoints = $points >= $tier->min_points;
-            $meetsSpending = !$tier->min_spending || $spending >= $tier->min_spending;
+            $meetsPoints = $points >= ($tier->points_threshold ?? 0);
+            $meetsSpending = !$tier->minimum_spending || $spending >= $tier->minimum_spending;
 
             if ($meetsPoints && $meetsSpending) {
                 return $tier;
