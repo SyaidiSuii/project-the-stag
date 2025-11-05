@@ -70,6 +70,7 @@ use Illuminate\Support\Facades\Route;
 // CUSTOMER ROUTES (Public Access)
 // =============================================
 Route::get('/', [CustomerHomeController::class, 'index'])->name('customer.index');
+Route::get('/home', [CustomerHomeController::class, 'index'])->name('customer.home.index');
 
 
 Route::prefix('customer')->name('customer.')->group(function () {
@@ -237,6 +238,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // =============================================
+    // KITCHEN STAFF ROUTES (Admin & Manager & Kitchen Staff)
+    // =============================================
+    Route::prefix('admin')->name('admin.')->middleware(['role:admin|manager|kitchen_staff'])->group(function () {
+        // ---------------------------------------------
+        // KITCHEN STAFF ACCESSIBLE ROUTES
+        // ---------------------------------------------
+        Route::prefix('kitchen')->name('kitchen.')->group(function () {
+            // KDS - Accessible by admin, manager, and kitchen_staff
+            Route::get('/kds', [\App\Http\Controllers\Admin\KitchenController::class, 'kds'])->name('kds');
+
+            // Orders - Accessible by admin, manager, and kitchen_staff
+            Route::get('/orders', [\App\Http\Controllers\Admin\KitchenController::class, 'orders'])->name('orders');
+            Route::get('/orders/{order}', [\App\Http\Controllers\Admin\KitchenController::class, 'orderDetail'])->name('orders.detail');
+        });
+
+        // ---------------------------------------------
+        // ORDER STATUS MANAGEMENT (Kitchen Staff can update orders)
+        // ---------------------------------------------
+        Route::prefix('order')->name('order.')->group(function () {
+            // Allow kitchen_staff to update order status (they need this for KDS)
+            Route::post('{order}/update-status', [OrderController::class, 'updateStatus'])->name('updateStatus');
+        });
+    });
+
+    // =============================================
     // ADMIN PANEL SECTION (Admin & Manager Only)
     // =============================================
     Route::prefix('admin')->name('admin.')->middleware(['role:admin|manager'])->group(function () {
@@ -283,13 +309,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         // ---------------------------------------------
-        // KITCHEN MANAGEMENT
+        // KITCHEN MANAGEMENT (Admin/Manager Only)
         // ---------------------------------------------
         Route::prefix('kitchen')->name('kitchen.')->group(function () {
+            // Kitchen Dashboard - Admin/Manager only
             Route::get('/', [\App\Http\Controllers\Admin\KitchenController::class, 'index'])->name('index');
-            Route::get('/kds', [\App\Http\Controllers\Admin\KitchenController::class, 'kds'])->name('kds');
-            Route::get('/orders', [\App\Http\Controllers\Admin\KitchenController::class, 'orders'])->name('orders');
-            Route::get('/orders/{order}', [\App\Http\Controllers\Admin\KitchenController::class, 'orderDetail'])->name('orders.detail');
+
+            // Analytics - Admin/Manager only
             Route::get('/analytics', [\App\Http\Controllers\Admin\KitchenController::class, 'analytics'])->name('analytics');
 
             // Kitchen Stations
@@ -539,7 +565,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // ---------------------------------------------
         Route::prefix('order')->name('order.')->group(function () {
             Route::get('today', [OrderController::class, 'today'])->name('today');
-            Route::post('{order}/update-status', [OrderController::class, 'updateStatus'])->name('updateStatus');
+            // NOTE: update-status route moved to kitchen staff group above (line 260)
             Route::post('{order}/update-payment-status', [OrderController::class, 'updatePaymentStatus'])->name('updatePaymentStatus');
             Route::get('by-status', [OrderController::class, 'getByStatus'])->name('getByStatus');
             Route::post('{order}/cancel', [OrderController::class, 'cancel'])->name('cancel');

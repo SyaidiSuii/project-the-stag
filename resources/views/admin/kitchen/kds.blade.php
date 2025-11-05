@@ -700,6 +700,9 @@
                 <i class="fas fa-arrow-left"></i> Back to Dashboard
             </a>
             @else
+            <a href="{{ route('profile.edit') }}" onclick="pauseCountdown()" class="kds-btn" style="background: #6366f1; text-decoration: none; margin-right: 10px;">
+                <i class="fas fa-user"></i> Profile
+            </a>
             <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: inline;">
                 @csrf
                 <button type="button" onclick="confirmLogout()" class="kds-btn" style="border: none;">
@@ -733,13 +736,12 @@
 
     <!-- Orders Container -->
     <div class="kds-orders-container">
-        @foreach(['pending', 'confirmed', 'preparing', 'ready', 'completed'] as $status)
+        @foreach(['pending', 'preparing', 'ready', 'completed'] as $status)
             @if($orders->has($status) && $orders->get($status)->count() > 0)
             <div class="kds-status-section">
                 <div class="status-section-header status-{{ $status }}">
                     <h2 class="status-section-title">
                         @if($status == 'pending') ⏳ Pending Orders
-                        @elseif($status == 'confirmed') ✅ Confirmed Orders
                         @elseif($status == 'preparing') &#x1F373; Preparing
                         @elseif($status == 'ready') &#x1F514; Ready for Service
                         @elseif($status == 'completed') ✔️ Completed
@@ -765,6 +767,21 @@
                             </div>
                         </div>
 
+                        @php
+                            // Calculate station-specific total BEFORE displaying
+                            if ($stationId && $order->stationAssignments && $order->stationAssignments->count() > 0) {
+                                // When filtering by specific station, calculate only that station's items total
+                                $stationItemsForTotal = $order->stationAssignments
+                                    ->where('station_id', $stationId)
+                                    ->pluck('orderItem')
+                                    ->filter();
+                                $stationTotal = $stationItemsForTotal->sum('total_price');
+                            } else {
+                                // When viewing all stations, show full order total
+                                $stationTotal = $order->total_amount;
+                            }
+                        @endphp
+
                         <div class="order-info">
                             <div class="order-customer">
                                 <i class="fas fa-user"></i> {{ $order->user->name ?? 'Walk-in Customer' }}
@@ -777,7 +794,7 @@
                                 </div>
                                 <div class="order-meta-item">
                                     <i class="fas fa-dollar-sign"></i>
-                                    <strong>RM {{ number_format($order->total_amount, 2) }}</strong>
+                                    <strong>RM {{ number_format($stationTotal, 2) }}</strong>
                                 </div>
                                 @if($order->table || $order->table_number)
                                 <div class="order-meta-item">
@@ -808,7 +825,7 @@
                         @endif
 
                         @php
-                            // Filter items for current station only
+                            // Filter items for current station only (reuse items for display)
                             if ($stationId && $order->stationAssignments && $order->stationAssignments->count() > 0) {
                                 // When filtering by specific station, show only that station's items
                                 $stationItems = $order->stationAssignments
@@ -834,6 +851,9 @@
                             <div class="order-item">
                                 <span class="item-quantity">{{ $item->quantity }}x</span>
                                 {{ $item->menuItem->name ?? 'Item' }}
+                                @if($item->special_note)
+                                    <span style="color: #fbbf24; font-style: italic;"> ({{ $item->special_note }})</span>
+                                @endif
                             </div>
                             @endforeach
                         </div>
@@ -855,7 +875,7 @@
                         @endif
 
                         <div class="order-actions">
-                            @if($status == 'pending' || $status == 'confirmed')
+                            @if($status == 'pending')
                                 <button onclick="updateOrderStatus({{ $order->id }}, 'preparing')" class="action-btn btn-start">
                                     <i class="fas fa-play"></i> Start Preparing
                                 </button>
@@ -1065,6 +1085,9 @@
     <script>
         // Call Manager function (Kitchen Staff)
         async function callManager() {
+            // Pause auto-refresh while user is interacting
+            pauseCountdown();
+
             const confirmed = await showConfirm(
                 '📞 Call Manager',
                 'This will send an alert to the manager that you need assistance. Continue?',
@@ -1073,7 +1096,11 @@
                 'Cancel'
             );
 
-            if (!confirmed) return;
+            if (!confirmed) {
+                // Resume countdown if user cancelled
+                resumeCountdown();
+                return;
+            }
 
             try {
                 const response = await fetch('/admin/kitchen/call-manager', {
@@ -1154,6 +1181,9 @@
 
         // Logout confirmation for kitchen staff
         async function confirmLogout() {
+            // Pause auto-refresh while user is interacting
+            pauseCountdown();
+
             const confirmed = await showConfirm(
                 'Logout Confirmation',
                 'Are you sure you want to logout from the Kitchen Display System?',
@@ -1164,6 +1194,9 @@
 
             if (confirmed) {
                 document.getElementById('logout-form').submit();
+            } else {
+                // Resume countdown if user cancelled
+                resumeCountdown();
             }
         }
 
@@ -1222,17 +1255,31 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    Toast.success('Success', `Order #${orderId} updated to ${status}`);
-                    // Give user 3 seconds to see the success message before reload
-                    setTimeout(() => window.location.reload(), 3000);
+                    // Show actual order status from response, not the requested status
+                    const actualStatus = data.order.order_status;
+                    const statusMessage = actualStatus === status
+                        ? `Order #${orderId} updated to ${status}`
+                        : `Order #${orderId} station marked as ${status}. Order status: ${actualStatus}`;
+
+                    Toast.success('Success', statusMessage);
+
+                    // Stop countdown completely to prevent negative values
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    isPaused = true; // Prevent any remaining interval calls
+                    countdownEl.textContent = '...';
+
+                    // Give user 2 seconds to see the success message before reload
+                    setTimeout(() => window.location.reload(), 2000);
                 } else {
                     Toast.error('Error', data.message || 'Failed to update order');
                     // Resume countdown if failed
                     resumeCountdown();
                 }
             } catch (error) {
-                console.error('Error:', error);
-                Toast.error('Error', 'Failed to update order status');
+                console.error('Error updating order status:', error);
+                console.error('Error details:', error.message, error.stack);
+                Toast.error('Error', 'Failed to update order status: ' + error.message);
                 // Resume countdown if error
                 resumeCountdown();
             }
@@ -1270,7 +1317,8 @@
 
         function resumeCountdown() {
             isPaused = false;
-            countdown = savedCountdown; // Restore saved countdown value (not reset!)
+            // Reset countdown to original value instead of restoring saved value
+            countdown = {{ $isKitchenStaff ? 10 : 30 }};
             countdownEl.textContent = countdown;
             countdownEl.parentElement.style.opacity = '1';
         }

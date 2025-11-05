@@ -129,9 +129,8 @@
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <!-- Floating Booking Button -->
-<button class="floating-booking-btn" id="floatingBookingBtn" aria-label="Open booking sidebar" style="position: fixed !important; top: 90px !important; right: 30px !important; z-index: 99999 !important; display: flex !important;">
-  <i class="fas fa-calendar-check"></i>
-  <span class="badge" id="floatingBadge" style="display: none;">0</span>
+<button class="floating-booking-btn" id="floatingBookingBtn" aria-label="Open booking sidebar" style="position: fixed !important; top: 90px !important; right: 30px !important; z-index: 99999 !important; display: flex !important; align-items: center !important; gap: 8px !important; padding: 12px 20px !important; min-width: 180px !important; justify-content: center !important; font-size: 14px !important; font-weight: 600 !important; border-radius: 12px !important; height: auto !important; width: auto !important;">
+  <span id="floatingButtonText">Select Table</span>
 </button>
 
 {{-- Booking Sidebar --}}

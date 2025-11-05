@@ -125,10 +125,14 @@ class RoleAndPermissionSeeder extends Seeder
         }
 
         // Create roles and assign permissions
+        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
         $managerRole = Role::firstOrCreate(['name' => 'manager']);
         $customerRole = Role::firstOrCreate(['name' => 'customer']);
         $userRole = Role::firstOrCreate(['name' => 'user']);
+
+        // Super Admin gets all permissions (also has Gate::before in AppServiceProvider)
+        $superAdminRole->syncPermissions(Permission::all());
 
         // Admin gets all permissions
         $adminRole->syncPermissions(Permission::all());

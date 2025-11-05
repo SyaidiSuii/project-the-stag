@@ -100,13 +100,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     showSuccessModal(data);
                 }
             } else {
-                alert('Payment failed: ' + (data.message || 'Unknown error occurred'));
+                if (typeof Toast !== 'undefined') {
+                    Toast.error('Payment Failed', data.message || 'Unknown error occurred');
+                } else {
+                    alert('Payment failed: ' + (data.message || 'Unknown error occurred'));
+                }
                 resetPayButton();
             }
         })
         .catch(error => {
             console.error('Payment error:', error);
-            alert('Payment failed: Network error. Please try again.');
+            if (typeof Toast !== 'undefined') {
+                Toast.error('Payment Failed', 'Network error. Please try again.');
+            } else {
+                alert('Payment failed: Network error. Please try again.');
+            }
             resetPayButton();
         });
     }

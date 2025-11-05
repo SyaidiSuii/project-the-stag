@@ -8,6 +8,53 @@
 @endsection
 
 @section('content')
+<!-- Greeting Popup (Top-Left) - Only when coming from QR scan - Auto-dismiss after 4 seconds -->
+@if(Auth::check() && isset($tableNumber) && $tableNumber)
+<div id="qrGreetingPopup" style="position: fixed; top: 20px; left: 20px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4); z-index: 9999; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 12px; animation: slideInLeft 0.5s ease-out;">
+    <span style="font-size: 24px;">👋</span>
+    <span>Hi, {{ Auth::user()->name }}!</span>
+</div>
+
+<style>
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutLeft {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+}
+</style>
+
+<script>
+// Auto-dismiss greeting popup after 4 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const popup = document.getElementById('qrGreetingPopup');
+    if (popup) {
+        setTimeout(function() {
+            popup.style.animation = 'slideOutLeft 0.5s ease-out';
+            setTimeout(function() {
+                popup.style.display = 'none';
+            }, 500);
+        }, 4000);
+    }
+});
+</script>
+@endif
+
 <!-- Header Section -->
 <div class="header-section">
   @if(isset($tableNumber) && $tableNumber)
@@ -65,7 +112,7 @@
           @if($kitchenStatus['recommended_items']->count() > 0)
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 8px;">
               @foreach($kitchenStatus['recommended_items']->take(4) as $item)
-              <div class="quick-add-item" data-item-id="{{ $item->id }}" data-item-name="{{ $item->name }}" data-item-price="{{ $item->price }}" data-item-image="{{ $item->image ?? '' }}"
+              <div class="quick-add-item" data-item-id="{{ $item->id }}" data-item-name="{{ $item->name }}" data-item-price="{{ $item->price }}" data-item-image="{{ $item->image ?? '' }}" data-item-description="{{ $item->description ?? '' }}"
                    style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 10px; cursor: pointer; transition: all 0.3s; backdrop-filter: blur(10px);">
                   <div style="position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 8px; background: rgba(255,255,255,0.1);">
                       @if($item->image)
@@ -112,7 +159,7 @@
     </div>
     <div class="recommendations-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;">
       @foreach(array_slice($recommendedItems->all(), 0, 4) as $item)
-      <div class="recommendation-card" onclick="quickAddToCart({{ $item->id }}, {{ json_encode($item->name) }}, {{ $item->price }}, {{ json_encode($item->image ?? '') }})"
+      <div class="recommendation-card" onclick="quickAddToCart({{ $item->id }}, {{ json_encode($item->name) }}, {{ $item->price }}, {{ json_encode($item->image ?? '') }}, {{ json_encode($item->description ?? '') }})"
            style="background: white; border-radius: 12px; padding: 12px; cursor: pointer; transition: all 0.3s; border: 2px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
         <div style="position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 8px; background: #f3f4f6;">
           @if($item->image)
@@ -376,6 +423,10 @@
             <div id="order-item-price" style="font-size: 18px; font-weight: 700; color: #6366f1;">RM 0.00</div>
           </div>
         </div>
+        <!-- Item Description -->
+        <div id="order-item-description" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 13px; color: #6b7280; line-height: 1.6; display: none;">
+          <!-- Description will be inserted here by JavaScript -->
+        </div>
       </div>
 
       <!-- Quantity Section -->
@@ -442,6 +493,10 @@
             <div id="addtocart-item-name" style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 4px;">Item Name</div>
             <div id="addtocart-item-price" style="font-size: 18px; font-weight: 700; color: #6366f1;">RM 0.00</div>
           </div>
+        </div>
+        <!-- Item Description -->
+        <div id="addtocart-item-description" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 13px; color: #6b7280; line-height: 1.6; display: none;">
+          <!-- Description will be inserted here by JavaScript -->
         </div>
       </div>
 
@@ -1021,6 +1076,7 @@ document.addEventListener('click', async function(e) {
         const itemName = quickAddItem.dataset.itemName;
         const itemPrice = parseFloat(quickAddItem.dataset.itemPrice);
         const itemImage = quickAddItem.dataset.itemImage;
+        const itemDescription = quickAddItem.dataset.itemDescription || '';
 
         // Try to find the item in the rendered menu first
         const menuCards = document.querySelectorAll('.food-card');
@@ -1044,7 +1100,7 @@ document.addEventListener('click', async function(e) {
 
             // Open Add to Cart modal with item details (it will appear on top due to z-index: 1010)
             if (typeof window.showAddToCartModal === 'function') {
-                window.showAddToCartModal(itemId, itemName, `RM ${itemPrice.toFixed(2)}`, '', imageUrl);
+                window.showAddToCartModal(itemId, itemName, `RM ${itemPrice.toFixed(2)}`, itemDescription, imageUrl);
             } else {
                 console.error('showAddToCartModal function not found');
                 // Fallback: try to add directly

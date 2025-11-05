@@ -25,7 +25,7 @@ class RedirectIfAuthenticated
 
                 // Redirect kitchen staff directly to KDS
                 if ($user->hasRole('kitchen_staff')) {
-                    return redirect()->route('kds.index');
+                    return redirect()->route('admin.kitchen.kds');
                 }
 
                 // Everyone else goes to normal HOME

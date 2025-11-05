@@ -365,6 +365,8 @@ function applyVoucherToCart(voucherId) {
             // Show success message
             if (typeof showMessage === 'function') {
                 showMessage(data.message, 'success');
+            } else if (typeof Toast !== 'undefined') {
+                Toast.success('Voucher Applied', data.message);
             } else {
                 showSuccessOverlay(data.message);
             }
@@ -372,6 +374,8 @@ function applyVoucherToCart(voucherId) {
             // Show error
             if (typeof showMessage === 'function') {
                 showMessage(data.message, 'error');
+            } else if (typeof Toast !== 'undefined') {
+                Toast.error('Voucher Error', data.message);
             } else {
                 showErrorOverlay(data.message);
             }
@@ -383,6 +387,8 @@ function applyVoucherToCart(voucherId) {
         console.error('Error applying voucher:', error);
         if (typeof showMessage === 'function') {
             showMessage('Failed to apply voucher. Please try again.', 'error');
+        } else if (typeof Toast !== 'undefined') {
+            Toast.error('Voucher Error', 'Failed to apply voucher. Please try again.');
         } else {
             showErrorOverlay('Failed to apply voucher. Please try again.');
         }

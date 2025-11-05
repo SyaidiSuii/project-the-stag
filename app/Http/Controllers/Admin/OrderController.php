@@ -566,8 +566,29 @@ class OrderController extends Controller
             }
         }
 
+        // Handle station-specific preparing status
+        if ($newStatus === 'preparing' && $stationId) {
+            // Mark station assignments as started for this specific station
+            $assignments = $order->stationAssignments()
+                ->where('station_id', $stationId)
+                ->where('status', 'assigned')
+                ->get();
+
+            foreach ($assignments as $assignment) {
+                $assignment->update([
+                    'status' => 'started',
+                    'started_at' => now()
+                ]);
+            }
+
+            // Update order status to preparing if it was pending/confirmed
+            if (in_array($oldOrderStatus, ['pending', 'confirmed'])) {
+                $order->order_status = 'preparing';
+                $order->save();
+            }
+        }
         // Handle station-specific completion
-        if ($newStatus === 'completed' && $stationId) {
+        elseif ($newStatus === 'completed' && $stationId) {
             // Mark station assignments as completed for this specific station
             $assignments = $order->stationAssignments()
                 ->where('station_id', $stationId)
@@ -596,12 +617,14 @@ class OrderController extends Controller
                 $order->actual_completion_time = now();
                 $order->save();
             } else {
-                // Some stations still working - keep order in preparing/ready status
-                if ($oldOrderStatus === 'pending' || $oldOrderStatus === 'confirmed') {
-                    $order->order_status = 'preparing';
+                // Real restaurant logic: Don't wait for all stations!
+                // Hot food should be served immediately when ready
+                // If any station completes, move order to 'ready' status for waiter pickup
+                if (in_array($oldOrderStatus, ['pending', 'confirmed', 'preparing'])) {
+                    $order->order_status = 'ready';
                     $order->save();
                 }
-                // Don't change status if already preparing/ready
+                // If already ready, keep it ready
             }
         }
         // Handle ready status (when station finishes but not yet served to customer)
@@ -623,17 +646,10 @@ class OrderController extends Controller
             $kitchenLoadService = app(\App\Services\Kitchen\KitchenLoadService::class);
             $kitchenLoadService->releaseLoad($stationId, $order->id);
 
-            // Check if ALL stations are done
-            $remainingAssignments = $order->stationAssignments()
-                ->whereIn('status', ['assigned', 'started'])
-                ->count();
-
-            if ($remainingAssignments === 0) {
-                // All stations ready - mark order as ready
+            // Real restaurant logic: Immediately mark order as ready
+            // Don't wait for other stations - waiter can pick up ready items now!
+            if (in_array($oldOrderStatus, ['pending', 'confirmed', 'preparing'])) {
                 $order->order_status = 'ready';
-                $order->save();
-            } elseif ($oldOrderStatus !== 'ready' && $oldOrderStatus !== 'preparing') {
-                $order->order_status = 'preparing';
                 $order->save();
             }
         }

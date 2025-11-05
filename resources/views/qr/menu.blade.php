@@ -479,7 +479,7 @@
           @if($kitchenStatus['recommended_items']->count() > 0)
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 8px;">
               @foreach($kitchenStatus['recommended_items']->take(4) as $item)
-              <div class="quick-add-item" data-item-id="{{ $item->id }}" data-item-name="{{ $item->name }}" data-item-price="{{ $item->price }}" data-item-image="{{ $item->image ?? '' }}"
+              <div class="quick-add-item" data-item-id="{{ $item->id }}" data-item-name="{{ $item->name }}" data-item-price="{{ $item->price }}" data-item-image="{{ $item->image ?? '' }}" data-item-description="{{ $item->description ?? '' }}"
                    style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 10px; cursor: pointer; transition: all 0.3s; backdrop-filter: blur(10px);">
                   <div style="position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 8px; background: rgba(255,255,255,0.1);">
                       @if($item->image)
@@ -525,7 +525,7 @@
     </div>
     <div class="recommendations-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;">
       @foreach(array_slice($recommendedItems->all(), 0, 4) as $item)
-      <div class="recommendation-card" onclick="showAddToCartModal({{ $item->id }}, {{ json_encode($item->name) }}, {{ $item->price }}, {{ json_encode($item->image ?? '') }})"
+      <div class="recommendation-card" onclick="showAddToCartModal({{ $item->id }}, {{ json_encode($item->name) }}, {{ $item->price }}, {{ json_encode($item->image ?? '') }}, {{ json_encode($item->description ?? '') }})"
            style="background: white; border-radius: 12px; padding: 12px; cursor: pointer; transition: all 0.3s; border: 2px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
         <div style="position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 8px; background: #f3f4f6;">
           @if($item->image)
@@ -634,7 +634,7 @@
               <input type="number" class="quantity-input" value="1" min="1" max="999" readonly>
               <button type="button" class="quantity-btn" onclick="increaseQty(this)">+</button>
             </div>
-            <button type="button" class="add-btn" onclick="showAddModal({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->price }}, '{{ $item->image ?? '' }}', this)">
+            <button type="button" class="add-btn" onclick="showAddModal({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->price }}, '{{ $item->image ?? '' }}', '{{ addslashes($item->description ?? '') }}', this)">
               <i class="fas fa-plus"></i> Add
             </button>
           </div>
@@ -681,6 +681,10 @@
             <div id="modal-item-name" style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 4px;">Item Name</div>
             <div id="modal-item-price" style="font-size: 18px; font-weight: 700; color: #6366f1;">RM 0.00</div>
           </div>
+        </div>
+        <!-- Item Description -->
+        <div id="modal-item-description" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 13px; color: #6b7280; line-height: 1.6; display: none;">
+          <!-- Description will be inserted here by JavaScript -->
         </div>
       </div>
 
@@ -747,7 +751,7 @@
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
         @if(isset($kitchenStatus['recommended_items']))
         @foreach($kitchenStatus['recommended_items'] as $item)
-        <div class="quick-add-item" data-item-id="{{ $item->id }}" data-item-name="{{ $item->name }}" data-item-price="{{ $item->price }}" data-item-image="{{ $item->image ?? '' }}"
+        <div class="quick-add-item" data-item-id="{{ $item->id }}" data-item-name="{{ $item->name }}" data-item-price="{{ $item->price }}" data-item-image="{{ $item->image ?? '' }}" data-item-description="{{ $item->description ?? '' }}"
              style="background: white; border: 2px solid #e5e7eb; border-radius: 16px; padding: 12px; cursor: pointer; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.08);"
              onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(99,102,241,0.25)'; this.style.borderColor='#6366f1';"
              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'; this.style.borderColor='#e5e7eb';">
@@ -799,7 +803,7 @@
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
         @if(isset($recommendedItems))
         @foreach($recommendedItems as $item)
-        <div class="popular-item-card" onclick="showAddToCartModal({{ $item->id }}, {{ json_encode($item->name) }}, {{ $item->price }}, {{ json_encode($item->image ?? '') }})"
+        <div class="popular-item-card" onclick="showAddToCartModal({{ $item->id }}, {{ json_encode($item->name) }}, {{ $item->price }}, {{ json_encode($item->image ?? '') }}, {{ json_encode($item->description ?? '') }})"
              style="background: white; border: 2px solid #e5e7eb; border-radius: 16px; padding: 12px; cursor: pointer; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.08);"
              onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(99,102,241,0.25)'; this.style.borderColor='#6366f1';"
              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'; this.style.borderColor='#e5e7eb';">
@@ -860,7 +864,7 @@
   let currentItemData = {};
 
   // Function for menu item cards with quantity selector
-  function showAddModal(itemId, itemName, itemPrice, itemImage, button) {
+  function showAddModal(itemId, itemName, itemPrice, itemImage, itemDescription, button) {
     const input = button.parentElement.parentElement.querySelector('.quantity-input');
     const quantity = parseInt(input.value);
 
@@ -870,6 +874,7 @@
       name: itemName,
       price: itemPrice,
       image: itemImage,
+      description: itemDescription,
       quantity: quantity,
       inputElement: input
     };
@@ -888,6 +893,17 @@
       imgEl.style.display = 'none';
     }
 
+    // Update description - show only if it exists
+    const descEl = document.getElementById('modal-item-description');
+    if (descEl) {
+      if (itemDescription && itemDescription.trim()) {
+        descEl.textContent = itemDescription;
+        descEl.style.display = 'block';
+      } else {
+        descEl.style.display = 'none';
+      }
+    }
+
     // Show modal
     const modal = document.getElementById('add-to-cart-modal');
     modal.style.display = 'flex';
@@ -895,7 +911,7 @@
   }
 
   // Function for recommendation cards (without quantity selector)
-  function showAddToCartModal(itemId, itemName, itemPrice, itemImage, isEditable = false) {
+  function showAddToCartModal(itemId, itemName, itemPrice, itemImage, itemDescription = '', isEditable = false) {
     // Default quantity is 1 for recommendations
     const quantity = 1;
 
@@ -905,6 +921,7 @@
       name: itemName,
       price: itemPrice,
       image: itemImage,
+      description: itemDescription,
       quantity: quantity,
       inputElement: null, // No input element for recommendations
       isEditable: isEditable // Track if quantity is editable
@@ -922,6 +939,17 @@
       imgEl.style.display = 'block';
     } else {
       imgEl.style.display = 'none';
+    }
+
+    // Update description - show only if it exists
+    const descEl = document.getElementById('modal-item-description');
+    if (descEl) {
+      if (itemDescription && itemDescription.trim()) {
+        descEl.textContent = itemDescription;
+        descEl.style.display = 'block';
+      } else {
+        descEl.style.display = 'none';
+      }
     }
 
     // Show/hide quantity buttons based on isEditable
@@ -1428,6 +1456,7 @@ document.addEventListener('click', async function(e) {
         const itemName = quickAddItem.dataset.itemName;
         const itemPrice = parseFloat(quickAddItem.dataset.itemPrice);
         const itemImage = quickAddItem.dataset.itemImage;
+        const itemDescription = quickAddItem.dataset.itemDescription || '';
 
         // Try to find the item in the rendered menu first
         const menuCards = document.querySelectorAll('.food-card');
@@ -1447,7 +1476,7 @@ document.addEventListener('click', async function(e) {
         // If not found in current view, open Add to Cart modal directly
         if (!found) {
             // Open Add to Cart modal with item details (editable quantity for fast items)
-            showAddToCartModal(itemId, itemName, itemPrice, itemImage, true);
+            showAddToCartModal(itemId, itemName, itemPrice, itemImage, itemDescription, true);
         }
     }
 });

@@ -442,7 +442,11 @@ document.addEventListener('click', async function(e) {
 
     if (!itemId || isNaN(itemId)) {
       console.error('Error: Menu item ID is missing! Cannot proceed with order.');
-      alert('Sorry, there was an error loading this item. Please refresh the page and try again.');
+      if (typeof Toast !== 'undefined') {
+        Toast.error('Item Error', 'Sorry, there was an error loading this item. Please refresh the page and try again.');
+      } else {
+        alert('Sorry, there was an error loading this item. Please refresh the page and try again.');
+      }
       return;
     }
 
@@ -1012,6 +1016,7 @@ function showOrderModal(itemId, itemName, itemPrice, itemDescription, itemImage)
   const modalItemPrice = document.getElementById('order-item-price');
   const modalItemImage = document.getElementById('order-item-image');
   const modalQuantity = document.getElementById('order-quantity');
+  const modalItemDescription = document.getElementById('order-item-description');
 
   // Reset quantity
   orderQuantity = 1;
@@ -1030,6 +1035,16 @@ function showOrderModal(itemId, itemName, itemPrice, itemDescription, itemImage)
   if (modalItemPrice) modalItemPrice.textContent = itemPrice;
   if (modalItemImage && itemImage) modalItemImage.src = itemImage;
   if (modalQuantity) modalQuantity.textContent = orderQuantity;
+
+  // Update description - show only if it exists
+  if (modalItemDescription) {
+    if (itemDescription && itemDescription.trim()) {
+      modalItemDescription.textContent = itemDescription;
+      modalItemDescription.style.display = 'block';
+    } else {
+      modalItemDescription.style.display = 'none';
+    }
+  }
 
   // Show modal
   if (modal) modal.style.display = 'flex';
@@ -1088,10 +1103,15 @@ document.addEventListener('click', function(e) {
 
       // Validate that currentOrderItem has an ID
       if (!currentOrderItem || !currentOrderItem.id) {
-        // console.error('Error: Cannot create order - menu item ID is missing!');
-        alert('Sorry, there was an error with this item. Please refresh the page and try again.');
+        console.error('Error: Cannot create order - menu item ID is missing!');
+        if (typeof Toast !== 'undefined') {
+          Toast.error('Item Error', 'Sorry, there was an error with this item. Please refresh the page and try again.');
+        } else {
+          alert('Sorry, there was an error with this item. Please refresh the page and try again.');
+        }
         return;
       }
+
 
       // Create order data for single item (Order Now flow)
       const orderData = {
@@ -1151,6 +1171,7 @@ function showAddToCartModal(itemId, itemName, itemPrice, itemDescription, itemIm
   const modalItemPrice = document.getElementById('addtocart-item-price');
   const modalItemImage = document.getElementById('addtocart-item-image');
   const modalQuantity = document.getElementById('addtocart-quantity');
+  const modalItemDescription = document.getElementById('addtocart-item-description');
 
   // Reset quantity
   addToCartQuantity = 1;
@@ -1169,6 +1190,16 @@ function showAddToCartModal(itemId, itemName, itemPrice, itemDescription, itemIm
   if (modalItemPrice) modalItemPrice.textContent = itemPrice;
   if (modalItemImage && itemImage) modalItemImage.src = itemImage;
   if (modalQuantity) modalQuantity.textContent = addToCartQuantity;
+
+  // Update description - show only if it exists
+  if (modalItemDescription) {
+    if (itemDescription && itemDescription.trim()) {
+      modalItemDescription.textContent = itemDescription;
+      modalItemDescription.style.display = 'block';
+    } else {
+      modalItemDescription.style.display = 'none';
+    }
+  }
 
   // Update total
   updateAddToCartTotal();
@@ -1268,13 +1299,13 @@ document.addEventListener('click', async function(e) {
 window.showAddToCartModal = showAddToCartModal;
 
 // Quick Add to Cart function for recommendation items
-async function quickAddToCart(itemId, itemName, itemPrice, itemImage) {
+async function quickAddToCart(itemId, itemName, itemPrice, itemImage, itemDescription = '') {
   try {
     const imageUrl = itemImage ? `/storage/${itemImage}` : '';
     const priceText = `RM ${parseFloat(itemPrice).toFixed(2)}`;
 
     // Use the showAddToCartModal function
-    showAddToCartModal(itemId, itemName, priceText, '', imageUrl);
+    showAddToCartModal(itemId, itemName, priceText, itemDescription, imageUrl);
   } catch (error) {
     // console.error('Error in quickAddToCart:', error);
     Toast.error('Error', 'Failed to add item to cart');
@@ -1579,7 +1610,11 @@ function initPromoCodeListeners() {
           await updateCart();
         }
       } catch (error) {
-        alert('An error occurred');
+        if (typeof Toast !== 'undefined') {
+          Toast.error('Error', 'An error occurred while removing promo');
+        } else {
+          alert('An error occurred');
+        }
       } finally {
         removeBtn.disabled = false;
       }

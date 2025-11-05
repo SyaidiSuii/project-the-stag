@@ -49,8 +49,10 @@ class KitchenController extends Controller
             ->take(10)
             ->get();
 
-        // Calculate today's stats
-        $activeOrders = Order::whereIn('order_status', ['pending', 'preparing'])->count();
+        // Calculate today's stats (TODAY ONLY)
+        $activeOrders = Order::whereIn('order_status', ['pending', 'preparing'])
+            ->whereDate('order_time', Carbon::today())
+            ->count();
         $completedToday = Order::whereDate('order_time', Carbon::today())
             ->where('order_status', 'completed')
             ->count();
@@ -136,17 +138,20 @@ class KitchenController extends Controller
             ->with('stationType')
             ->get()
             ->map(function ($station) {
-                // Count active orders assigned to this station
+                // Count active orders assigned to this station (distinct orders only, today only)
                 $station->active_loads_count = StationAssignment::where('station_id', $station->id)
                     ->whereHas('order', function ($q) {
-                        $q->whereIn('order_status', ['pending', 'preparing', 'ready']);
+                        $q->whereIn('order_status', ['pending', 'preparing', 'ready'])
+                          ->whereDate('order_time', Carbon::today());
                     })
-                    ->distinct('order_id')
-                    ->count('order_id');
+                    ->select('order_id')
+                    ->distinct()
+                    ->get()
+                    ->count();
                 return $station;
             });
 
-        // Get orders grouped by status
+        // Get orders grouped by status (TODAY'S ORDERS ONLY)
         $ordersQuery = Order::with([
             'items.menuItem',
             'table',
@@ -155,6 +160,7 @@ class KitchenController extends Controller
             'stationAssignments.orderItem.menuItem'
         ])
             ->whereIn('order_status', ['pending', 'confirmed', 'preparing', 'ready', 'completed'])
+            ->whereDate('order_time', Carbon::today())
             ->orderBy('order_time', 'asc');
 
         // Filter by station if specified
@@ -167,34 +173,99 @@ class KitchenController extends Controller
         $allOrders = $ordersQuery->get();
 
         // Group orders by status
-        $orders = collect([
-            'pending' => $allOrders->where('order_status', 'pending'),
-            'confirmed' => $allOrders->where('order_status', 'confirmed'),
-            'preparing' => $allOrders->where('order_status', 'preparing'),
-            'ready' => $allOrders->where('order_status', 'ready'),
-            'completed' => $allOrders->where('order_status', 'completed')
-                ->filter(function ($order) {
-                    // Only show completed orders from last 30 minutes
-                    return $order->actual_completion_time &&
-                           Carbon::parse($order->actual_completion_time)->diffInMinutes(Carbon::now()) <= 30;
-                })
-        ]);
+        // If viewing a specific station, group by STATION completion status
+        // Otherwise, group by overall order status
+        if ($stationId) {
+            // Station-specific view: group by this station's completion status
+            $orders = collect([
+                'pending' => $allOrders->filter(function ($order) use ($stationId) {
+                    // Orders where this station hasn't started yet (not in preparing/ready/completed for this station)
+                    $stationAssignments = $order->stationAssignments->where('station_id', $stationId);
+                    if ($stationAssignments->isEmpty()) return false;
 
-        // Calculate stats
-        $todayStats = [
-            'pending' => Order::whereIn('order_status', ['pending', 'confirmed'])
-                ->whereDate('order_time', Carbon::today())
-                ->count(),
-            'preparing' => Order::where('order_status', 'preparing')
-                ->whereDate('order_time', Carbon::today())
-                ->count(),
-            'ready' => Order::where('order_status', 'ready')
-                ->whereDate('order_time', Carbon::today())
-                ->count(),
-            'completed_today' => Order::where('order_status', 'completed')
-                ->whereDate('order_time', Carbon::today())
-                ->count(),
-        ];
+                    // Only show if ALL items at this station are still "assigned" (not started)
+                    $allAssigned = $stationAssignments->every(fn($a) => $a->status === 'assigned');
+                    if (!$allAssigned) return false;
+
+                    // Only show if order is in pending/confirmed/preparing status (not ready or completed)
+                    return in_array($order->order_status, ['pending', 'confirmed', 'preparing']);
+                }),
+                'preparing' => $allOrders->filter(function ($order) use ($stationId) {
+                    // Orders where this station is actively working
+                    $stationAssignments = $order->stationAssignments->where('station_id', $stationId);
+                    if ($stationAssignments->isEmpty()) return false;
+
+                    $hasStarted = $stationAssignments->contains(fn($a) => $a->status === 'started');
+                    $allCompleted = $stationAssignments->every(fn($a) => $a->status === 'completed');
+                    return $hasStarted && !$allCompleted && in_array($order->order_status, ['pending', 'confirmed', 'preparing', 'ready']);
+                }),
+                'ready' => $allOrders->filter(function ($order) use ($stationId) {
+                    // Orders where this station finished their items (marked as ready)
+                    // Show as ready even if other stations haven't finished yet
+                    $stationAssignments = $order->stationAssignments->where('station_id', $stationId);
+                    if ($stationAssignments->isEmpty()) return false;
+
+                    // Show if this station completed all their items
+                    $allCompleted = $stationAssignments->every(fn($a) => $a->status === 'completed');
+                    if (!$allCompleted) return false;
+
+                    // Show in ready section as long as order isn't marked as completed (served)
+                    // Even if overall order is still 'preparing' or 'ready' (waiting for other stations)
+                    return !in_array($order->order_status, ['completed']);
+                }),
+                'completed' => $allOrders->filter(function ($order) use ($stationId) {
+                    $stationAssignments = $order->stationAssignments->where('station_id', $stationId);
+                    if ($stationAssignments->isEmpty()) return false;
+
+                    // Station-specific: Show orders where THIS station completed all their items
+                    $allCompleted = $stationAssignments->every(fn($a) => $a->status === 'completed');
+                    if (!$allCompleted) return false;
+
+                    // Only show in completed section when ENTIRE order is marked as completed
+                    // This happens when waiter/manager marks order as served
+                    if ($order->order_status === 'completed') {
+                        // Show all completed orders from today (no 30-minute limit)
+                        return true;
+                    }
+
+                    // Don't show orders that are still in "ready" or "preparing" status
+                    return false;
+                })
+            ]);
+        } else {
+            // Overall view: group by order status
+            $orders = collect([
+                'pending' => $allOrders->whereIn('order_status', ['pending', 'confirmed']),
+                'preparing' => $allOrders->where('order_status', 'preparing'),
+                'ready' => $allOrders->where('order_status', 'ready'),
+                'completed' => $allOrders->where('order_status', 'completed')
+                    // Show all completed orders from today (no 30-minute limit)
+            ]);
+        }
+
+        // Calculate stats based on station-specific or overall view
+        if ($stationId) {
+            // Station-specific stats: count based on station assignment status
+            $todayStats = [
+                'pending' => $orders['pending']->count(),
+                'preparing' => $orders['preparing']->count(),
+                'ready' => $orders['ready']->count(),
+                'completed_today' => $orders['completed']->count(),
+            ];
+        } else {
+            // Overall view: count based on overall order status
+            $pendingQuery = Order::whereIn('order_status', ['pending', 'confirmed'])->whereDate('order_time', Carbon::today());
+            $preparingQuery = Order::where('order_status', 'preparing')->whereDate('order_time', Carbon::today());
+            $readyQuery = Order::where('order_status', 'ready')->whereDate('order_time', Carbon::today());
+            $completedQuery = Order::where('order_status', 'completed')->whereDate('order_time', Carbon::today());
+
+            $todayStats = [
+                'pending' => $pendingQuery->count(),
+                'preparing' => $preparingQuery->count(),
+                'ready' => $readyQuery->count(),
+                'completed_today' => $completedQuery->count(),
+            ];
+        }
 
         return view('admin.kitchen.kds', compact(
             'orders',
@@ -214,15 +285,17 @@ class KitchenController extends Controller
         // Get station filter (if any)
         $stationId = request('station_id');
 
-        // Get all active orders (for stats - unfiltered)
+        // Get all active orders (for stats - unfiltered, TODAY ONLY)
         $allOrders = Order::whereIn('order_status', ['pending', 'preparing', 'ready'])
+            ->whereDate('order_time', Carbon::today())
             ->with(['items.menuItem', 'table', 'user', 'stationAssignments.station'])
             ->orderBy('order_time', 'asc')
             ->get();
 
-        // Get orders for display (filtered by station if specified)
+        // Get orders for display (filtered by station if specified, TODAY ONLY)
         // Sort by oldest first so kitchen processes orders in FIFO order
         $ordersQuery = Order::whereIn('order_status', ['pending', 'preparing', 'ready'])
+            ->whereDate('order_time', Carbon::today())
             ->with(['items.menuItem', 'table', 'user', 'stationAssignments.station.stationType'])
             ->orderBy('order_time', 'asc');
 
@@ -240,13 +313,16 @@ class KitchenController extends Controller
             ->with('stationType')
             ->get()
             ->map(function ($station) {
-                // Count active orders assigned to this station
+                // Count active orders assigned to this station (distinct orders only, today only)
                 $station->active_loads_count = StationAssignment::where('station_id', $station->id)
                     ->whereHas('order', function ($q) {
-                        $q->whereIn('order_status', ['pending', 'preparing', 'ready']);
+                        $q->whereIn('order_status', ['pending', 'preparing', 'ready'])
+                          ->whereDate('order_time', Carbon::today());
                     })
-                    ->distinct('order_id')
-                    ->count('order_id');
+                    ->select('order_id')
+                    ->distinct()
+                    ->get()
+                    ->count();
                 return $station;
             });
 
