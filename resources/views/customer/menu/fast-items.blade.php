@@ -180,7 +180,7 @@
                         @endif
                         <div class="food-price">RM {{ number_format($item->price, 2) }}</div>
                         <div class="food-actions">
-                            <button type="button" class="btn btn-cart" onclick="event.preventDefault(); event.stopPropagation(); addToCart({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->price }}, '{{ $item->image ?? '' }}'); return false;">
+                            <button type="button" class="btn btn-cart" onclick="event.preventDefault(); event.stopPropagation(); addToCart({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->price }}, '{{ $item->image ?? '' }}', '{{ addslashes($item->description ?? '') }}'); return false;">
                                 <i class="fas fa-cart-plus"></i> Add to Cart
                             </button>
                         </div>
@@ -388,13 +388,17 @@ function filterItems() {
 }
 
 // Add to cart function (will use existing menu.js function if available)
-function addToCart(id, name, price, image) {
+function addToCart(id, name, price, image, description = '') {
     // Try to use the showAddToCartModal from menu.js
     if (typeof window.showAddToCartModal === 'function') {
         const imageUrl = image ? `/storage/${image}` : '';
-        window.showAddToCartModal(id, name, `RM ${price.toFixed(2)}`, '', imageUrl);
+        window.showAddToCartModal(id, name, `RM ${price.toFixed(2)}`, description, imageUrl);
     } else {
-        alert('Add to cart functionality not available');
+        if (typeof Toast !== 'undefined') {
+            Toast.error('Unavailable', 'Add to cart functionality not available');
+        } else {
+            alert('Add to cart functionality not available');
+        }
     }
 }
 </script>

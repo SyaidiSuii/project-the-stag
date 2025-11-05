@@ -156,6 +156,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Order::class);
     }
 
+    public function feedbacks()
+    {
+        return $this->hasMany(CustomerFeedback::class);
+    }
+
     /**
      * Get the kitchen station assigned to this user
      */

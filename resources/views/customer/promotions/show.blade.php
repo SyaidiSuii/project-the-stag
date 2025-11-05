@@ -811,11 +811,19 @@ function fallbackCopyPromoCode(promoCode, copySuccess) {
         if (successful) {
             showCopySuccess(copySuccess);
         } else {
-            alert('Promo code: ' + promoCode + '\n\nPlease copy manually');
+            if (typeof Toast !== 'undefined') {
+                Toast.info('Copy Code', 'Promo code: ' + promoCode + '\n\nPlease copy manually');
+            } else {
+                alert('Promo code: ' + promoCode + '\n\nPlease copy manually');
+            }
         }
     } catch (err) {
         console.error('Fallback copy failed:', err);
-        alert('Promo code: ' + promoCode + '\n\nPlease copy manually');
+        if (typeof Toast !== 'undefined') {
+            Toast.info('Copy Code', 'Promo code: ' + promoCode + '\n\nPlease copy manually');
+        } else {
+            alert('Promo code: ' + promoCode + '\n\nPlease copy manually');
+        }
     } finally {
         document.body.removeChild(textarea);
     }

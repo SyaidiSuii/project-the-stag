@@ -245,22 +245,66 @@ class Order extends Model
 
     /**
      * Calculate total preparation time for all items in minutes
+     * Uses PARALLEL station-based calculation (Critical Path Method)
+     *
+     * Logic: Items are prepared simultaneously by different stations,
+     * so the total time = the longest station's time (bottleneck)
      */
     public function calculateTotalPreparationTime()
     {
-        $totalPrepTime = 0;
+        // Group items by their assigned kitchen station
+        $stationTimes = [];
 
-        foreach ($this->items as $item) {
-            if ($item->menuItem) {
-                $prepTime = $item->menuItem->preparation_time ?? 15; // Default 15 minutes
-                $totalPrepTime += ($prepTime * $item->quantity);
+        // Check if we have station assignments (distributed orders)
+        if ($this->stationAssignments && $this->stationAssignments->count() > 0) {
+            // Use station assignments for accurate calculation
+            foreach ($this->stationAssignments as $assignment) {
+                $stationId = $assignment->station_id;
+                $orderItem = $assignment->orderItem;
+
+                if ($orderItem && $orderItem->menuItem) {
+                    $prepTime = $orderItem->menuItem->preparation_time ?? 15; // Default 15 minutes
+                    $itemTotalTime = $prepTime * $orderItem->quantity;
+
+                    // Track the maximum time for each item at this station
+                    if (!isset($stationTimes[$stationId])) {
+                        $stationTimes[$stationId] = 0;
+                    }
+
+                    // For parallel cooking at same station, use the longest item time
+                    // (multiple chefs can work on different items simultaneously)
+                    $stationTimes[$stationId] = max($stationTimes[$stationId], $itemTotalTime);
+                }
+            }
+        } else {
+            // Fallback: If no station assignments yet (order just created),
+            // estimate by grouping items by their effective station
+            foreach ($this->items as $item) {
+                if ($item->menuItem) {
+                    $station = $item->menuItem->getEffectiveStation();
+                    $stationId = $station ? $station->id : 'default';
+
+                    $prepTime = $item->menuItem->preparation_time ?? 15;
+                    $itemTotalTime = $prepTime * $item->quantity;
+
+                    if (!isset($stationTimes[$stationId])) {
+                        $stationTimes[$stationId] = 0;
+                    }
+
+                    // Use the longest item time per station
+                    $stationTimes[$stationId] = max($stationTimes[$stationId], $itemTotalTime);
+                }
             }
         }
 
-        // Add buffer time (10% or minimum 5 minutes)  
-        $bufferTime = max(5, round($totalPrepTime * 0.1));
+        // The bottleneck station (longest time) determines the overall ETA
+        // All other stations will finish earlier and wait
+        $bottleneckTime = count($stationTimes) > 0 ? max($stationTimes) : 15; // Default 15 minutes if no items
 
-        return $totalPrepTime + $bufferTime;
+        // Add buffer time (10% or minimum 5 minutes)
+        $bufferTime = max(5, round($bottleneckTime * 0.1));
+
+        return $bottleneckTime + $bufferTime;
     }
 
     /**

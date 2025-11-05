@@ -1100,11 +1100,19 @@ function fallbackCopyCode(code) {
         if (successful) {
             showToast('Promo code "' + code + '" copied to clipboard!');
         } else {
-            alert('Promo code: ' + code + '\n\nPlease copy manually');
+            if (typeof Toast !== 'undefined') {
+                Toast.info('Copy Code', 'Promo code: ' + code + '\n\nPlease copy manually');
+            } else {
+                alert('Promo code: ' + code + '\n\nPlease copy manually');
+            }
         }
     } catch (err) {
         console.error('Fallback copy failed:', err);
-        alert('Promo code: ' + code + '\n\nPlease copy manually');
+        if (typeof Toast !== 'undefined') {
+            Toast.info('Copy Code', 'Promo code: ' + code + '\n\nPlease copy manually');
+        } else {
+            alert('Promo code: ' + code + '\n\nPlease copy manually');
+        }
     } finally {
         document.body.removeChild(textarea);
     }

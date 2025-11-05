@@ -57,14 +57,22 @@
         <div class="form-group">
             <label class="form-label" for="password">{{ __('Password') }}</label>
             <div class="input-group">
-                <input id="password" 
+                <input id="password"
                        class="form-input @error('password') error @enderror"
                        type="password"
                        name="password"
                        placeholder="Create a password"
-                       required 
+                       required
                        autocomplete="new-password">
                 <i class="fas fa-lock input-icon"></i>
+            </div>
+            <div style="margin-top: 8px; padding: 10px; background: #f0f9ff; border-left: 3px solid #3b82f6; border-radius: 4px;">
+                <div style="font-size: 13px; font-weight: 600; color: #1e40af; margin-bottom: 6px;">
+                    <i class="fas fa-info-circle"></i> Password Requirements:
+                </div>
+                <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #1e40af; line-height: 1.8;">
+                    <li>Minimum 8 characters</li>
+                </ul>
             </div>
             @error('password')
                 <div class="error-message">

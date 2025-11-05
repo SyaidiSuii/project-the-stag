@@ -1303,7 +1303,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (!allRated) {
-                alert('Please rate all items before submitting.');
+                if (typeof Toast !== 'undefined') {
+                    Toast.warning('Incomplete', 'Please rate all items before submitting.');
+                } else {
+                    alert('Please rate all items before submitting.');
+                }
                 return;
             }
 
@@ -1336,7 +1340,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Rating feature disabled - route removed
             console.warn('Rating feature is currently disabled');
-            alert('Rating feature is currently unavailable.');
+            if (typeof Toast !== 'undefined') {
+                Toast.info('Unavailable', 'Rating feature is currently unavailable.');
+            } else {
+                alert('Rating feature is currently unavailable.');
+            }
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Reviews';
             return;
@@ -1354,18 +1362,30 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(data.message);
+                    if (typeof Toast !== 'undefined') {
+                        Toast.success('Success', data.message);
+                    } else {
+                        alert(data.message);
+                    }
                     // Reload page to show "already reviewed" badge
-                    location.reload();
+                    setTimeout(() => location.reload(), 1000);
                 } else {
-                    alert(data.message || 'Failed to submit reviews. Please try again.');
+                    if (typeof Toast !== 'undefined') {
+                        Toast.error('Failed', data.message || 'Failed to submit reviews. Please try again.');
+                    } else {
+                        alert(data.message || 'Failed to submit reviews. Please try again.');
+                    }
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Reviews';
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred. Please try again.');
+                if (typeof Toast !== 'undefined') {
+                    Toast.error('Error', 'An error occurred. Please try again.');
+                } else {
+                    alert('An error occurred. Please try again.');
+                }
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Reviews';
             });

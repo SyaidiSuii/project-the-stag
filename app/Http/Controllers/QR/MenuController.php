@@ -63,6 +63,13 @@ class MenuController extends Controller
 
         // Check if user is authenticated (logged in customer)
         if (auth()->check()) {
+            // Store dining context in session for persistence across page navigation
+            session([
+                'dining_table' => $session->table->table_number,
+                'order_type' => 'dine_in',
+                'qr_session' => $sessionCode
+            ]);
+
             // Redirect to customer menu with table number and dine-in order type
             return redirect()->route('customer.menu.index', [
                 'table' => $session->table->table_number,
