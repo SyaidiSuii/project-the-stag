@@ -440,6 +440,679 @@
             opacity: 1;
         }
     }
+
+    /* Tablet Responsive Styles (769px - 1199px) */
+    @media (min-width: 769px) and (max-width: 1199px) {
+      body {
+        padding: 16px;
+      }
+
+      .container {
+        max-width: 100%;
+      }
+
+      /* Banner */
+      .header-section > div:first-child {
+        padding: 16px !important;
+        margin-bottom: 16px !important;
+      }
+
+      .header-section > div:first-child h1 {
+        font-size: 1.5rem !important;
+      }
+
+      .header-section > div:first-child p {
+        font-size: 0.9rem !important;
+      }
+
+      /* Search Bar */
+      .search-bar-container {
+        margin-bottom: 16px;
+      }
+
+      .search-bar {
+        max-width: 500px;
+      }
+
+      .search-input {
+        padding: 10px 14px 10px 42px;
+        font-size: 14px;
+      }
+
+      /* Kitchen Smart Banner */
+      .kitchen-smart-banner {
+        margin: 16px auto !important;
+        padding: 16px !important;
+      }
+
+      .kitchen-smart-banner > div > div:first-child > div {
+        font-size: 12px !important;
+      }
+
+      .kitchen-smart-banner .quick-add-item {
+        padding: 8px !important;
+      }
+
+      .kitchen-smart-banner .quick-add-item > div:nth-child(2) {
+        font-size: 11px !important;
+      }
+
+      .kitchen-smart-banner .quick-add-item > div:nth-child(3) span {
+        font-size: 12px !important;
+      }
+
+      /* Recommendations Section */
+      .recommendations-section {
+        margin: 20px auto !important;
+      }
+
+      .recommendations-section h2 {
+        font-size: 18px !important;
+      }
+
+      .recommendations-section p {
+        font-size: 12px !important;
+      }
+
+      .recommendations-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+        gap: 12px !important;
+      }
+
+      .recommendation-card {
+        padding: 10px !important;
+      }
+
+      .recommendation-card > div:nth-child(2) {
+        font-size: 13px !important;
+      }
+
+      .recommendation-card > div:nth-child(3) span {
+        font-size: 14px !important;
+      }
+
+      /* Category Tabs */
+      .category-tabs {
+        margin-bottom: 14px;
+      }
+
+      .tab {
+        padding: 9px 14px;
+        font-size: 12px;
+      }
+
+      /* Subcategory Title */
+      .subcategory-title {
+        font-size: 1.5rem;
+        margin: 24px 0 16px;
+        padding-left: 14px;
+        border-left-width: 5px;
+      }
+
+      /* Menu Grid */
+      .menu-grid {
+        gap: 16px;
+      }
+
+      /* Menu Item Card */
+      .menu-item {
+        border-radius: 16px;
+      }
+
+      .item-image {
+        height: 160px;
+        font-size: 2.8rem;
+      }
+
+      .item-content {
+        padding: 16px;
+      }
+
+      .item-name {
+        font-size: 1rem;
+        margin-bottom: 6px;
+      }
+
+      .item-price {
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+      }
+
+      .item-description {
+        font-size: 0.85rem;
+        margin-bottom: 12px;
+      }
+
+      .quantity-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 1.1rem;
+      }
+
+      .quantity-input {
+        width: 40px;
+        height: 34px;
+        font-size: 0.9rem;
+      }
+
+      .add-btn {
+        font-size: 13px;
+        padding: 0 16px;
+        border-radius: 10px;
+      }
+
+      .badge-popular {
+        font-size: 11px;
+        padding: 5px 10px;
+        top: 10px;
+        right: 10px;
+      }
+
+      .item-type-badge {
+        font-size: 0.65rem !important;
+        padding: 3px 5px !important;
+        top: 10px !important;
+        left: 10px !important;
+      }
+
+      /* Cart FAB */
+      .cart-fab {
+        width: 60px !important;
+        height: 60px !important;
+        bottom: 22px !important;
+        right: 22px !important;
+        font-size: 22px !important;
+      }
+
+      .cart-badge {
+        width: 22px !important;
+        height: 22px !important;
+        font-size: 11px !important;
+      }
+
+      /* Modals */
+      .modal-content {
+        width: min(400px, 90vw);
+      }
+
+      #all-recommendations-modal .modal-content,
+      #all-popular-items-modal .modal-content {
+        max-width: 700px;
+      }
+    }
+
+    /* Mobile Responsive Styles (max-width: 768px) */
+    @media (max-width: 768px) {
+      body {
+        padding: 8px;
+      }
+
+      .container {
+        padding: 0;
+      }
+
+      /* Banner */
+      .header-section > div:first-child {
+        padding: 14px !important;
+        margin-bottom: 14px !important;
+        border-radius: 12px !important;
+      }
+
+      .header-section > div:first-child h1 {
+        font-size: 1.3rem !important;
+      }
+
+      .header-section > div:first-child p {
+        font-size: 0.85rem !important;
+      }
+
+      /* Search Bar */
+      .search-bar-container {
+        margin-bottom: 12px;
+      }
+
+      .search-bar {
+        max-width: 100%;
+        border-radius: 20px;
+      }
+
+      .search-input {
+        padding: 10px 12px 10px 38px;
+        font-size: 13px;
+      }
+
+      .search-icon {
+        left: 14px;
+        font-size: 14px;
+      }
+
+      /* Kitchen Smart Banner */
+      .kitchen-smart-banner {
+        margin: 12px 0 !important;
+        padding: 12px !important;
+        border-radius: 12px !important;
+      }
+
+      .kitchen-smart-banner > button {
+        top: 8px !important;
+        right: 8px !important;
+        padding: 6px 10px !important;
+        font-size: 18px !important;
+      }
+
+      .kitchen-smart-banner > div {
+        gap: 10px !important;
+      }
+
+      .kitchen-smart-banner > div > div:first-child {
+        padding-right: 35px !important;
+      }
+
+      .kitchen-smart-banner > div > div:first-child > div {
+        font-size: 11px !important;
+      }
+
+      .kitchen-smart-banner > div > div:nth-child(2) {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+      }
+
+      .kitchen-smart-banner .quick-add-item {
+        padding: 8px !important;
+        border-radius: 10px !important;
+      }
+
+      /* Hide items beyond the 2nd item on mobile */
+      .kitchen-smart-banner .quick-add-item:nth-child(n+3) {
+        display: none !important;
+      }
+
+      .kitchen-smart-banner .quick-add-item > div:first-child > div:last-child {
+        font-size: 8px !important;
+        padding: 2px 4px !important;
+      }
+
+      .kitchen-smart-banner .quick-add-item > div:nth-child(2) {
+        font-size: 10px !important;
+      }
+
+      .kitchen-smart-banner .quick-add-item > div:nth-child(3) span {
+        font-size: 11px !important;
+      }
+
+      .kitchen-smart-banner .quick-add-item > div:nth-child(3) > div {
+        width: 20px !important;
+        height: 20px !important;
+        font-size: 14px !important;
+      }
+
+      .kitchen-smart-banner button[onclick="showAllRecommendationsModal()"] {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+        margin-top: 8px !important;
+      }
+
+      /* Recommendations Section */
+      .recommendations-section {
+        margin: 16px 0 !important;
+      }
+
+      .recommendations-section > div:first-child {
+        margin-bottom: 12px !important;
+        gap: 8px !important;
+      }
+
+      .recommendations-section > div:first-child > div:first-child {
+        font-size: 20px !important;
+      }
+
+      .recommendations-section h2 {
+        font-size: 16px !important;
+      }
+
+      .recommendations-section p {
+        font-size: 11px !important;
+      }
+
+      .recommendations-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+      }
+
+      .recommendation-card {
+        padding: 8px !important;
+        border-radius: 10px !important;
+      }
+
+      .recommendation-card > div:first-child {
+        margin-bottom: 6px !important;
+        border-radius: 8px !important;
+      }
+
+      .recommendation-card > div:first-child > div:last-child {
+        font-size: 9px !important;
+        padding: 3px 6px !important;
+        top: 6px !important;
+        right: 6px !important;
+      }
+
+      .recommendation-card > div:nth-child(2) {
+        font-size: 11px !important;
+      }
+
+      .recommendation-card > div:nth-child(3) span {
+        font-size: 12px !important;
+      }
+
+      .recommendation-card > div:nth-child(3) > div {
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 16px !important;
+      }
+
+      .recommendations-section button[onclick="showAllPopularItemsModal()"] {
+        padding: 10px 14px !important;
+        font-size: 12px !important;
+        margin-top: 12px !important;
+        border-radius: 10px !important;
+      }
+
+      /* Category Tabs */
+      .category-tabs {
+        gap: 6px;
+        margin-bottom: 12px;
+        padding: 0 8px;
+      }
+
+      .tab {
+        padding: 8px 12px;
+        font-size: 10.5px;
+        border-radius: 16px;
+      }
+
+      /* Menu Grid */
+      .menu-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 6px;
+      }
+
+      /* Menu Item Card - Mobile COMPACT but READABLE */
+      .menu-item {
+        border-radius: 8px;
+      }
+
+      .item-image {
+        height: 85px;
+        font-size: 1.6rem;
+      }
+
+      .item-image img {
+        height: 85px;
+      }
+
+      .item-content {
+        padding: 9px;
+      }
+
+      .item-name {
+        font-size: 0.68rem;
+        line-height: 1.15;
+        margin-bottom: 3px;
+      }
+
+      .item-price {
+        font-size: 0.78rem;
+        margin-bottom: 6px;
+      }
+
+      .item-description {
+        font-size: 0.55rem;
+        line-height: 1.15;
+        margin-bottom: 8px;
+      }
+
+      .quantity-control {
+        border-radius: 8px;
+      }
+
+      .quantity-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 0.9rem;
+      }
+
+      .quantity-input {
+        width: 32px;
+        height: 26px;
+        font-size: 0.8rem;
+      }
+
+      .add-btn {
+        font-size: 9.5px;
+        padding: 0 10px;
+        border-radius: 7px;
+        gap: 4px;
+      }
+
+      .badge-popular {
+        font-size: 8.5px;
+        padding: 3px 7px;
+        top: 6px;
+        right: 6px;
+        border-radius: 6px;
+      }
+
+      .item-type-badge {
+        font-size: 0.52rem !important;
+        padding: 2px 4px !important;
+        top: 6px !important;
+        left: 6px !important;
+        border-radius: 6px !important;
+      }
+
+      .subcategory-title {
+        font-size: 1.1rem;
+        margin: 18px 0 12px;
+        padding-left: 10px;
+        border-left-width: 3px;
+      }
+
+      /* Cart FAB */
+      .cart-fab {
+        width: 56px !important;
+        height: 56px !important;
+        bottom: 20px !important;
+        right: 20px !important;
+        font-size: 22px !important;
+      }
+
+      .cart-badge {
+        width: 22px !important;
+        height: 22px !important;
+        font-size: 11px !important;
+      }
+
+      /* Modals on Mobile */
+      .modal-content {
+        width: min(360px, 95vw);
+        border-radius: 20px;
+        max-height: 90vh;
+      }
+
+      #add-to-cart-modal .modal-content > div:first-child {
+        padding: 20px 20px 14px 20px !important;
+      }
+
+      #add-to-cart-modal .modal-content > div:first-child h3 {
+        font-size: 20px !important;
+      }
+
+      #add-to-cart-modal .modal-content > div:first-child > div > div {
+        width: 48px !important;
+        height: 48px !important;
+      }
+
+      #add-to-cart-modal .modal-content > div:first-child > div > div i {
+        font-size: 24px !important;
+      }
+
+      #add-to-cart-modal .modal-body-scrollable {
+        padding: 20px !important;
+        max-height: calc(90vh - 180px) !important;
+      }
+
+      #add-to-cart-modal .modal-body-scrollable > div:first-child {
+        padding: 12px !important;
+        border-radius: 12px !important;
+      }
+
+      #add-to-cart-modal #modal-item-image {
+        width: 70px !important;
+        height: 70px !important;
+        border-radius: 10px !important;
+      }
+
+      #add-to-cart-modal #modal-item-name {
+        font-size: 14px !important;
+      }
+
+      #add-to-cart-modal #modal-item-price {
+        font-size: 16px !important;
+      }
+
+      #add-to-cart-modal #modal-item-description {
+        font-size: 12px !important;
+      }
+
+      #add-to-cart-modal label {
+        font-size: 13px !important;
+      }
+
+      #add-to-cart-modal #modal-qty-minus,
+      #add-to-cart-modal #modal-qty-plus {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 18px !important;
+      }
+
+      #add-to-cart-modal #modal-quantity-display {
+        font-size: 20px !important;
+      }
+
+      #add-to-cart-modal #modal-special-notes {
+        font-size: 13px !important;
+        padding: 10px !important;
+      }
+
+      #add-to-cart-modal #modal-total-amount {
+        font-size: 24px !important;
+      }
+
+      #add-to-cart-modal .modal-content > div:last-child {
+        padding: 16px 20px 20px 20px !important;
+      }
+
+      #add-to-cart-modal .modal-content > div:last-child button {
+        padding: 12px !important;
+        font-size: 14px !important;
+      }
+
+      /* All Recommendations Modal & Popular Items Modal */
+      #all-recommendations-modal .modal-content,
+      #all-popular-items-modal .modal-content {
+        max-width: 95vw;
+        border-radius: 20px;
+      }
+
+      #all-recommendations-modal .modal-content > div:first-child,
+      #all-popular-items-modal .modal-content > div:first-child {
+        padding: 20px !important;
+        border-radius: 20px 20px 0 0 !important;
+      }
+
+      #all-recommendations-modal .modal-content > div:first-child > div,
+      #all-popular-items-modal .modal-content > div:first-child > div {
+        gap: 12px !important;
+      }
+
+      #all-recommendations-modal .modal-content > div:first-child > div > div:first-child,
+      #all-popular-items-modal .modal-content > div:first-child > div > div:first-child {
+        font-size: 36px !important;
+      }
+
+      #all-recommendations-modal .modal-content > div:first-child h3,
+      #all-popular-items-modal .modal-content > div:first-child h3 {
+        font-size: 20px !important;
+      }
+
+      #all-recommendations-modal .modal-content > div:first-child p,
+      #all-popular-items-modal .modal-content > div:first-child p {
+        font-size: 12px !important;
+      }
+
+      #all-recommendations-modal .modal-content > div:last-child,
+      #all-popular-items-modal .modal-content > div:last-child {
+        padding: 16px !important;
+      }
+
+      #all-recommendations-modal .modal-content > div:last-child > div,
+      #all-popular-items-modal .modal-content > div:last-child > div {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+      }
+
+      #all-recommendations-modal .quick-add-item,
+      #all-popular-items-modal .popular-item-card {
+        padding: 10px !important;
+        border-radius: 12px !important;
+      }
+
+      #all-recommendations-modal .quick-add-item > div:first-child,
+      #all-popular-items-modal .popular-item-card > div:first-child {
+        margin-bottom: 8px !important;
+        border-radius: 10px !important;
+      }
+
+      #all-recommendations-modal .quick-add-item > div:first-child > div:last-child,
+      #all-popular-items-modal .popular-item-card > div:first-child > div:last-child {
+        font-size: 9px !important;
+        padding: 3px 6px !important;
+      }
+
+      #all-recommendations-modal .quick-add-item > div:nth-child(2),
+      #all-popular-items-modal .popular-item-card > div:nth-child(2) {
+        font-size: 12px !important;
+      }
+
+      #all-recommendations-modal .quick-add-item > div:nth-child(3) span,
+      #all-popular-items-modal .popular-item-card > div:nth-child(3) span {
+        font-size: 13px !important;
+      }
+
+      #all-recommendations-modal .quick-add-item > div:nth-child(3) > div,
+      #all-popular-items-modal .popular-item-card > div:nth-child(3) > div {
+        width: 26px !important;
+        height: 26px !important;
+        font-size: 16px !important;
+      }
+
+      /* No Results */
+      .no-results {
+        padding: 40px 20px !important;
+      }
+
+      .no-results-icon {
+        font-size: 48px !important;
+      }
+
+      .no-results-text {
+        font-size: 16px !important;
+      }
+
+      .no-results-subtext {
+        font-size: 13px !important;
+      }
+    }
 </style>
 @endsection
 
@@ -463,17 +1136,17 @@
 
   <!-- Kitchen Smart Banner -->
   @if(isset($kitchenStatus) && count($kitchenStatus['busy_types']) > 0 && $kitchenStatus['recommended_items']->count() > 0)
-  <div class="kitchen-smart-banner" id="kitchenBanner" style="margin: 20px auto; max-width: 800px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 20px; color: white; box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3); animation: slideDown 0.5s ease-out;">
+  <div class="kitchen-smart-banner" id="kitchenBanner" style="position: relative; margin: 20px auto; max-width: 800px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 20px; color: white; box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3); animation: slideDown 0.5s ease-out;">
+      <!-- Close Button - Absolute positioned at top right -->
+      <button onclick="dismissKitchenBanner()" style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 20px; line-height: 1; transition: background 0.3s; z-index: 10;">
+          ✕
+      </button>
+
       <div style="display: flex; flex-direction: column; gap: 12px;">
-          <div style="display: flex; align-items: center; gap: 16px;">
-              <div style="flex: 1;">
-                  <div style="font-size: 14px; opacity: 0.95; line-height: 1.5; text-align: center;">
-                      ⚡ <strong>Want your food faster?</strong> These items are ready quickly:
-                  </div>
+          <div style="padding-right: 40px;">
+              <div style="font-size: 14px; opacity: 0.95; line-height: 1.5; text-align: center;">
+                  ⚡ <strong>Want your food faster?</strong> These items are ready quickly:
               </div>
-              <button onclick="dismissKitchenBanner()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 20px; line-height: 1; transition: background 0.3s;">
-                  ✕
-              </button>
           </div>
 
           @if($kitchenStatus['recommended_items']->count() > 0)
@@ -1427,22 +2100,91 @@
 
   @media (max-width: 768px) {
     .kitchen-smart-banner {
-      margin: 16px !important;
-      padding: 16px !important;
+      margin: 12px 0 !important;
+      padding: 12px !important;
+      border-radius: 12px !important;
     }
 
     .kitchen-smart-banner > div {
-      flex-direction: column !important;
-      text-align: center !important;
+      gap: 10px !important;
     }
 
     .kitchen-smart-banner > div > div:first-child {
-      font-size: 36px !important;
+      flex-direction: column !important;
+      text-align: center !important;
+      gap: 8px !important;
     }
 
-    .kitchen-smart-banner span {
-      display: block !important;
-      margin: 4px 0 !important;
+    .kitchen-smart-banner > div > div:first-child > div {
+      font-size: 11px !important;
+    }
+
+    .kitchen-smart-banner > div > div:first-child button {
+      padding: 6px 10px !important;
+      font-size: 16px !important;
+    }
+
+    .kitchen-smart-banner > div > div:nth-child(2) {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 8px !important;
+    }
+
+    .kitchen-smart-banner .quick-add-item {
+      padding: 8px !important;
+      border-radius: 10px !important;
+    }
+
+    .kitchen-smart-banner .quick-add-item > div:first-child > div:last-child {
+      font-size: 8px !important;
+      padding: 2px 4px !important;
+    }
+
+    .kitchen-smart-banner .quick-add-item > div:nth-child(2) {
+      font-size: 10px !important;
+    }
+
+    .kitchen-smart-banner .quick-add-item > div:nth-child(3) span {
+      font-size: 11px !important;
+    }
+
+    .kitchen-smart-banner .quick-add-item > div:nth-child(3) > div {
+      width: 20px !important;
+      height: 20px !important;
+      font-size: 14px !important;
+    }
+
+    .kitchen-smart-banner button[onclick="showAllRecommendationsModal()"] {
+      padding: 8px 12px !important;
+      font-size: 12px !important;
+      margin-top: 8px !important;
+    }
+
+    .kitchen-smart-banner button:hover {
+      background: rgba(255,255,255,0.3) !important;
+    }
+  }
+
+  /* Tablet - Kitchen Smart Banner */
+  @media (min-width: 769px) and (max-width: 1199px) {
+    .kitchen-smart-banner {
+      margin: 16px auto !important;
+      padding: 16px !important;
+    }
+
+    .kitchen-smart-banner > div > div:first-child > div {
+      font-size: 12px !important;
+    }
+
+    .kitchen-smart-banner .quick-add-item {
+      padding: 8px !important;
+    }
+
+    .kitchen-smart-banner .quick-add-item > div:nth-child(2) {
+      font-size: 11px !important;
+    }
+
+    .kitchen-smart-banner .quick-add-item > div:nth-child(3) span {
+      font-size: 12px !important;
     }
   }
 </style>

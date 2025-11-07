@@ -156,6 +156,81 @@
   font-size: 12px;
 }
 
+/* Large Desktop (1600px+) */
+@media (min-width: 1600px) {
+  .cart-promotion-group {
+    padding: 25px;
+    border-radius: 20px;
+    margin-bottom: 25px;
+    border-width: 3px;
+  }
+  
+  .promotion-header {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom-width: 2px;
+  }
+  
+  .promotion-title {
+    font-size: 22px;
+  }
+  
+  .locked-badge {
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    margin-left: 12px;
+  }
+  
+  .promotion-type-badge {
+    font-size: 14px;
+    padding: 6px 14px;
+    border-radius: 8px;
+  }
+  
+  .promotion-items {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  
+  .promo-item {
+    padding: 15px;
+    border-radius: 12px;
+    border-width: 2px;
+  }
+  
+  .promo-item-image {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .free-tag {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-left: 8px;
+  }
+  
+  .promotion-footer {
+    padding-top: 20px;
+    border-top-width: 2px;
+  }
+  
+  .promotion-total {
+    font-size: 18px;
+  }
+  
+  .remove-promotion-btn {
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 16px;
+  }
+  
+  .remove-promotion-btn i {
+    font-size: 16px;
+  }
+}
+
 /* Mobile Responsive */
 @media (max-width: 640px) {
   .cart-promotion-group {

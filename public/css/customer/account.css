@@ -1,4 +1,4 @@
-   /* ===== Reset & Theme ===== */
+/* ===== Reset & Theme ===== */
     * { 
       margin: 0; 
       padding: 0; 
@@ -39,191 +39,17 @@
       margin-bottom: 20px;
     }
 
-    .category-title {
-      font-size: 2rem;
-      font-weight: 900;
-      text-align: center;
-      background: linear-gradient(135deg, var(--accent), var(--brand));
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin: 0 0 16px 0;
+    .category-title { 
+      font-size: 2rem; 
+      font-weight: 900; 
+      text-align: center; 
+      background: linear-gradient(135deg, var(--accent), var(--brand)); 
+      -webkit-background-clip: text; 
+      background-clip: text; 
+      -webkit-text-fill-color: transparent; 
+      margin: 0 0 16px 0; 
       letter-spacing: 1px;
       text-transform: uppercase;
-    }
-
-    /* ===== Guest Welcome Card ===== */
-    .guest-welcome-card {
-      background: white;
-      border-radius: var(--radius);
-      padding: 3rem 2rem;
-      margin-bottom: 2rem;
-      box-shadow: var(--shadow-lg);
-      border: 1px solid var(--muted);
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .guest-header-content {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .guest-icon {
-      width: 140px;
-      height: 140px;
-      background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 4rem;
-      color: var(--brand);
-      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
-      border: 4px solid white;
-      flex-shrink: 0;
-    }
-
-    .guest-text-content {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      text-align: center;
-    }
-
-    .guest-title {
-      font-size: 2rem;
-      font-weight: 900;
-      color: var(--text);
-      margin-bottom: 0.5rem;
-    }
-
-    .guest-subtitle {
-      font-size: 1.1rem;
-      color: var(--text-2);
-      margin-bottom: 0.5rem;
-    }
-
-    .guest-status {
-      font-size: 0.9rem;
-      color: var(--text-3);
-    }
-
-    .guest-join-section {
-      background: linear-gradient(135deg, var(--brand), var(--brand-2));
-      border-radius: 16px;
-      padding: 2.5rem 2rem;
-      color: white;
-      position: relative;
-      overflow: hidden;
-      margin-top: 2rem;
-      text-align: center;
-    }
-
-    .guest-join-section::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -50%;
-      width: 200%;
-      height: 200%;
-      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>') repeat;
-      animation: guestFloat 15s linear infinite;
-    }
-
-    @keyframes guestFloat {
-      0% { transform: translateX(0) translateY(0) rotate(0deg); }
-      100% { transform: translateX(-30px) translateY(-30px) rotate(360deg); }
-    }
-
-    .join-icon {
-      width: 60px;
-      height: 60px;
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 1rem;
-      font-size: 1.8rem;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      position: relative;
-      z-index: 2;
-    }
-
-    .join-title {
-      font-size: 1.5rem;
-      font-weight: 800;
-      margin-bottom: 1rem;
-      position: relative;
-      z-index: 2;
-      letter-spacing: 0.5px;
-    }
-
-    .join-description {
-      font-size: 1rem;
-      line-height: 1.6;
-      opacity: 0.95;
-      margin-bottom: 2rem;
-      position: relative;
-      z-index: 2;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .join-buttons {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      position: relative;
-      z-index: 2;
-    }
-
-    .btn-login,
-    .btn-register {
-      padding: 14px 32px;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 700;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.3s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      cursor: pointer;
-    }
-
-    .btn-login {
-      background: white;
-      color: var(--brand);
-      border: 2px solid white;
-    }
-
-    .btn-login:hover {
-      background: rgba(255, 255, 255, 0.95);
-      transform: translateY(-3px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    }
-
-    .btn-register {
-      background: transparent;
-      color: white;
-      border: 2px solid white;
-    }
-
-    .btn-register:hover {
-      background: rgba(255, 255, 255, 0.15);
-      transform: translateY(-3px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     }
 
     /* ===== Profile Header ===== */
@@ -828,400 +654,407 @@
     }
 
     /* ===== Responsive Design ===== */
-
-    /* Tablet (768px - 992px) */
-    @media (max-width: 992px) {
-      .content-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
+    
+    /* Tablet (769px - 1199px) */
+    @media (max-width: 1199px) {
+      .main-content {
+        padding: 16px;
       }
 
-      .category-title { font-size: 1.75rem; }
-
-      /* Guest Welcome Card - Tablet */
-      .guest-welcome-card { padding: 2.5rem 1.75rem; }
-      .guest-icon { width: 120px; height: 120px; font-size: 3.5rem; }
-      .guest-title { font-size: 1.75rem; }
-      .guest-subtitle { font-size: 1rem; }
-      .guest-status { font-size: 0.85rem; }
-      .guest-join-section { padding: 2rem 1.75rem; border-radius: 14px; }
-      .join-title { font-size: 1.35rem; }
-      .join-description { font-size: 0.95rem; }
-      .btn-login, .btn-register { padding: 12px 28px; font-size: 0.95rem; }
-
-      /* Profile Header - Tablet */
-      .profile-header { padding: 1.75rem; }
-      .profile-avatar { width: 100px; height: 100px; font-size: 2.5rem; }
-      .profile-info h1 { font-size: 1.75rem; }
-      .profile-info .email { font-size: 1rem; }
-      .profile-info .member-since { font-size: 0.85rem; }
-      .stat-number { font-size: 1.35rem; }
-      .stat-label { font-size: 0.75rem; }
-
-      /* Cards & Forms - Tablet */
-      .account-card { padding: 1.25rem; }
-      .card-icon { width: 36px; height: 36px; font-size: 1.1rem; }
-      .card-title { font-size: 1rem; }
-      .quick-action-icon { width: 36px; height: 36px; font-size: 1rem; }
-      .btn { padding: 11px 22px; font-size: 0.85rem; }
-    }
-
-    /* Mobile (481px - 768px) */
-    @media (max-width: 768px) {
-
-      /* --- General Layout --- */
-      .main-content { padding: 1rem; }
-      .header-section { margin-bottom: 1rem; padding: 15px 0; }
-      .category-title { font-size: 1.4rem; }
-
-      /* Guest Welcome Card - Mobile */
-      .guest-welcome-card {
-        padding: 2rem 1.25rem;
-        border-radius: 16px;
-      }
-      .guest-header-content {
-        flex-direction: column;
-        gap: 1.25rem;
-        margin-bottom: 1.5rem;
-      }
-      .guest-icon {
-        width: 90px;
-        height: 90px;
-        font-size: 2.75rem;
-        border: 3px solid white;
-      }
-      .guest-title { font-size: 1.4rem; }
-      .guest-subtitle { font-size: 0.9rem; }
-      .guest-status { font-size: 0.8rem; }
-
-      .guest-join-section {
-        padding: 1.75rem 1.25rem;
-        border-radius: 12px;
-        margin-top: 1.5rem;
-      }
-      .join-title {
-        font-size: 1.2rem;
-        margin-bottom: 0.85rem;
-      }
-      .join-description {
-        font-size: 0.85rem;
-        line-height: 1.5;
-        margin-bottom: 1.5rem;
-      }
-      .join-buttons { gap: 0.85rem; }
-      .btn-login, .btn-register {
-        padding: 11px 24px;
-        font-size: 0.85rem;
-        border-radius: 10px;
+      .category-title {
+        font-size: 1.6rem;
       }
 
-      /* Profile Header - Mobile */
       .profile-header {
-        padding: 1.5rem;
-        border-radius: 16px;
+        padding: 1.6rem;
+        margin-bottom: 1.6rem;
       }
-      .profile-content {
-        flex-direction: column;
-        text-align: center;
-        gap: 1rem;
-      }
+
       .profile-avatar {
-        width: 80px;
-        height: 80px;
-        font-size: 2rem;
-        border: 3px solid rgba(255,255,255,0.3);
+        width: 100px;
+        height: 100px;
+        font-size: 2.4rem;
       }
-      .profile-info h1 { font-size: 1.4rem; }
-      .profile-info .email { font-size: 0.95rem; }
-      .profile-info .member-since { font-size: 0.8rem; }
+
+      .profile-info h1 {
+        font-size: 1.6rem;
+      }
+
+      .profile-info .email {
+        font-size: 0.95rem;
+      }
+
+      .profile-info .member-since {
+        font-size: 0.8rem;
+      }
 
       .profile-stats {
-        justify-content: center;
-        gap: 0.85rem;
-        margin-top: 1.25rem;
+        gap: 1.6rem;
+        margin-top: 1.2rem;
       }
-      .stat-item {
-        padding: 0.85rem;
-        border-radius: 10px;
-      }
-      .stat-number { font-size: 1.15rem; }
-      .stat-label { font-size: 0.7rem; }
 
-      /* Cards & Content - Mobile */
+      .stat-item {
+        padding: 0.8rem;
+      }
+
+      .stat-number {
+        font-size: 1.2rem;
+      }
+
+      .stat-label {
+        font-size: 0.7rem;
+      }
+
       .content-grid {
         grid-template-columns: 1fr;
-        gap: 1.25rem;
+        gap: 1.6rem;
       }
+
       .account-card {
-        padding: 1rem;
-        border-radius: 16px;
+        padding: 1.2rem;
       }
+
       .card-header {
-        margin-bottom: 1.25rem;
-        padding-bottom: 0.85rem;
+        margin-bottom: 1.2rem;
+        padding-bottom: 0.8rem;
       }
+
       .card-icon {
         width: 32px;
         height: 32px;
         font-size: 1rem;
-        border-radius: 10px;
-      }
-      .card-title {
-        font-size: 0.9rem;
-        letter-spacing: 0.3px;
       }
 
-      /* Forms - Mobile */
-      .form-group { margin-bottom: 1.25rem; }
-      .form-group label { font-size: 0.8rem; }
+      .card-title {
+        font-size: 0.95rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.2rem;
+      }
+
+      .form-group label {
+        font-size: 0.8rem;
+      }
+
       .form-group input,
       .form-group select,
       .form-group textarea {
         padding: 10px 14px;
-        font-size: 0.85rem;
-        border-radius: 10px;
+        font-size: 0.8rem;
       }
-      .form-row { grid-template-columns: 1fr; gap: 0.85rem; }
 
-      /* Buttons - Mobile */
       .btn {
         padding: 10px 20px;
         font-size: 0.8rem;
-        border-radius: 10px;
-      }
-      .btn-group {
-        flex-wrap: wrap;
-        gap: 0.85rem;
-        margin-top: 1.25rem;
       }
 
-      /* Quick Actions - Mobile */
+      .btn-group {
+        gap: 0.8rem;
+        margin-top: 1.2rem;
+      }
+
       .quick-actions {
-        padding: 1.25rem;
-        border-radius: 16px;
+        padding: 1.2rem;
       }
-      .quick-actions-grid {
-        grid-template-columns: 1fr;
-        gap: 0.85rem;
-      }
+
       .quick-action {
-        padding: 0.85rem;
-        border-radius: 10px;
+        padding: 0.8rem;
       }
+
       .quick-action-icon {
         width: 32px;
         height: 32px;
         font-size: 0.95rem;
-        border-radius: 8px;
       }
-      .quick-action-text { font-size: 0.85rem; }
 
-      /* Payment & Address - Mobile */
-      .payment-method {
-        padding: 0.85rem;
-        border-radius: 10px;
+      .quick-action-text {
+        font-size: 0.85rem;
       }
+
+      .payment-method {
+        padding: 0.8rem;
+        margin-bottom: 0.8rem;
+      }
+
       .payment-icon {
         width: 32px;
         height: 32px;
         font-size: 1rem;
       }
-      .payment-type { font-size: 0.85rem; }
-      .payment-details { font-size: 0.75rem; }
+
+      .payment-type {
+        font-size: 0.85rem;
+      }
+
+      .payment-details {
+        font-size: 0.7rem;
+      }
+
+      .btn-small {
+        padding: 5px 10px;
+        font-size: 0.7rem;
+      }
 
       .address-card {
-        padding: 0.85rem;
-        border-radius: 10px;
-      }
-      .address-type { font-size: 0.85rem; }
-      .address-details { font-size: 0.8rem; }
-      .default-badge {
-        font-size: 0.65rem;
-        padding: 3px 7px;
-        border-radius: 6px;
+        padding: 0.8rem;
       }
 
-      /* Lists - Mobile */
-      .info-item { padding: 0.85rem 0; }
-      .info-label { font-size: 0.85rem; }
-      .info-value { font-size: 0.85rem; }
+      .address-type {
+        font-size: 0.85rem;
+      }
 
-      /* Toggle - Mobile */
-      .toggle-group { padding: 0.85rem 0; }
-      .toggle-label { font-size: 0.85rem; }
-      .toggle-description { font-size: 0.75rem; }
-      .toggle-switch { width: 45px; height: 25px; }
-      .toggle-slider { width: 21px; height: 21px; }
-      .toggle-switch.active .toggle-slider { transform: translateX(20px); }
+      .address-details {
+        font-size: 0.8rem;
+      }
+
+      .info-label,
+      .info-value {
+        font-size: 0.85rem;
+      }
+
+      .toggle-label {
+        font-size: 0.85rem;
+      }
+
+      .toggle-description {
+        font-size: 0.7rem;
+      }
     }
 
-    /* Small Mobile (< 480px) */
-    @media (max-width: 480px) {
-      .main-content { padding: 0.75rem; }
-      .category-title { font-size: 1.2rem; }
-
-      /* Guest Welcome Card - Small Mobile */
-      .guest-welcome-card {
-        padding: 1.5rem 1rem;
-        border-radius: 14px;
+    /* Mobile (max-width: 768px) */
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 12px;
       }
-      .guest-header-content { gap: 1rem; margin-bottom: 1.25rem; }
-      .guest-icon {
+
+      .header-section {
+        padding: 12px 0;
+        margin-bottom: 12px;
+      }
+
+      .category-title {
+        font-size: 1.3rem;
+      }
+
+      .profile-header {
+        padding: 1.2rem;
+        margin-bottom: 1.2rem;
+      }
+
+      .profile-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.8rem;
+      }
+
+      .profile-avatar {
         width: 70px;
         height: 70px;
-        font-size: 2.25rem;
-        border: 2px solid white;
-      }
-      .guest-title { font-size: 1.15rem; }
-      .guest-subtitle { font-size: 0.8rem; }
-      .guest-status { font-size: 0.75rem; }
-
-      .guest-join-section {
-        padding: 1.5rem 1rem;
-        border-radius: 10px;
-      }
-      .join-title { font-size: 1rem; }
-      .join-description {
-        font-size: 0.8rem;
-        margin-bottom: 1.25rem;
-      }
-      .join-buttons {
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-      .btn-login, .btn-register {
-        padding: 10px 20px;
-        font-size: 0.8rem;
-        border-radius: 8px;
-        width: 100%;
+        font-size: 1.8rem;
       }
 
-      /* Profile Header - Small Mobile */
-      .profile-header {
-        padding: 1.25rem;
-        border-radius: 14px;
+      .profile-info h1 {
+        font-size: 1.3rem;
       }
-      .profile-avatar {
-        width: 65px;
-        height: 65px;
-        font-size: 1.75rem;
-        border: 2px solid rgba(255,255,255,0.3);
+
+      .profile-info .email {
+        font-size: 0.75rem;
       }
-      .profile-info h1 { font-size: 1.2rem; }
-      .profile-info .email { font-size: 0.85rem; }
-      .profile-info .member-since { font-size: 0.75rem; }
+
+      .profile-info .member-since {
+        font-size: 0.65rem;
+      }
 
       .profile-stats {
+        justify-content: center;
+        gap: 0.8rem;
+        margin-top: 0.8rem;
         flex-wrap: wrap;
-        gap: 0.65rem;
-        margin-top: 1rem;
       }
+
       .stat-item {
-        padding: 0.65rem;
-        border-radius: 8px;
-        flex: 1;
+        padding: 0.6rem 0.8rem;
         min-width: 80px;
       }
-      .stat-number { font-size: 1rem; }
-      .stat-label { font-size: 0.65rem; }
 
-      /* Cards - Small Mobile */
-      .content-grid { gap: 1rem; }
-      .account-card {
-        padding: 0.85rem;
-        border-radius: 14px;
+      .stat-number {
+        font-size: 1rem;
       }
+
+      .stat-label {
+        font-size: 0.6rem;
+      }
+
+      .content-grid {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+      }
+
+      .account-card {
+        padding: 1rem;
+      }
+
       .card-header {
         margin-bottom: 1rem;
-        padding-bottom: 0.75rem;
+        padding-bottom: 0.6rem;
       }
+
       .card-icon {
         width: 28px;
         height: 28px;
-        font-size: 0.9rem;
-        border-radius: 8px;
+        font-size: 0.85rem;
       }
-      .card-title { font-size: 0.8rem; }
 
-      /* Forms - Small Mobile */
-      .form-group { margin-bottom: 1rem; }
-      .form-group label { font-size: 0.75rem; }
+      .card-title {
+        font-size: 0.8rem;
+      }
+
+      .form-group {
+        margin-bottom: 1rem;
+      }
+
+      .form-group label {
+        font-size: 0.7rem;
+      }
+
       .form-group input,
       .form-group select,
       .form-group textarea {
-        padding: 9px 12px;
-        font-size: 0.8rem;
-        border-radius: 8px;
-      }
-
-      /* Buttons - Small Mobile */
-      .btn {
-        padding: 9px 18px;
+        padding: 8px 12px;
         font-size: 0.75rem;
-        border-radius: 8px;
       }
-      .btn-group { gap: 0.65rem; margin-top: 1rem; }
 
-      /* Quick Actions - Small Mobile */
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .btn {
+        padding: 8px 16px;
+        font-size: 0.7rem;
+      }
+
+      .btn-group {
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-top: 1rem;
+      }
+
       .quick-actions {
         padding: 1rem;
-        border-radius: 14px;
       }
-      .quick-actions-grid { gap: 0.65rem; }
+
+      .quick-actions-grid {
+        grid-template-columns: 1fr;
+      }
+
       .quick-action {
-        padding: 0.75rem;
-        border-radius: 8px;
+        padding: 0.7rem;
       }
+
       .quick-action-icon {
         width: 28px;
         height: 28px;
-        font-size: 0.85rem;
-        border-radius: 6px;
+        font-size: 0.8rem;
       }
-      .quick-action-text { font-size: 0.8rem; }
 
-      /* Payment & Address - Small Mobile */
-      .payment-method {
-        padding: 0.75rem;
-        border-radius: 8px;
+      .quick-action-text {
+        font-size: 0.75rem;
       }
+
+      .payment-method {
+        padding: 0.7rem;
+        margin-bottom: 0.7rem;
+      }
+
       .payment-icon {
         width: 28px;
         height: 28px;
-        font-size: 0.9rem;
-        border-radius: 6px;
+        font-size: 0.85rem;
       }
-      .payment-type { font-size: 0.8rem; }
-      .payment-details { font-size: 0.7rem; }
-      .btn-small { padding: 5px 10px; font-size: 0.7rem; }
+
+      .payment-type {
+        font-size: 0.75rem;
+      }
+
+      .payment-details {
+        font-size: 0.65rem;
+      }
+
+      .payment-actions {
+        gap: 0.4rem;
+      }
+
+      .btn-small {
+        padding: 4px 8px;
+        font-size: 0.65rem;
+      }
 
       .address-card {
-        padding: 0.75rem;
-        border-radius: 8px;
+        padding: 0.7rem;
       }
-      .address-type { font-size: 0.8rem; }
-      .address-details { font-size: 0.75rem; }
+
+      .address-type {
+        font-size: 0.75rem;
+      }
+
+      .address-details {
+        font-size: 0.7rem;
+      }
+
       .default-badge {
-        font-size: 0.6rem;
-        padding: 2px 6px;
-        border-radius: 5px;
+        font-size: 0.55rem;
+        padding: 2px 5px;
       }
 
-      /* Lists - Small Mobile */
-      .info-item { padding: 0.75rem 0; }
-      .info-label { font-size: 0.8rem; }
-      .info-value { font-size: 0.8rem; }
+      .info-item {
+        padding: 0.7rem 0;
+      }
 
-      /* Toggle - Small Mobile */
-      .toggle-group { padding: 0.75rem 0; }
-      .toggle-label { font-size: 0.8rem; }
-      .toggle-description { font-size: 0.7rem; }
-      .toggle-switch { width: 40px; height: 22px; border-radius: 11px; }
+      .info-label,
+      .info-value {
+        font-size: 0.75rem;
+      }
+
+      .toggle-group {
+        padding: 0.7rem 0;
+      }
+
+      .toggle-label {
+        font-size: 0.75rem;
+      }
+
+      .toggle-description {
+        font-size: 0.65rem;
+      }
+
+      .toggle-switch {
+        width: 40px;
+        height: 22px;
+      }
+
       .toggle-slider {
         width: 18px;
         height: 18px;
-        top: 2px;
-        left: 2px;
       }
-      .toggle-switch.active .toggle-slider { transform: translateX(18px); }
+
+      .toggle-switch.active .toggle-slider {
+        transform: translateX(18px);
+      }
+
+      .guest-content {
+        padding: 1.2rem;
+      }
+
+      .guest-content .account-card {
+        padding: 1.5rem 1.2rem;
+      }
+
+      .guest-content p {
+        font-size: 0.8rem !important;
+      }
+
+      .guest-content .btn {
+        min-width: 100px;
+      }
     }

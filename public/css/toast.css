@@ -166,16 +166,101 @@
     }
 }
 
-/* Responsive */
+/* Responsive - 4-Tier Breakpoint System */
+
+/* Tablet (769px - 1199px) - 20-25% reduction */
+@media (min-width: 769px) and (max-width: 1199px) {
+    .toast-container {
+        top: 18px;
+        right: 18px;
+        max-width: 360px;
+    }
+    
+    .toast {
+        padding: 14px;
+        border-radius: 10px;
+        min-height: 60px;
+        gap: 11px;
+    }
+    
+    .toast-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 17px;
+        border-radius: 9px;
+    }
+    
+    .toast-title {
+        font-size: 13px;
+        margin-bottom: 3px;
+    }
+    
+    .toast-message {
+        font-size: 11px;
+    }
+    
+    .toast-close {
+        width: 22px;
+        height: 22px;
+        font-size: 18px;
+    }
+    
+    .toast-progress {
+        height: 2.5px;
+    }
+}
+
+/* Mobile (max-width: 768px) - 35-40% reduction */
 @media (max-width: 768px) {
     .toast-container {
-        left: 20px;
-        right: 20px;
+        top: 12px;
+        left: 12px;
+        right: 12px;
         max-width: none;
     }
-
+    
     .toast {
+        padding: 11px;
+        border-radius: 9px;
+        min-height: 52px;
         min-width: auto;
         max-width: none;
+        gap: 9px;
+        border-left-width: 3px;
+    }
+    
+    .toast-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 15px;
+        border-radius: 8px;
+    }
+    
+    .toast-content {
+        gap: 2px;
+    }
+    
+    .toast-title {
+        font-size: 12px;
+        margin-bottom: 2px;
+    }
+    
+    .toast-message {
+        font-size: 10px;
+    }
+    
+    .toast-close {
+        width: 20px;
+        height: 20px;
+        font-size: 16px;
+        border-radius: 4px;
+    }
+    
+    .toast-close:hover {
+        background: #e2e8f0;
+    }
+    
+    .toast-progress {
+        height: 2px;
     }
 }

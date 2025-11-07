@@ -531,10 +531,10 @@
     /* Floating Booking Button */
     .floating-booking-btn {
       position: fixed !important;
-      top: 90px !important;
+      top: 70px !important;
       right: 30px !important;
-      width: 60px;
-      height: 60px;
+      width: 45px !important;
+      height: 45px !important;
       background: linear-gradient(135deg, var(--brand), var(--brand-2));
       color: white;
       border: none;
@@ -544,7 +544,7 @@
       display: flex !important;
       align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
+      font-size: 1rem !important;
       z-index: 9999 !important;
       transition: all 0.3s ease;
     }
@@ -1058,31 +1058,738 @@
     }
     
     /* ===== Responsive Design ===== */
-    @media (max-width: 1400px) {
-      .floor-grid { grid-template-columns: repeat(5, 1fr); }
+    /* Tablet View - 20-25% Size Reduction (769px - 1199px) */
+    @media (max-width: 1199px) and (min-width: 769px) {
+      /* Main content sizing */
+      .main-content {
+        padding: 16px;
+      }
+      
+      /* Search bar - 20% reduction */
+      .search-bar-container { 
+        margin-bottom: 13px;
+      }
+      .search-bar {
+        width: min(480px, 85%);
+        border-radius: 20px;
+        padding: 6px 10px;
+      }
+      .search-icon { 
+        left: 11px;
+        font-size: 13px;
+      }
+      .search-input {
+        height: 32px;
+        font-size: 12px;
+        padding: 0 32px 0 29px;
+      }
+      .clear-btn { 
+        right: 10px;
+        font-size: 13px;
+        padding: 5px;
+      }
+      
+      /* Header section */
+      .header-section {
+        padding: 16px 0;
+        margin-bottom: 16px;
+      }
+      
+      /* Titles - 20% reduction */
+      .category-title { 
+        font-size: 1.6rem;
+        margin: 0 0 13px 0;
+      }
+      .subcategory-title {
+        font-size: 1.44rem;
+        margin: 24px 0 16px;
+        padding-left: 13px;
+        border-left: 5px solid var(--accent);
+      }
+      
+      /* Tabs - 20% reduction */
+      .category-tabs { 
+        gap: 6px;
+        margin-bottom: 13px;
+        padding: 0 8px;
+      }
+      .tab { 
+        padding: 8px 13px;
+        font-size: 10px;
+        border-radius: 16px;
+      }
+      
+      /* VVIP section - 20% reduction */
+      .vvip-section {
+        margin: 24px auto;
+        max-width: 640px;
+      }
+      .vvip-badge {
+        padding: 6px 13px;
+        font-size: 0.72rem;
+        margin-bottom: 8px;
+        border-radius: 24px;
+      }
+      .vvip-description {
+        font-size: 0.76rem;
+        max-width: 480px;
+      }
+      
+      /* Floor layout - 20% reduction */
+      .floor-container {
+        padding: 19px;
+        margin-bottom: 16px;
+        border-radius: 16px;
+      }
+      .floor-legend {
+        gap: 13px;
+        margin-bottom: 16px;
+        padding: 0 8px;
+      }
+      .legend-item {
+        gap: 6px;
+        font-size: 0.72rem;
+        padding: 6px 10px;
+        border-radius: 10px;
+      }
+      .legend-dot {
+        width: 11px;
+        height: 11px;
+      }
+      .legend-dot.indoor,
+      .legend-dot.outdoor,
+      .legend-dot.vvip {
+        width: 13px;
+        height: 13px;
+      }
+      
+      /* Table tiles - 20% reduction */
+      .table-tile {
+        font-size: 0.72rem;
+      }
+      .table-tile.square,
+      .table-tile.round {
+        width: 208px;
+        height: 104px;
+        border-radius: 13px;
+      }
+      .table-tile.rectangle {
+        width: 104px;
+        height: 104px;
+        border-radius: 13px;
+        padding: 8px;
+      }
+      .table-tile.vvip {
+        width: 208px;
+        height: 208px;
+        border-radius: 13px;
+      }
+      
+      /* Table badges and text - 20% reduction */
+      .table-capacity-badge {
+        top: 6px;
+        right: 6px;
+        font-size: 9px;
+        padding: 3px 8px;
+        border-radius: 10px;
+      }
+      .vvip-badge-label {
+        top: 6px;
+        right: 6px;
+        font-size: 8px;
+        padding: 4px 10px;
+        border-radius: 10px;
+      }
+      .table-tile.vvip .table-capacity-badge {
+        top: 6px;
+        left: 6px;
+      }
+      .table-id {
+        font-size: 0.88rem;
+        margin-bottom: 6px;
+      }
+      .table-id.vvip-label {
+        font-size: 0.96rem;
+      }
+      .table-status-badge {
+        font-size: 9px;
+        padding: 5px 14px;
+        border-radius: 16px;
+        margin-top: 6px;
+      }
+      
+      /* Booking sidebar - 20% reduction */
+      .booking-sidebar {
+        width: 360px;
+        min-width: 360px;
+        max-width: 360px;
+        border-radius: 19px 0 0 19px;
+        right: -360px;
+      }
+      
+      .booking-header-section {
+        padding: 1.2rem 0;
+        border-radius: 19px 0 0 0;
+      }
+      .booking-title {
+        font-size: 1.2rem;
+      }
+      .booking-title-section {
+        gap: 0.5rem;
+      }
+      
+      .booking-content {
+        padding: 1rem;
+      }
+      
+      /* Booking card - 20% reduction */
+      .booking-card {
+        margin-bottom: 16px;
+        border-radius: 16px;
+      }
+      .booking-card-header {
+        padding: 14px 19px;
+      }
+      .booking-card-title {
+        font-size: 0.92rem;
+      }
+      .booking-card-content {
+        padding: 19px;
+      }
+      
+      /* Selection info - 20% reduction */
+      .selection-info {
+        padding: 16px;
+        border-radius: 13px;
+        margin-bottom: 19px;
+      }
+      .selection-table {
+        font-size: 1.04rem;
+        margin-bottom: 5px;
+      }
+      .selection-capacity {
+        font-size: 0.76rem;
+      }
+      
+      /* DateTime inputs - 20% reduction */
+      .datetime-inputs {
+        gap: 16px;
+      }
+      .input-group label {
+        font-size: 0.68rem;
+        top: -8px;
+        left: 12px;
+        padding: 0 5px;
+      }
+      .input-group input,
+      .input-group select {
+        padding: 11px 14px 11px 40px;
+        font-size: 0.8rem;
+        border-radius: 13px;
+      }
+      .input-group .input-icon {
+        left: 16px;
+        font-size: 0.96rem;
+      }
+      
+      /* Cart section - 20% reduction */
+      .cart-section {
+        margin-bottom: 16px;
+        border-radius: 16px;
+      }
+      .cart-header {
+        padding: 14px 19px;
+      }
+      .cart-title {
+        font-size: 0.92rem;
+      }
+      .cart-title-section {
+        gap: 8px;
+      }
+      .cart-count {
+        padding: 4px 8px;
+        font-size: 0.64rem;
+        min-width: 22px;
+      }
+      .cart-toggle-icon {
+        font-size: 1.12rem;
+      }
+      .cart-content {
+        padding: 0 19px 19px;
+        max-height: 0;
+      }
+      .cart-content.open {
+        max-height: 400px;
+      }
+      .cart-item {
+        padding: 14px 0;
+      }
+      .cart-item-details {
+        font-size: 0.8rem;
+      }
+      .cart-item-name {
+        margin-bottom: 3px;
+      }
+      .cart-item-price {
+        font-size: 0.72rem;
+      }
+      .cart-item-notes {
+        font-size: 0.64rem;
+        margin-top: 2px;
+      }
+      .cart-item-quantity {
+        font-size: 0.88rem;
+        margin-left: 12px;
+      }
+      .cart-summary {
+        padding: 16px 0 0;
+        margin-top: 13px;
+        font-size: 0.88rem;
+      }
+      
+      /* Action buttons - 20% reduction */
+      .action-buttons {
+        gap: 13px;
+        padding: 1.2rem;
+      }
+      .btn {
+        padding: 11px 16px;
+        font-size: 0.72rem;
+        border-radius: 13px;
+        gap: 8px;
+        letter-spacing: 0.4px;
+      }
+      
+      /* Floating button - 20% reduction */
+      .floating-booking-btn {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 0.8rem !important;
+        top: 70px !important;
+        right: 24px !important;
+      }
+      .floating-booking-btn .badge {
+        width: 19px;
+        height: 19px;
+        font-size: 0.6rem;
+      }
+      
+      /* Modal - 20% reduction */
+      .modal-content {
+        padding: 1.6rem;
+        border-radius: 16px;
+        width: min(360px, calc(100vw - 80px - 360px - 40px));
+        max-width: 360px;
+      }
+      .modal-header {
+        font-size: 1.2rem;
+        margin-bottom: 1.2rem;
+      }
+      .booking-summary {
+        padding: 16px;
+        margin-bottom: 1.2rem;
+        border-radius: 13px;
+      }
+      .summary-row {
+        font-size: 0.72rem;
+        margin-bottom: 10px;
+      }
+      .summary-row:last-child {
+        font-size: 0.8rem;
+        padding-top: 10px;
+      }
+      .modal-actions {
+        gap: 10px;
+      }
+      
+      /* Notification - 20% reduction */
+      .notification-panel {
+        padding: 10px 16px;
+        font-size: 0.72rem;
+        border-radius: 10px;
+      }
     }
-    @media (max-width: 1200px) {
-      body { 
+    
+    /* Mobile View - 35-40% Size Reduction (max-width: 768px) */
+    @media (max-width: 768px) {
+      /* Main content sizing */
+      .main-content {
+        padding: 12px;
+      }
+      
+      /* Search bar - 35% reduction */
+      .search-bar-container { 
+        margin-bottom: 10px;
+      }
+      .search-bar {
+        width: min(390px, 90%);
+        border-radius: 16px;
+        padding: 5px 8px;
+      }
+      .search-icon { 
+        left: 9px;
+        font-size: 10px;
+      }
+      .search-input {
+        height: 26px;
+        font-size: 10px;
+        padding: 0 26px 0 23px;
+      }
+      .clear-btn { 
+        right: 8px;
+        font-size: 10px;
+        padding: 4px;
+      }
+      
+      /* Header section - 35% reduction */
+      .header-section {
+        padding: 13px 0;
+        margin-bottom: 13px;
+      }
+      
+      /* Titles - 35% reduction */
+      .category-title { 
+        font-size: 1.3rem;
+        margin: 0 0 10px 0;
+      }
+      .subcategory-title {
+        font-size: 1.17rem;
+        margin: 20px 0 13px;
+        padding-left: 10px;
+        border-left: 4px solid var(--accent);
+      }
+      
+      /* Tabs - 35% reduction */
+      .category-tabs { 
+        gap: 5px;
+        margin-bottom: 10px;
+        padding: 0 6px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding-bottom: 8px;
+      }
+      .tab { 
+        padding: 7px 10px;
+        font-size: 8px;
+        border-radius: 13px;
+        flex-shrink: 0;
+      }
+      
+      /* VVIP section - 35% reduction */
+      .vvip-section {
+        margin: 20px auto;
+        max-width: 520px;
+      }
+      .vvip-badge {
+        padding: 5px 10px;
+        font-size: 0.58rem;
+        margin-bottom: 6px;
+        border-radius: 20px;
+      }
+      .vvip-description {
+        font-size: 0.62rem;
+        max-width: 390px;
+      }
+      
+      /* Floor layout - 35% reduction */
+      .floor-container {
+        padding: 16px;
+        margin-bottom: 13px;
+        border-radius: 13px;
+      }
+      .floor-container::before {
+        height: 3px;
+      }
+      .floor-legend {
+        gap: 10px;
+        margin-bottom: 13px;
+        padding: 0 6px;
+      }
+      .legend-item {
+        gap: 5px;
+        font-size: 0.58rem;
+        padding: 5px 8px;
+        border-radius: 8px;
+      }
+      .legend-dot {
+        width: 9px;
+        height: 9px;
+      }
+      .legend-dot.indoor,
+      .legend-dot.outdoor,
+      .legend-dot.vvip {
+        width: 10px;
+        height: 10px;
+      }
+      
+      /* Table tiles - 35% reduction */
+      .table-tile {
+        font-size: 0.58rem;
+      }
+      .table-tile.square,
+      .table-tile.round {
+        width: 169px;
+        height: 85px;
+        border-radius: 10px;
+      }
+      .table-tile.rectangle {
+        width: 85px;
+        height: 85px;
+        border-radius: 10px;
+        padding: 6px;
+      }
+      .table-tile.vvip {
+        width: 169px;
+        height: 169px;
+        border-radius: 10px;
+        border-width: 2px;
+      }
+      
+      /* Table badges and text - 35% reduction */
+      .table-capacity-badge {
+        top: 5px;
+        right: 5px;
+        font-size: 7px;
+        padding: 3px 6px;
+        border-radius: 8px;
+      }
+      .vvip-badge-label {
+        top: 5px;
+        right: 5px;
+        font-size: 6px;
+        padding: 3px 8px;
+        border-radius: 8px;
+        letter-spacing: 0.5px;
+      }
+      .table-tile.vvip .table-capacity-badge {
+        top: 5px;
+        left: 5px;
+      }
+      .table-id {
+        font-size: 0.72rem;
+        margin-bottom: 5px;
+      }
+      .table-id.vvip-label {
+        font-size: 0.78rem;
+      }
+      .table-status-badge {
+        font-size: 7px;
+        padding: 4px 12px;
+        border-radius: 13px;
+        margin-top: 5px;
+        letter-spacing: 0.3px;
+      }
+      
+      /* Booking sidebar - Mobile specific */
+      .booking-sidebar {
+        width: 100%;
+        min-width: 100%;
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+        right: 0;
+        top: auto;
+        bottom: -100%;
+        height: 85vh;
+        transition: bottom 0.3s ease;
+      }
+      
+      .booking-sidebar.active {
+        bottom: 0;
+        right: 0;
+      }
+      
+      .booking-header-section {
+        padding: 1rem 0;
+        border-radius: 16px 16px 0 0;
+      }
+      .booking-title {
+        font-size: 0.98rem;
+      }
+      .booking-title-section {
+        gap: 0.4rem;
+      }
+      
+      .booking-content {
+        padding: 0.8rem;
+      }
+      
+      /* Booking card - 35% reduction */
+      .booking-card {
+        margin-bottom: 13px;
+        border-radius: 13px;
+      }
+      .booking-card-header {
+        padding: 12px 16px;
+      }
+      .booking-card-title {
+        font-size: 0.75rem;
+      }
+      .booking-card-content {
+        padding: 16px;
+      }
+      
+      /* Selection info - 35% reduction */
+      .selection-info {
+        padding: 13px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+      }
+      .selection-table {
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+      }
+      .selection-capacity {
+        font-size: 0.62rem;
+      }
+      
+      /* DateTime inputs - 35% reduction */
+      .datetime-inputs {
+        gap: 13px;
+      }
+      .input-group label {
+        font-size: 0.55rem;
+        top: -6px;
+        left: 10px;
+        padding: 0 4px;
+      }
+      .input-group input,
+      .input-group select {
+        padding: 9px 12px 9px 33px;
+        font-size: 0.65rem;
+        border-radius: 10px;
+      }
+      .input-group .input-icon {
+        left: 13px;
+        font-size: 0.78rem;
+      }
+      
+      /* Cart section - 35% reduction */
+      .cart-section {
+        margin-bottom: 13px;
+        border-radius: 13px;
+      }
+      .cart-header {
+        padding: 12px 16px;
+      }
+      .cart-title {
+        font-size: 0.75rem;
+      }
+      .cart-title-section {
+        gap: 6px;
+      }
+      .cart-count {
+        padding: 3px 6px;
+        font-size: 0.52rem;
+        min-width: 18px;
+      }
+      .cart-toggle-icon {
+        font-size: 0.91rem;
+      }
+      .cart-content {
+        padding: 0 16px 16px;
+      }
+      .cart-content.open {
+        max-height: 325px;
+      }
+      .cart-item {
+        padding: 12px 0;
+      }
+      .cart-item-details {
+        font-size: 0.65rem;
+      }
+      .cart-item-name {
+        margin-bottom: 3px;
+      }
+      .cart-item-price {
+        font-size: 0.58rem;
+      }
+      .cart-item-notes {
+        font-size: 0.52rem;
+        margin-top: 1px;
+      }
+      .cart-item-quantity {
+        font-size: 0.72rem;
+        margin-left: 10px;
+      }
+      .cart-summary {
+        padding: 13px 0 0;
+        margin-top: 10px;
+        font-size: 0.72rem;
+      }
+      
+      /* Action buttons - 35% reduction */
+      .action-buttons {
+        gap: 10px;
+        padding: 1rem;
+      }
+      .btn {
+        padding: 9px 13px;
+        font-size: 0.58rem;
+        border-radius: 10px;
+        gap: 6px;
+        letter-spacing: 0.3px;
+      }
+      
+      /* Floating button - 35% reduction */
+      .floating-booking-btn {
+        width: 29px !important;
+        height: 29px !important;
+        font-size: 0.65rem !important;
+        top: 70px !important;
+        right: 20px !important;
+      }
+      .floating-booking-btn .badge {
+        width: 16px;
+        height: 16px;
+        font-size: 0.49rem;
+        top: -3px;
+        right: -3px;
+      }
+      
+      /* Sidebar overlay */
+      .sidebar-overlay.active {
+        display: block;
+      }
+      
+      /* Modal - 35% reduction */
+      .modal-content {
+        padding: 1.3rem;
+        border-radius: 13px;
+        width: min(293px, calc(100vw - 40px));
+        max-width: 293px;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+      .modal-header {
+        font-size: 0.98rem;
+        margin-bottom: 1rem;
+      }
+      .booking-summary {
+        padding: 13px;
+        margin-bottom: 1rem;
+        border-radius: 10px;
+      }
+      .summary-row {
+        font-size: 0.58rem;
+        margin-bottom: 8px;
+      }
+      .summary-row:last-child {
+        font-size: 0.65rem;
+        padding-top: 8px;
+      }
+      .modal-actions {
+        gap: 8px;
         flex-direction: column;
       }
-      .main-content { order: 1; }
-      .booking-sidebar { 
-        height: auto; 
-        order: 2; 
-        box-shadow: none;
-        border-top: 1px solid var(--muted);
-        border-left: none;
-        margin: 20px auto; /* Keep margin for smaller screens */
+      
+      /* Notification - 35% reduction */
+      .notification-panel {
+        padding: 8px 13px;
+        font-size: 0.58rem;
+        border-radius: 8px;
       }
-      .floor-grid { grid-template-columns: repeat(4, 1fr); }
-    }
-    @media (max-width: 992px) {
-      .search-bar { width: 95%; }
-      .floor-grid { grid-template-columns: repeat(3, 1fr); }
-      .category-tabs { gap: 6px; }
-      .tab { padding: 8px 12px; font-size: 12px; }
-    }
-    @media (max-width: 768px) {
+      
       /* Guest layout responsive */
       .main-content.guest-layout {
         padding: 1rem;
@@ -1091,26 +1798,16 @@
       .guest-content {
         max-width: 100%;
       }
-      /* --- General Layout Adjustments --- */
-      .main-content { padding: 1rem; }
-      .header-section { padding: 1rem 0; }
-      .category-title { font-size: 1.5rem; }
-      .category-tabs { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding-bottom: 10px; }
-      .tab { flex-shrink: 0; }
-      .floor-container { padding: 15px; }
-      .floor-grid { grid-template-columns: repeat(2, 1fr); }
-      /* --- VVIP adjustments for mobile --- */
-      .table-tile.vvip {
-        grid-column: span 2;
-        grid-row: span 1;
-      }
-      /* --- Rectangle adjustments for mobile --- */
-      .table-tile.rectangle {
-        grid-column: span 2;
-        aspect-ratio: 2/1;
-      }
-      /* --- Booking Section Adjustments --- */
-      .booking-header-section, .booking-content, .action-buttons { padding: 1rem; }
+    }
+    
+    @media (max-width: 1400px) {
+      /* Responsive grid adjustments */
+    }
+    @media (max-width: 1200px) {
+      /* Legacy layout adjustments - kept for compatibility */
+    }
+    @media (max-width: 992px) {
+      /* Legacy adjustments - kept for compatibility */
     }
     /* ===== Animations ===== */
     .table-tile {
@@ -1160,4 +1857,87 @@
     @keyframes slideDownOut {
       from { transform: translate(-50%, 0); opacity: 1; }
       to { transform: translate(-50%, 100px); opacity: 0; }
+    }
+
+    /* ===== Large Desktop (1600px+) ===== */
+    @media (min-width: 1600px) {
+      .main-content { max-width: 1600px; padding: 40px; }
+      
+      .category-title { font-size: 2.8rem; }
+      
+      .search-bar { width: min(800px, 90%); padding: 12px 20px; }
+      
+      .search-input { height: 50px; font-size: 18px; padding: 0 45px 0 40px; }
+      
+      .search-icon { left: 18px; font-size: 20px; }
+      
+      .clear-btn { font-size: 20px; }
+      
+      .category-tabs { gap: 15px; }
+      
+      .tab { padding: 14px 25px; font-size: 16px; border-radius: 20px; }
+      
+      .floor-container { padding: 30px; border-radius: 25px; }
+      
+      .floor-grid { grid-template-columns: repeat(6, 1fr); gap: 25px; }
+      
+      .floor-header { padding: 25px; border-radius: 20px; margin-bottom: 25px; }
+      
+      .floor-title { font-size: 1.8rem; }
+      
+      .table-tile { padding: 20px; border-radius: 18px; font-size: 1.2rem; }
+      
+      .table-number { font-size: 1.5rem; }
+      
+      .table-capacity { font-size: 1rem; }
+      
+      .table-price { font-size: 1.1rem; }
+      
+      .table-tile.vvip { padding: 25px; }
+      
+      .table-tile.rectangle { aspect-ratio: 3/2; }
+      
+      .booking-sidebar { width: 450px; padding: 30px; border-radius: 25px; }
+      
+      .booking-header-section, .booking-content, .action-buttons { padding: 25px; }
+      
+      .booking-header { font-size: 1.8rem; }
+      
+      .booking-details { gap: 15px; }
+      
+      .booking-detail { font-size: 1.1rem; }
+      
+      .booking-detail-icon { width: 30px; font-size: 1.5rem; }
+      
+      .booking-actions { gap: 15px; }
+      
+      .btn { padding: 14px 25px; font-size: 1.1rem; border-radius: 14px; }
+      
+      .btn-secondary { padding: 12px 22px; }
+      
+      .modal-content { max-width: 600px; border-radius: 25px; padding: 30px; }
+      
+      .modal-header { font-size: 2rem; margin-bottom: 25px; }
+      
+      .booking-summary { padding: 25px; border-radius: 20px; }
+      
+      .summary-row { font-size: 1.1rem; margin-bottom: 15px; }
+      
+      .summary-row:last-child { font-size: 1.3rem; padding-top: 15px; }
+      
+      .modal-actions { gap: 15px; }
+      
+      .guest-content .account-card { padding: 4rem 3rem; }
+      
+      .guest-content .card-icon { width: 80px; height: 80px; font-size: 2.5rem; }
+      
+      .guest-content .card-title { font-size: 1.8rem; margin-bottom: 1.5rem; }
+      
+      .guest-content p { font-size: 1.3rem; }
+      
+      .guest-content .btn-group { margin-top: 3rem; }
+      
+      .guest-content .btn { min-width: 180px; padding: 16px 25px; font-size: 1.1rem; }
+      
+      .notification-panel { padding: 15px 30px; font-size: 1.1rem; border-radius: 15px; }
     }

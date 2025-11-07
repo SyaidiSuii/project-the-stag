@@ -21,46 +21,43 @@
     <!-- Modern Toast Notifications Container -->
     <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; max-width: 400px;"></div>
 
-    @if($isGuest)
-    <!-- Guest Welcome Card -->
-    <div class="guest-welcome-card">
-      <div class="guest-header-content">
-        <div class="guest-icon">
-          <i class="fas fa-user-circle"></i>
-        </div>
-        <div class="guest-text-content">
-          <h1 class="guest-title">Welcome, Guest!</h1>
-          <p class="guest-subtitle">Please login to access your account</p>
-          <p class="guest-status">{{ $memberSince }}</p>
-        </div>
-      </div>
-
-      <div class="guest-join-section">
-        <h2 class="join-title">JOIN THE STAG</h2>
-        <p class="join-description">
-          Please login or create an account to access your profile, track orders, and manage your dining preferences.
-        </p>
-        <div class="join-buttons">
-          <a href="{{ route('login') }}" class="btn-login">
-            <i class="fas fa-sign-in-alt"></i> LOGIN
-          </a>
-          <a href="{{ route('register') }}" class="btn-register">
-            <i class="fas fa-user-plus"></i> CREATE ACCOUNT
-          </a>
-        </div>
-      </div>
-    </div>
-    @else
-    <!-- Logged In User Profile Header -->
+    <!-- Profile Header -->
     <div class="profile-header">
       <div class="profile-content">
         <div class="profile-avatar"><i class="fas fa-user"></i></div>
         <div class="profile-info">
-          <h1>{{ $user->name }}</h1>
-          <div class="email">{{ $user->email }}</div>
-          <div class="member-since">Member since {{ $memberSince }}</div>
+          @if($isGuest)
+            <h1>Welcome, Guest!</h1>
+            <div class="email">Please login to access your account</div>
+            <div class="member-since">{{ $memberSince }}</div>
+          @else
+            <h1>{{ $user->name }}</h1>
+            <div class="email">{{ $user->email }}</div>
+            <div class="member-since">Member since {{ $memberSince }}</div>
+          @endif
         </div>
       </div>
+      @if($isGuest)
+      <!-- Guest Join Section -->
+      <div class="profile-stats" style="flex-direction: column; align-items: stretch; gap: 1rem; position: relative; z-index: 10;">
+        <div style="text-align: center; padding: 1rem; position: relative; z-index: 10;">
+          <h2 style="color: white; font-size: 1.5rem; margin-bottom: 0.5rem; font-weight: 700;">
+            <i class="fas fa-users"></i> JOIN THE STAG SMARTDINE
+          </h2>
+          <p style="color: rgba(255, 255, 255, 0.9); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5;">
+            Please login or create an account to access your profile, track orders, and manage your dining preferences.
+          </p>
+          <div class="btn-group" style="justify-content: center; gap: 1rem;">
+            <a href="{{ route('login') }}" class="btn btn-primary" style="background: white; color: #6366f1; border: 2px solid white; font-weight: 600; position: relative; z-index: 100; cursor: pointer;">
+              <i class="fas fa-sign-in-alt"></i> LOGIN
+            </a>
+            <a href="{{ route('register') }}" class="btn btn-secondary" style="background: transparent; color: white; border: 2px solid white; font-weight: 600; position: relative; z-index: 100; cursor: pointer;">
+              <i class="fas fa-user-plus"></i> CREATE ACCOUNT
+            </a>
+          </div>
+        </div>
+      </div>
+      @else
       <!-- User Stats -->
       <div class="profile-stats">
         <div class="stat-item">
@@ -76,8 +73,8 @@
           <div class="stat-label">{{ $membershipLevel }}</div>
         </div>
       </div>
+      @endif
     </div>
-    @endif
 
     @if(!$isGuest)
 
@@ -660,61 +657,6 @@ if (deleteModal) {
     });
 }
 
-// Form validation for delete confirmation
-const deleteAccountForm = document.getElementById('deleteAccountForm');
-if (deleteAccountForm) {
-    deleteAccountForm.addEventListener('submit', function(e) {
-        const confirmInput = document.getElementById('confirm_delete').value;
-        const passwordInput = document.getElementById('delete_password').value;
-
-        if (confirmInput !== 'DELETE') {
-            e.preventDefault();
-            showToast('Please type "DELETE" in capital letters to confirm account deletion.', 'error');
-            return false;
-        }
-
-        if (!passwordInput) {
-            e.preventDefault();
-            showToast('Please enter your password to confirm account deletion.', 'error');
-            return false;
-        }
-
-        e.preventDefault();
-
-        // Use modern confirmation modal
-        if (typeof showConfirm === 'function') {
-            showConfirm(
-                'Delete Account?',
-                'Are you absolutely sure you want to delete your account? This action cannot be undone.',
-                'danger',
-                'Delete Account',
-                'Cancel'
-            ).then(confirmed => {
-                if (confirmed) {
-                    // Show loading state
-                    const submitBtn = document.getElementById('confirmDeleteBtn');
-                    if (submitBtn) {
-                        submitBtn.disabled = true;
-                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
-                    }
-                    // Submit form
-                    e.target.submit();
-                }
-            });
-        } else {
-            // Fallback to native confirm
-            if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
-                const submitBtn = document.getElementById('confirmDeleteBtn');
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
-                }
-                e.target.submit();
-            }
-        }
-    });
-}
-
 // Logout confirmation with toast
 function confirmLogout() {
     const logoutForm = document.getElementById('logoutForm');
@@ -790,6 +732,61 @@ function confirmLogout() {
             confirmToast.remove();
         }
     }, 10000);
+}
+
+// Form validation for delete confirmation
+const deleteAccountForm = document.getElementById('deleteAccountForm');
+if (deleteAccountForm) {
+    deleteAccountForm.addEventListener('submit', function(e) {
+        const confirmInput = document.getElementById('confirm_delete').value;
+        const passwordInput = document.getElementById('delete_password').value;
+
+        if (confirmInput !== 'DELETE') {
+            e.preventDefault();
+            showToast('Please type "DELETE" in capital letters to confirm account deletion.', 'error');
+            return false;
+        }
+
+        if (!passwordInput) {
+            e.preventDefault();
+            showToast('Please enter your password to confirm account deletion.', 'error');
+            return false;
+        }
+
+        e.preventDefault();
+
+        // Use modern confirmation modal
+        if (typeof showConfirm === 'function') {
+            showConfirm(
+                'Delete Account?',
+                'Are you absolutely sure you want to delete your account? This action cannot be undone.',
+                'danger',
+                'Delete Account',
+                'Cancel'
+            ).then(confirmed => {
+                if (confirmed) {
+                    // Show loading state
+                    const submitBtn = document.getElementById('confirmDeleteBtn');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+                    }
+                    // Submit form
+                    e.target.submit();
+                }
+            });
+        } else {
+            // Fallback to native confirm
+            if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
+                const submitBtn = document.getElementById('confirmDeleteBtn');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+                }
+                e.target.submit();
+            }
+        }
+    });
 }
 
 // Custom password toggle for customer account page (eye icon only, no lock icon)

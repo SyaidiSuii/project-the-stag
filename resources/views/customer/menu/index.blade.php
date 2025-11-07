@@ -96,47 +96,281 @@ document.addEventListener('DOMContentLoaded', function() {
 
   <!-- Kitchen Smart Banner -->
   @if(isset($kitchenStatus) && count($kitchenStatus['busy_types']) > 0 && $kitchenStatus['recommended_items']->count() > 0)
-  <div class="kitchen-smart-banner" id="kitchenBanner" style="margin: 20px auto; max-width: 800px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 20px; color: white; box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3); animation: slideDown 0.5s ease-out;">
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-          <div style="display: flex; align-items: center; gap: 16px;">
+  <style>
+    .kitchen-smart-banner {
+      margin: 20px auto;
+      max-width: 800px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 16px;
+      padding: 20px;
+      color: white;
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+      animation: slideDown 0.5s ease-out;
+    }
+    
+    .kitchen-smart-banner .banner-header {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .kitchen-smart-banner .banner-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .kitchen-smart-banner .banner-title {
+      font-size: 14px;
+      opacity: 0.95;
+      line-height: 1.5;
+      text-align: center;
+    }
+    
+    .kitchen-smart-banner .close-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+      transition: background 0.3s;
+    }
+    
+    .kitchen-smart-banner .items-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+    
+    .kitchen-smart-banner .quick-add-item {
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+    }
+    
+    .kitchen-smart-banner .item-image-container {
+      position: relative;
+      width: 100%;
+      padding-top: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 8px;
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .kitchen-smart-banner .item-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .kitchen-smart-banner .item-placeholder {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+    
+    .kitchen-smart-banner .wait-badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(16, 185, 129, 0.9);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    
+    .kitchen-smart-banner .item-name {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .kitchen-smart-banner .item-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .kitchen-smart-banner .item-price {
+      font-size: 13px;
+      font-weight: 700;
+    }
+    
+    .kitchen-smart-banner .add-btn {
+      background: rgba(255,255,255,0.3);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      line-height: 1;
+      font-weight: 400;
+    }
+    
+    .kitchen-smart-banner .see-all-btn {
+      margin-top: 12px;
+      width: 100%;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 10px;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    
+    /* Mobile Responsive Styles */
+    @media (max-width: 480px) {
+      .kitchen-smart-banner {
+        margin: 20px auto;
+        max-width: min(420px, 94%);
+        padding: 14px;
+        border-radius: 12px;
+      }
+      
+      .kitchen-smart-banner .banner-header {
+        gap: 8px;
+      }
+      
+      .kitchen-smart-banner .banner-top {
+        gap: 10px;
+      }
+      
+      .kitchen-smart-banner .banner-title {
+        font-size: 12px;
+        line-height: 1.4;
+      }
+      
+      .kitchen-smart-banner .close-btn {
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 16px;
+      }
+      
+      .kitchen-smart-banner .items-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+        margin-top: 6px;
+      }
+      
+      .kitchen-smart-banner .quick-add-item {
+        padding: 8px;
+        border-radius: 10px;
+      }
+      
+      .kitchen-smart-banner .item-image-container {
+        border-radius: 6px;
+        margin-bottom: 6px;
+      }
+      
+      .kitchen-smart-banner .item-placeholder {
+        font-size: 32px;
+      }
+      
+      .kitchen-smart-banner .wait-badge {
+        top: 4px;
+        right: 4px;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 9px;
+      }
+      
+      .kitchen-smart-banner .item-name {
+        font-size: 11px;
+        margin-bottom: 3px;
+      }
+      
+      .kitchen-smart-banner .item-price {
+        font-size: 11px;
+      }
+      
+      .kitchen-smart-banner .add-btn {
+        width: 20px;
+        height: 20px;
+        font-size: 14px;
+      }
+      
+      .kitchen-smart-banner .see-all-btn {
+        margin-top: 8px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        gap: 6px;
+      }
+    }
+  </style>
+  
+  <div class="kitchen-smart-banner" id="kitchenBanner">
+      <div class="banner-header">
+          <div class="banner-top">
               <div style="flex: 1;">
-                  <div style="font-size: 14px; opacity: 0.95; line-height: 1.5; text-align: center;">
+                  <div class="banner-title">
                       ⚡ <strong>Want your food faster?</strong> These items are ready quickly:
                   </div>
               </div>
-              <button onclick="dismissKitchenBanner()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 20px; line-height: 1; transition: background 0.3s;">
+              <button onclick="dismissKitchenBanner()" class="close-btn">
                   ✕
               </button>
           </div>
 
           @if($kitchenStatus['recommended_items']->count() > 0)
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 8px;">
+          <div class="items-grid">
               @foreach($kitchenStatus['recommended_items']->take(4) as $item)
-              <div class="quick-add-item" data-item-id="{{ $item->id }}" data-item-name="{{ $item->name }}" data-item-price="{{ $item->price }}" data-item-image="{{ $item->image ?? '' }}" data-item-description="{{ $item->description ?? '' }}"
-                   style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 10px; cursor: pointer; transition: all 0.3s; backdrop-filter: blur(10px);">
-                  <div style="position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 8px; background: rgba(255,255,255,0.1);">
+              <div class="quick-add-item" data-item-id="{{ $item->id }}" data-item-name="{{ $item->name }}" data-item-price="{{ $item->price }}" data-item-image="{{ $item->image ?? '' }}" data-item-description="{{ $item->description ?? '' }}">
+                  <div class="item-image-container">
                       @if($item->image)
-                      <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}"
-                           style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                      <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}" class="item-image">
                       @else
-                      <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 40px;">
+                      <div class="item-placeholder">
                           🍽️
                       </div>
                       @endif
-                      <div style="position: absolute; top: 6px; right: 6px; background: rgba(16, 185, 129, 0.9); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700;">
+                      <div class="wait-badge">
                           ~{{ $item->estimated_wait ?? 5 }} min
                       </div>
                   </div>
-                  <div style="font-size: 12px; font-weight: 600; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $item->name }}</div>
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                      <span style="font-size: 13px; font-weight: 700;">RM {{ number_format($item->price, 2) }}</span>
-                      <div style="background: rgba(255,255,255,0.3); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; line-height: 1; font-weight: 400;">+</div>
+                  <div class="item-name">{{ $item->name }}</div>
+                  <div class="item-footer">
+                      <span class="item-price">RM {{ number_format($item->price, 2) }}</span>
+                      <div class="add-btn">+</div>
                   </div>
               </div>
               @endforeach
           </div>
           @if($kitchenStatus['recommended_items']->count() > 4)
-          <a href="{{ route('customer.menu.fast-items') }}" style="margin-top: 12px; width: 100%; padding: 10px 16px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; color: white; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;">
+          <a href="{{ route('customer.menu.fast-items') }}" class="see-all-btn">
               <span>See All {{ $kitchenStatus['recommended_items']->count() }} Fast Items</span>
               <i class="fas fa-arrow-right"></i>
           </a>
@@ -1034,24 +1268,289 @@ document.addEventListener('DOMContentLoaded', function() {
     background: rgba(255,255,255,0.3) !important;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 767px) {
+    /* Fast Items Banner - Mobile: Clean, centered, compact */
     .kitchen-smart-banner {
-      margin: 16px !important;
-      padding: 16px !important;
+      margin: 12px auto !important;
+      padding: 14px !important;
+      border-radius: 14px !important;
+      width: min(360px, 90%) !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
     }
 
     .kitchen-smart-banner > div {
-      flex-direction: column !important;
+      gap: 10px !important;
+    }
+
+    /* Grid: 2 columns, tight gap */
+    .kitchen-smart-banner > div > div:last-child {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 6px !important;
+      width: 100% !important;
+    }
+
+    /* Hide items beyond the first 2 */
+    .kitchen-smart-banner .quick-add-item:nth-child(n+3) {
+      display: none !important;
+    }
+
+    /* Banner text - clean and readable */
+    .kitchen-smart-banner > div > div:first-child div {
+      font-size: 12px !important;
       text-align: center !important;
+      line-height: 1.5 !important;
     }
 
-    .kitchen-smart-banner > div > div:first-child {
-      font-size: 36px !important;
+    .kitchen-smart-banner button {
+      width: 28px !important;
+      height: 28px !important;
+      font-size: 18px !important;
+      padding: 0 !important;
+      border-radius: 50% !important;
     }
 
-    .kitchen-smart-banner span {
+    /* Quick-add cards - Clean and uniform with fixed height */
+    .quick-add-item {
+      padding: 12px !important;
+      border-radius: 12px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+      display: flex !important;
+      flex-direction: column !important;
+      height: 100% !important;
+    }
+
+    /* Image container - perfect square aspect ratio */
+    .quick-add-item > div:first-child {
+      position: relative !important;
+      width: 100% !important;
+      padding-top: 100% !important;
+      margin-bottom: 8px !important;
+      border-radius: 10px !important;
+      overflow: hidden !important;
+      background: rgba(255,255,255,0.1) !important;
+    }
+
+    /* Placeholder and image - full coverage */
+    .quick-add-item > div:first-child > div:first-child {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .quick-add-item img {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+    }
+
+    /* Title - clean typography with fixed height */
+    .quick-add-item > div:nth-child(2) {
+      font-size: 0.75rem !important;
+      margin-bottom: 4px !important;
+      font-weight: 600 !important;
+      line-height: 1.3 !important;
+      height: 2.6em !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      display: -webkit-box !important;
+      -webkit-line-clamp: 2 !important;
+      -webkit-box-orient: vertical !important;
+    }
+
+    /* Price row - balanced spacing with consistent alignment */
+    .quick-add-item > div:last-child {
+      gap: 6px !important;
+      margin-top: auto !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+    }
+
+    .quick-add-item > div:last-child span {
+      font-size: 0.85rem !important;
+      font-weight: 700 !important;
+    }
+
+    /* Plus button - clean and prominent */
+    .quick-add-item > div:last-child > div {
+      width: 28px !important;
+      height: 28px !important;
+      font-size: 16px !important;
+      border-radius: 50% !important;
+    }
+
+    /* Wait badge - compact and clean */
+    .quick-add-item > div:first-child > div:last-child {
+      position: absolute !important;
+      top: 8px !important;
+      right: 8px !important;
+      font-size: 9px !important;
+      padding: 4px 8px !important;
+      background: rgba(16, 185, 129, 0.95) !important;
+      color: white !important;
+      border-radius: 999px !important;
+      font-weight: 700 !important;
+      z-index: 2 !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+    }
+
+    /* See All button - clean and inviting */
+    .kitchen-smart-banner a {
+      padding: 10px 16px !important;
+      font-size: 13px !important;
+      border-radius: 10px !important;
+      margin-top: 10px !important;
+      font-weight: 600 !important;
+    }
+  }
+
+  /* Tablet view (768px - 1199px) - Fast Items Banner: Clean 4-column layout */
+  @media (min-width: 768px) and (max-width: 1199px) {
+    .kitchen-smart-banner {
+      margin: 16px auto !important;
+      padding: 16px !important;
+      max-width: 900px !important;
+    }
+
+    /* Grid: 4 columns on tablet, show all 4 items */
+    .kitchen-smart-banner > div > div:last-child {
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 10px !important;
+    }
+
+    /* Show all 4 items on tablet */
+    .kitchen-smart-banner .quick-add-item {
       display: block !important;
-      margin: 4px 0 !important;
+    }
+
+    /* Uniform card sizing with fixed height */
+    .quick-add-item {
+      padding: 12px !important;
+      border-radius: 12px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      height: 100% !important;
+    }
+
+    /* Image - perfect square aspect ratio */
+    .quick-add-item > div:first-child {
+      position: relative !important;
+      width: 100% !important;
+      padding-top: 100% !important;
+      margin-bottom: 8px !important;
+      border-radius: 10px !important;
+      overflow: hidden !important;
+      background: rgba(255,255,255,0.1) !important;
+    }
+
+    /* Placeholder and image - full coverage */
+    .quick-add-item > div:first-child > div:first-child {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .quick-add-item img {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+    }
+
+    /* Wait badge - clean pill style */
+    .quick-add-item > div:first-child > div:last-child {
+      position: absolute !important;
+      top: 8px !important;
+      right: 8px !important;
+      font-size: 10px !important;
+      padding: 4px 10px !important;
+      background: rgba(16, 185, 129, 0.95) !important;
+      color: white !important;
+      border-radius: 999px !important;
+      font-weight: 700 !important;
+      z-index: 2 !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+    }
+
+    /* Title - clean typography with fixed height */
+    .quick-add-item > div:nth-child(2) {
+      font-size: 0.75rem !important;
+      line-height: 1.3 !important;
+      margin-bottom: 6px !important;
+      height: 2.6em !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      display: -webkit-box !important;
+      -webkit-line-clamp: 2 !important;
+      -webkit-box-orient: vertical !important;
+    }
+
+    /* Price row - balanced spacing with consistent alignment */
+    .quick-add-item > div:last-child {
+      margin-top: auto !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+    }
+
+    /* Price */
+    .quick-add-item > div:last-child span {
+      font-size: 0.85rem !important;
+      font-weight: 700 !important;
+    }
+
+    /* Plus button - clean circle */
+    .quick-add-item > div:last-child > div {
+      width: 28px !important;
+      height: 28px !important;
+      font-size: 16px !important;
+      border-radius: 50% !important;
+    }
+  }
+
+  /* Order Type FAB - Mobile: Make smaller */
+  @media (max-width: 768px) {
+    .ordertype-fab {
+      top: 10px !important;
+      right: 10px !important;
+      min-width: 95px !important;
+      height: 36px !important;
+      border-radius: 18px !important;
+      font-size: 10px !important;
+      gap: 4px !important;
+      padding: 0 10px !important;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25) !important;
+    }
+    .ordertype-fab i {
+      font-size: 11px !important;
+    }
+  }
+
+  /* CRITICAL: Force 2-column grid on mobile for food items */
+  @media (max-width: 768px) {
+    .food-grid {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 8px !important;
+      width: 100% !important;
+      padding: 0 !important;
+    }
+
+    .food-card {
+      min-width: unset !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
     }
   }
 </style>
