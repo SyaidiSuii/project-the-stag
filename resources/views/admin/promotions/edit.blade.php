@@ -60,6 +60,180 @@
     border: 2px solid #e5e7eb;
     margin: 10px 0;
 }
+
+/* ===== RESPONSIVE DESIGN - 4-TIER BREAKPOINT SYSTEM ===== */
+
+/* Large Desktop (≥1600px) */
+@media (min-width: 1600px) {
+    .admin-section {
+        padding: 32px;
+    }
+    .section-title {
+        font-size: 24px;
+    }
+    .type-badge-display {
+        padding: 14px 28px;
+        font-size: 16px;
+    }
+    .form-label {
+        font-size: 16px;
+    }
+    .form-control {
+        padding: 14px 18px;
+        font-size: 15px;
+    }
+}
+
+/* Tablet (769px-1199px) */
+@media (max-width: 1199px) and (min-width: 769px) {
+    .admin-section {
+        padding: 20px;
+    }
+    .section-title {
+        font-size: 16px;
+    }
+    .type-badge-display {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+    .type-badge-display i {
+        font-size: 16px;
+    }
+    .form-row {
+        gap: 12px;
+    }
+    .form-label {
+        font-size: 13px;
+    }
+    .form-control {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+    .btn-save,
+    .btn-cancel {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+    .current-image-preview {
+        max-width: 250px;
+        max-height: 150px;
+    }
+}
+
+/* Mobile (≤768px) */
+@media (max-width: 768px) {
+    .admin-section {
+        padding: 16px;
+    }
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .section-title {
+        font-size: 15px;
+    }
+    .btn-cancel {
+        width: 100%;
+        justify-content: center;
+    }
+    .type-badge-display {
+        padding: 10px 18px;
+        font-size: 12px;
+        margin-bottom: 16px;
+    }
+    .type-badge-display i {
+        font-size: 14px;
+    }
+    .form-section h3 {
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .form-group {
+        margin-bottom: 16px;
+    }
+    .form-label {
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+    .form-control {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+    .form-control small,
+    small {
+        font-size: 11px !important;
+    }
+    .current-image-preview {
+        max-width: 100%;
+        max-height: 180px;
+    }
+    .item-selector {
+        max-height: 250px;
+        padding: 10px;
+    }
+    .item-checkbox {
+        padding: 6px;
+        font-size: 12px;
+    }
+    .form-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .btn-save,
+    .btn-cancel {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 13px;
+        justify-content: center;
+    }
+    .admin-section > div[style*="background: #fee2e2"] {
+        padding: 12px !important;
+        font-size: 13px !important;
+    }
+}
+
+/* Small Mobile (≤480px) */
+@media (max-width: 480px) {
+    .admin-section {
+        padding: 12px;
+    }
+    .section-title {
+        font-size: 14px;
+    }
+    .type-badge-display {
+        padding: 8px 14px;
+        font-size: 11px;
+    }
+    .type-badge-display i {
+        font-size: 12px;
+    }
+    .form-section h3 {
+        font-size: 13px;
+    }
+    .form-label {
+        font-size: 12px;
+    }
+    .form-control {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    .btn-save,
+    .btn-cancel {
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+    .current-image-preview {
+        max-height: 150px;
+    }
+    .item-checkbox {
+        font-size: 11px;
+    }
+}
 </style>
 @endsection
 

@@ -401,6 +401,398 @@
     font-size: 12px;
     color: #9ca3af;
 }
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablet View (769px - 1199px) */
+@media (max-width: 1199px) and (min-width: 769px) {
+    .stations-header {
+        padding: 24px;
+    }
+
+    .stations-header h1 {
+        font-size: 24px;
+    }
+
+    .header-actions {
+        gap: 10px;
+    }
+
+    .header-btn {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    .stations-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .stat-card {
+        padding: 20px;
+    }
+
+    .stat-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 20px;
+    }
+
+    .stat-value {
+        font-size: 28px;
+    }
+
+    .admin-table thead th {
+        padding: 12px 14px;
+        font-size: 11px;
+    }
+
+    .admin-table tbody td {
+        padding: 14px;
+        font-size: 13px;
+    }
+}
+
+/* Mobile View (≤768px) */
+@media (max-width: 768px) {
+    /* Header */
+    .stations-header {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .stations-header h1 {
+        font-size: 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .stations-header h1 i {
+        font-size: 20px;
+    }
+
+    .stations-header p {
+        font-size: 13px;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    .header-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    /* Stats Cards - Single Column */
+    .stations-stats {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        padding: 16px;
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        margin-bottom: 12px;
+    }
+
+    .stat-value {
+        font-size: 26px;
+        margin-bottom: 3px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+    }
+
+    /* Table Wrapper */
+    .stations-table-wrapper {
+        border-radius: 10px;
+    }
+
+    .table-header {
+        padding: 16px 18px;
+    }
+
+    .table-header h2 {
+        font-size: 14px;
+    }
+
+    .table-header h2 i {
+        font-size: 13px;
+    }
+
+    /* Make table scrollable horizontally */
+    .admin-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+
+    .admin-table thead,
+    .admin-table tbody,
+    .admin-table tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    .admin-table {
+        min-width: 900px;
+    }
+
+    .admin-table thead th {
+        padding: 10px 8px;
+        font-size: 10px;
+    }
+
+    .admin-table tbody td {
+        padding: 12px 8px;
+        font-size: 12px;
+    }
+
+    /* Adjust column widths for mobile */
+    .admin-table thead th:nth-child(1), /* Status */
+    .admin-table tbody td:nth-child(1) {
+        width: 70px;
+    }
+
+    .admin-table thead th:nth-child(2), /* Station Name */
+    .admin-table tbody td:nth-child(2) {
+        width: 120px;
+    }
+
+    .admin-table thead th:nth-child(3), /* Type */
+    .admin-table tbody td:nth-child(3) {
+        width: 100px;
+    }
+
+    .admin-table thead th:nth-child(4), /* Current Load */
+    .admin-table thead th:nth-child(5), /* Capacity */
+    .admin-table thead th:nth-child(7), /* Active Orders */
+    .admin-table thead th:nth-child(8), /* Avg Time */
+    .admin-table tbody td:nth-child(4),
+    .admin-table tbody td:nth-child(5),
+    .admin-table tbody td:nth-child(7),
+    .admin-table tbody td:nth-child(8) {
+        width: 60px;
+    }
+
+    .admin-table thead th:nth-child(6), /* Load Percentage */
+    .admin-table tbody td:nth-child(6) {
+        width: 140px;
+    }
+
+    .admin-table thead th:nth-child(9), /* Operating Hours */
+    .admin-table tbody td:nth-child(9) {
+        width: 120px;
+    }
+
+    .admin-table thead th:nth-child(10), /* Actions */
+    .admin-table tbody td:nth-child(10) {
+        width: 100px;
+    }
+
+    .station-name {
+        font-size: 13px;
+    }
+
+    .station-type-cell {
+        gap: 6px;
+        font-size: 11px;
+    }
+
+    .station-type-icon {
+        font-size: 16px;
+    }
+
+    .load-indicator {
+        gap: 8px;
+    }
+
+    .load-bar-container {
+        height: 6px;
+    }
+
+    .load-percentage {
+        font-size: 11px;
+        min-width: 38px;
+    }
+
+    .action-buttons {
+        gap: 4px;
+    }
+
+    .action-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+    }
+
+    .badge {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+
+    .operating-hours {
+        font-size: 11px;
+        gap: 4px;
+    }
+
+    .operating-hours i {
+        font-size: 10px;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 40px 20px;
+    }
+
+    .empty-state i {
+        font-size: 40px;
+        margin-bottom: 16px;
+    }
+
+    .empty-state h3 {
+        font-size: 16px;
+        margin-bottom: 6px;
+    }
+
+    .empty-state p {
+        font-size: 12px;
+        margin-bottom: 18px;
+    }
+
+    .empty-state-btn {
+        padding: 8px 20px;
+        font-size: 13px;
+    }
+}
+
+/* Small Mobile (≤480px) */
+@media (max-width: 480px) {
+    .stations-header {
+        padding: 16px;
+    }
+
+    .stations-header h1 {
+        font-size: 18px;
+    }
+
+    .stat-card {
+        padding: 14px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+    }
+
+    .admin-table {
+        min-width: 850px;
+        font-size: 11px;
+    }
+
+    .admin-table thead th {
+        padding: 8px 6px;
+        font-size: 9px;
+    }
+
+    .admin-table tbody td {
+        padding: 10px 6px;
+        font-size: 11px;
+    }
+}
+
+/* Large Desktop (≥1600px) */
+@media (min-width: 1600px) {
+    .stations-header {
+        padding: 40px;
+        margin-bottom: 40px;
+    }
+
+    .stations-header h1 {
+        font-size: 32px;
+    }
+
+    .stations-header h1 i {
+        font-size: 28px;
+    }
+
+    .stations-header p {
+        font-size: 17px;
+    }
+
+    .header-btn {
+        padding: 12px 24px;
+        font-size: 15px;
+    }
+
+    .stations-stats {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 28px;
+        margin-bottom: 40px;
+    }
+
+    .stat-card {
+        padding: 32px;
+    }
+
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 26px;
+        margin-bottom: 20px;
+    }
+
+    .stat-value {
+        font-size: 40px;
+        margin-bottom: 6px;
+    }
+
+    .stat-label {
+        font-size: 14px;
+    }
+
+    .table-header {
+        padding: 24px 32px;
+    }
+
+    .table-header h2 {
+        font-size: 18px;
+    }
+
+    .admin-table thead th {
+        padding: 18px 20px;
+        font-size: 13px;
+    }
+
+    .admin-table tbody td {
+        padding: 20px;
+        font-size: 15px;
+    }
+
+    .station-name {
+        font-size: 15px;
+    }
+
+    .action-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 15px;
+    }
+}
 </style>
 @endsection
 

@@ -92,12 +92,12 @@
             <tbody>
                 @foreach($reservations as $reservation)
                 <tr>
-                    <td>
+                    <td data-label="Booking ID">
                         <div class="booking-info">
                             <div class="booking-id">BK-{{ $reservation->id }}</div>
                         </div>
                     </td>
-                    <td>
+                    <td data-label="Customer">
                         <div class="customer-info">
                             <div class="customer-name">
                                 {{ $reservation->user ? $reservation->user->name : $reservation->guest_name }}
@@ -110,7 +110,7 @@
                             @endif
                         </div>
                     </td>
-                    <td>
+                    <td data-label="Date & Time">
                         <div class="datetime-info">
                             <div class="booking-date">
                                 @if($reservation->booking_date instanceof \Carbon\Carbon)
@@ -128,10 +128,10 @@
                             </div>
                         </div>
                     </td>
-                    <td class="cell-center">
+                    <td data-label="Party Size" class="cell-center">
                         <div class="party-size">{{ $reservation->party_size }} guests</div>
                     </td>
-                    <td class="cell-center">
+                    <td data-label="Table" class="cell-center">
                         <div class="table-info">
                             @if($reservation->table)
                             <strong>Table {{ $reservation->table->table_number }}</strong>
@@ -141,18 +141,18 @@
                             @endif
                         </div>
                     </td>
-                    <td class="cell-center">
+                    <td data-label="Status" class="cell-center">
                         <span class="status status-booking status-{{ str_replace('_', '-', $reservation->status) }}">
                             {{ str_replace('_', ' ', ucfirst($reservation->status)) }}
                         </span>
                     </td>
-                    <td class="cell-center">
+                    <td data-label="Order Time" class="cell-center">
                         <div class="time-info">
                             <div class="order-date">{{ $reservation->created_at->format('M d') }}</div>
                             <div class="order-time">{{ $reservation->created_at->format('g:i A') }}</div>
                         </div>
                     </td>
-                    <td class="cell-center">
+                    <td data-label="Actions" class="cell-center">
                         <div class="table-actions">
                             <!-- Status Update Buttons -->
                             @if($reservation->status === 'pending')

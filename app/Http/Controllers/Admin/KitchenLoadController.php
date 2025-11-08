@@ -28,14 +28,20 @@ class KitchenLoadController extends Controller
     }
 
     /**
-     * Display the kitchen dashboard (main view)
+     * Display the kitchen dashboard (main view) - TODAY ONLY
      */
     public function index()
     {
         $stations = KitchenStation::with(['activeLoads.order', 'pendingAssignments.order'])
             ->where('is_active', true)
             ->ordered()
-            ->get();
+            ->get()
+            ->map(function ($station) {
+                // Add today's load as attribute for display
+                $station->today_load_display = $station->today_load;
+                $station->load_percentage_display = $station->load_percentage;
+                return $station;
+            });
 
         $todayStats = $this->kitchenLoadService->getTodayStats();
         $bottlenecks = $this->kitchenLoadService->detectBottlenecks();
@@ -69,24 +75,26 @@ class KitchenLoadController extends Controller
     }
 
     /**
-     * Display active orders by station
+     * Display active orders by station (TODAY ONLY)
      */
     public function orders(Request $request)
     {
         $stationId = $request->get('station_id');
         $status = $request->get('status');
 
-        // Get ALL orders for stat cards (unfiltered)
+        // Get ALL orders for stat cards (TODAY ONLY)
         $allOrders = Order::with(['items.menuItem', 'stationAssignments.station', 'kitchenLoads'])
             ->whereHas('stationAssignments')
             ->whereIn('order_status', ['pending', 'confirmed', 'preparing', 'ready'])
+            ->whereDate('order_time', today())
             ->orderBy('order_time', 'asc')
             ->get();
 
-        // Get filtered orders for display
+        // Get filtered orders for display (TODAY ONLY)
         $query = Order::with(['items.menuItem', 'stationAssignments.station', 'kitchenLoads'])
             ->whereHas('stationAssignments')
-            ->whereIn('order_status', ['pending', 'confirmed', 'preparing', 'ready']);
+            ->whereIn('order_status', ['pending', 'confirmed', 'preparing', 'ready'])
+            ->whereDate('order_time', today());
 
         if ($stationId) {
             $query->whereHas('stationAssignments', function ($q) use ($stationId) {
@@ -99,18 +107,20 @@ class KitchenLoadController extends Controller
         // Total count is just the count of all orders
         $totalOrdersCount = $allOrders->count();
 
-        // Get stations with counts filtered by order status (confirmed/preparing only)
+        // Get stations with counts filtered by order status and TODAY ONLY
         $stations = KitchenStation::where('is_active', true)
             ->ordered()
             ->withCount([
                 'activeLoads' => function ($q) {
                     $q->whereHas('order', function ($orderQuery) {
-                        $orderQuery->whereIn('order_status', ['pending', 'confirmed', 'preparing', 'ready']);
+                        $orderQuery->whereIn('order_status', ['pending', 'confirmed', 'preparing', 'ready'])
+                            ->whereDate('order_time', today());
                     });
                 },
                 'pendingAssignments' => function ($q) {
                     $q->whereHas('order', function ($orderQuery) {
-                        $orderQuery->whereIn('order_status', ['pending', 'confirmed', 'preparing', 'ready']);
+                        $orderQuery->whereIn('order_status', ['pending', 'confirmed', 'preparing', 'ready'])
+                            ->whereDate('order_time', today());
                     });
                 }
             ])

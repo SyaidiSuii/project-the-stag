@@ -284,7 +284,353 @@
     color: #94a3b8;
     font-size: 15px;
     margin: 0;
-    margin: 0;
+}
+
+/* ===== RESPONSIVE DESIGN - Analytics Page ===== */
+
+/* Tablet View (769px - 1199px) */
+@media (max-width: 1199px) and (min-width: 769px) {
+    .analytics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .metric-card {
+        padding: 18px;
+    }
+
+    .metric-label {
+        font-size: 12px;
+    }
+
+    .metric-value {
+        font-size: 28px;
+    }
+
+    .date-filter {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .date-filter input[type="date"],
+    .date-filter button,
+    .date-filter a {
+        width: 100%;
+    }
+
+    .leaderboard-rank {
+        width: 42px;
+        height: 42px;
+        font-size: 18px;
+    }
+
+    .chart-container {
+        padding: 18px;
+        min-height: 300px;
+    }
+
+    .chart-canvas {
+        height: 250px;
+    }
+}
+
+/* Mobile View (≤768px) */
+@media (max-width: 768px) {
+    /* Grid Layouts - Single Column */
+    .analytics-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .analytics-two-column {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    /* Metric Cards */
+    .metric-card {
+        padding: 16px;
+    }
+
+    .metric-label {
+        font-size: 11px;
+        margin-bottom: 6px;
+    }
+
+    .metric-value {
+        font-size: 24px;
+        margin: 6px 0;
+    }
+
+    .metric-unit {
+        font-size: 14px;
+    }
+
+    .metric-change {
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    /* Date Filter */
+    .date-filter {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .date-filter input[type="date"] {
+        width: 100%;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .date-filter button,
+    .date-filter a {
+        width: 100%;
+        padding: 8px 16px !important;
+        font-size: 13px !important;
+        justify-content: center;
+    }
+
+    .date-filter form {
+        width: 100%;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .date-filter span {
+        display: none;
+    }
+
+    /* Leaderboard */
+    .leaderboard-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
+    }
+
+    .leaderboard-rank {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+        margin-right: 0;
+        margin-bottom: 8px;
+    }
+
+    .leaderboard-stats {
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 6px;
+        font-size: 12px;
+    }
+
+    .leaderboard-progress {
+        width: 100%;
+        min-width: auto;
+        text-align: left;
+        margin-top: 8px;
+    }
+
+    .leaderboard-item > div:last-child {
+        width: 100%;
+        text-align: left !important;
+    }
+
+    .leaderboard-item > div:last-child > div {
+        width: 100% !important;
+    }
+
+    .leaderboard-item > div:last-child small {
+        font-size: 11px;
+    }
+
+    /* Top Performer Card */
+    .top-performer-card {
+        padding: 24px 18px;
+    }
+
+    .top-performer-icon {
+        font-size: 40px;
+        margin-bottom: 12px;
+    }
+
+    .top-performer-title {
+        font-size: 18px;
+    }
+
+    .top-performer-score-value {
+        font-size: 36px;
+    }
+
+    .top-performer-stat-value {
+        font-size: 20px;
+    }
+
+    .top-performer-stat-label {
+        font-size: 10px;
+    }
+
+    /* Charts */
+    .chart-container {
+        padding: 16px;
+        min-height: 250px;
+    }
+
+    .chart-canvas {
+        height: 220px;
+    }
+
+    .chart-container h4 {
+        font-size: 13px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .chart-container > div[style*="grid"] {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 50px 16px;
+        min-height: 200px;
+    }
+
+    .empty-state i {
+        font-size: 40px;
+    }
+
+    .empty-state p {
+        font-size: 13px;
+    }
+
+    /* Recommendation Cards */
+    .metric-card h4 {
+        font-size: 14px;
+        margin-bottom: 10px !important;
+    }
+
+    .metric-card ul {
+        font-size: 12px;
+        line-height: 1.6 !important;
+    }
+
+    /* Responsive table for bottleneck events */
+    .admin-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .admin-table {
+        min-width: 700px;
+    }
+
+    /* Leaderboard responsive adjustments */
+    .row {
+        margin: 0;
+    }
+
+    .col-md-8,
+    .col-md-4 {
+        width: 100%;
+        padding: 0;
+        margin-bottom: 16px;
+    }
+
+    /* Top performer in mobile */
+    .col-md-4 .metric-card {
+        margin-top: 0;
+    }
+
+    .col-md-4 .metric-card > div {
+        padding: 16px;
+    }
+
+    .col-md-4 .metric-card h3 {
+        font-size: 18px !important;
+    }
+
+    .col-md-4 .metric-card > div > div:nth-child(3) {
+        font-size: 28px !important;
+    }
+
+    .col-md-4 .metric-card > div > div:last-child {
+        gap: 8px !important;
+    }
+
+    .col-md-4 .metric-card > div > div:last-child > div {
+        padding: 10px !important;
+    }
+
+    .col-md-4 .metric-card > div > div:last-child > div > div:first-child {
+        font-size: 18px !important;
+    }
+}
+
+/* Small Mobile (≤480px) */
+@media (max-width: 480px) {
+    .metric-card {
+        padding: 14px;
+    }
+
+    .metric-value {
+        font-size: 22px;
+    }
+
+    .leaderboard-item {
+        padding: 14px;
+    }
+
+    .chart-container {
+        padding: 14px;
+    }
+
+    .chart-canvas {
+        height: 200px;
+    }
+}
+
+/* Large Desktop (≥1600px) */
+@media (min-width: 1600px) {
+    .analytics-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 28px;
+    }
+
+    .metric-card {
+        padding: 32px;
+    }
+
+    .metric-label {
+        font-size: 15px;
+    }
+
+    .metric-value {
+        font-size: 44px;
+    }
+
+    .metric-unit {
+        font-size: 18px;
+    }
+
+    .chart-container {
+        padding: 32px;
+        min-height: 400px;
+    }
+
+    .chart-canvas {
+        height: 350px;
+    }
+
+    .leaderboard-rank {
+        width: 56px;
+        height: 56px;
+        font-size: 24px;
+    }
+
+    .performance-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
 }
 </style>
 @endsection

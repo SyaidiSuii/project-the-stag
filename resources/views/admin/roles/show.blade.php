@@ -118,8 +118,8 @@
                 <tbody>
                     @foreach($users as $user)
                     <tr>
-                        <td>#{{ $user->id }}</td>
-                        <td>
+                        <td data-label="ID">#{{ $user->id }}</td>
+                        <td data-label="Name">
                             <div class="user-info">
                                 <span class="user-name">{{ $user->name }}</span>
                                 @if($user->hasVerifiedEmail())
@@ -129,14 +129,14 @@
                                 @endif
                             </div>
                         </td>
-                        <td>{{ $user->email }}</td>
-                        <td>
+                        <td data-label="Email">{{ $user->email }}</td>
+                        <td data-label="Status">
                             <span class="status-badge {{ $user->email_verified_at ? 'active' : 'inactive' }}">
                                 {{ $user->email_verified_at ? 'Active' : 'Pending' }}
                             </span>
                         </td>
-                        <td>{{ $user->created_at->format('M d, Y') }}</td>
-                        <td>
+                        <td data-label="Assigned Date">{{ $user->created_at->format('M d, Y') }}</td>
+                        <td data-label="Actions">
                             <div class="action-buttons">
                                 <a href="{{ route('admin.user.show', $user->id) }}" class="btn-view" title="View User">
                                     <i class="fas fa-eye"></i>

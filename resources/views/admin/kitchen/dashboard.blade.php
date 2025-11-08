@@ -71,7 +71,13 @@
             <div class="station-header">
                 <div class="station-icon-wrapper">
                     <span class="station-icon">
-                        @if($station->station_type == 'general_kitchen')
+                        @if($station->stationType && $station->stationType->icon)
+                            {!! $station->stationType->icon !!}
+                        @elseif(stripos($station->name, 'hot') !== false || stripos($station->name, 'cooking') !== false)
+                            &#x1F525;
+                        @elseif(stripos($station->name, 'cold') !== false || stripos($station->name, 'salad') !== false || stripos($station->name, 'prep') !== false)
+                            &#x1F957;
+                        @elseif($station->station_type == 'general_kitchen')
                             &#x1F374;
                         @elseif($station->station_type == 'drinks')
                             &#x1F379;
@@ -100,7 +106,7 @@
                     <div class="progress-bar" style="width: {{ $station->load_percentage }}%"></div>
                 </div>
                 <div class="progress-label">
-                    <span class="load-text">{{ $station->current_load }} / {{ $station->max_capacity }}</span>
+                    <span class="load-text">{{ $station->today_load }} / {{ $station->max_capacity }}</span>
                     <span class="load-percentage">{{ number_format($station->load_percentage, 0) }}%</span>
                 </div>
             </div>

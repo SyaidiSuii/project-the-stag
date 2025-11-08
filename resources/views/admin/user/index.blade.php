@@ -99,13 +99,13 @@
             <tbody>
                 @foreach($users as $user)
                 <tr>
-                    <td>
+                    <td data-label="User ID">
                         <div style="font-family: 'Courier New', monospace; font-weight: 600; color: var(--primary);">
                             {{ $user->user_id ?? 'N/A' }}
                         </div>
                         <div style="font-size: 11px; color: var(--text-3);">ID: {{ $user->id }}</div>
                     </td>
-                    <td>
+                    <td data-label="User">
                         <div class="customer-info">
                             <div class="customer-avatar">
                                 <i class="fas fa-user"></i>
@@ -116,7 +116,7 @@
                             </div>
                         </div>
                     </td>
-                    <td>
+                    <td data-label="Contact">
                         <div>{{ $user->email }}</div>
                         @if($user->formatted_phone)
                             <div style="font-size: 13px; color: var(--text-3);">{{ $user->formatted_phone }}</div>
@@ -124,7 +124,7 @@
                             <div style="font-size: 13px; color: var(--text-3); font-style: italic;">No phone</div>
                         @endif
                     </td>
-                    <td>
+                    <td data-label="Role">
                         @if($user->roles->isNotEmpty())
                             <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
                                 @foreach($user->roles as $role)
@@ -135,14 +135,14 @@
                             <span class="status" style="background: #fee2e2; color: var(--danger);">No Role</span>
                         @endif
                     </td>
-                    <td>
+                    <td data-label="Status">
                         @if($user->is_active)
                             <span class="status status-active">Active</span>
                         @else
                             <span class="status status-inactive">Inactive</span>
                         @endif
                     </td>
-                    <td>
+                    <td data-label="Station">
                         @if($user->assignedStation)
                             <span class="status status-station">
                                 <i class="fas fa-utensils"></i>
@@ -152,11 +152,11 @@
                             <span style="font-size: 13px; color: var(--text-3); font-style: italic;">No Station</span>
                         @endif
                     </td>
-                    <td>
+                    <td data-label="Created">
                         <div style="font-size: 13px;">{{ $user->created_at->format('M d, Y') }}</div>
                         <div style="font-size: 12px; color: var(--text-3);">{{ $user->created_at->diffForHumans() }}</div>
                     </td>
-                    <td>
+                    <td data-label="Actions">
                         <div class="table-actions">
                             <a href="{{ route('admin.user.edit', $user->id) }}" class="action-btn edit-btn" title="Edit User">
                                 <i class="fas fa-edit"></i>

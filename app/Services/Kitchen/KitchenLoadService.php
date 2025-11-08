@@ -158,25 +158,30 @@ class KitchenLoadService
     }
 
     /**
-     * Detect bottlenecks across all stations
+     * Detect bottlenecks across all stations (TODAY ONLY)
      */
     public function detectBottlenecks()
     {
         return KitchenStation::where('is_active', true)
             ->get()
-            ->filter(function ($station) {
-                return $station->isOverloaded();
-            })
             ->map(function ($station) {
+                // Calculate today's load
+                $todayLoad = $station->today_load;
+                $loadPercentage = $station->load_percentage;
+                
                 return [
                     'station' => $station,
-                    'load_percentage' => $station->load_percentage,
-                    'current_load' => $station->current_load,
+                    'load_percentage' => $loadPercentage,
+                    'current_load' => $todayLoad,
                     'max_capacity' => $station->max_capacity,
                     'pending_orders' => $station->pendingAssignments()->count(),
-                    'suggested_action' => $this->suggestAction($station),
+                    'suggested_action' => $loadPercentage >= 85 ? $this->suggestAction($station) : null,
                 ];
-            });
+            })
+            ->filter(function ($data) {
+                return $data['load_percentage'] >= 85;
+            })
+            ->values();
     }
 
     /**
@@ -203,7 +208,7 @@ class KitchenLoadService
     }
 
     /**
-     * Get real-time status for all stations
+     * Get real-time status for all stations (TODAY ONLY)
      */
     public function getStationsStatus()
     {
@@ -216,41 +221,44 @@ class KitchenLoadService
                 ->ordered()
                 ->get()
                 ->map(function ($station) {
+                    $todayLoad = $station->today_load;
+                    $loadPercentage = $station->load_percentage;
+                    
                     return [
                         'id' => $station->id,
                         'name' => $station->name,
                         'station_type' => $station->station_type,
-                        'current_load' => $station->current_load,
+                        'current_load' => $todayLoad,
                         'max_capacity' => $station->max_capacity,
-                        'load_percentage' => $station->load_percentage,
-                        'status' => $this->getStationStatus($station),
+                        'load_percentage' => $loadPercentage,
+                        'status' => $this->getStationStatusByPercentage($loadPercentage),
                         'pending_orders' => $station->pendingAssignments()->count(),
                         'avg_completion_time' => $station->getAverageCompletionTime(),
-                        'is_overloaded' => $station->isOverloaded(),
-                        'is_approaching_capacity' => $station->isApproachingCapacity(),
+                        'is_overloaded' => $loadPercentage >= 85,
+                        'is_approaching_capacity' => $loadPercentage >= 70 && $loadPercentage < 85,
                     ];
                 });
         });
     }
 
     /**
-     * Get station status label
+     * Get station status label based on load percentage
      */
-    protected function getStationStatus(KitchenStation $station)
+    protected function getStationStatusByPercentage($loadPercentage)
     {
-        if ($station->isOverloaded()) {
+        if ($loadPercentage >= 85) {
             return 'overloaded';
         }
 
-        if ($station->isApproachingCapacity()) {
+        if ($loadPercentage >= 70) {
             return 'approaching_capacity';
         }
 
-        if ($station->load_percentage >= 50) {
+        if ($loadPercentage >= 50) {
             return 'busy';
         }
 
-        if ($station->load_percentage >= 25) {
+        if ($loadPercentage >= 25) {
             return 'normal';
         }
 
@@ -270,7 +278,7 @@ class KitchenLoadService
     }
 
     /**
-     * Get today's statistics
+     * Get today's statistics (TODAY ONLY)
      */
     public function getTodayStats()
     {
@@ -286,11 +294,16 @@ class KitchenLoadService
             ->overloadAlerts()
             ->count();
 
+        // Count active orders from today's loads only
+        $activeOrders = KitchenLoad::whereIn('status', ['pending', 'in_progress'])
+            ->whereDate('created_at', today())
+            ->count();
+
         return [
             'total_orders_completed' => $totalOrders,
             'avg_completion_time' => round($avgCompletionTime, 1),
             'overload_alerts' => $overloadAlerts,
-            'active_orders' => KitchenLoad::active()->count(),
+            'active_orders' => $activeOrders,
             'stations_performance' => $this->getStationsPerformance($completedLoads),
         ];
     }
