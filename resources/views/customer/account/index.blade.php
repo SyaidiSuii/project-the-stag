@@ -153,7 +153,7 @@
           <div class="card-icon"><i class="fas fa-cog"></i></div>
           <h2 class="card-title">Preferences</h2>
         </div>
-        <div class="toggle-group">
+        {{-- <div class="toggle-group">
           <div class="toggle-info">
             <div class="toggle-label">Email Notifications</div>
             <div class="toggle-description">Receive order updates and promotions</div>
@@ -179,8 +179,17 @@
           <div class="toggle-switch active" data-toggle="marketing">
             <div class="toggle-slider"></div>
           </div>
-        </div>
+        </div> --}}
         <div class="toggle-group">
+          <div class="toggle-info">
+            <div class="toggle-label">Push Notifications</div>
+            <div class="toggle-description">Get instant order updates (preparing, ready, completed)</div>
+          </div>
+          <div class="toggle-switch" data-toggle="push-notifications" id="push-notification-toggle">
+            <div class="toggle-slider"></div>
+          </div>
+        </div>
+        {{-- <div class="toggle-group">
           <div class="toggle-info">
             <div class="toggle-label">Dark Mode</div>
             <div class="toggle-description">Switch to dark theme</div>
@@ -188,7 +197,7 @@
           <div class="toggle-switch" data-toggle="darkmode">
             <div class="toggle-slider"></div>
           </div>
-        </div>
+        </div> --}}
       </div>
 
       <!-- Security Settings -->
@@ -858,6 +867,78 @@ document.addEventListener('DOMContentLoaded', function() {
         // Append toggle button to input group
         inputGroup.appendChild(toggleButton);
     });
+
+    // ==========================================
+    // Push Notification Toggle Handler
+    // ==========================================
+    const pushToggle = document.getElementById('push-notification-toggle');
+
+    if (pushToggle && typeof window.FCMNotifications !== 'undefined') {
+        // Check current notification permission status
+        const updateToggleState = async () => {
+            // Wait for FCM to be fully initialized
+            if (!window.FCMNotifications) {
+                setTimeout(updateToggleState, 100);
+                return;
+            }
+
+            // Check permission - this is the most reliable indicator
+            if (Notification.permission === 'granted') {
+                pushToggle.classList.add('active');
+            } else {
+                pushToggle.classList.remove('active');
+            }
+        };
+
+        // Initial state - wait a bit for FCM to initialize
+        setTimeout(updateToggleState, 500);
+
+        // Handle toggle click
+        pushToggle.addEventListener('click', async function() {
+            if (this.classList.contains('active')) {
+                // Currently enabled - disable notifications
+                if (confirm('Disable push notifications? You will no longer receive instant order updates.')) {
+                    // Clear token from backend (optional - implement if needed)
+                    this.classList.remove('active');
+                    showToast('Push notifications disabled', 'info');
+                }
+            } else {
+                // Currently disabled - enable notifications
+                try {
+                    showToast('Requesting notification permission...', 'info', 3000);
+
+                    // Request permission and register device
+                    await window.FCMNotifications.initialize();
+                    await window.FCMNotifications.registerDevice();
+
+                    // Update toggle state
+                    updateToggleState();
+
+                    if (Notification.permission === 'granted') {
+                        showToast('Push notifications enabled! You will receive order updates.', 'success');
+                    } else {
+                        showToast('Notification permission denied. Please enable in browser settings.', 'warning');
+                    }
+                } catch (error) {
+                    console.error('Failed to enable push notifications:', error);
+                    showToast('Failed to enable push notifications. Please try again.', 'error');
+                }
+            }
+        });
+
+        // Listen for FCM registration events
+        window.addEventListener('fcm-registered', () => {
+            updateToggleState();
+        });
+    } else if (pushToggle) {
+        // FCM not available - disable toggle
+        pushToggle.style.opacity = '0.5';
+        pushToggle.style.cursor = 'not-allowed';
+        pushToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            showToast('Push notifications are not available on this browser', 'warning');
+        });
+    }
 });
 </script>
 @endsection

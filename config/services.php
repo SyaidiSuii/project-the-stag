@@ -62,4 +62,22 @@ return [
         'timeout' => env('GROQ_TIMEOUT', 30),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Firebase Cloud Messaging (FCM) Configuration
+    |--------------------------------------------------------------------------
+    */
+
+    'fcm' => [
+        'enabled' => env('NOTIFICATIONS_ENABLED', true),
+        'api_key' => env('FIREBASE_API_KEY'),
+        'project_id' => env('FIREBASE_PROJECT_ID'),
+        'database_url' => env('FIREBASE_DATABASE_URL'),
+        'storage_bucket' => env('FIREBASE_STORAGE_BUCKET'),
+        'messaging_sender_id' => env('FIREBASE_MESSAGING_SENDER_ID'),
+        'app_id' => env('FIREBASE_APP_ID'),
+        'vapid_key' => env('FIREBASE_VAPID_KEY'),
+        'service_account_path' => env('FIREBASE_SERVICE_ACCOUNT_PATH'),
+    ],
+
 ];

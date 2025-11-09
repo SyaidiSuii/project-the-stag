@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCM Legacy Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .status-box {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+            max-height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 FCM Legacy Server Key Test</h1>
+
+    <div class="status-box">
+        <h3>This test uses server-side token generation (bypass browser API issue)</h3>
+        <p>If Google Cloud Console has issues, we can test FCM using the backend directly.</p>
+    </div>
+
+    <div class="status-box">
+        <h3>Test Status:</h3>
+        <div id="status">Click button below to test...</div>
+    </div>
+
+    <div class="status-box">
+        <button id="test-backend">Test Backend FCM Send</button>
+        <button id="check-credentials">Check Firebase Credentials</button>
+    </div>
+
+    <div class="status-box">
+        <h3>Result:</h3>
+        <pre id="result"></pre>
+    </div>
+
+    <script>
+        function log(message, isError = false) {
+            const resultDiv = document.getElementById('result');
+            const statusDiv = document.getElementById('status');
+
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+
+            resultDiv.textContent += logEntry;
+            statusDiv.innerHTML = isError
+                ? `<span class="error">${message}</span>`
+                : `<span class="success">${message}</span>`;
+
+            console.log(logEntry);
+        }
+
+        // Test backend FCM send
+        document.getElementById('test-backend').addEventListener('click', async () => {
+            document.getElementById('result').textContent = '';
+            log('Testing backend FCM send...');
+
+            try {
+                // Get CSRF token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                
+                if (!csrfToken) {
+                    log('ERROR: This page needs to be served from Laravel (no CSRF token)', true);
+                    log('Please open: http://localhost/customer and use the notification bell instead', true);
+                    return;
+                }
+
+                log('Sending test notification via backend API...');
+
+                const response = await fetch('/api/fcm/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        title: 'Backend Test Notification',
+                        body: 'Testing FCM from Laravel backend',
+                        data: {
+                            type: 'test',
+                            timestamp: Date.now()
+                        }
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    log('✅ Backend notification sent successfully!', false);
+                    log(JSON.stringify(data, null, 2));
+                } else {
+                    log('❌ Backend notification failed', true);
+                    log(JSON.stringify(data, null, 2));
+                }
+
+            } catch (error) {
+                log(`❌ ERROR: ${error.message}`, true);
+            }
+        });
+
+        // Check Firebase credentials
+        document.getElementById('check-credentials').addEventListener('click', async () => {
+            document.getElementById('result').textContent = '';
+            log('Checking Firebase configuration...');
+
+            // Check if Firebase config is available in page
+            if (window.FIREBASE_CONFIG) {
+                log('✅ Firebase config found in page');
+                log('Project ID: ' + window.FIREBASE_CONFIG.projectId);
+                log('Sender ID: ' + window.FIREBASE_CONFIG.messagingSenderId);
+            } else {
+                log('❌ Firebase config not found in page', true);
+            }
+
+            if (window.FIREBASE_VAPID_KEY) {
+                log('✅ VAPID key found: ' + window.FIREBASE_VAPID_KEY.substring(0, 20) + '...');
+            } else {
+                log('❌ VAPID key not found', true);
+            }
+
+            // Check notification permission
+            log('Notification permission: ' + Notification.permission);
+
+            // Check service worker
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                log(`Service workers registered: ${registrations.length}`);
+            }
+        });
+    </script>
+</body>
+</html>

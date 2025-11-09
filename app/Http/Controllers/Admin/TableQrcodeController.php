@@ -9,6 +9,8 @@ use App\Models\Table;
 use App\Models\TableReservation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use App\Events\QRSessionCompletedEvent;
 
 class TableQrcodeController extends Controller
 {
@@ -173,6 +175,10 @@ class TableQrcodeController extends Controller
     public function complete(TableQrcode $tableQrcode)
     {
         $tableQrcode->complete();
+        
+        // Dispatch event for analytics tracking
+        Log::info('Dispatching QRSessionCompletedEvent', ['session_id' => $tableQrcode->id]);
+        event(new QRSessionCompletedEvent($tableQrcode));
 
         // Set table back to available if no other active sessions
         $table = $tableQrcode->table;

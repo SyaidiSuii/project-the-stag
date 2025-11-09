@@ -55,21 +55,24 @@ class CartController extends Controller
                 // This is an item_discount (not bundle/combo)
                 $promotion = Promotion::find($item->promotion_id);
 
-                // Check if promotion is still valid
+                // Check if promotion is still valid (includes day/time validation)
                 $isPromotionValid = $promotion
                     && $promotion->promotion_type === Promotion::TYPE_ITEM_DISCOUNT
-                    && $promotion->is_active
-                    && $promotion->start_date <= now()
-                    && $promotion->end_date >= now();
+                    && $promotion->isValid(); // Use isValid() to check ALL conditions
 
                 if (!$isPromotionValid) {
-                    // Promotion expired/disabled - revert to original price
+                    // Promotion expired/disabled/wrong day/wrong time - revert to original price
                     \Log::warning('Item discount promotion invalid, reverting to original price', [
                         'cart_item_id' => $item->id,
                         'menu_item_id' => $item->menu_item_id,
                         'old_promotion_id' => $item->promotion_id,
                         'old_unit_price' => $item->unit_price,
                         'new_unit_price' => $menuItem ? $menuItem->price : $item->unit_price,
+                        'current_day' => strtolower(now()->format('l')),
+                        'current_time' => now()->format('H:i:s'),
+                        'applicable_days' => $promotion ? $promotion->applicable_days : null,
+                        'applicable_start_time' => $promotion ? $promotion->applicable_start_time : null,
+                        'applicable_end_time' => $promotion ? $promotion->applicable_end_time : null,
                     ]);
 
                     // Update cart item to original price
@@ -1320,18 +1323,38 @@ class CartController extends Controller
                     'discount_type' => $p->discount_type,
                     'discount_value' => $p->discount_value,
                     'item_ids' => $p->getDiscountedItemIds(),
+                    'applicable_days' => $p->applicable_days,
+                    'applicable_start_time' => $p->applicable_start_time,
+                    'applicable_end_time' => $p->applicable_end_time,
                 ];
             })
         ]);
 
         // Check if this menu item has discount
         foreach ($itemDiscounts as $promotion) {
+            // IMPORTANT: Use isValid() to check ALL conditions including days and time
+            if (!$promotion->isValid()) {
+                \Log::info('getActiveItemDiscount - Promotion not valid (day/time check failed)', [
+                    'menu_item_id' => $menuItemId,
+                    'promotion_id' => $promotion->id,
+                    'promotion_name' => $promotion->name,
+                    'current_day' => strtolower(now()->format('l')),
+                    'current_time' => now()->format('H:i:s'),
+                    'applicable_days' => $promotion->applicable_days,
+                    'applicable_start_time' => $promotion->applicable_start_time,
+                    'applicable_end_time' => $promotion->applicable_end_time,
+                ]);
+                continue;
+            }
+
             $itemIds = $promotion->getDiscountedItemIds();
             if ($itemIds && in_array($menuItemId, $itemIds)) {
                 \Log::info('getActiveItemDiscount - Match found!', [
                     'menu_item_id' => $menuItemId,
                     'promotion_id' => $promotion->id,
                     'promotion_name' => $promotion->name,
+                    'current_day' => strtolower(now()->format('l')),
+                    'current_time' => now()->format('H:i:s'),
                 ]);
 
                 return [
@@ -1345,6 +1368,8 @@ class CartController extends Controller
 
         \Log::info('getActiveItemDiscount - No match found', [
             'menu_item_id' => $menuItemId,
+            'current_day' => strtolower(now()->format('l')),
+            'current_time' => now()->format('H:i:s'),
         ]);
 
         return null;

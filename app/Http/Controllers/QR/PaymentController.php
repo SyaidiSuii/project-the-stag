@@ -8,6 +8,7 @@ use App\Models\TableQrcode;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\PaymentService;
+use App\Events\OrderCreatedEvent;
 use Illuminate\Support\Str;
 
 class PaymentController extends Controller
@@ -170,6 +171,9 @@ class PaymentController extends Controller
                 // Don't fail the order creation, just log the error
             }
         }
+
+        // Fire OrderCreatedEvent to notify admin
+        event(new OrderCreatedEvent($order->fresh(['user', 'orderItems']));
 
         // Clear cart
         session()->forget($cartKey);
@@ -371,6 +375,9 @@ class PaymentController extends Controller
                     // Don't fail the order creation, just log the error
                 }
             }
+
+            // Fire OrderCreatedEvent to notify admin
+            event(new OrderCreatedEvent($order->fresh(['user', 'orderItems'])));
 
             // Redirect to confirmation with actual order ID
             return redirect()->route('qr.payment.confirmation', [

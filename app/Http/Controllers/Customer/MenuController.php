@@ -87,6 +87,20 @@ class MenuController extends Controller
         // Build item discount map: item_id => discount info
         $itemDiscountMap = [];
         foreach ($itemDiscounts as $promotion) {
+            // IMPORTANT: Check if promotion is valid for current day/time
+            if (!$promotion->isValid()) {
+                \Log::info('MenuController::index - Skipping invalid promotion (day/time check)', [
+                    'promotion_id' => $promotion->id,
+                    'promotion_name' => $promotion->name,
+                    'current_day' => strtolower(now()->format('l')),
+                    'current_time' => now()->format('H:i:s'),
+                    'applicable_days' => $promotion->applicable_days,
+                    'applicable_start_time' => $promotion->applicable_start_time,
+                    'applicable_end_time' => $promotion->applicable_end_time,
+                ]);
+                continue;
+            }
+
             $itemIds = $promotion->getDiscountedItemIds();
             if ($itemIds) {
                 foreach ($itemIds as $itemId) {
@@ -193,6 +207,20 @@ class MenuController extends Controller
         // Build item discount map: item_id => discount info
         $itemDiscountMap = [];
         foreach ($itemDiscounts as $promotion) {
+            // IMPORTANT: Check if promotion is valid for current day/time
+            if (!$promotion->isValid()) {
+                \Log::info('MenuController::getMenuData - Skipping invalid promotion (day/time check)', [
+                    'promotion_id' => $promotion->id,
+                    'promotion_name' => $promotion->name,
+                    'current_day' => strtolower(now()->format('l')),
+                    'current_time' => now()->format('H:i:s'),
+                    'applicable_days' => $promotion->applicable_days,
+                    'applicable_start_time' => $promotion->applicable_start_time,
+                    'applicable_end_time' => $promotion->applicable_end_time,
+                ]);
+                continue;
+            }
+
             $itemIds = $promotion->getDiscountedItemIds();
             if ($itemIds) {
                 foreach ($itemIds as $itemId) {
@@ -277,6 +305,53 @@ class MenuController extends Controller
             });
 
         return view('customer.menu.fast-items', compact('recommendedItems', 'itemsByCategory', 'categories'));
+    }
+
+    /**
+     * Display AI recommended menu items page
+     */
+    public function recommendedItems()
+    {
+        // Get all categories with menu items
+        $categories = Category::with(['menuItems' => function ($query) {
+            $query->where('availability', true)->orderBy('name');
+        }])
+        ->orderBy('sort_order')
+        ->orderBy('name')
+        ->get();
+
+        // Get AI-based recommendations for authenticated users
+        $recommendedItems = collect();
+        if (Auth::check()) {
+            try {
+                $userId = Auth::id();
+                $recommendedItemIds = $this->recommendationService->getRecommendations($userId, 50);
+
+                if (!empty($recommendedItemIds)) {
+                    $recommendedItems = MenuItem::whereIn('id', $recommendedItemIds)
+                        ->where('availability', true)
+                        ->with('category')
+                        ->get()
+                        ->sortBy(function($item) use ($recommendedItemIds) {
+                            return array_search($item->id, $recommendedItemIds);
+                        })
+                        ->values();
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to fetch recommendations for recommended page', [
+                    'user_id' => Auth::id(),
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+
+        // Group recommended items by category
+        $itemsByCategory = $recommendedItems->groupBy('category_id')
+            ->map(function($items) {
+                return $items->sortBy('name')->values();
+            });
+
+        return view('customer.menu.recommended', compact('recommendedItems', 'itemsByCategory', 'categories'));
     }
 
     /**

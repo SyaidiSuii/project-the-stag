@@ -300,6 +300,176 @@
 </button>
 @endauth
 
+<<<<<<< HEAD
+=======
+<!-- Modern Centered Cart Modal -->
+<div class="cart-modal" id="cartModal">
+  <div class="cart-modal-backdrop" id="cartModalBackdrop"></div>
+  <div class="cart-modal-container">
+    <div class="cart-modal-header">
+      <button class="cart-modal-close" id="cartModalClose" aria-label="Close cart">✕</button>
+      <h2 class="cart-modal-title">🛒 My Cart</h2>
+    </div>
+    <div class="cart-modal-body">
+      <div class="cart-modal-content">
+        <div class="cart-modal-toolbar">
+          <div class="cart-modal-count">Items: <span id="cart-count">0</span></div>
+          <button class="cart-modal-clear" id="clearAllBtn" style="cursor: pointer; transition: all 0.2s ease;">Clear All</button>
+        </div>
+        <div class="cart-modal-items" id="cart-items">
+          <!-- Cart items will be displayed here -->
+          <div class="empty-cart" id="empty-cart">
+            <div class="empty-cart-icon">🛒</div>
+            <div class="empty-cart-text">Your cart is empty</div>
+            <div class="empty-cart-subtext">Add some delicious items to get started!</div>
+          </div>
+        </div>
+      </div>
+      <div class="cart-modal-footer">
+        <!-- Title for Summary Section -->
+        <div style="margin-bottom: 1rem;">
+          <h3 style="font-size: 1.1rem; font-weight: 800; color: #1f2937; margin: 0 0 0.5rem 0;">Your Subtotal</h3>
+          <div style="height: 3px; width: 40px; background: linear-gradient(135deg, var(--brand), var(--brand-2)); border-radius: 2px;"></div>
+        </div>
+
+        <!-- Voucher Selection Section (NEW) -->
+        @if(Auth::check())
+        <div class="voucher-selection-section" style="margin-bottom: 1rem; padding: 1rem; background: #dbeafe; border: 2px dashed #3b82f6; border-radius: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-gift" style="color: #3b82f6; font-size: 1.2rem;"></i>
+              <span style="font-weight: 700; color: #1e40af; font-size: 0.95rem;">My Rewards</span>
+            </div>
+            <button id="select-voucher-btn" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+              Claim
+            </button>
+          </div>
+
+          <!-- Applied Voucher Display -->
+          <div id="voucher-applied-container" style="display: none; background: white; padding: 10px; border-radius: 8px; margin-top: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 0.85rem; color: #92400e; font-weight: 600;" id="voucher-name">RM10 OFF</div>
+                <div style="font-size: 0.75rem; color: #d97706;" id="voucher-desc">Minimum spend RM50</div>
+              </div>
+              <button id="remove-voucher-btn" style="background: none; border: none; color: #dc2626; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+                Remove
+              </button>
+            </div>
+          </div>
+
+          <!-- No Vouchers Message -->
+          <div id="no-vouchers-message" style="font-size: 0.85rem; color: #92400e; text-align: center; padding: 8px;">
+            You have no vouchers available
+          </div>
+        </div>
+        @endif
+
+        <!-- Promo Code Section -->
+        <div class="promo-code-section" style="margin-bottom: 1rem; padding: 1rem; background: #f9fafb; border-radius: 12px;">
+          <div id="promo-input-container">
+            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+              <input
+                type="text"
+                id="promo-code-input"
+                placeholder="Enter promo code"
+                style="flex: 1; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.9rem; outline: none; transition: border-color 0.2s;"
+              />
+              <button
+                id="apply-promo-btn"
+                style="padding: 10px 20px; background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: transform 0.2s;"
+                onclick="this.style.transform = 'scale(0.95)'; setTimeout(() => this.style.transform = 'scale(1)', 100);"
+              >
+                Apply
+              </button>
+            </div>
+            <div id="promo-error-message" style="display: none; color: #ef4444; font-size: 0.85rem; margin-top: 4px;">
+              <i class="fas fa-exclamation-circle"></i> <span></span>
+            </div>
+          </div>
+
+          <div id="promo-applied-container" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #ecfdf5; border: 2px solid #10b981; border-radius: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-check-circle" style="color: #10b981; font-size: 1.1rem;"></i>
+                <div>
+                  <div style="font-weight: 600; color: #065f46; font-size: 0.9rem;">Promo Applied!</div>
+                  <div style="font-size: 0.85rem; color: #047857;" id="promo-code-text">CODE123</div>
+                </div>
+              </div>
+              <button
+                id="remove-promo-btn"
+                style="background: none; border: none; color: #dc2626; cursor: pointer; padding: 4px 8px; font-size: 0.85rem; font-weight: 600;"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cart Total -->
+        <div class="cart-modal-total">
+          <div style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
+            <!-- Subtotal Row -->
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="cart-total-label" style="font-size: 0.8rem;">Subtotal</div>
+              <div class="cart-total-amount" id="subtotal-amount" style="font-size: 1rem;">RM 0.00</div>
+            </div>
+
+            <!-- Voucher Discount Row (hidden by default) -->
+            <div id="voucher-discount-row" style="display: none; justify-content: space-between; align-items: center;">
+              <div class="cart-total-label" style="font-size: 0.8rem; color: #f59e0b;">
+                <i class="fas fa-ticket-alt"></i> Voucher Discount
+              </div>
+              <div class="cart-total-amount" id="voucher-discount-amount" style="font-size: 1rem; color: #f59e0b;">-RM 0.00</div>
+            </div>
+
+            <!-- Promo Discount Row (hidden by default) -->
+            <div id="promo-discount-row" style="display: none; justify-content: space-between; align-items: center;">
+              <div class="cart-total-label" style="font-size: 0.8rem; color: #10b981;">
+                <i class="fas fa-tag"></i> Promo Discount
+              </div>
+              <div class="cart-total-amount" id="promo-discount-amount" style="font-size: 1rem; color: #10b981;">-RM 0.00</div>
+            </div>
+            <!-- Divider -->
+            <div style="height: 1px; background: #e5e7eb; margin: 6px 0;"></div>
+            <!-- Total Row -->
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="cart-total-label" style="font-weight: 800; color: #1f2937; font-size: 0.9rem;">Total</div>
+              <div class="cart-total-amount" id="total-amount" style="font-size: 1.4rem; font-weight: 900; background: linear-gradient(135deg, var(--brand), var(--brand-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">RM 0.00</div>
+            </div>
+          </div>
+        </div>
+        <button class="cart-modal-checkout" style="padding: 1rem; font-size: 1rem;">Proceed to Checkout</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Voucher Selection Modal -->
+<div id="voucherSelectionModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+  <div style="background: white; border-radius: 16px; max-width: 500px; width: 90%; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
+    <!-- Header -->
+    <div style="padding: 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+      <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: #1f2937;">
+        <i class="fas fa-gift" style="color: #3b82f6; margin-right: 8px;"></i>
+        My Rewards
+      </h3>
+      <button id="closeVoucherModal" style="background: none; border: none; font-size: 24px; color: #9ca3af; cursor: pointer; width: 32px; height: 32px;">✕</button>
+    </div>
+
+    <!-- Voucher List -->
+    <div id="voucherListContainer" style="flex: 1; overflow-y: auto; padding: 16px;">
+      <!-- Vouchers will be loaded here via JavaScript -->
+      <div style="text-align: center; padding: 40px 20px; color: #9ca3af;">
+        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 12px; display: block;"></i>
+        <p>Loading vouchers...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+>>>>>>> kawan/master
 <!-- Add to Cart Modal - Beautiful Design -->
 <div id="addtocart-modal" class="addon-modal" style="display: none;" aria-modal="true" role="dialog">
   <div class="modal-content" style="max-width: 600px; border-radius: 24px; background: white;">
@@ -376,6 +546,7 @@ window.isAuthenticated = {{ Auth::check() ? 'true' : 'false' }};
 </script>
 
 <script src="{{ asset('js/customer/cart-manager.js') }}"></script>
+<script src="{{ asset('js/customer/cart-voucher.js') }}"></script>
 <script src="{{ asset('js/customer/menu.js') }}"></script>
 <script>
 // State management

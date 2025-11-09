@@ -1,0 +1,168 @@
+==========================================
+FCM IMPLEMENTATION - TESTING COMMANDS
+==========================================
+
+✅ FCM Implementation Status: COMPLETE & WORKING!
+
+All tests passed:
+1. ✅ Firebase package loading
+2. ✅ Firebase Manager initialization
+3. ✅ FCMNotificationService loading
+4. ✅ Database integration (UserFcmDevice & PushNotification tables)
+5. ✅ Statistics retrieval
+
+==========================================
+DATABASE SETUP COMMANDS
+==========================================
+
+# Run migrations
+php artisan migrate
+
+# Verify tables
+php artisan tinker --execute="echo 'Tables:' . PHP_EOL; \$tables = ['user_fcm_devices', 'push_notifications']; foreach(\$tables as \$table) { \$exists = \DB::connection()->getDoctrineSchemaManager()->listTableDetails(\$table)->hasColumn('id'); echo \$table . ': ' . (\$exists ? 'EXISTS' : 'MISSING') . PHP_EOL; }"
+
+==========================================
+POSTMAN API TESTING
+==========================================
+
+Base URL: http://thestag.shop (or your local domain)
+Headers:
+- Authorization: Bearer <your-api-token>
+- Content-Type: application/json
+
+1. Register Device Token
+   POST /api/notifications/register-device
+   Body:
+   {
+     "device_token": "your-device-token-here",
+     "device_type": "web",
+     "platform": "Chrome",
+     "browser": "Chrome",
+     "version": "120.0"
+   }
+
+2. Send Notification to User
+   POST /api/notifications/send-to-user
+   Body:
+   {
+     "user_id": 1,
+     "title": "Test Notification",
+     "body": "This is a test notification",
+     "type": "order",
+     "data": {"order_id": "123"}
+   }
+
+3. Send Notification to All Devices
+   POST /api/notifications/send-to-all
+   Body:
+   {
+     "title": "Promo Alert",
+     "body": "Special discount available!",
+     "type": "promotion"
+   }
+
+4. Get Statistics
+   GET /api/notifications/statistics
+
+5. Get Device List
+   GET /api/notifications/devices
+
+6. Get Notification History
+   GET /api/notifications/history
+
+7. Test Notification to Role
+   POST /api/notifications/send-to-role
+   Body:
+   {
+     "role": "customer",
+     "title": "New Feature",
+     "body": "Check out our new menu items!",
+     "type": "announcement"
+   }
+
+==========================================
+AUTOMATIC NOTIFICATION TESTING
+==========================================
+
+Test automatic order status notifications:
+
+# 1. Create an order (this will trigger notification)
+php artisan tinker --execute="
+\$order = new \App\Models\Order();
+\$order->user_id = 1;
+\$order->total_amount = 100.00;
+\$order->status = 'confirmed';
+\$order->save();
+echo 'Order created with ID: ' . \$order->id . PHP_EOL;
+event(new \App\Events\OrderStatusUpdatedEvent(\$order));
+echo 'OrderStatusUpdatedEvent dispatched' . PHP_EOL;
+"
+
+# 2. Update order status (this will trigger another notification)
+php artisan tinker --execute="
+\$order = \App\Models\Order::find(1);
+\$order->status = 'preparing';
+\$order->save();
+event(new \App\Events\OrderStatusUpdatedEvent(\$order));
+echo 'Order status updated to: ' . \$order->status . PHP_EOL;
+"
+
+==========================================
+QUEUE PROCESSING
+==========================================
+
+# Start queue worker to process notifications
+php artisan queue:work
+
+# Process failed jobs
+php artisan queue:retry all
+
+==========================================
+LOGS & DEBUGGING
+==========================================
+
+# Check notification logs
+tail -f storage/logs/laravel.log | grep -i "notification"
+
+# Check specific notification channel
+tail -f storage/logs/laravel.log | grep -i "fcm"
+
+==========================================
+FIREBASE CONSOLE TESTING
+==========================================
+
+# Check if messages are sent in Firebase Console:
+# 1. Go to: https://console.firebase.google.com/
+# 2. Select project: the-stag-notification
+# 3. Go to "Cloud Messaging"
+# 4. Check "Message History" tab
+
+==========================================
+TROUBLESHOOTING
+==========================================
+
+If you get "Unable to determine Firebase Project ID":
+1. Check firebase-service-account.json exists: storage/app/firebase/firebase_credentials.json
+2. Check .env has FIREBASE_PROJECT_ID set
+3. Clear config: php artisan config:clear
+4. Clear cache: php artisan cache:clear
+
+If FCMNotificationService fails to load:
+1. Check Firebase service provider is registered in config/app.php
+2. Check GuzzleHTTP is installed: composer show guzzlehttp/guzzle
+3. Verify database migrations ran: php artisan migrate:status
+
+==========================================
+NEXT STEPS
+==========================================
+
+✅ Phase 1-4 Complete:
+- Firebase integration
+- Service layer
+- API endpoints
+- Event listeners
+
+⏳ Phase 5 (Optional): Admin notification dashboard
+⏳ Phase 6 (Optional): Web portal integration
+
+==========================================

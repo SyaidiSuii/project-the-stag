@@ -36,6 +36,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'checkin_streak',
         'user_id',
         'assigned_station_id',
+        'notification_prompted_at',
     ];
 
     /**
@@ -57,6 +58,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'last_checkin_date' => 'date',
+        'notification_prompted_at' => 'datetime',
     ];
 
     /**
@@ -136,10 +138,12 @@ class User extends Authenticatable implements MustVerifyEmail
 
 
     // Relationships
-    public function staffProfile()
-    {
-        return $this->hasOne(StaffProfile::class);
-    }
+
+    // DISABLED: Staff profile feature not in use. Uncomment when needed.
+    // public function staffProfile()
+    // {
+    //     return $this->hasOne(StaffProfile::class);
+    // }
 
     public function customerProfile()
     {
@@ -159,6 +163,22 @@ class User extends Authenticatable implements MustVerifyEmail
     public function feedbacks()
     {
         return $this->hasMany(CustomerFeedback::class);
+    }
+
+    /**
+     * Get user's FCM devices for push notifications
+     */
+    public function fcmDevices()
+    {
+        return $this->hasMany(UserFcmDevice::class);
+    }
+
+    /**
+     * Get user's active FCM devices
+     */
+    public function activeFcmDevices()
+    {
+        return $this->hasMany(UserFcmDevice::class)->where('is_active', true);
     }
 
     /**

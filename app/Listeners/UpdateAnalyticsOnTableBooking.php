@@ -21,7 +21,7 @@ class UpdateAnalyticsOnTableBooking
                 $this->getDefaultAnalytics($today)
             );
 
-            $analytics->table_bookings += 1;
+            $analytics->table_booking_count += 1;
             $analytics->save();
 
             Log::info('Real-time analytics updated for table booking', [
@@ -41,24 +41,27 @@ class UpdateAnalyticsOnTableBooking
     private function getDefaultAnalytics(string $date): array
     {
         return [
-            'total_revenue' => 0,
+            'total_sales' => 0,
             'total_orders' => 0,
             'average_order_value' => 0,
+            'unique_customers' => 0,
+            'new_customers' => 0,
+            'returning_customers' => 0,
             'dine_in_orders' => 0,
             'takeaway_orders' => 0,
             'delivery_orders' => 0,
+            'mobile_orders' => 0,
             'qr_orders' => 0,
+            'qr_session_count' => 0,
             'qr_revenue' => 0,
-            'table_bookings' => 0,
-            'promotions_used' => 0,
-            'total_discounts' => 0,
-            'rewards_redeemed' => 0,
-            'new_customers' => 0,
-            'returning_customers' => 0,
-            'customer_retention_rate' => 0,
-            'paid_orders' => 0,
-            'pending_orders' => 0,
-            'cancelled_orders' => 0,
+            'table_booking_count' => 0,
+            'table_utilization_rate' => 0,
+            'promotion_usage_count' => 0,
+            'promotion_discount_total' => 0,
+            'rewards_redeemed_count' => 0,
+            'total_revenue_dine_in' => 0,
+            'total_revenue_takeaway' => 0,
+            'total_revenue_delivery' => 0,
         ];
     }
 }

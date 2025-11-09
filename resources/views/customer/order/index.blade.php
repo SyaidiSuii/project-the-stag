@@ -243,6 +243,8 @@
 @endsection
 
 @section('scripts')
+<!-- Pusher for real-time order status updates -->
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script src="{{ asset('js/customer/order.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -1013,6 +1015,77 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize with 'All' category on page load
     filterByCategory('All');
+
+    // ==========================================
+    // Pusher Real-time Order Status Updates
+    // ==========================================
+
+    // Initialize Pusher
+    const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
+        cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
+        encrypted: true
+    });
+
+    // Subscribe to kitchen-display channel
+    const channel = pusher.subscribe('kitchen-display');
+
+    // Listen for order status updates
+    channel.bind('order.status.updated', function(data) {
+        console.log('Pusher: Order status update received', data);
+
+        // Find the order card for this order
+        const orderCard = Array.from(document.querySelectorAll('.order-card')).find(card => {
+            const cardId = card.dataset.id;
+            // Match by: confirmation code, "ORD-{id}", or plain order_id
+            return cardId === data.confirmation_code ||
+                   cardId === `ORD-${data.order_id}` ||
+                   cardId === data.order_id.toString();
+        });
+
+        if (orderCard) {
+            console.log('Updating order card status badge:', data.old_status, '→', data.new_status);
+
+            // Update the status badge
+            const statusBadge = orderCard.querySelector('.order-status');
+            if (statusBadge) {
+                // Remove old status class
+                statusBadge.className = 'order-status';
+                // Add new status class
+                statusBadge.classList.add(`status-${data.new_status}`);
+                // Update text
+                statusBadge.textContent = data.new_status.charAt(0).toUpperCase() + data.new_status.slice(1);
+
+                // Add pulse animation
+                statusBadge.style.animation = 'pulse 0.5s ease-in-out';
+                setTimeout(() => {
+                    statusBadge.style.animation = '';
+                }, 500);
+            }
+
+            // Update card's data-status attribute
+            orderCard.dataset.status = data.new_status;
+
+            // Show toast notification
+            if (typeof Toastify !== 'undefined') {
+                Toastify({
+                    text: `Order status updated: ${data.new_status}`,
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#4CAF50",
+                }).showToast();
+            }
+
+            // Reapply current category filter (in case status change moved it to different category)
+            const activeTab = document.querySelector('.category-tabs .tab[aria-current="page"]');
+            if (activeTab) {
+                const currentCategory = activeTab.dataset.category;
+                filterByCategory(currentCategory);
+            }
+        }
+    });
+
+    console.log('Pusher: Listening for order status updates on kitchen-display channel');
 });
 </script>
 @endguest

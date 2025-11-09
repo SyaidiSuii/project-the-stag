@@ -418,6 +418,19 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
       @endforeach
     </div>
+
+    @if(count($recommendedItems) > 4)
+    <!-- See All Button -->
+    <div style="margin-top: 16px; text-align: center;">
+      <a href="{{ route('customer.menu.recommended-items') }}"
+         style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 12px; color: white; font-weight: 600; font-size: 14px; text-decoration: none; transition: all 0.3s; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);"
+         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(99, 102, 241, 0.4)';"
+         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(99, 102, 241, 0.3)';">
+        <span>See All {{ count($recommendedItems) }} Recommended Items</span>
+        <i class="fas fa-arrow-right" style="font-size: 12px;"></i>
+      </a>
+    </div>
+    @endif
   </div>
   <style>
     /* AI Pick Banner Styles */

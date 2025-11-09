@@ -1,6 +1,7 @@
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Models\Promotion;
+use App\Models\TableQrcode;
 
 Route::get('/debug-promotions', function() {
     $promos = Promotion::all();
@@ -43,4 +44,14 @@ Route::get('/debug-promotions', function() {
         echo "<li>{$ap->name} ({$ap->promotion_type})</li>";
     }
     echo "</ul>";
+});
+
+Route::get('/test-complete-qr/{id}', function($id) {
+    $session = TableQrcode::find($id);
+    if (!$session) {
+        return 'Session not found';
+    }
+    
+    $session->complete();
+    return 'QR session completed';
 });

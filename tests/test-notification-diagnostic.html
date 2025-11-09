@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCM Notification Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .status-box {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-box h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .info { color: #17a2b8; font-weight: bold; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .log-entry {
+            padding: 8px;
+            margin: 4px 0;
+            background: #f8f9fa;
+            border-left: 3px solid #007bff;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔔 FCM Web Push Notification Diagnostic</h1>
+
+    <div class="status-box">
+        <h3>1. Browser Support</h3>
+        <div id="support-status"></div>
+    </div>
+
+    <div class="status-box">
+        <h3>2. Permission Status</h3>
+        <div id="permission-status"></div>
+        <button id="request-permission">Request Permission</button>
+    </div>
+
+    <div class="status-box">
+        <h3>3. Service Worker Status</h3>
+        <div id="sw-status"></div>
+        <button id="register-sw">Register Service Worker</button>
+        <button id="unregister-sw">Unregister All</button>
+    </div>
+
+    <div class="status-box">
+        <h3>4. Firebase Initialization</h3>
+        <div id="firebase-status"></div>
+        <button id="init-firebase">Initialize Firebase</button>
+    </div>
+
+    <div class="status-box">
+        <h3>5. FCM Token</h3>
+        <div id="token-status"></div>
+        <button id="get-token">Get Token</button>
+    </div>
+
+    <div class="status-box">
+        <h3>6. Foreground Message Handler</h3>
+        <div id="handler-status"></div>
+        <button id="setup-handler">Setup Handler</button>
+    </div>
+
+    <div class="status-box">
+        <h3>7. Test Notifications</h3>
+        <button id="test-native">Test Native Notification</button>
+        <button id="test-sw">Test Service Worker Notification</button>
+    </div>
+
+    <div class="status-box">
+        <h3>8. Live Event Log</h3>
+        <div id="event-log"></div>
+        <button id="clear-log">Clear Log</button>
+    </div>
+
+    <script type="module">
+        let messaging = null;
+        let currentToken = null;
+        const eventLog = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = `[${timestamp}] ${message}`;
+            eventLog.push({ message: entry, type });
+
+            const logDiv = document.getElementById('event-log');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.style.borderLeftColor =
+                type === 'success' ? '#28a745' :
+                type === 'error' ? '#dc3545' :
+                type === 'warning' ? '#ffc107' : '#007bff';
+            logEntry.textContent = entry;
+            logDiv.prepend(logEntry);
+
+            console.log(entry);
+        }
+
+        // 1. Check Browser Support
+        function checkSupport() {
+            const supportDiv = document.getElementById('support-status');
+            let html = '';
+
+            if ('Notification' in window) {
+                html += '<p class="success">✓ Notifications API supported</p>';
+            } else {
+                html += '<p class="error">✗ Notifications API NOT supported</p>';
+            }
+
+            if ('serviceWorker' in navigator) {
+                html += '<p class="success">✓ Service Worker supported</p>';
+            } else {
+                html += '<p class="error">✗ Service Worker NOT supported</p>';
+            }
+
+            if ('PushManager' in window) {
+                html += '<p class="success">✓ Push API supported</p>';
+            } else {
+                html += '<p class="error">✗ Push API NOT supported</p>';
+            }
+
+            supportDiv.innerHTML = html;
+            log('Browser support check completed', 'info');
+        }
+
+        // 2. Check Permission Status
+        function checkPermission() {
+            const permissionDiv = document.getElementById('permission-status');
+            const status = Notification.permission;
+
+            let html = `<p>Current status: <span class="${
+                status === 'granted' ? 'success' :
+                status === 'denied' ? 'error' : 'warning'
+            }">${status}</span></p>`;
+
+            if (status === 'denied') {
+                html += '<p class="error">⚠ Notifications blocked. Please enable in browser settings.</p>';
+            }
+
+            permissionDiv.innerHTML = html;
+            log(`Permission status: ${status}`, status === 'granted' ? 'success' : 'warning');
+        }
+
+        // Request Permission
+        document.getElementById('request-permission').addEventListener('click', async () => {
+            try {
+                log('Requesting notification permission...', 'info');
+                const permission = await Notification.requestPermission();
+                log(`Permission result: ${permission}`, permission === 'granted' ? 'success' : 'error');
+                checkPermission();
+            } catch (error) {
+                log(`Error requesting permission: ${error.message}`, 'error');
+            }
+        });
+
+        // 3. Check Service Worker
+        async function checkServiceWorker() {
+            const swDiv = document.getElementById('sw-status');
+
+            try {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                log(`Found ${registrations.length} service worker(s)`, 'info');
+
+                let html = `<p>Registered service workers: <strong>${registrations.length}</strong></p>`;
+
+                registrations.forEach((reg, index) => {
+                    const state = reg.active ? reg.active.state : 'none';
+                    html += `<p>SW ${index + 1}: ${reg.scope} - State: <span class="info">${state}</span></p>`;
+                });
+
+                if (registrations.length === 0) {
+                    html += '<p class="warning">No service workers registered</p>';
+                }
+
+                swDiv.innerHTML = html;
+            } catch (error) {
+                swDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                log(`Service worker check error: ${error.message}`, 'error');
+            }
+        }
+
+        // Register Service Worker
+        document.getElementById('register-sw').addEventListener('click', async () => {
+            try {
+                log('Registering service worker...', 'info');
+                const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+                    scope: '/'
+                });
+                log('Service worker registered successfully', 'success');
+
+                await navigator.serviceWorker.ready;
+                log('Service worker is ready', 'success');
+
+                checkServiceWorker();
+            } catch (error) {
+                log(`Service worker registration failed: ${error.message}`, 'error');
+            }
+        });
+
+        // Unregister All Service Workers
+        document.getElementById('unregister-sw').addEventListener('click', async () => {
+            try {
+                log('Unregistering all service workers...', 'info');
+                const registrations = await navigator.serviceWorker.getRegistrations();
+
+                for (const registration of registrations) {
+                    await registration.unregister();
+                }
+
+                log(`Unregistered ${registrations.length} service worker(s)`, 'success');
+                checkServiceWorker();
+            } catch (error) {
+                log(`Error unregistering: ${error.message}`, 'error');
+            }
+        });
+
+        // 4. Initialize Firebase
+        document.getElementById('init-firebase').addEventListener('click', async () => {
+            const firebaseDiv = document.getElementById('firebase-status');
+
+            try {
+                log('Initializing Firebase...', 'info');
+
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+                const { getMessaging } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js');
+
+                const firebaseConfig = {
+                    apiKey: "AIzaSyBbZjFu_65L4beK-Pb52woSe_XUP0I6qV0",
+                    authDomain: "the-stag-notification.firebaseapp.com",
+                    projectId: "the-stag-notification",
+                    storageBucket: "the-stag-notification.firebasestorage.app",
+                    messagingSenderId: "1034284626573",
+                    appId: "1:1034284626573:web:82efb5b7886827a910e8c4",
+                    measurementId: "G-31D3G5BFG6"
+                };
+
+                const app = initializeApp(firebaseConfig);
+                messaging = getMessaging(app);
+
+                firebaseDiv.innerHTML = '<p class="success">✓ Firebase initialized successfully</p>';
+                log('Firebase initialized successfully', 'success');
+            } catch (error) {
+                firebaseDiv.innerHTML = `<p class="error">✗ Error: ${error.message}</p>`;
+                log(`Firebase initialization error: ${error.message}`, 'error');
+            }
+        });
+
+        // 5. Get FCM Token
+        document.getElementById('get-token').addEventListener('click', async () => {
+            const tokenDiv = document.getElementById('token-status');
+
+            if (!messaging) {
+                tokenDiv.innerHTML = '<p class="error">Please initialize Firebase first</p>';
+                return;
+            }
+
+            try {
+                log('Getting FCM token...', 'info');
+
+                // Ensure service worker is ready
+                const registration = await navigator.serviceWorker.ready;
+                if (!registration.active) {
+                    throw new Error('Service worker not active');
+                }
+                log('Service worker confirmed ready', 'success');
+
+                // Wait a bit for service worker to settle
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                const { getToken } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js');
+
+                const token = await getToken(messaging, {
+                    vapidKey: "BHl0j5uyqrfxnV8DYpFXEvSDV2gJY1YPgTHY4iYaZPB1eeBJ8-FYd3c3lB2gqPe2V_cUXGS3P6XwdJpROaYrtvk",
+                    serviceWorkerRegistration: registration
+                });
+
+                if (token) {
+                    currentToken = token;
+                    tokenDiv.innerHTML = `
+                        <p class="success">✓ Token obtained</p>
+                        <pre>${token}</pre>
+                    `;
+                    log('FCM token obtained successfully', 'success');
+                } else {
+                    tokenDiv.innerHTML = '<p class="error">No token available</p>';
+                    log('Failed to get token', 'error');
+                }
+            } catch (error) {
+                tokenDiv.innerHTML = `<p class="error">✗ Error: ${error.message}</p>`;
+                log(`Token error: ${error.message}`, 'error');
+            }
+        });
+
+        // 6. Setup Foreground Handler
+        document.getElementById('setup-handler').addEventListener('click', async () => {
+            const handlerDiv = document.getElementById('handler-status');
+
+            if (!messaging) {
+                handlerDiv.innerHTML = '<p class="error">Please initialize Firebase first</p>';
+                return;
+            }
+
+            try {
+                log('Setting up foreground message handler...', 'info');
+
+                const { onMessage } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js');
+
+                onMessage(messaging, (payload) => {
+                    log('🔔 FOREGROUND MESSAGE RECEIVED!', 'success');
+                    log(`Title: ${payload.notification?.title}`, 'success');
+                    log(`Body: ${payload.notification?.body}`, 'success');
+                    log(`Data: ${JSON.stringify(payload.data)}`, 'info');
+
+                    // Show notification
+                    if (Notification.permission === 'granted') {
+                        new Notification(payload.notification?.title || 'Notification', {
+                            body: payload.notification?.body || '',
+                            icon: '/images/logo.png',
+                            data: payload.data
+                        });
+                    }
+                });
+
+                handlerDiv.innerHTML = '<p class="success">✓ Foreground handler setup complete</p>';
+                log('Foreground handler setup complete', 'success');
+            } catch (error) {
+                handlerDiv.innerHTML = `<p class="error">✗ Error: ${error.message}</p>`;
+                log(`Handler setup error: ${error.message}`, 'error');
+            }
+        });
+
+        // 7. Test Native Notification
+        document.getElementById('test-native').addEventListener('click', () => {
+            if (Notification.permission !== 'granted') {
+                log('Permission not granted', 'error');
+                return;
+            }
+
+            log('Showing native notification...', 'info');
+            const notification = new Notification('Test Native Notification', {
+                body: 'This is a test from the diagnostic page',
+                icon: '/images/logo.png',
+                tag: 'test-native'
+            });
+
+            notification.onclick = () => {
+                log('Native notification clicked', 'success');
+            };
+
+            log('Native notification displayed', 'success');
+        });
+
+        // Test Service Worker Notification
+        document.getElementById('test-sw').addEventListener('click', async () => {
+            try {
+                log('Showing service worker notification...', 'info');
+                const registration = await navigator.serviceWorker.ready;
+
+                await registration.showNotification('Test SW Notification', {
+                    body: 'This is a test from service worker',
+                    icon: '/images/logo.png',
+                    tag: 'test-sw'
+                });
+
+                log('Service worker notification displayed', 'success');
+            } catch (error) {
+                log(`SW notification error: ${error.message}`, 'error');
+            }
+        });
+
+        // Clear Log
+        document.getElementById('clear-log').addEventListener('click', () => {
+            document.getElementById('event-log').innerHTML = '';
+            eventLog.length = 0;
+            log('Log cleared', 'info');
+        });
+
+        // Listen for service worker messages
+        navigator.serviceWorker.addEventListener('message', (event) => {
+            log(`Message from service worker: ${JSON.stringify(event.data)}`, 'info');
+        });
+
+        // Initial checks
+        checkSupport();
+        checkPermission();
+        checkServiceWorker();
+
+        // Auto-check permission changes
+        setInterval(checkPermission, 5000);
+    </script>
+</body>
+</html>

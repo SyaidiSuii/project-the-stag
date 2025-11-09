@@ -84,19 +84,22 @@ allCategories.sort();
 
 // Render menu type toggle functionality
 function renderMenuTypeToggle() {
-  const allBtn = document.getElementById('allMenuBtn');
-  const foodBtn = document.getElementById('foodMenuBtn');
-  const drinksBtn = document.getElementById('drinksMenuBtn');
+  // Support multiple button ID patterns for different views
+  const allBtn = document.getElementById('allMenuBtn') || document.getElementById('allItemsBtn');
+  const foodBtn = document.getElementById('foodMenuBtn') || document.getElementById('foodBtn');
+  const drinksBtn = document.getElementById('drinksMenuBtn') || document.getElementById('drinksBtn');
 
   [allBtn, foodBtn, drinksBtn].forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+    if (btn) { // Check if element exists before attaching event listener
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
 
-      currentMenuType = btn.dataset.type;
-      renderMenuItems();
-      updateCategoryTitle();
-    });
+        currentMenuType = btn.dataset.type;
+        renderMenuItems();
+        updateCategoryTitle();
+      });
+    }
   });
 }
 
@@ -321,6 +324,9 @@ function createMenuCard(item) {
 
 // Update category title
 function updateCategoryTitle() {
+  const categoryTitle = document.getElementById('categoryTitle');
+  if (!categoryTitle) return; // Exit if element doesn't exist (e.g., on fast-items page)
+
   let title = 'Menu';
 
   if (currentMenuType !== 'all') {
@@ -328,7 +334,7 @@ function updateCategoryTitle() {
     title = typeText;
   }
 
-  document.getElementById('categoryTitle').textContent = title;
+  categoryTitle.textContent = title;
 }
 
 // Initialize search functionality
@@ -454,20 +460,26 @@ document.addEventListener('click', async function(e) {
     const allItems = [...food, ...drinks, ...setMeals];
     const itemData = allItems.find(item => item.id === itemId);
 
-    // Use discounted price if available, otherwise use original price
+    // IMPORTANT: Get both display price and numeric unit_price (for backend)
     let itemPriceText;
+    let unitPrice; // Numeric value for backend
     if (itemData && itemData.has_discount && itemData.discount_info) {
-      itemPriceText = `RM ${itemData.discount_info.discounted_price.toFixed(2)}`;
+      // Has discount - use discounted price
+      unitPrice = itemData.discount_info.discounted_price;
+      itemPriceText = `RM ${unitPrice.toFixed(2)}`;
     } else if (itemData) {
-      itemPriceText = `RM ${itemData.price.toFixed(2)}`;
+      // No discount - use original price
+      unitPrice = itemData.price;
+      itemPriceText = `RM ${unitPrice.toFixed(2)}`;
     } else {
       // Fallback: read from card
       itemPriceText = itemCard.querySelector('.food-price.discounted-price')?.textContent ||
                       itemCard.querySelector('.food-price')?.textContent || 'RM 0.00';
+      unitPrice = parseFloat(itemPriceText.replace(/[^\d.]/g, '')) || 0;
     }
 
-    // Show order modal
-    showOrderModal(itemId, itemName, itemPriceText, itemDescription, itemImage);
+    // Show order modal with numeric unit_price
+    showOrderModal(itemId, itemName, itemPriceText, itemDescription, itemImage, unitPrice);
   }
 });
 
@@ -1010,7 +1022,7 @@ let currentOrderItem = null;
 let orderQuantity = 1;
 
 // Show order modal for "Order Now" button
-function showOrderModal(itemId, itemName, itemPrice, itemDescription, itemImage) {
+function showOrderModal(itemId, itemName, itemPrice, itemDescription, itemImage, unitPrice) {
   const modal = document.getElementById('order-modal');
   const modalItemName = document.getElementById('order-item-name');
   const modalItemPrice = document.getElementById('order-item-price');
@@ -1021,11 +1033,12 @@ function showOrderModal(itemId, itemName, itemPrice, itemDescription, itemImage)
   // Reset quantity
   orderQuantity = 1;
 
-  // Store current item
+  // Store current item with unit_price for backend
   currentOrderItem = {
     id: itemId,
     name: itemName,
-    price: itemPrice,
+    price: itemPrice, // Display string (e.g., "RM 15.00")
+    unit_price: unitPrice, // Numeric value for calculations (e.g., 15.00)
     description: itemDescription,
     image: itemImage
   };
@@ -1117,7 +1130,8 @@ document.addEventListener('click', function(e) {
       const orderData = {
         item_id: currentOrderItem.id,
         item_name: currentOrderItem.name,
-        item_price: currentOrderItem.price,
+        item_price: currentOrderItem.price, // Display string
+        unit_price: currentOrderItem.unit_price, // IMPORTANT: Numeric value for backend (includes discount)
         quantity: orderQuantity,
         notes: specialNotes,
         // Remove payment_method - let user choose on payment page

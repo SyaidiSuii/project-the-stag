@@ -42,7 +42,7 @@ class RecommendationService
             try {
                 $requestData = [
                     'user_id' => $userId,
-                    'limit' => $limit,
+                    'topn' => $limit,  // Python AI service expects 'topn' not 'limit'
                 ];
 
                 if ($excludeItems !== null) {
@@ -101,7 +101,7 @@ class RecommendationService
         try {
             $requestData = [
                 'user_id' => $userId,
-                'limit' => $limit,
+                'topn' => $limit,  // Python AI service expects 'topn' not 'limit'
             ];
 
             if ($excludeItems !== null) {

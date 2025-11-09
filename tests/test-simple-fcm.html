@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple FCM Test</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 50px auto; padding: 20px; }
+        button { padding: 12px 24px; font-size: 14px; margin: 10px; cursor: pointer; }
+        .success { color: green; }
+        .error { color: red; }
+        pre { background: #f5f5f5; padding: 15px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Simple FCM Token Test</h1>
+    <p>Test tanpa anonymous auth - check if API is enabled</p>
+    
+    <button onclick="testPermission()">1. Request Permission</button>
+    <button onclick="testToken()">2. Get Token (No Auth)</button>
+    <button onclick="testNative()">3. Test Native Notification</button>
+    
+    <div id="result"></div>
+    
+    <script type="module">
+        window.testPermission = async function() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>Requesting permission...</p>';
+            
+            const perm = await Notification.requestPermission();
+            result.innerHTML = `<p class="success">Permission: ${perm}</p>`;
+        }
+        
+        window.testToken = async function() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>Testing FCM token generation...</p>';
+            
+            try {
+                // Import Firebase
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+                const { getMessaging, getToken } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js');
+                
+                // Initialize
+                const app = initializeApp({
+                    apiKey: "AIzaSyBbZjFu_65L4beK-Pb52woSe_XUP0I6qV0",
+                    authDomain: "the-stag-notification.firebaseapp.com",
+                    projectId: "the-stag-notification",
+                    storageBucket: "the-stag-notification.firebasestorage.app",
+                    messagingSenderId: "1034284626573",
+                    appId: "1:1034284626573:web:82efb5b7886827a910e8c4"
+                });
+                
+                const messaging = getMessaging(app);
+                
+                // Register SW
+                const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                await navigator.serviceWorker.ready;
+                await new Promise(r => setTimeout(r, 1000));
+                
+                // Try to get token WITHOUT authentication
+                const token = await getToken(messaging, {
+                    vapidKey: "BHl0j5uyqrfxnV8DYpFXEvSDV2gJY1YPgTHY4iYaZPB1eeBJ8-FYd3c3lB2gqPe2V_cUXGS3P6XwdJpROaYrtvk",
+                    serviceWorkerRegistration: reg
+                });
+                
+                if (token) {
+                    result.innerHTML = `
+                        <p class="success">✅ SUCCESS! API is enabled!</p>
+                        <p>Token: ${token.substring(0, 50)}...</p>
+                    `;
+                } else {
+                    result.innerHTML = '<p class="error">❌ No token returned</p>';
+                }
+                
+            } catch (error) {
+                result.innerHTML = `
+                    <p class="error">❌ ERROR: ${error.message}</p>
+                    <pre>${error.stack}</pre>
+                `;
+                
+                if (error.message.includes('authentication credential')) {
+                    result.innerHTML += `
+                        <p><strong>This error means:</strong></p>
+                        <ul>
+                            <li>Firebase Cloud Messaging API is NOT enabled yet</li>
+                            <li>OR Firebase project requires authentication</li>
+                        </ul>
+                        <p><strong>Solution:</strong> Click "Firebase Cloud Messaging API" in Google Cloud Console and enable it</p>
+                    `;
+                }
+            }
+        }
+        
+        window.testNative = function() {
+            const result = document.getElementById('result');
+            
+            if (Notification.permission !== 'granted') {
+                result.innerHTML = '<p class="error">Permission not granted</p>';
+                return;
+            }
+            
+            new Notification('Test Native Notification', {
+                body: 'If you see this popup, browser notifications work!',
+                icon: '/images/logo.png'
+            });
+            
+            result.innerHTML = '<p class="success">✅ Check Windows notification popup!</p>';
+        }
+    </script>
+</body>
+</html>

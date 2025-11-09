@@ -36,3 +36,6 @@ GEMINI.md
 /.github/CLAUDE.md
 /.github/copilot-instructions.md
 /ai-service/
+
+# Firebase
+/firebase-service-account.json

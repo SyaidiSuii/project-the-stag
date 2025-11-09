@@ -57,6 +57,18 @@ class TableReservation extends Model
             }
         });
 
+        // Fire event when reservation is created
+        static::created(function ($reservation) {
+            // Fire TableBookingCreatedEvent to notify admin about new reservation
+            event(new \App\Events\TableBookingCreatedEvent($reservation));
+
+            \Log::info('New reservation created - event fired', [
+                'reservation_id' => $reservation->id,
+                'confirmation_code' => $reservation->confirmation_code,
+                'status' => $reservation->status
+            ]);
+        });
+
         // Automatically set timestamps when the status changes.
         static::saving(function ($reservation) {
             if ($reservation->isDirty('status')) {

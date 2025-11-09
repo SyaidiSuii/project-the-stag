@@ -375,6 +375,59 @@
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
         border-radius: 6px !important;
     }
+
+    /* Tab Navigation Styles */
+    .tab-navigation {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 30px;
+        background: white;
+        padding: 8px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        border: 1px solid var(--gray-200);
+        width: fit-content;
+    }
+
+    .tab-btn {
+        background: transparent;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--gray-600);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: var(--transition);
+        white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+        background: var(--gray-100);
+        color: var(--gray-800);
+    }
+
+    .tab-btn.active {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+    }
+
+    .tab-btn i {
+        font-size: 13px;
+    }
+
+    /* Content sections for tabs */
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
 </style>
 @endsection
 
@@ -393,6 +446,18 @@
                 <i class="fas fa-download"></i> Download PDF Report
             </a>
         </div>
+    </div>
+    
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+        <button class="tab-btn active" data-tab="current-month">
+            <i class="fas fa-calendar-alt"></i>
+            Current Month
+        </button>
+        <button class="tab-btn" data-tab="all-time">
+            <i class="fas fa-chart-line"></i>
+            All Time
+        </button>
     </div>
 
     <!-- KPI Summary Cards -->
@@ -623,25 +688,127 @@
 <!-- ApexCharts Library -->
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
+<!-- Laravel Echo for Real-time Updates -->
+@if(config('broadcasting.default') !== 'null')
+<script src="https://cdn.jsdelivr.net/npm/pusher-js@8/dist/web/pusher.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/laravel-echo@1/dist/echo.iife.js"></script>
+@endif
+
 <script>
+    // Global variables for charts (accessible for updates)
+    let salesChart, topProductsChart, salesByCategoryChart, orderTypesChart, qrVsWebChart, promotionChart;
+
+    // Initialize Laravel Echo
+    @if(config('broadcasting.default') !== 'null')
+    window.Echo = new Echo({
+        broadcaster: 'pusher',
+        key: '{{ config('broadcasting.connections.pusher.key') }}',
+        cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
+        forceTLS: true,
+        encrypted: true
+    });
+
+    // Listen for analytics updates
+    Echo.channel('analytics-updates')
+        .listen('.analytics.refresh', (e) => {
+            console.log('📊 Real-time analytics update received:', e.analytics);
+            updateKPICards(e.analytics);
+            showUpdateToast();
+        });
+    @endif
+
+    // Function to update KPI cards with new data
+    function updateKPICards(data) {
+        if (!data) return;
+
+        // Update Revenue
+        const revenueElements = document.querySelectorAll('.kpi-value');
+        if (revenueElements.length > 0) {
+            revenueElements[0].textContent = 'RM ' + parseFloat(data.total_revenue || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
+        // Update Orders
+        if (revenueElements.length > 1) {
+            revenueElements[1].textContent = parseInt(data.total_orders || 0).toLocaleString();
+        }
+
+        // Update Avg Order Value
+        if (revenueElements.length > 2) {
+            revenueElements[2].textContent = 'RM ' + parseFloat(data.avg_order_value || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
+        // Update Active Items
+        if (revenueElements.length > 3) {
+            revenueElements[3].textContent = parseInt(data.active_items || 0).toLocaleString();
+        }
+
+        // Update stat cards
+        const statValues = document.querySelectorAll('.stat-value');
+        if (statValues.length > 0) {
+            statValues[0].textContent = 'RM ' + parseFloat(data.total_revenue || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+        if (statValues.length > 1) {
+            statValues[1].textContent = parseInt(data.total_orders || 0).toLocaleString();
+        }
+        if (statValues.length > 2) {
+            statValues[2].textContent = parseInt(data.qr_orders || 0).toLocaleString();
+        }
+        if (statValues.length > 3) {
+            statValues[3].textContent = parseInt(data.table_bookings || 0).toLocaleString();
+        }
+
+        // Update customer insights
+        const newCustomersEl = document.getElementById('new-customers');
+        const returningCustomersEl = document.getElementById('returning-customers');
+        const retentionRateEl = document.getElementById('retention-rate');
+
+        if (newCustomersEl) newCustomersEl.textContent = parseInt(data.new_customers || 0).toLocaleString();
+        if (returningCustomersEl) returningCustomersEl.textContent = parseInt(data.returning_customers || 0).toLocaleString();
+        if (retentionRateEl) retentionRateEl.textContent = parseFloat(data.customer_retention_rate || 0).toFixed(1) + '%';
+    }
+
+    // Function to show update notification
+    function showUpdateToast() {
+        if (typeof Toast !== 'undefined') {
+            Toast.info('📊 Analytics Updated', 'Dashboard data has been refreshed with latest information');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
+        console.log('📊 Reports Dashboard Initialized - WebSocket Enabled');
+        @if(config('broadcasting.default') !== 'null')
+        console.log('🔌 WebSocket Pusher Connected - Listening to analytics-updates channel');
+        @else
+        console.log('ℹ️ WebSocket not configured - Using static data');
+        @endif
+
         // Real data from Laravel controller
         const salesSummary = @json($salesSummary);
         const topSellingProducts = @json($topSellingProducts);
         const salesByCategory = @json($salesByCategory);
         const orderTypeBreakdown = @json($orderTypeBreakdown);
         const qrVsWeb = @json($qrVsWeb);
-
-        // Sales Overview Chart (Area Chart)
+        // Sales Overview Chart (Area Chart with Pan/Zoom)
         var salesOptions = {
             chart: {
                 type: 'area',
                 height: '100%',
                 toolbar: {
-                    show: false
+                    show: true,
+                    tools: {
+                        download: true,
+                        selection: true,
+                        zoom: true,
+                        zoomin: true,
+                        zoomout: true,
+                        pan: true,
+                        reset: true
+                    }
                 },
                 zoom: {
-                    enabled: false
+                    enabled: true,
+                    type: 'x',
+                    autoScaleYaxis: true
                 },
                 sparkline: {
                     enabled: false
@@ -658,6 +825,12 @@
                 curve: 'smooth',
                 width: 3
             },
+            markers: {
+                size: 4,
+                hover: {
+                    size: 6
+                }
+            },
             fill: {
                 type: 'gradient',
                 gradient: {
@@ -669,6 +842,7 @@
             },
             xaxis: {
                 categories: salesSummary.labels,
+                type: 'category',
                 axisBorder: {
                     show: false
                 },
@@ -679,7 +853,12 @@
                     style: {
                         colors: '#64748b',
                         fontSize: '12px'
-                    }
+                    },
+                    rotate: -45,
+                    rotateAlways: salesSummary.labels.length > 12
+                },
+                tooltip: {
+                    enabled: true
                 }
             },
             yaxis: {
@@ -704,6 +883,11 @@
                     fontSize: '12px'
                 }
             },
+            legend: {
+                show: true,
+                position: 'top',
+                horizontalAlign: 'left',
+            },
             colors: ['#6366f1'],
             grid: {
                 borderColor: '#e2e8f0',
@@ -714,7 +898,8 @@
             }
         };
 
-        var salesChart = new ApexCharts(document.querySelector("#salesChart"), salesOptions);
+
+        salesChart = new ApexCharts(document.querySelector("#salesChart"), salesOptions);
         salesChart.render();
 
         // Top Selling Products Chart (Column Chart)
@@ -782,7 +967,7 @@
             }
         };
 
-        var topProductsChart = new ApexCharts(document.querySelector("#topProductsChart"), topProductsOptions);
+        topProductsChart = new ApexCharts(document.querySelector("#topProductsChart"), topProductsOptions);
         topProductsChart.render();
 
         // Sales by Category Chart (Donut Chart)
@@ -794,7 +979,7 @@
                     show: false
                 }
             },
-            series: salesByCategory.revenue,
+            series: salesByCategory.revenue.map(Number),
             labels: salesByCategory.labels,
             colors: ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'],
             legend: {
@@ -828,7 +1013,7 @@
             }
         };
 
-        var salesByCategoryChart = new ApexCharts(document.querySelector("#salesByCategoryChart"), salesByCategoryOptions);
+        salesByCategoryChart = new ApexCharts(document.querySelector("#salesByCategoryChart"), salesByCategoryOptions);
         salesByCategoryChart.render();
 
         // Order Types Distribution Chart (Pie Chart)
@@ -840,7 +1025,7 @@
                     show: false
                 }
             },
-            series: orderTypeBreakdown.data,
+            series: orderTypeBreakdown.data.map(Number),
             labels: orderTypeBreakdown.labels,
             colors: ['#10b981', '#3b82f6', '#ef4444', '#f59e0b'],
             legend: {
@@ -868,7 +1053,7 @@
             }
         };
 
-        var orderTypesChart = new ApexCharts(document.querySelector("#orderTypesChart"), orderTypesOptions);
+        orderTypesChart = new ApexCharts(document.querySelector("#orderTypesChart"), orderTypesOptions);
         orderTypesChart.render();
 
         // QR vs Web Orders Chart (Column Chart)
@@ -935,7 +1120,7 @@
             }
         };
 
-        var qrVsWebChart = new ApexCharts(document.querySelector("#qrVsWebChart"), qrVsWebOptions);
+        qrVsWebChart = new ApexCharts(document.querySelector("#qrVsWebChart"), qrVsWebOptions);
         qrVsWebChart.render();
 
         // Promotion Effectiveness Chart (Bar Chart)
@@ -1038,8 +1223,114 @@
             }
         };
 
-        var promotionChart = new ApexCharts(document.querySelector("#promotionEffectivenessChart"), promotionOptions);
+        promotionChart = new ApexCharts(document.querySelector("#promotionEffectivenessChart"), promotionOptions);
         promotionChart.render();
+
+        console.log('✅ All charts initialized successfully');
+        // All charts initialized successfully
+        console.log('🔍 Sales Overview: Pan & Zoom enabled - Use toolbar or drag to explore data!');
+        // Tab switching functionality
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        let currentTab = 'current-month';
+        let allTimeData = null;
+
+        // Tab click event handlers
+        tabButtons.forEach(button => {
+            button.addEventListener('click', async function() {
+                const tabType = this.getAttribute('data-tab');
+                
+                // Skip if already active
+                if (tabType === currentTab) return;
+                
+                // Update active button
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show loading state
+                const dashboardGrid = document.querySelector('.dashboard-grid');
+                const originalContent = dashboardGrid.innerHTML;
+                dashboardGrid.style.opacity = '0.5';
+                
+                try {
+                    if (tabType === 'all-time') {
+                        // Load all-time data
+                        if (!allTimeData) {
+                            console.log('📊 Loading all-time analytics data...');
+                            const response = await fetch('/admin/reports/analytics/all-time');
+                            allTimeData = await response.json();
+                        }
+                        updateDashboardWithAllTimeData(allTimeData);
+                    } else {
+                        // Reload current month data
+                        console.log('📊 Reloading current month data...');
+                        location.reload();
+                    }
+                    currentTab = tabType;
+                } catch (error) {
+                    console.error('❌ Error loading analytics data:', error);
+                    // Revert to previous state on error
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    document.querySelector(`[data-tab="${currentTab}"]`).classList.add('active');
+                } finally {
+                    dashboardGrid.style.opacity = '1';
+                }
+            });
+        });
+
+        // Function to update dashboard with all-time data
+        function updateDashboardWithAllTimeData(data) {
+            console.log('🔄 Updating dashboard with all-time data');
+
+            // Update chart titles with time range info
+            const salesOverviewTitle = document.querySelector('.large-widget .widget-title');
+            if (salesOverviewTitle && data.dateRange) {
+                salesOverviewTitle.innerHTML = `<i class="fas fa-chart-line"></i> Sales Overview - ${data.dateRange.label}`;
+            }
+
+            // Update KPI cards
+            updateKPICards(data.kpi);
+            
+            // Update KPI cards
+            updateKPICards(data.kpi);
+            
+            // Update charts
+            if (salesChart && data.salesSummary) {
+                salesChart.updateOptions({
+                    series: [{ name: 'Revenue (RM)', data: data.salesSummary.revenue }],
+                    xaxis: { categories: data.salesSummary.labels }
+                }, true);
+            }
+            
+            if (topProductsChart && data.topSellingProducts) {
+                topProductsChart.updateOptions({
+                    series: [{ name: 'Quantity Sold', data: data.topSellingProducts.map(p => p.total_quantity) }],
+                    xaxis: { categories: data.topSellingProducts.map(p => p.menu_item.name) }
+                }, true);
+            }
+            
+            if (salesByCategoryChart && data.salesByCategory) {
+                salesByCategoryChart.updateOptions({
+                    series: data.salesByCategory.revenue.map(Number),
+                    labels: data.salesByCategory.labels
+                }, true);
+            }
+            
+            if (orderTypesChart && data.orderTypeBreakdown) {
+                orderTypesChart.updateOptions({
+                    series: data.orderTypeBreakdown.data.map(Number),
+                    labels: data.orderTypeBreakdown.labels
+                }, true);
+            }
+            
+            if (qrVsWebChart && data.qrVsWeb) {
+                qrVsWebChart.updateOptions({
+                    series: [{ name: 'Orders', data: data.qrVsWeb.data }],
+                    xaxis: { categories: data.qrVsWeb.labels }
+                }, true);
+            }
+            
+            console.log('✅ All-time data loaded successfully');
+        }
     });
 </script>
 @endsection

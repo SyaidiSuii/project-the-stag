@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test New Firebase Project - the-stag-notif-v2</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .project-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .test-btn { background: #2196F3; }
+        .test-btn:hover { background: #0b7dda; }
+        .danger-btn { background: #f44336; }
+        .danger-btn:hover { background: #da190b; }
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            min-height: 200px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .log-item {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .log-info { color: #2196F3; }
+        .log-success { color: #4CAF50; font-weight: bold; }
+        .log-error { color: #f44336; font-weight: bold; }
+        .log-warning { color: #FF9800; }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-pending { background: #FFF3E0; color: #F57C00; }
+        .status-success { background: #E8F5E9; color: #2E7D32; }
+        .status-error { background: #FFEBEE; color: #C62828; }
+        .step {
+            background: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 3px solid #2196F3;
+            border-radius: 3px;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Firebase Project Test</h1>
+        <div class="project-info">
+            <strong>Project:</strong> the-stag-notif-v2<br>
+            <strong>Purpose:</strong> Verify new Firebase project configuration and FCM token generation
+        </div>
+
+        <div class="step">
+            <h3>Step 1: Check Anonymous Authentication</h3>
+            <p>Before testing, ensure Anonymous Authentication is enabled:</p>
+            <ol>
+                <li>Go to <a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a></li>
+                <li>Select project: <strong>the-stag-notif-v2</strong></li>
+                <li>Authentication → Sign-in method → <strong>Anonymous</strong> → Enable</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Run Tests</h3>
+            <button id="testBtn" onclick="runFullTest()">🧪 Run Full Test</button>
+            <button class="test-btn" onclick="testAnonymousAuth()">🔐 Test Anonymous Auth Only</button>
+            <button class="test-btn" onclick="testTokenGeneration()">🎟️ Test Token Generation Only</button>
+            <button class="danger-btn" onclick="clearOutput()">🗑️ Clear Output</button>
+        </div>
+
+        <div id="output">
+            <div class="log-item log-info">Click "Run Full Test" to start...</div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getMessaging, getToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
+
+        // Firebase Configuration for the-stag-notif-v2
+        const firebaseConfig = {
+            apiKey: "AIzaSyBO-_-PSDlUZkY0dCI7lI8LeJzoRRBvSEQ",
+            authDomain: "the-stag-notif-v2.firebaseapp.com",
+            projectId: "the-stag-notif-v2",
+            storageBucket: "the-stag-notif-v2.firebasestorage.app",
+            messagingSenderId: "595478392275",
+            appId: "1:595478392275:web:56b641955e431fe3ddd326",
+            measurementId: "G-31D3G5BFG6"
+        };
+
+        const vapidKey = "BJgXUylh8XHPBLLZOVaw4kAuLeFcVpKCCp6sNWLdl_fFhSMtfEVUX6aDaHZ33vDi2LRjMrS8TexE1UbHgYw37Nc";
+
+        let app, auth, messaging;
+        let outputDiv;
+
+        function log(message, type = 'info') {
+            if (!outputDiv) outputDiv = document.getElementById('output');
+            const logItem = document.createElement('div');
+            logItem.className = `log-item log-${type}`;
+            logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            outputDiv.appendChild(logItem);
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+            console.log(message);
+        }
+
+        window.clearOutput = function() {
+            if (!outputDiv) outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = '<div class="log-item log-info">Output cleared. Ready for new test.</div>';
+        };
+
+        window.runFullTest = async function() {
+            clearOutput();
+            log('=== STARTING FULL FIREBASE TEST ===', 'info');
+            log('Project: the-stag-notif-v2', 'info');
+
+            try {
+                // Step 1: Initialize Firebase
+                log('Step 1: Initializing Firebase...', 'info');
+                app = initializeApp(firebaseConfig);
+                log('✓ Firebase initialized successfully', 'success');
+
+                // Step 2: Initialize Auth
+                log('Step 2: Initializing Firebase Auth...', 'info');
+                auth = getAuth(app);
+                log('✓ Firebase Auth initialized', 'success');
+
+                // Step 3: Check Browser Support
+                log('Step 3: Checking browser support...', 'info');
+                if (!('Notification' in window)) {
+                    throw new Error('This browser does not support notifications');
+                }
+                log('✓ Browser supports notifications', 'success');
+
+                if (!('serviceWorker' in navigator)) {
+                    throw new Error('This browser does not support service workers');
+                }
+                log('✓ Browser supports service workers', 'success');
+
+                // Step 4: Check Notification Permission
+                log('Step 4: Checking notification permission...', 'info');
+                log(`Current permission: ${Notification.permission}`, 'warning');
+
+                if (Notification.permission === 'denied') {
+                    throw new Error('Notification permission is denied. Please enable it in browser settings.');
+                }
+
+                if (Notification.permission === 'default') {
+                    log('Requesting notification permission...', 'info');
+                    const permission = await Notification.requestPermission();
+                    if (permission !== 'granted') {
+                        throw new Error('Notification permission was not granted');
+                    }
+                    log('✓ Notification permission granted', 'success');
+                } else {
+                    log('✓ Notification permission already granted', 'success');
+                }
+
+                // Step 5: Anonymous Authentication
+                log('Step 5: Signing in anonymously...', 'info');
+                log('⏳ This checks if Anonymous Auth is enabled in Firebase Console...', 'warning');
+
+                const userCredential = await signInAnonymously(auth);
+                const user = userCredential.user;
+
+                log('✓ Anonymous sign-in successful!', 'success');
+                log(`User UID: ${user.uid}`, 'info');
+                log('✓ Anonymous Authentication is ENABLED in Firebase Console', 'success');
+
+                // Step 6: Service Worker Registration
+                log('Step 6: Registering service worker...', 'info');
+                const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                log('✓ Service worker registered', 'success');
+
+                // Wait for service worker to be ready
+                log('Waiting for service worker to be active...', 'info');
+                await navigator.serviceWorker.ready;
+
+                if (!registration.active) {
+                    throw new Error('Service worker is not active');
+                }
+                log('✓ Service worker is active and ready', 'success');
+
+                // Step 7: Initialize FCM
+                log('Step 7: Initializing Firebase Cloud Messaging...', 'info');
+                messaging = getMessaging(app);
+                log('✓ FCM initialized', 'success');
+
+                // Step 8: Get FCM Token
+                log('Step 8: Requesting FCM token...', 'info');
+                log('⏳ This may take a few seconds...', 'warning');
+
+                const token = await getToken(messaging, {
+                    vapidKey: vapidKey,
+                    serviceWorkerRegistration: registration
+                });
+
+                if (!token) {
+                    throw new Error('Failed to get FCM token');
+                }
+
+                log('✓✓✓ FCM TOKEN GENERATED SUCCESSFULLY! ✓✓✓', 'success');
+                log(`Token (first 50 chars): ${token.substring(0, 50)}...`, 'success');
+                log(`Token (full): ${token}`, 'info');
+                log('', 'info');
+                log('=== ALL TESTS PASSED ===', 'success');
+                log('✓ Firebase project is configured correctly', 'success');
+                log('✓ Anonymous Authentication is enabled', 'success');
+                log('✓ FCM is working properly', 'success');
+                log('', 'info');
+                log('Next step: Copy this token and test notification sending from Laravel', 'info');
+
+            } catch (error) {
+                log('', 'info');
+                log('❌ TEST FAILED', 'error');
+                log(`Error: ${error.message}`, 'error');
+                log(`Error code: ${error.code || 'N/A'}`, 'error');
+                log('', 'info');
+
+                if (error.code === 'auth/operation-not-allowed') {
+                    log('🔧 SOLUTION: Enable Anonymous Authentication', 'warning');
+                    log('1. Go to Firebase Console', 'warning');
+                    log('2. Select project: the-stag-notif-v2', 'warning');
+                    log('3. Authentication → Sign-in method', 'warning');
+                    log('4. Enable "Anonymous" provider', 'warning');
+                    log('5. Save and wait 1-2 minutes', 'warning');
+                    log('6. Run this test again', 'warning');
+                } else if (error.code === 'messaging/permission-blocked') {
+                    log('🔧 SOLUTION: Enable notifications in browser', 'warning');
+                    log('1. Click lock icon in address bar', 'warning');
+                    log('2. Find "Notifications" setting', 'warning');
+                    log('3. Change to "Allow"', 'warning');
+                    log('4. Reload page and try again', 'warning');
+                } else {
+                    log('Check the error message above for details', 'warning');
+                    log('Full error object:', 'warning');
+                    console.error(error);
+                }
+            }
+        };
+
+        window.testAnonymousAuth = async function() {
+            clearOutput();
+            log('=== TESTING ANONYMOUS AUTHENTICATION ONLY ===', 'info');
+
+            try {
+                if (!app) {
+                    log('Initializing Firebase...', 'info');
+                    app = initializeApp(firebaseConfig);
+                }
+
+                if (!auth) {
+                    log('Initializing Auth...', 'info');
+                    auth = getAuth(app);
+                }
+
+                log('Attempting anonymous sign-in...', 'info');
+                const userCredential = await signInAnonymously(auth);
+
+                log('✓ Anonymous authentication successful!', 'success');
+                log(`User UID: ${userCredential.user.uid}`, 'success');
+                log('✓ Anonymous Auth IS ENABLED in Firebase Console', 'success');
+
+            } catch (error) {
+                log('❌ Anonymous authentication failed', 'error');
+                log(`Error: ${error.message}`, 'error');
+
+                if (error.code === 'auth/operation-not-allowed') {
+                    log('', 'info');
+                    log('❌ Anonymous Authentication is NOT ENABLED', 'error');
+                    log('You must enable it in Firebase Console:', 'warning');
+                    log('1. https://console.firebase.google.com/', 'warning');
+                    log('2. Project: the-stag-notif-v2', 'warning');
+                    log('3. Authentication → Sign-in method → Anonymous → Enable', 'warning');
+                }
+            }
+        };
+
+        window.testTokenGeneration = async function() {
+            clearOutput();
+            log('=== TESTING TOKEN GENERATION ONLY ===', 'info');
+            log('Note: Assuming anonymous auth already completed', 'warning');
+
+            try {
+                // Check notification permission
+                if (Notification.permission !== 'granted') {
+                    log('Requesting notification permission...', 'info');
+                    const permission = await Notification.requestPermission();
+                    if (permission !== 'granted') {
+                        throw new Error('Notification permission denied');
+                    }
+                }
+                log('✓ Notification permission granted', 'success');
+
+                // Register service worker
+                log('Registering service worker...', 'info');
+                const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                await navigator.serviceWorker.ready;
+                log('✓ Service worker ready', 'success');
+
+                // Initialize messaging
+                if (!app) {
+                    app = initializeApp(firebaseConfig);
+                }
+                messaging = getMessaging(app);
+                log('✓ FCM initialized', 'success');
+
+                // Get token
+                log('Requesting FCM token...', 'info');
+                const token = await getToken(messaging, {
+                    vapidKey: vapidKey,
+                    serviceWorkerRegistration: registration
+                });
+
+                log('✓ Token generated successfully!', 'success');
+                log(`Token: ${token}`, 'success');
+
+            } catch (error) {
+                log('❌ Token generation failed', 'error');
+                log(`Error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        };
+
+        // Auto-initialize on load
+        window.addEventListener('load', () => {
+            outputDiv = document.getElementById('output');
+            log('Test page loaded. Ready to test.', 'info');
+            log('Click "Run Full Test" button to begin.', 'info');
+        });
+    </script>
+</body>
+</html>

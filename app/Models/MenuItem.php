@@ -167,9 +167,15 @@ class MenuItem extends Model
             ->where('end_date', '>=', now());
     }
 
+    // ============================================
+    // STOCK MANAGEMENT - TEMPORARILY DISABLED
+    // ============================================
+    // Uncomment these methods if you want to re-enable stock management feature
+
+    /*
     /**
      * Get all stock items (ingredients) used in this menu item
-     */
+     *\/
     public function stockItems()
     {
         return $this->belongsToMany(StockItem::class, 'recipe_ingredients')
@@ -179,7 +185,7 @@ class MenuItem extends Model
 
     /**
      * Get recipe ingredients (pivot records)
-     */
+     *\/
     public function recipeIngredients()
     {
         return $this->hasMany(RecipeIngredient::class);
@@ -187,7 +193,7 @@ class MenuItem extends Model
 
     /**
      * Check if all ingredients are available for this menu item
-     */
+     *\/
     public function hasAvailableStock($quantity = 1)
     {
         foreach ($this->recipeIngredients as $ingredient) {
@@ -201,7 +207,7 @@ class MenuItem extends Model
 
     /**
      * Deduct stock for this menu item (when order is placed)
-     */
+     *\/
     public function deductStock($quantity, $orderId = null)
     {
         foreach ($this->recipeIngredients as $ingredient) {
@@ -215,6 +221,7 @@ class MenuItem extends Model
         }
         return $this;
     }
+    */
 
     /**
      * Scope to get only available items

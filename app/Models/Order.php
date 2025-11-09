@@ -223,6 +223,14 @@ class Order extends Model
         return $this->hasMany(PromotionUsageLog::class);
     }
 
+    /**
+     * Get activity logs for this order
+     */
+    public function activityLogs()
+    {
+        return $this->hasMany(OrderActivityLog::class);
+    }
+
     // Helper methods
     public function isQROrder()
     {

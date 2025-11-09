@@ -13,6 +13,7 @@ use App\Models\UserCart;
 use App\Models\Promotion;
 use App\Services\PaymentService;
 use App\Services\Promotions\PromotionService;
+use App\Events\OrderCreatedEvent;
 
 class PaymentController extends Controller
 {
@@ -366,6 +367,9 @@ class PaymentController extends Controller
                         // Don't fail the order creation, just log the error
                     }
                 }
+
+                // Fire OrderCreatedEvent to notify admin
+                event(new OrderCreatedEvent($order->fresh(['user', 'orderItems'])));
 
                 // Create counter payment record
                 $paymentData = [
@@ -743,6 +747,9 @@ class PaymentController extends Controller
                                     // Don't fail the order creation, just log the error
                                 }
                             }
+
+                            // Fire OrderCreatedEvent to notify admin
+                            event(new OrderCreatedEvent($order->fresh(['user', 'orderItems'])));
 
                             // Link payment to order
                             $payment->update(['order_id' => $order->id]);

@@ -54,6 +54,9 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        // Set session flag to trigger notification permission prompt
+        session(['show_notification_prompt' => true]);
+
         // Redirect to intended URL if set, otherwise go to HOME
         return redirect()->intended(RouteServiceProvider::HOME);
     }
