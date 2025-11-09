@@ -533,7 +533,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentOrderItem = null;
     let orderQuantity = 1;
 
-    function showOrderModal(itemId, itemName, itemPrice, itemDescription, itemImage) {
+    async function showOrderModal(itemId, itemName, itemPrice, itemDescription, itemImage) {
         const modal = document.getElementById('order-modal');
         const itemNameEl = document.getElementById('order-item-name');
         const itemPriceEl = document.getElementById('order-item-price');
@@ -544,14 +544,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Reset quantity
         orderQuantity = 1;
-        
+
         // Store current item data
         currentOrderItem = {
             id: itemId,
             name: itemName,
             price: itemPrice,
             description: itemDescription,
-            image: itemImage
+            image: itemImage,
+            selectedAddons: [] // Track selected add-ons
         };
 
         // Update modal content
@@ -560,14 +561,95 @@ document.addEventListener('DOMContentLoaded', function() {
         if (itemDescEl) itemDescEl.textContent = itemDescription;
         if (itemImageEl) itemImageEl.src = itemImage;
         if (quantityEl) quantityEl.textContent = orderQuantity;
-        
+
+        // Fetch and display add-ons
+        await loadOrderAddons(itemId);
+
         // Calculate and update total
         updateOrderTotal();
-        
+
         // Show modal
         if (modal) {
             modal.style.display = 'flex';
         }
+    }
+
+    async function loadOrderAddons(itemId) {
+        const addonsSection = document.getElementById('order-addons-section');
+        const addonsContainer = document.getElementById('order-addons-container');
+
+        if (!addonsSection || !addonsContainer) return;
+
+        try {
+            const response = await fetch(`/api/menu-items/${itemId}/addons`);
+            const data = await response.json();
+
+            if (data.status && data.addons && data.addons.length > 0) {
+                // Clear previous add-ons
+                addonsContainer.innerHTML = '';
+
+                // Create checkbox for each add-on
+                data.addons.forEach(addon => {
+                    const addonDiv = document.createElement('div');
+                    addonDiv.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 8px; border: 2px solid #e5e7eb; transition: all 0.2s;';
+
+                    addonDiv.innerHTML = `
+                        <input
+                            type="checkbox"
+                            id="order-addon-${addon.id}"
+                            value="${addon.id}"
+                            data-price="${addon.price}"
+                            data-name="${addon.name}"
+                            style="width: 20px; height: 20px; cursor: pointer; accent-color: #6366f1;">
+                        <label for="order-addon-${addon.id}" style="flex: 1; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #1f2937;">
+                            <span style="font-weight: 600;">${addon.name}</span>
+                            <span style="color: #6366f1; font-weight: 700;">${addon.formatted_price}</span>
+                        </label>
+                    `;
+
+                    // Add hover effect
+                    addonDiv.addEventListener('mouseenter', function() {
+                        this.style.borderColor = '#6366f1';
+                        this.style.background = '#f0f9ff';
+                    });
+                    addonDiv.addEventListener('mouseleave', function() {
+                        const checkbox = this.querySelector('input[type="checkbox"]');
+                        this.style.borderColor = checkbox.checked ? '#6366f1' : '#e5e7eb';
+                        this.style.background = checkbox.checked ? '#f0f9ff' : 'white';
+                    });
+
+                    // Add change event to checkbox
+                    const checkbox = addonDiv.querySelector('input[type="checkbox"]');
+                    checkbox.addEventListener('change', function() {
+                        updateOrderSelectedAddons();
+                        updateOrderTotal();
+                        // Update border color
+                        addonDiv.style.borderColor = this.checked ? '#6366f1' : '#e5e7eb';
+                        addonDiv.style.background = this.checked ? '#f0f9ff' : 'white';
+                    });
+
+                    addonsContainer.appendChild(addonDiv);
+                });
+
+                addonsSection.style.display = 'block';
+            } else {
+                addonsSection.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error loading add-ons:', error);
+            addonsSection.style.display = 'none';
+        }
+    }
+
+    function updateOrderSelectedAddons() {
+        if (!currentOrderItem) return;
+
+        const checkboxes = document.querySelectorAll('#order-addons-container input[type="checkbox"]:checked');
+        currentOrderItem.selectedAddons = Array.from(checkboxes).map(cb => ({
+            id: parseInt(cb.value),
+            name: cb.dataset.name,
+            price: parseFloat(cb.dataset.price)
+        }));
     }
 
     function hideOrderModal() {
@@ -588,7 +670,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Extract numeric value from price string (assuming format like "RM 15.00")
             const priceMatch = currentOrderItem.price.match(/[\d.]+/);
             const unitPrice = priceMatch ? parseFloat(priceMatch[0]) : 0;
-            const total = (unitPrice * orderQuantity).toFixed(2);
+
+            // Calculate add-ons total
+            const addonsTotal = currentOrderItem.selectedAddons
+                ? currentOrderItem.selectedAddons.reduce((sum, addon) => sum + addon.price, 0)
+                : 0;
+
+            // Calculate final total
+            const total = ((unitPrice + addonsTotal) * orderQuantity).toFixed(2);
             totalAmountEl.textContent = `RM ${total}`;
         }
     }
@@ -636,7 +725,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     notes: notes,
                     payment_method: paymentMethod,
                     order_type: orderType,
-                    total_amount: document.getElementById('order-total-amount')?.textContent || 'RM 0.00'
+                    total_amount: document.getElementById('order-total-amount')?.textContent || 'RM 0.00',
+                    selectedAddons: currentOrderItem.selectedAddons || [] // Include selected add-ons
                 };
 
                 // Store order data in sessionStorage for payment page

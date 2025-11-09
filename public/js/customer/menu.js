@@ -1165,7 +1165,7 @@ function updateOrderTotal() {
 }
 
 // Show Add to Cart modal
-function showAddToCartModal(itemId, itemName, itemPrice, itemDescription, itemImage) {
+async function showAddToCartModal(itemId, itemName, itemPrice, itemDescription, itemImage) {
   const modal = document.getElementById('addtocart-modal');
   const modalItemName = document.getElementById('addtocart-item-name');
   const modalItemPrice = document.getElementById('addtocart-item-price');
@@ -1182,7 +1182,8 @@ function showAddToCartModal(itemId, itemName, itemPrice, itemDescription, itemIm
     name: itemName,
     price: itemPrice,
     description: itemDescription,
-    image: itemImage
+    image: itemImage,
+    selectedAddons: [] // Track selected add-ons
   };
 
   // Update modal content
@@ -1201,11 +1202,92 @@ function showAddToCartModal(itemId, itemName, itemPrice, itemDescription, itemIm
     }
   }
 
+  // Fetch and display add-ons
+  await loadAddToCartAddons(itemId);
+
   // Update total
   updateAddToCartTotal();
 
   // Show modal
   if (modal) modal.style.display = 'flex';
+}
+
+async function loadAddToCartAddons(itemId) {
+  const addonsSection = document.getElementById('addtocart-addons-section');
+  const addonsContainer = document.getElementById('addtocart-addons-container');
+
+  if (!addonsSection || !addonsContainer) return;
+
+  try {
+    const response = await fetch(`/api/menu-items/${itemId}/addons`);
+    const data = await response.json();
+
+    if (data.status && data.addons && data.addons.length > 0) {
+      // Clear previous add-ons
+      addonsContainer.innerHTML = '';
+
+      // Create checkbox for each add-on
+      data.addons.forEach(addon => {
+        const addonDiv = document.createElement('div');
+        addonDiv.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 8px; border: 2px solid #e5e7eb; transition: all 0.2s;';
+
+        addonDiv.innerHTML = `
+          <input
+            type="checkbox"
+            id="addtocart-addon-${addon.id}"
+            value="${addon.id}"
+            data-price="${addon.price}"
+            data-name="${addon.name}"
+            style="width: 20px; height: 20px; cursor: pointer; accent-color: #6366f1;">
+          <label for="addtocart-addon-${addon.id}" style="flex: 1; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #1f2937;">
+            <span style="font-weight: 600;">${addon.name}</span>
+            <span style="color: #6366f1; font-weight: 700;">${addon.formatted_price}</span>
+          </label>
+        `;
+
+        // Add hover effect
+        addonDiv.addEventListener('mouseenter', function() {
+          this.style.borderColor = '#6366f1';
+          this.style.background = '#f0f9ff';
+        });
+        addonDiv.addEventListener('mouseleave', function() {
+          const checkbox = this.querySelector('input[type="checkbox"]');
+          this.style.borderColor = checkbox.checked ? '#6366f1' : '#e5e7eb';
+          this.style.background = checkbox.checked ? '#f0f9ff' : 'white';
+        });
+
+        // Add change event to checkbox
+        const checkbox = addonDiv.querySelector('input[type="checkbox"]');
+        checkbox.addEventListener('change', function() {
+          updateAddToCartSelectedAddons();
+          updateAddToCartTotal();
+          // Update border color
+          addonDiv.style.borderColor = this.checked ? '#6366f1' : '#e5e7eb';
+          addonDiv.style.background = this.checked ? '#f0f9ff' : 'white';
+        });
+
+        addonsContainer.appendChild(addonDiv);
+      });
+
+      addonsSection.style.display = 'block';
+    } else {
+      addonsSection.style.display = 'none';
+    }
+  } catch (error) {
+    console.error('Error loading add-ons:', error);
+    addonsSection.style.display = 'none';
+  }
+}
+
+function updateAddToCartSelectedAddons() {
+  if (!currentAddToCartItem) return;
+
+  const checkboxes = document.querySelectorAll('#addtocart-addons-container input[type="checkbox"]:checked');
+  currentAddToCartItem.selectedAddons = Array.from(checkboxes).map(cb => ({
+    id: parseInt(cb.value),
+    name: cb.dataset.name,
+    price: parseFloat(cb.dataset.price)
+  }));
 }
 
 // Close Add to Cart modal
@@ -1228,7 +1310,14 @@ function updateAddToCartTotal() {
   const totalElement = document.getElementById('addtocart-total-amount');
   if (totalElement) {
     const price = parseFloat(currentAddToCartItem.price.replace(/[^\d.]/g, '')) || 0;
-    const total = price * addToCartQuantity;
+
+    // Calculate add-ons total
+    const addonsTotal = currentAddToCartItem.selectedAddons
+      ? currentAddToCartItem.selectedAddons.reduce((sum, addon) => sum + addon.price, 0)
+      : 0;
+
+    // Calculate final total
+    const total = (price + addonsTotal) * addToCartQuantity;
     totalElement.textContent = `RM ${total.toFixed(2)}`;
   }
 }
@@ -1272,7 +1361,8 @@ document.addEventListener('click', async function(e) {
         price: currentAddToCartItem.price,
         image: currentAddToCartItem.image,
         quantity: addToCartQuantity,
-        notes: specialNotes
+        notes: specialNotes,
+        selectedAddons: currentAddToCartItem.selectedAddons || [] // Include selected add-ons
       });
 
       // Update cart badge

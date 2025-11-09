@@ -41,6 +41,11 @@ class PaymentController extends Controller
             'cart.*.unit_price' => 'nullable|numeric|min:0', // For bundle/promo discounted prices
             'cart.*.payment_method' => 'nullable|string|in:online,counter',
             'cart.*.notes' => 'nullable|string|max:500', // Special notes/instructions
+            // Add-ons tracking
+            'cart.*.selectedAddons' => 'nullable|array',
+            'cart.*.selectedAddons.*.id' => 'required|exists:menu_item_addons,id',
+            'cart.*.selectedAddons.*.name' => 'required|string',
+            'cart.*.selectedAddons.*.price' => 'required|numeric|min:0',
             // Promotion tracking fields
             'cart.*.promotion_id' => 'nullable|integer|exists:promotions,id',
             'cart.*.promotion_group_id' => 'nullable|string|max:100',
@@ -89,7 +94,17 @@ class PaymentController extends Controller
 
                 // Use unit_price from cart if available (for bundle/promo discounts), otherwise use menu item price
                 $itemPrice = isset($item['unit_price']) ? floatval($item['unit_price']) : $menuItem->price;
-                $totalAmount += $itemPrice * $item['quantity'];
+
+                // Calculate add-ons total for this item
+                $addonsTotal = 0;
+                if (isset($item['selectedAddons']) && is_array($item['selectedAddons'])) {
+                    foreach ($item['selectedAddons'] as $addon) {
+                        $addonsTotal += floatval($addon['price']);
+                    }
+                }
+
+                // Add item price + add-ons total, multiplied by quantity
+                $totalAmount += ($itemPrice + $addonsTotal) * $item['quantity'];
             }
 
             // Check if we have any valid items to checkout
@@ -276,7 +291,7 @@ class PaymentController extends Controller
                     $isFreeItem = isset($item['is_free_item']) ? $item['is_free_item'] : false;
                     $customerRewardId = isset($item['customer_reward_id']) ? $item['customer_reward_id'] : null;
 
-                    OrderItem::create([
+                    $orderItem = OrderItem::create([
                         'order_id' => $order->id,
                         'menu_item_id' => $item['id'],
                         'quantity' => $item['quantity'],
@@ -291,6 +306,18 @@ class PaymentController extends Controller
                         'combo_group_id' => $promotionGroupId, // Store promotion group ID as combo group ID
                         'discount_amount' => max(0, $discountAmount), // Discount from bundle/promo
                     ]);
+
+                    // Save selected add-ons for this order item
+                    if (isset($item['selectedAddons']) && is_array($item['selectedAddons'])) {
+                        foreach ($item['selectedAddons'] as $addon) {
+                            \App\Models\MenuCustomization::create([
+                                'order_item_id' => $orderItem->id,
+                                'customization_type' => 'addon',
+                                'customization_value' => $addon['name'],
+                                'additional_price' => $addon['price'],
+                            ]);
+                        }
+                    }
                 }
 
                 // Log promotion usage if applied

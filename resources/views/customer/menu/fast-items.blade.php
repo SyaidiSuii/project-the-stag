@@ -151,6 +151,24 @@
         font-size: 13px;
     }
 }
+
+/* Order Type FAB - Mobile: Make smaller */
+@media (max-width: 768px) {
+  .ordertype-fab {
+    top: 10px !important;
+    right: 10px !important;
+    min-width: 95px !important;
+    height: 36px !important;
+    border-radius: 18px !important;
+    font-size: 10px !important;
+    gap: 4px !important;
+    padding: 0 10px !important;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25) !important;
+  }
+  .ordertype-fab i {
+    font-size: 11px !important;
+  }
+}
 </style>
 @endsection
 
@@ -273,6 +291,14 @@
   🛒
   <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
 </button>
+
+@auth
+<!-- Floating Order Type Button -->
+<button class="ordertype-fab" id="ordertypeFab" aria-label="Change order type" style="position: fixed; top: 24px; right: 24px; min-width: 140px; height: 56px; border-radius: 28px; border: none; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3); z-index: 999; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 20px; transition: all 0.3s; opacity: 0;">
+  <i class="fas fa-utensils" id="ordertypeIcon" style="font-size: 18px;"></i>
+  <span id="ordertypeText">Dine In</span>
+</button>
+@endauth
 
 <!-- Add to Cart Modal - Beautiful Design -->
 <div id="addtocart-modal" class="addon-modal" style="display: none;" aria-modal="true" role="dialog">

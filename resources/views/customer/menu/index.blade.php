@@ -383,49 +383,344 @@ document.addEventListener('DOMContentLoaded', function() {
 
   <!-- AI Recommendations Section -->
   @if(Auth::check() && isset($recommendedItems) && count($recommendedItems) > 0)
-  <div class="recommendations-section" style="margin: 24px auto; max-width: 800px;">
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-      <div style="font-size: 24px;">🤖</div>
-      <div>
-        <h2 style="font-size: 20px; font-weight: 700; color: #1f2937; margin: 0;">Recommended For You</h2>
-        <p style="font-size: 13px; color: #6b7280; margin: 4px 0 0 0;">Based on your order history and preferences</p>
+  <div class="ai-pick-banner" id="aiPickBanner">
+    <div class="ai-pick-header">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="ai-pick-icon">🤖</div>
+        <div>
+          <h2 class="ai-pick-title">Recommended For You</h2>
+          <p class="ai-pick-subtitle">Based on your order history and preferences</p>
+        </div>
       </div>
     </div>
-    <div class="recommendations-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;">
+    <div class="ai-pick-grid">
       @foreach(array_slice($recommendedItems->all(), 0, 4) as $item)
-      <div class="recommendation-card" onclick="quickAddToCart({{ $item->id }}, {{ json_encode($item->name) }}, {{ $item->price }}, {{ json_encode($item->image ?? '') }}, {{ json_encode($item->description ?? '') }})"
-           style="background: white; border-radius: 12px; padding: 12px; cursor: pointer; transition: all 0.3s; border: 2px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-        <div style="position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 8px; background: #f3f4f6;">
+      <div class="ai-pick-card" onclick="quickAddToCart({{ $item->id }}, {{ json_encode($item->name) }}, {{ $item->price }}, {{ json_encode($item->image ?? '') }}, {{ json_encode($item->description ?? '') }})">
+        <div class="ai-pick-image-container">
           @if($item->image)
-          <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}"
-               style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
+          <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}" class="ai-pick-image"
                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-          <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; font-size: 48px; background: #f3f4f6;">
+          <div class="ai-pick-placeholder" style="display: none;">
             {{ $item->category && strpos(strtolower($item->category->type), 'drink') !== false ? '🍹' : '🍽️' }}
           </div>
           @else
-          <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 48px; background: #f3f4f6;">
+          <div class="ai-pick-placeholder">
             {{ $item->category && strpos(strtolower($item->category->type), 'drink') !== false ? '🍹' : '🍽️' }}
           </div>
           @endif
-          <div style="position: absolute; top: 8px; right: 8px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);">
-            AI Pick
-          </div>
+          <div class="ai-pick-badge">AI Pick</div>
         </div>
-        <div style="font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $item->name }}</div>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 16px; font-weight: 700; color: #6366f1;">RM {{ number_format($item->price, 2) }}</span>
-          <div style="background: #6366f1; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1; font-weight: 400;">+</div>
+        <div class="ai-pick-name">{{ $item->name }}</div>
+        <div class="ai-pick-footer">
+          <span class="ai-pick-price">RM {{ number_format($item->price, 2) }}</span>
+          <div class="ai-pick-add-btn">+</div>
         </div>
       </div>
       @endforeach
     </div>
   </div>
   <style>
-    .recommendation-card:hover {
+    /* AI Pick Banner Styles */
+    .ai-pick-banner {
+      margin: 24px auto;
+      max-width: 800px;
+      padding: 0 20px;
+    }
+    
+    .ai-pick-header {
+      margin-bottom: 16px;
+    }
+    
+    .ai-pick-icon {
+      font-size: 24px;
+    }
+    
+    .ai-pick-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0;
+    }
+    
+    .ai-pick-subtitle {
+      font-size: 13px;
+      color: #6b7280;
+      margin: 4px 0 0 0;
+    }
+    
+    .ai-pick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    
+    .ai-pick-card {
+      background: white;
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .ai-pick-card:hover {
       border-color: #6366f1;
       box-shadow: 0 8px 16px rgba(99, 102, 241, 0.15);
       transform: translateY(-2px);
+    }
+    
+    .ai-pick-image-container {
+      position: relative;
+      width: 100%;
+      padding-top: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 8px;
+      background: #f3f4f6;
+    }
+    
+    .ai-pick-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .ai-pick-placeholder {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      background: #f3f4f6;
+    }
+    
+    .ai-pick-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+    }
+    
+    .ai-pick-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .ai-pick-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .ai-pick-price {
+      font-size: 16px;
+      font-weight: 700;
+      color: #6366f1;
+    }
+    
+    .ai-pick-add-btn {
+      background: #6366f1;
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      line-height: 1;
+      font-weight: 400;
+    }
+    
+    /* Tablet Breakpoint (769px - 1199px) - 2 columns */
+    @media (max-width: 1199px) and (min-width: 769px) {
+      .ai-pick-banner {
+        margin: 20px auto;
+        max-width: min(600px, 90%);
+        padding: 0 15px;
+      }
+      
+      .ai-pick-icon {
+        font-size: 20px;
+      }
+      
+      .ai-pick-title {
+        font-size: 18px;
+      }
+      
+      .ai-pick-subtitle {
+        font-size: 12px;
+      }
+      
+      .ai-pick-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+      }
+      
+      .ai-pick-card {
+        padding: 11px;
+      }
+      
+      .ai-pick-placeholder {
+        font-size: 40px;
+      }
+      
+      .ai-pick-badge {
+        top: 6px;
+        right: 6px;
+        padding: 3px 7px;
+        font-size: 10px;
+      }
+      
+      .ai-pick-name {
+        font-size: 13px;
+        margin-bottom: 3px;
+      }
+      
+      .ai-pick-price {
+        font-size: 15px;
+      }
+      
+      .ai-pick-add-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 16px;
+      }
+    }
+    
+    /* Mobile Breakpoint (481px - 768px) - 2 columns */
+    @media (max-width: 768px) and (min-width: 481px) {
+      .ai-pick-banner {
+        margin: 18px auto;
+        max-width: min(420px, 94%);
+        padding: 0 10px;
+      }
+      
+      .ai-pick-icon {
+        font-size: 18px;
+      }
+      
+      .ai-pick-title {
+        font-size: 16px;
+      }
+      
+      .ai-pick-subtitle {
+        font-size: 11px;
+      }
+      
+      .ai-pick-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      
+      .ai-pick-card {
+        padding: 10px;
+      }
+      
+      .ai-pick-placeholder {
+        font-size: 36px;
+      }
+      
+      .ai-pick-badge {
+        top: 5px;
+        right: 5px;
+        padding: 3px 6px;
+        font-size: 9px;
+      }
+      
+      .ai-pick-name {
+        font-size: 12px;
+        margin-bottom: 3px;
+      }
+      
+      .ai-pick-price {
+        font-size: 14px;
+      }
+      
+      .ai-pick-add-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+      }
+    }
+    
+    /* Small Mobile Breakpoint (≤480px) - 2 columns */
+    @media (max-width: 480px) {
+      .ai-pick-banner {
+        margin: 16px auto;
+        max-width: min(420px, 94%);
+        padding: 0 10px;
+      }
+      
+      .ai-pick-header {
+        margin-bottom: 12px;
+      }
+      
+      .ai-pick-icon {
+        font-size: 16px;
+      }
+      
+      .ai-pick-title {
+        font-size: 15px;
+      }
+      
+      .ai-pick-subtitle {
+        font-size: 10px;
+      }
+      
+      .ai-pick-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+      
+      .ai-pick-card {
+        padding: 9px;
+      }
+      
+      .ai-pick-placeholder {
+        font-size: 32px;
+      }
+      
+      .ai-pick-badge {
+        top: 4px;
+        right: 4px;
+        padding: 2px 5px;
+        font-size: 8px;
+      }
+      
+      .ai-pick-name {
+        font-size: 11px;
+        margin-bottom: 2px;
+      }
+      
+      .ai-pick-price {
+        font-size: 13px;
+      }
+      
+      .ai-pick-add-btn {
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+      }
     }
   </style>
   @endif
@@ -673,11 +968,14 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       </div>
 
-      <!-- Add-ons Section (Placeholder) -->
-      <div style="margin-bottom: 24px;">
-        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Add-ons:</label>
-        <div style="padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; background: #f9fafb;">
-          <p style="font-size: 13px; color: #6b7280; margin: 0;">No add-ons available for this item</p>
+      <!-- Add-ons Section -->
+      <div id="order-addons-section" style="margin-bottom: 24px; display: none;">
+        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">
+          <i class="fas fa-puzzle-piece" style="margin-right: 6px; color: #6366f1;"></i>
+          Add-ons (Optional)
+        </label>
+        <div id="order-addons-container" style="padding: 16px; border: 2px solid #e5e7eb; border-radius: 12px; background: #f9fafb; display: grid; gap: 10px;">
+          <!-- Add-ons checkboxes will be inserted here by JavaScript -->
         </div>
       </div>
 
@@ -744,11 +1042,14 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       </div>
 
-      <!-- Add-ons Section (Placeholder) -->
-      <div style="margin-bottom: 24px;">
-        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Add-ons:</label>
-        <div style="padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; background: #f9fafb;">
-          <p style="font-size: 13px; color: #6b7280; margin: 0;">No add-ons available for this item</p>
+      <!-- Add-ons Section -->
+      <div id="addtocart-addons-section" style="margin-bottom: 24px; display: none;">
+        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">
+          <i class="fas fa-puzzle-piece" style="margin-right: 6px; color: #6366f1;"></i>
+          Add-ons (Optional)
+        </label>
+        <div id="addtocart-addons-container" style="padding: 16px; border: 2px solid #e5e7eb; border-radius: 12px; background: #f9fafb; display: grid; gap: 10px;">
+          <!-- Add-ons checkboxes will be inserted here by JavaScript -->
         </div>
       </div>
 
