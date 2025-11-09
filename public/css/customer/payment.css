@@ -788,8 +788,72 @@
       transform: translateY(-1px);
     }
     
-    /* ===== Responsive Design for Banking Card ===== */
+    /* ===== Mobile Responsive Design ===== */
+    @media (max-width: 1024px) {
+      .checkout-container {
+        padding: 1.5rem;
+        gap: 1.5rem;
+      }
+      .order-summary,
+      .payment-form-container {
+        padding: 1.5rem;
+      }
+    }
+
+    @media (max-width: 968px) {
+      .checkout-container {
+        flex-direction: column;
+      }
+      .order-summary {
+        position: static;
+        top: auto;
+      }
+    }
+
     @media (max-width: 768px) {
+      /* Header adjustments */
+      .checkout-header {
+        padding: 1rem 1.25rem;
+        flex-direction: column;
+        gap: 0.75rem;
+        text-align: center;
+      }
+      .logo-container {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .header-title {
+        font-size: 1.25rem;
+      }
+      .back-link {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+      }
+
+      /* Progress bar adjustments */
+      .progress-container {
+        padding: 1rem 1rem 1.25rem;
+      }
+      .progress-bar {
+        max-width: 100%;
+        padding: 0 0.5rem;
+      }
+      .step-circle {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+      }
+      .step-label {
+        font-size: 0.75rem;
+      }
+
+      /* Main content adjustments */
+      .checkout-container {
+        padding: 1rem;
+        gap: 1rem;
+      }
+
+      /* Banking card adjustments */
       .banking-info-card {
         flex-direction: column;
         text-align: center;
@@ -800,5 +864,256 @@
       }
       .bank-logos {
         justify-content: center;
+      }
+
+      /* Order summary and payment form */
+      .order-summary,
+      .payment-form-container {
+        padding: 1.25rem;
+        border-radius: var(--radius);
+      }
+      .summary-title,
+      .form-title {
+        font-size: 1.125rem;
+        margin-bottom: 1.25rem;
+      }
+      .section-title {
+        font-size: 1rem;
+      }
+
+      /* Payment methods */
+      .payment-methods {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .payment-method {
+        padding: 1rem;
+      }
+      .method-icon {
+        font-size: 1.75rem;
+      }
+    }
+
+    @media (max-width: 640px) {
+      /* Header adjustments */
+      .checkout-header {
+        padding: 0.875rem 1rem;
+      }
+      .logo {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+      }
+      .header-title {
+        font-size: 1.125rem;
+      }
+      .back-link {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.875rem;
+      }
+
+      /* Progress bar adjustments */
+      .progress-container {
+        padding: 0.75rem 0.75rem 1rem;
+        overflow-x: auto;
+      }
+      .progress-bar {
+        min-width: 280px;
+      }
+      .progress-bar::before,
+      .progress-bar::after {
+        top: 18px;
+      }
+      .step-circle {
+        width: 32px;
+        height: 32px;
+        font-size: 0.85rem;
+      }
+      .step-label {
+        font-size: 0.7rem;
+      }
+
+      /* Main content */
+      .checkout-container {
+        padding: 0.75rem;
+      }
+
+      /* Summary and form sections */
+      .order-summary,
+      .payment-form-container {
+        padding: 1rem;
+      }
+      .summary-title,
+      .form-title {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+      }
+      .section-title {
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+      }
+
+      /* Order items */
+      .order-item {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .item-details {
+        margin-left: 0;
+      }
+      .item-name {
+        font-size: 0.95rem;
+      }
+      .item-addons {
+        font-size: 0.8rem;
+      }
+
+      /* Totals */
+      .grand-total {
+        font-size: 1.125rem;
+      }
+
+      /* Banking features */
+      .banking-info-card {
+        padding: 1.25rem;
+      }
+      .banking-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+      }
+      .banking-details h4 {
+        font-size: 1.125rem;
+      }
+      .banking-features li {
+        font-size: 0.85rem;
+      }
+      .supported-banks {
+        padding: 1.25rem;
+      }
+      .bank-logos {
+        gap: 0.5rem;
+      }
+      .bank-name {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.75rem;
+      }
+
+      /* Form elements */
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      .form-label {
+        font-size: 0.9rem;
+      }
+      .form-input {
+        padding: 0.75rem 0.875rem;
+        font-size: 0.95rem;
+      }
+
+      /* Submit button */
+      .submit-btn {
+        padding: 1rem;
+        font-size: 1rem;
+      }
+
+      /* Modal adjustments */
+      .modal-content {
+        padding: 2rem 1.5rem;
+        max-width: 90%;
+      }
+      .modal-icon {
+        font-size: 3rem;
+      }
+      .modal-title {
+        font-size: 1.5rem;
+      }
+      .modal-message {
+        font-size: 0.95rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      /* Even smaller screens */
+      .checkout-header {
+        padding: 0.75rem 0.75rem;
+      }
+      .header-title {
+        font-size: 1rem;
+      }
+      .back-link {
+        font-size: 0.8rem;
+      }
+
+      .checkout-container {
+        padding: 0.5rem;
+      }
+
+      .order-summary,
+      .payment-form-container {
+        padding: 0.875rem;
+      }
+
+      .summary-title,
+      .form-title {
+        font-size: 0.95rem;
+      }
+      .section-title {
+        font-size: 0.9rem;
+      }
+
+      .voucher-section {
+        padding-top: 1rem;
+      }
+
+      /* Modal for very small screens */
+      .modal-content {
+        padding: 1.5rem 1rem;
+      }
+      .modal-icon {
+        font-size: 2.5rem;
+      }
+      .modal-title {
+        font-size: 1.25rem;
+      }
+      .modal-actions {
+        flex-direction: column;
+      }
+      .modal-btn {
+        width: 100%;
+      }
+    }
+
+    /* Touch-friendly improvements for all mobile devices */
+    @media (hover: none) and (pointer: coarse) {
+      .payment-method {
+        padding: 1.125rem 1rem;
+      }
+      .back-link:hover {
+        transform: none;
+      }
+      .submit-btn:hover {
+        transform: none;
+      }
+      .modal-btn-primary:hover {
+        transform: none;
+      }
+    }
+
+    /* Landscape mobile orientation */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .checkout-header {
+        padding: 0.75rem 1rem;
+        flex-direction: row;
+      }
+      .progress-container {
+        padding: 0.75rem 1rem;
+      }
+      .checkout-container {
+        padding: 0.75rem;
+      }
+      .order-summary,
+      .payment-form-container {
+        padding: 1rem;
       }
     }

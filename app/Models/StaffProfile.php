@@ -7,6 +7,26 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Services\IdGeneratorService;
 
+/**
+ * ==================================================================================
+ * DISABLED: Staff Profile Feature Not Currently In Use
+ * ==================================================================================
+ *
+ * This model and the staff_profiles table have been disabled because the HR/payroll
+ * features are not currently implemented in the system.
+ *
+ * TO REACTIVATE:
+ * 1. Uncomment the entire class below
+ * 2. Run: php artisan migrate:rollback --step=1 (to restore table)
+ * 3. Uncomment User model relationship (staffProfile method)
+ * 4. Uncomment IdGeneratorService staff methods
+ * 5. Build CRUD interface for staff management
+ *
+ * See CLAUDE.md for full reactivation guide.
+ * ==================================================================================
+ */
+
+/*
 class StaffProfile extends Model
 {
     use HasFactory, SoftDeletes;
@@ -37,12 +57,12 @@ class StaffProfile extends Model
      * The accessors to append to the model's array form.
      *
      * @var array
-     */
+     *\/
     protected $appends = ['display_id'];
 
     /**
      * Boot the model.
-     */
+     *\/
     protected static function boot()
     {
         parent::boot();
@@ -75,7 +95,7 @@ class StaffProfile extends Model
      * Get display ID attribute
      *
      * @return string|null
-     */
+     *\/
     public function getDisplayIdAttribute()
     {
         return $this->staff_id;
@@ -85,10 +105,11 @@ class StaffProfile extends Model
      * Get position code for ID generation
      *
      * @return string
-     */
+     *\/
     public function getPositionCode()
     {
         $idGenerator = app(IdGeneratorService::class);
         return $idGenerator->getPositionCode($this->position);
     }
 }
+*/

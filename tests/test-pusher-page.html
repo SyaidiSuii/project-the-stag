@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pusher Real-Time Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        .status {
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .log {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .log-item {
+            margin: 5px 0;
+            padding: 3px 0;
+        }
+        .log-item.info { color: #0066cc; }
+        .log-item.success { color: #28a745; font-weight: bold; }
+        .log-item.error { color: #dc3545; font-weight: bold; }
+        .order-card {
+            border: 2px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: #fff;
+        }
+        .order-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-pending { background: #ffc107; color: #000; }
+        .status-confirmed { background: #17a2b8; color: white; }
+        .status-preparing { background: #fd7e14; color: white; }
+        .status-ready { background: #28a745; color: white; }
+        .status-served { background: #6f42c1; color: white; }
+        .status-completed { background: #6c757d; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔴 Pusher Real-Time Test Page</h1>
+
+        <div id="pusherStatus" class="status warning">
+            ⏳ Initializing Pusher...
+        </div>
+
+        <div id="connectionStatus" class="status warning">
+            ⏳ Connecting to WebSocket...
+        </div>
+
+        <h3>Test Order Card:</h3>
+        <div class="order-card" data-id="ORD-27" data-status="pending">
+            <strong>Order #ORD-27</strong>
+            <span class="order-status status-pending" id="orderStatusBadge">Pending</span>
+        </div>
+
+        <h3>Event Log:</h3>
+        <div class="log" id="eventLog">
+            <div class="log-item info">[Starting] Initializing Pusher test page...</div>
+        </div>
+    </div>
+
+    <!-- Pusher CDN -->
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+    <script>
+        const eventLog = document.getElementById('eventLog');
+        const pusherStatus = document.getElementById('pusherStatus');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const orderCard = document.querySelector('.order-card');
+        const statusBadge = document.getElementById('orderStatusBadge');
+
+        function log(message, type = 'info') {
+            const logItem = document.createElement('div');
+            logItem.className = `log-item ${type}`;
+            logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            eventLog.appendChild(logItem);
+            eventLog.scrollTop = eventLog.scrollHeight;
+            console.log(message);
+        }
+
+        try {
+            log('Loading Pusher configuration...', 'info');
+
+            // Initialize Pusher with exact same config as Laravel
+            const pusher = new Pusher('03effa88c34803b4248c', {
+                cluster: 'ap1',
+                encrypted: true
+            });
+
+            log('✓ Pusher initialized', 'success');
+            pusherStatus.textContent = '✅ Pusher Initialized';
+            pusherStatus.className = 'status success';
+
+            // Connection state monitoring
+            pusher.connection.bind('connecting', function() {
+                log('⏳ Connecting to Pusher...', 'info');
+                connectionStatus.textContent = '⏳ Connecting...';
+                connectionStatus.className = 'status warning';
+            });
+
+            pusher.connection.bind('connected', function() {
+                log('✓ Connected to Pusher WebSocket!', 'success');
+                connectionStatus.textContent = '✅ Connected to WebSocket';
+                connectionStatus.className = 'status success';
+            });
+
+            pusher.connection.bind('unavailable', function() {
+                log('❌ Pusher unavailable', 'error');
+                connectionStatus.textContent = '❌ Connection Unavailable';
+                connectionStatus.className = 'status error';
+            });
+
+            pusher.connection.bind('failed', function() {
+                log('❌ Pusher connection failed', 'error');
+                connectionStatus.textContent = '❌ Connection Failed';
+                connectionStatus.className = 'status error';
+            });
+
+            // Subscribe to channel
+            log('Subscribing to kitchen-display channel...', 'info');
+            const channel = pusher.subscribe('kitchen-display');
+
+            channel.bind('pusher:subscription_succeeded', function() {
+                log('✓ Subscribed to kitchen-display channel', 'success');
+            });
+
+            channel.bind('pusher:subscription_error', function(status) {
+                log(`❌ Subscription error: ${status}`, 'error');
+            });
+
+            // Listen for order status updates
+            channel.bind('order.status.updated', function(data) {
+                log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+                log('🎉 PUSHER EVENT RECEIVED!', 'success');
+                log(`Order ID: ${data.order_id}`, 'info');
+                log(`Old Status: ${data.old_status}`, 'info');
+                log(`New Status: ${data.new_status}`, 'info');
+                log(`Updated By: ${data.updated_by}`, 'info');
+                log(`Timestamp: ${data.timestamp}`, 'info');
+                log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+
+                // Find order card
+                const testOrderCard = Array.from(document.querySelectorAll('.order-card')).find(card => {
+                    const cardId = card.dataset.id;
+                    return cardId === `ORD-${data.order_id}` || cardId === data.order_id.toString();
+                });
+
+                if (testOrderCard) {
+                    log(`✓ Found order card: ${testOrderCard.dataset.id}`, 'success');
+
+                    // Update status badge
+                    const badge = testOrderCard.querySelector('.order-status');
+                    if (badge) {
+                        badge.className = 'order-status';
+                        badge.classList.add(`status-${data.new_status}`);
+                        badge.textContent = data.new_status.charAt(0).toUpperCase() + data.new_status.slice(1);
+
+                        log(`✓ Status badge updated to: ${data.new_status}`, 'success');
+
+                        // Pulse animation
+                        badge.style.animation = 'pulse 0.5s ease-in-out';
+                        setTimeout(() => {
+                            badge.style.animation = '';
+                        }, 500);
+                    }
+
+                    // Update card data-status
+                    testOrderCard.dataset.status = data.new_status;
+                } else {
+                    log(`⚠ Order card not found for ID: ${data.order_id}`, 'error');
+                    log(`Available cards: ${Array.from(document.querySelectorAll('.order-card')).map(c => c.dataset.id).join(', ')}`, 'info');
+                }
+            });
+
+            log('✓ Listening for order.status.updated events', 'success');
+            log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+            log('📡 READY! Now run: php test-pusher-debug.php', 'success');
+            log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+
+        } catch (error) {
+            log(`❌ Error: ${error.message}`, 'error');
+            pusherStatus.textContent = `❌ Error: ${error.message}`;
+            pusherStatus.className = 'status error';
+        }
+    </script>
+</body>
+</html>

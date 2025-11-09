@@ -34,10 +34,19 @@
             </a>
 
             <!-- Reports Menu -->
-            <a href="{{ route('admin.reports.index') }}" class="admin-nav-item {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}" id="reportsMenu">
                 <div class="admin-nav-icon"><i class="fas fa-chart-pie"></i></div>
                 <div class="admin-nav-text">Reports</div>
-            </a>
+                <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="admin-nav-submenu" id="reportsSubmenu">
+                <a href="{{ route('admin.reports.monthly') }}" class="admin-nav-subitem {{ request()->routeIs('admin.reports.monthly') || request()->routeIs('admin.reports.index') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Monthly Report</div>
+                </a>
+                <a href="{{ route('admin.reports.all-time') }}" class="admin-nav-subitem {{ request()->routeIs('admin.reports.all-time') ? 'active' : '' }}">
+                    <div class="admin-nav-text">All-Time Report</div>
+                </a>
+            </div>
 
             <a href="{{ route('admin.user.index') }}"
                 class="admin-nav-item {{ request()->routeIs('admin.user.*') ? 'active' : '' }}">
@@ -96,16 +105,20 @@
                 </a>
             </div>
             <!-- Order Managements Menu -->
-            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.order.*') || request()->routeIs('admin.menu-customizations.*') ? 'active' : '' }}" id="orderMenu">
+            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.order.*') || request()->routeIs('admin.menu-customizations.*') || request()->routeIs('admin.reports.activity-logs') ? 'active' : '' }}" id="orderMenu">
                 <div class="admin-nav-icon"><i class="fas fa-shopping-bag"></i></div>
                 <div class="admin-nav-text">Order Managements</div>
                 <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
             </div>
             <div class="admin-nav-submenu" id="orderSubmenu">
                 <a href="{{ route('admin.order.index') }}"
-                    class="admin-nav-subitem {{ request()->routeIs('admin.order.*') ? 'active' : '' }}">
+                    class="admin-nav-subitem {{ request()->routeIs('admin.order.index') || request()->routeIs('admin.order.show') ? 'active' : '' }}">
                     <div class="admin-nav-text">All Orders</div>
                 </a>
+                {{-- <a href="{{ route('admin.reports.activity-logs') }}"
+                    class="admin-nav-subitem {{ request()->routeIs('admin.reports.activity-logs') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Order Activity Logs</div>
+                </a> --}}
                 <a href="{{ route('admin.menu-customizations.index') }}"
                     class="admin-nav-subitem {{ request()->routeIs('admin.menu-customizations.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">Order Customizations</div>
@@ -249,6 +262,247 @@
 
     <!-- Password Toggle Functionality -->
     <script src="{{ asset('js/password-toggle.js') }}"></script>
+
+    <!-- Firebase Cloud Messaging (FCM) for Push Notifications -->
+    @auth
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+            import { getMessaging, getToken, onMessage, deleteToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+            import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+            const firebaseConfig = {
+                apiKey: "{{ config('services.fcm.api_key') }}",
+                authDomain: "{{ config('services.fcm.project_id') }}.firebaseapp.com",
+                projectId: "{{ config('services.fcm.project_id') }}",
+                storageBucket: "{{ config('services.fcm.storage_bucket') }}",
+                messagingSenderId: "{{ config('services.fcm.messaging_sender_id') }}",
+                appId: "{{ config('services.fcm.app_id') }}"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const messaging = getMessaging(app);
+
+            // Global FCM object for admin
+            window.AdminFCMNotifications = {
+                currentToken: null,
+                messaging: messaging,
+
+                async initialize() {
+                    try {
+                        console.log('Admin FCM: Initializing...');
+
+                        if (!('Notification' in window)) {
+                            console.warn('Admin FCM: Browser does not support notifications');
+                            return false;
+                        }
+
+                        const permission = await Notification.requestPermission();
+                        console.log('Admin FCM: Permission status:', permission);
+
+                        if (permission === 'granted') {
+                            await this.registerDevice();
+                            return true;
+                        }
+                        return false;
+                    } catch (error) {
+                        console.error('Admin FCM: Initialization error:', error);
+                        return false;
+                    }
+                },
+
+                async registerDevice() {
+                    try {
+                        console.log('Admin FCM: Requesting token with VAPID key...');
+
+                        // Check if service worker is registered
+                        if (!('serviceWorker' in navigator)) {
+                            console.warn('Admin FCM: Service workers not supported');
+                            return;
+                        }
+
+                        // Step 1: Sign in anonymously with Firebase Auth (required for FCM)
+                        console.log('Admin FCM: Checking Firebase Auth...');
+                        await new Promise((resolve, reject) => {
+                            const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                                unsubscribe();
+                                if (!user) {
+                                    console.log('Admin FCM: Signing in anonymously...');
+                                    try {
+                                        await signInAnonymously(auth);
+                                        console.log('Admin FCM: Anonymous sign-in successful');
+                                        resolve();
+                                    } catch (error) {
+                                        console.error('Admin FCM: Anonymous sign-in failed:', error);
+                                        reject(error);
+                                    }
+                                } else {
+                                    console.log('Admin FCM: Already authenticated:', user.uid);
+                                    resolve();
+                                }
+                            });
+                        });
+
+                        // Small delay to ensure auth is fully propagated
+                        await new Promise(resolve => setTimeout(resolve, 500));
+
+                        // Step 2: Unregister ALL existing service workers to start fresh
+                        console.log('Admin FCM: Checking for existing service workers...');
+                        const existingRegs = await navigator.serviceWorker.getRegistrations();
+                        console.log(`Admin FCM: Found ${existingRegs.length} existing service worker(s)`);
+
+                        for (const reg of existingRegs) {
+                            const sub = await reg.pushManager.getSubscription();
+                            if (sub) {
+                                console.log('Admin FCM: Unsubscribing existing push subscription...');
+                                await sub.unsubscribe();
+                            }
+                            console.log('Admin FCM: Unregistering service worker:', reg.scope);
+                            await reg.unregister();
+                        }
+
+                        // Small delay after cleanup
+                        await new Promise(resolve => setTimeout(resolve, 300));
+
+                        // Step 3: Register service worker fresh
+                        console.log('Admin FCM: Registering fresh service worker...');
+                        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+                            scope: '/'
+                        });
+                        console.log('Admin FCM: Service Worker registered:', registration);
+
+                        // Wait for service worker to be active
+                        await navigator.serviceWorker.ready;
+                        console.log('Admin FCM: Service Worker is ready');
+
+                        // Small delay before getting token
+                        await new Promise(resolve => setTimeout(resolve, 500));
+
+                        // Step 4: Delete any existing FCM token
+                        console.log('Admin FCM: Deleting any existing FCM token...');
+                        try {
+                            const deleted = await deleteToken(messaging);
+                            console.log('Admin FCM: Existing token deleted:', deleted);
+                        } catch (deleteError) {
+                            console.warn('Admin FCM: Could not delete existing token (may not exist):', deleteError.message);
+                        }
+
+                        // Small delay after deletion
+                        await new Promise(resolve => setTimeout(resolve, 300));
+
+                        // Step 5: Get FCM token
+                        console.log('Admin FCM: Attempting to get FCM token...');
+                        const token = await getToken(messaging, {
+                            vapidKey: "{{ config('services.fcm.vapid_key') }}",
+                            serviceWorkerRegistration: registration
+                        });
+
+                        if (token) {
+                            console.log('Admin FCM: Token obtained:', token.substring(0, 20) + '...');
+                            this.currentToken = token;
+
+                            // Send token to backend
+                            const response = await fetch('/api/fcm/register', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    device_token: token,
+                                    device_type: 'web',
+                                    platform: navigator.platform,
+                                    browser: navigator.userAgent.match(/(firefox|msie|chrome|safari)[\/\s](\d+)/i)?.[1] || 'unknown',
+                                    version: navigator.userAgent.match(/(firefox|msie|chrome|safari)[\/\s](\d+)/i)?.[2] || 'unknown'
+                                })
+                            });
+
+                            const data = await response.json();
+                            console.log('Admin FCM: Registration response:', data);
+
+                            if (data.success) {
+                                console.log('Admin FCM: Device registered successfully');
+                                window.dispatchEvent(new Event('admin-fcm-registered'));
+                            }
+                        } else {
+                            console.warn('Admin FCM: No token received');
+                        }
+                    } catch (error) {
+                        console.error('Admin FCM: Token registration error:', error);
+                        console.error('Admin FCM: Error details:', {
+                            name: error.name,
+                            message: error.message,
+                            code: error.code
+                        });
+
+                        // Provide user-friendly message
+                        if (error.code === 'messaging/permission-blocked') {
+                            console.warn('Admin FCM: Notification permission blocked. Please enable in browser settings.');
+                        } else if (error.message.includes('push service')) {
+                            console.warn('Admin FCM: Push service error. This is normal if service worker is not set up. Admin will need to manually enable notifications.');
+                        }
+                    }
+                },
+
+                setupForegroundListener() {
+                    onMessage(messaging, (payload) => {
+                        console.log('Admin FCM: Message received in foreground', payload);
+
+                        const notificationTitle = payload.notification?.title || payload.data?.title || 'New Notification';
+                        const notificationBody = payload.notification?.body || payload.data?.body || '';
+
+                        // Show toast notification
+                        if (typeof showToast === 'function') {
+                            showToast(notificationBody, 'info', 5000);
+                        }
+
+                        // Show browser notification
+                        if (Notification.permission === 'granted') {
+                            const notification = new Notification(notificationTitle, {
+                                body: notificationBody,
+                                icon: '/images/logo.png',
+                                badge: '/images/logo.png',
+                                tag: payload.data?.order_id || 'admin-notification',
+                                requireInteraction: true,
+                                data: payload.data
+                            });
+
+                            notification.onclick = function(event) {
+                                event.preventDefault();
+                                const clickAction = payload.data?.click_action;
+                                if (clickAction) {
+                                    window.focus();
+                                    window.location.href = clickAction;
+                                }
+                                notification.close();
+                            };
+                        }
+
+                        // Play notification sound
+                        const audio = new Audio('/sounds/notification.mp3');
+                        audio.play().catch(e => console.log('Could not play sound:', e));
+                    });
+                }
+            };
+
+            // Auto-initialize FCM for admin on page load
+            document.addEventListener('DOMContentLoaded', async () => {
+                console.log('Admin FCM: DOM ready, checking permission...');
+
+                // Setup foreground listener immediately
+                window.AdminFCMNotifications.setupForegroundListener();
+
+                // Auto-register if permission already granted
+                if (Notification.permission === 'granted') {
+                    console.log('Admin FCM: Permission already granted, registering device...');
+                    await window.AdminFCMNotifications.registerDevice();
+                } else {
+                    console.log('Admin FCM: Permission not granted. Waiting for manual enable.');
+                }
+            });
+        </script>
+    @endauth
 
     <script src="{{ asset('js/admin/layout-admin.js') }}?v={{ time() }}"></script>
 

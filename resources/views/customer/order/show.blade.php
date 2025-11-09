@@ -1264,14 +1264,52 @@
 @endsection
 
 @section('scripts')
+<!-- Pusher for real-time order status updates -->
+<script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-refresh every 30 seconds for pending/preparing orders
+    // Real-time order status updates via Pusher
+    const currentOrderId = {{ $order->id }};
     const orderStatus = '{{ $order->order_status }}';
-    if (['pending', 'confirmed', 'preparing'].includes(orderStatus)) {
-        setTimeout(() => {
-            location.reload();
-        }, 30000);
+
+    // Only listen for updates if order is not completed/cancelled
+    if (['pending', 'confirmed', 'preparing', 'ready'].includes(orderStatus)) {
+        // Initialize Pusher
+        const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
+            cluster: '{{ config('broadcasting.connections.pusher.options.cluster') }}',
+            encrypted: true
+        });
+
+        // Subscribe to kitchen-display channel
+        const channel = pusher.subscribe('kitchen-display');
+
+        // Listen for order status updates
+        channel.bind('order.status.updated', function(data) {
+            console.log('Pusher event received:', data);
+
+            // Filter: Only process if this is OUR order
+            if (data.order_id === currentOrderId) {
+                console.log('Order status changed:', data.old_status, '→', data.new_status);
+
+                // Show toast notification
+                if (typeof Toastify !== 'undefined') {
+                    Toastify({
+                        text: `Order status updated: ${data.new_status}`,
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#4CAF50",
+                    }).showToast();
+                }
+
+                // Reload page after 2 seconds to show updated status
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            }
+        });
+
+        console.log('Pusher listening for order', currentOrderId);
     }
 
     // Smooth scroll to review section if hash present
@@ -1397,7 +1435,7 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Reviews';
             return;
-            
+
             /* DISABLED - Rating feature hidden
             fetch('#', {
                 method: 'POST',
@@ -1407,7 +1445,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify(data)
             })
-            */
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -1438,6 +1475,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Reviews';
             });
+            */
         });
     }
 });

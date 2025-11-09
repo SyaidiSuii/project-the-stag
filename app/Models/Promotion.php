@@ -191,8 +191,22 @@ class Promotion extends Model
         // Check time range (if applicable)
         if ($this->applicable_start_time && $this->applicable_end_time) {
             $currentTime = now()->format('H:i:s');
-            if ($currentTime < $this->applicable_start_time || $currentTime > $this->applicable_end_time) {
-                return false;
+            $startTime = $this->applicable_start_time;
+            $endTime = $this->applicable_end_time;
+
+            // Handle time comparison (works for same-day ranges like 19:00 - 23:59)
+            // Note: For cross-midnight ranges (e.g., 22:00 - 02:00), additional logic needed
+            if ($startTime <= $endTime) {
+                // Normal same-day range (e.g., 19:00 - 23:59)
+                if ($currentTime < $startTime || $currentTime > $endTime) {
+                    return false;
+                }
+            } else {
+                // Cross-midnight range (e.g., 22:00 - 02:00)
+                // Valid if current time is >= start OR <= end
+                if ($currentTime < $startTime && $currentTime > $endTime) {
+                    return false;
+                }
             }
         }
 

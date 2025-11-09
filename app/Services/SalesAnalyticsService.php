@@ -47,6 +47,121 @@ class SalesAnalyticsService
     }
 
     /**
+     * Get sales summary with automatic time granularity based on date range.
+     * This method selects the best granularity to avoid performance issues.
+     *
+     * @param Carbon\Carbon $startDate
+     * @param Carbon\Carbon $endDate
+     * @return array
+     */
+    public function getSalesSummaryByDateRange(Carbon $startDate, Carbon $endDate): array
+    {
+        $totalDays = $startDate->diffInDays($endDate);
+
+        // Determine granularity based on date range
+        if ($totalDays <= 90) {
+            // 3 months or less: Use daily data
+            return $this->getSalesSummaryByPeriod($startDate, $endDate, 'day', 'M d');
+        } elseif ($totalDays <= 1095) {
+            // 3 months to 3 years: Use monthly data
+            return $this->getSalesSummaryByPeriod($startDate, $endDate, 'month', 'Y M');
+        } else {
+            // More than 3 years: Use yearly data
+            return $this->getSalesSummaryByPeriod($startDate, $endDate, 'year', 'Y');
+        }
+    }
+
+    /**
+     * Get sales summary by specific period (day, month, year).
+     *
+     * @param Carbon\Carbon $startDate
+     * @param Carbon\Carbon $endDate
+     * @param string $period
+     * @param string $dateFormat
+     * @return array
+     */
+    private function getSalesSummaryByPeriod(Carbon $startDate, Carbon $endDate, string $period, string $dateFormat): array
+    {
+        // Use raw SQL to group by the specified period
+        $dateFormatSql = match($period) {
+            'day' => '%Y-%m-%d',
+            'month' => '%Y-%m',
+            'year' => '%Y',
+            default => '%Y-%m-%d'
+        };
+
+        $summaries = DB::table('sale_analytics')
+            ->select(
+                DB::raw("DATE_FORMAT(date, '$dateFormatSql') as period"),
+                DB::raw('SUM(total_sales) as total_revenue'),
+                DB::raw('SUM(total_orders) as total_orders')
+            )
+            ->whereBetween('date', [$startDate, $endDate])
+            ->groupBy('period')
+            ->orderBy('period', 'asc')
+            ->get();
+
+        $data = [
+            'labels' => [],
+            'revenue' => [],
+            'orders' => [],
+        ];
+
+        foreach ($summaries as $summary) {
+            $data['labels'][] = $summary->period;
+            $data['revenue'][] = round($summary->total_revenue, 2);
+            $data['orders'][] = (int) $summary->total_orders;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Get monthly sales summary for Jan-Dec of current year
+     * Perfect for yearly overview charts
+     *
+     * @param int|null $year If null, uses current year
+     * @return array
+     */
+    public function getMonthlyYearSummary(?int $year = null): array
+    {
+        $year = $year ?? Carbon::now()->year;
+
+        // Initialize all 12 months with zero values
+        $months = [
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        ];
+
+        $data = [
+            'labels' => $months,
+            'revenue' => array_fill(0, 12, 0),
+            'orders' => array_fill(0, 12, 0),
+        ];
+
+        // Get actual data from database
+        $summaries = DB::table('sale_analytics')
+            ->select(
+                DB::raw("MONTH(date) as month"),
+                DB::raw('SUM(total_sales) as total_revenue'),
+                DB::raw('SUM(total_orders) as total_orders')
+            )
+            ->whereYear('date', $year)
+            ->groupBy('month')
+            ->orderBy('month', 'asc')
+            ->get();
+
+        // Fill in actual values
+        foreach ($summaries as $summary) {
+            $monthIndex = (int)$summary->month - 1; // Convert to 0-based index
+            $data['revenue'][$monthIndex] = round($summary->total_revenue, 2);
+            $data['orders'][$monthIndex] = (int) $summary->total_orders;
+        }
+
+        return $data;
+    }
+
+    /**
      * Get top selling products.
      *
      * @param int $limit

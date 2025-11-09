@@ -28,10 +28,11 @@ use App\Http\Controllers\Admin\MenuCustomizationController;
 use App\Http\Controllers\Admin\QuickReorderController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\PromotionController as AdminPromotionController;
-use App\Http\Controllers\Admin\StockDashboardController;
-use App\Http\Controllers\Admin\StockItemController;
-use App\Http\Controllers\Admin\SupplierController;
-use App\Http\Controllers\Admin\PurchaseOrderController;
+// STOCK MANAGEMENT - TEMPORARILY DISABLED
+// use App\Http\Controllers\Admin\StockDashboardController;
+// use App\Http\Controllers\Admin\StockItemController;
+// use App\Http\Controllers\Admin\SupplierController;
+// use App\Http\Controllers\Admin\PurchaseOrderController;
 use App\Http\Controllers\Admin\HomepageContentController;
 use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
 use App\Http\Controllers\Customer\FoodController as CustomerFoodController;
@@ -79,6 +80,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
     // Unified Menu Page
     Route::get('/menu', [\App\Http\Controllers\Customer\MenuController::class, 'index'])->name('menu.index');
     Route::get('/menu/fast-items', [\App\Http\Controllers\Customer\MenuController::class, 'fastItems'])->name('menu.fast-items');
+    Route::get('/menu/recommended-items', [\App\Http\Controllers\Customer\MenuController::class, 'recommendedItems'])->name('menu.recommended-items');
     Route::get('/menu/data', [\App\Http\Controllers\Customer\MenuController::class, 'getMenuData'])->name('menu.data');
     Route::get('/menu/kitchen-status', [\App\Http\Controllers\Customer\MenuController::class, 'getKitchenStatus'])->name('menu.kitchen-status');
 
@@ -595,10 +597,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // ANALYTICS & REPORTING
         // ---------------------------------------------
         Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/monthly', [\App\Http\Controllers\Admin\ReportController::class, 'monthly'])->name('reports.monthly');
+        Route::get('reports/all-time', [\App\Http\Controllers\Admin\ReportController::class, 'allTime'])->name('reports.all-time');
         Route::get('reports/generate-pdf', [\App\Http\Controllers\Admin\ReportController::class, 'generatePDF'])->name('reports.generate-pdf');
         Route::get('reports/download-pdf', [\App\Http\Controllers\Admin\ReportController::class, 'downloadPDF'])->name('reports.download-pdf');
         Route::get('reports/live-analytics', [\App\Http\Controllers\Admin\ReportController::class, 'getLiveAnalytics'])->name('reports.live-analytics');
         Route::get('reports/chart-data', [\App\Http\Controllers\Admin\ReportController::class, 'getChartData'])->name('reports.chart-data');
+        Route::get('reports/analytics/all-time', [\App\Http\Controllers\Admin\ReportController::class, 'getAllTimeAnalytics'])->name('reports.analytics.all-time');
+        Route::get('reports/activity-logs', [\App\Http\Controllers\Admin\ReportController::class, 'orderActivityLogs'])->name('reports.activity-logs');
 
         Route::prefix('sale-analytics')->name('sale-analytics.')->group(function () {
             Route::get('dashboard-stats', [SaleAnalyticsController::class, 'getDashboardStats'])->name('dashboard-stats');
@@ -631,8 +637,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         // ---------------------------------------------
-        // STOCK MANAGEMENT
+        // STOCK MANAGEMENT - TEMPORARILY DISABLED
         // ---------------------------------------------
+        // Uncomment these routes to re-enable stock management feature
+        /*
         Route::prefix('stock')->name('stock.')->group(function () {
             // Stock Dashboard
             Route::get('dashboard', [StockDashboardController::class, 'index'])->name('dashboard');
@@ -679,6 +687,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::delete('{purchaseOrder}', [PurchaseOrderController::class, 'destroy'])->name('destroy');
             });
         });
+        */
     }); // End of admin routes
 
 }); // End of authenticated routes
@@ -746,6 +755,21 @@ Route::get('customer/verify-email/{id}/{hash}', function ($id, $hash) {
 
     return redirect()->route('customer.account.index')->with('success', 'Email verified successfully!');
 })->name('customer.verification.verify');
+
+// FCM Web Push Notification Routes (for web-authenticated users)
+Route::prefix('api/fcm')->middleware('auth')->group(function () {
+    Route::post('/register', [\App\Http\Controllers\NotificationController::class, 'registerDevice'])->name('fcm.register');
+    Route::get('/devices', [\App\Http\Controllers\NotificationController::class, 'getUserDevices'])->name('fcm.devices');
+    Route::delete('/devices/{deviceId}', [\App\Http\Controllers\NotificationController::class, 'deactivateDevice'])->name('fcm.deactivate');
+    Route::post('/send', [\App\Http\Controllers\NotificationController::class, 'sendToSelf'])->name('fcm.send');
+    Route::get('/history', [\App\Http\Controllers\NotificationController::class, 'getHistory'])->name('fcm.history');
+
+    // Admin only routes
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/statistics', [\App\Http\Controllers\NotificationController::class, 'getStatistics'])->name('fcm.statistics');
+        Route::post('/test', [\App\Http\Controllers\NotificationController::class, 'testConnection'])->name('fcm.test');
+    });
+});
 
 // Utility route to clear cart
 Route::get('/clear-cart', function() {

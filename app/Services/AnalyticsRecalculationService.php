@@ -48,7 +48,7 @@ class AnalyticsRecalculationService
         $dineInOrders = $orders->where('order_type', 'dine_in')->count();
         $takeawayOrders = $orders->where('order_type', 'takeaway')->count();
         $deliveryOrders = $orders->where('order_type', 'delivery')->count();
-        $qrOrders = $orders->where('order_type', 'qr_table')->count();
+        $qrOrders = $orders->where('order_source', 'qr_scan')->count();
         $mobileOrders = $orders->where('order_source', 'mobile')->count();
 
         // === REVENUE BY TYPE ===
@@ -263,7 +263,7 @@ class AnalyticsRecalculationService
 
         $sessionCount = $sessions->count();
 
-        $qrRevenue = Order::where('order_type', 'qr_table')
+        $qrRevenue = Order::where('order_source', 'qr_scan')
             ->where('payment_status', 'paid')
             ->whereDate('created_at', $date)
             ->sum('total_amount');

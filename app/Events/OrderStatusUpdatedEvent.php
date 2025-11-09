@@ -14,6 +14,7 @@ class OrderStatusUpdatedEvent implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $orderId;
+    public $confirmationCode;
     public $newStatus;
     public $oldStatus;
     public $updatedBy;
@@ -24,6 +25,7 @@ class OrderStatusUpdatedEvent implements ShouldBroadcast
     public function __construct(Order $order, string $oldStatus, string $updatedBy = 'system')
     {
         $this->orderId = $order->id;
+        $this->confirmationCode = $order->confirmation_code;
         $this->newStatus = $order->order_status;
         $this->oldStatus = $oldStatus;
         $this->updatedBy = $updatedBy;
@@ -54,6 +56,7 @@ class OrderStatusUpdatedEvent implements ShouldBroadcast
     {
         return [
             'order_id' => $this->orderId,
+            'confirmation_code' => $this->confirmationCode,
             'new_status' => $this->newStatus,
             'old_status' => $this->oldStatus,
             'updated_by' => $this->updatedBy,

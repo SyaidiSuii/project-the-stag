@@ -70,14 +70,14 @@
 
       <div class="voucher-section" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--muted);">
         <div class="form-group" style="margin-bottom: 0;">
-            <label for="voucher-select" class="form-label" style="font-size: 1.125rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+            {{-- <label for="voucher-select" class="form-label" style="font-size: 1.125rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
               <i class="fas fa-ticket-alt" style="color: var(--brand);"></i>
               <span>Voucher / Promo Code</span>
             </label>
             <select id="voucher-select" class="form-input">
                 <option value="">-- Select an available voucher --</option>
                 <!-- Vouchers will be populated here by JS -->
-            </select>
+            </select> --}}
         </div>
         <div id="voucher-status" style="margin-top: 0.75rem; font-size: 0.9rem;"></div>
       </div>

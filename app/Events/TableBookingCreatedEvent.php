@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\Reservation;
+use App\Models\TableReservation;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -14,14 +14,16 @@ class TableBookingCreatedEvent implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $reservation;
+    public $reservationId;
     public $analyticsUpdate;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(Reservation $reservation, array $analyticsUpdate = [])
+    public function __construct(TableReservation $reservation, array $analyticsUpdate = [])
     {
         $this->reservation = $reservation;
+        $this->reservationId = $reservation->id;
         $this->analyticsUpdate = $analyticsUpdate;
     }
 
@@ -55,9 +57,7 @@ class TableBookingCreatedEvent implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'reservation_id' => $this->reservation->id,
-            'table_id' => $this->reservation->table_id,
-            'guest_count' => $this->reservation->number_of_guests,
+            'reservation_id' => $this->reservationId,
             'analytics' => $this->analyticsUpdate,
             'timestamp' => now()->toDateTimeString(),
         ];

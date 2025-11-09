@@ -3,15 +3,18 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Models\StaffProfile;
+// DISABLED: Staff profile feature not in use
+// use App\Models\StaffProfile;
 use App\Models\CustomerProfile;
 use Illuminate\Support\Facades\DB;
 
 class IdGeneratorService
 {
-    /**
-     * Position code mapping for staff IDs
-     */
+    // ==================================================================================
+    // DISABLED: Staff Profile Position Codes
+    // Uncomment when reactivating staff profile feature
+    // ==================================================================================
+    /*
     const POSITION_CODES = [
         'waiter' => 'WTR',
         'waitress' => 'WTR',
@@ -29,6 +32,7 @@ class IdGeneratorService
         'delivery' => 'DLV',
         'cleaner' => 'CLN',
     ];
+    */
 
     /**
      * Generate User ID: USR-25-0001
@@ -69,14 +73,11 @@ class IdGeneratorService
         return "USR-{$year}-" . str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
     }
 
-    /**
-     * Generate Staff ID: STG-WTR-25-45-01
-     * Format: STG-[POSITION_CODE]-[YEAR]-[IC_LAST_2]-[AUTO_ID_PADDED]
-     *
-     * @param string $position Staff position
-     * @param string|null $icNumber IC number (e.g., 010203040045)
-     * @return string
-     */
+    // ==================================================================================
+    // DISABLED: Staff ID Generation Method
+    // Uncomment when reactivating staff profile feature
+    // ==================================================================================
+    /*
     public function generateStaffId(string $position, ?string $icNumber = null): string
     {
         $year = date('y'); // 2-digit year
@@ -112,6 +113,7 @@ class IdGeneratorService
         $randomSeq = str_pad(rand(0, 99), 2, '0', STR_PAD_LEFT);
         return "STG-{$positionCode}-{$year}-{$icLast2}-{$randomSeq}";
     }
+    */
 
     /**
      * Generate Customer ID: CST-25-4821
@@ -140,12 +142,11 @@ class IdGeneratorService
         return "CST-{$year}-{$timestamp}";
     }
 
-    /**
-     * Get position code from position name
-     *
-     * @param string $position
-     * @return string
-     */
+    // ==================================================================================
+    // DISABLED: Position Code Helper Method
+    // Uncomment when reactivating staff profile feature
+    // ==================================================================================
+    /*
     public function getPositionCode(string $position): string
     {
         $normalizedPosition = strtolower(trim($position));
@@ -165,6 +166,7 @@ class IdGeneratorService
         // Default code for unknown positions
         return 'STF'; // Generic staff
     }
+    */
 
     /**
      * Validate user_id format
@@ -177,16 +179,13 @@ class IdGeneratorService
         return preg_match('/^USR-\d{2}-\d{4}$/', $userId) === 1;
     }
 
-    /**
-     * Validate staff_id format
-     *
-     * @param string $staffId
-     * @return bool
-     */
+    // DISABLED: Staff ID validation - uncomment when reactivating staff profile feature
+    /*
     public function validateStaffId(string $staffId): bool
     {
         return preg_match('/^STG-[A-Z]{3}-\d{2}-\d{2}-\d{2}$/', $staffId) === 1;
     }
+    */
 
     /**
      * Validate customer_id format

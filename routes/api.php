@@ -275,6 +275,20 @@ Route::middleware('auth:sanctum')->group(function () {
             'message' => 'Password updated successfully'
         ]);
     });
+
+    // Mark user as prompted for notifications
+    Route::post('/user/mark-notification-prompted', function (Request $request) {
+        $user = $request->user();
+
+        $user->update([
+            'notification_prompted_at' => now(),
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'User marked as prompted for notifications'
+        ]);
+    });
 });
 
 // AI Recommendation Routes
@@ -320,4 +334,17 @@ Route::prefix('kitchen')->group(function () {
     // Public/real-time status endpoints
     Route::get('/status', [\App\Http\Controllers\Api\KitchenStatusController::class, 'index']);
     Route::get('/status/{stationId}', [\App\Http\Controllers\Api\KitchenStatusController::class, 'show']);
+});
+
+// FCM Notification Routes - Support both web session and API token auth
+Route::prefix('fcm')->middleware('auth:sanctum,web')->group(function () {
+    Route::post('/register', [\App\Http\Controllers\NotificationController::class, 'registerDevice']);
+    Route::get('/devices', [\App\Http\Controllers\NotificationController::class, 'getUserDevices']);
+    Route::delete('/devices/{deviceId}', [\App\Http\Controllers\NotificationController::class, 'deactivateDevice']);
+    Route::post('/send', [\App\Http\Controllers\NotificationController::class, 'sendToSelf']);
+    Route::get('/history', [\App\Http\Controllers\NotificationController::class, 'getHistory']);
+
+    // Admin only routes
+    Route::get('/statistics', [\App\Http\Controllers\NotificationController::class, 'getStatistics'])->middleware('role:admin');
+    Route::post('/test', [\App\Http\Controllers\NotificationController::class, 'testConnection'])->middleware('role:admin');
 });

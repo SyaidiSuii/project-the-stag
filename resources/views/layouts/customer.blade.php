@@ -7,6 +7,19 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'The Stag - SmartDine')</title>
 
+    <!-- Firebase Configuration -->
+    <script>
+        window.FIREBASE_CONFIG = {
+            apiKey: "AIzaSyBO-_-PSDlUZkY0dCI7lI8LeJzoRRBvSEQ",
+            authDomain: "the-stag-notif-v2.firebaseapp.com",
+            projectId: "the-stag-notif-v2",
+            storageBucket: "the-stag-notif-v2.firebasestorage.app",
+            messagingSenderId: "595478392275",
+            appId: "1:595478392275:web:56b641955e431fe3ddd326"
+        };
+        window.FIREBASE_VAPID_KEY = "{{ config('services.fcm.vapid_key') }}";
+    </script>
+
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
 
@@ -55,6 +68,7 @@
         <a class="nav-item account-spacer {{ Request::routeIs('customer.account*') || Request::routeIs('customer.reviews*') ? 'active' : '' }}" href="{{ route('customer.account.index') }}">
             <div class="nav-icon"><i class="fas fa-user"></i></div>
             <div class="nav-text">ACCOUNT</div>
+            {{-- <div class="nav-text">{{ auth()->check() ? strtoupper(explode(' ', auth()->user()->name)[0]) : 'ACCOUNT' }}</div> --}}
         </a>
     </div>
 
@@ -117,6 +131,23 @@
 
     <!-- Password Toggle Functionality -->
     <script src="{{ asset('js/password-toggle.js') }}"></script>
+
+    <!-- FCM Push Notifications -->
+    @auth
+    <script src="{{ asset('js/customer/notifications.js') }}"></script>
+
+    <!-- Auto-prompt for new users -->
+    @if(session('show_notification_prompt') && !auth()->user()->notification_prompted_at)
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('New user detected - will prompt for notifications');
+            if (window.FCMNotifications) {
+                window.FCMNotifications.promptNewUser();
+            }
+        });
+    </script>
+    @endif
+    @endauth
 
     {{-- 🧠 Chatbot (AI Groq) --}}
     @include('partials.chatbot')

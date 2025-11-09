@@ -23,6 +23,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\Loyalty\RewardRedemptionService::class);
         $this->app->singleton(\App\Services\Loyalty\VoucherService::class);
         $this->app->singleton(\App\Services\Loyalty\TierService::class); // PHASE 7
+
+        // FIX: Bind GuzzleHttp client interface to resolve Firebase dependency issue
+        $this->app->bind(\GuzzleHttp\ClientInterface::class, \GuzzleHttp\Client::class);
     }
 
     /**

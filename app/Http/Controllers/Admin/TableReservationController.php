@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\TableReservation;
 use App\Models\Table;
 use App\Models\User;
+use App\Events\TableBookingCreatedEvent;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
@@ -226,15 +227,30 @@ class TableReservationController extends Controller
         ]);
 
         // Load relationships to prevent errors
-        $tableReservation->load(['table', 'tableQrcode']);
-        
+        $tableReservation->load(['table', 'tableQrcode', 'user']);
+
+        // Track old status for comparison
+        $oldStatus = $tableReservation->status;
+
         $tableReservation->status = $request->status;
-        
+
         if ($request->filled('notes')) {
             $tableReservation->notes = $request->notes;
         }
 
         $tableReservation->save();
+
+        // Fire event to send FCM notification when admin confirms reservation
+        if ($oldStatus !== 'confirmed' && $request->status === 'confirmed') {
+            event(new TableBookingCreatedEvent($tableReservation->fresh(['user', 'table'])));
+
+            \Log::info('Reservation confirmed - notification event fired', [
+                'reservation_id' => $tableReservation->id,
+                'user_id' => $tableReservation->user_id,
+                'old_status' => $oldStatus,
+                'new_status' => $request->status
+            ]);
+        }
 
         return redirect()->back()->with('message', 'Reservation status updated successfully!');
     }

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use App\Models\MenuItem;
+use App\Models\OrderActivityLog;
 use Carbon\Carbon;
 use Illuminate\Http\Response;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -23,8 +24,17 @@ class ReportController extends Controller
 
     /**
      * Display the main reporting dashboard with comprehensive analytics.
+     * This now redirects to the monthly view.
      */
     public function index(): View
+    {
+        return $this->monthly();
+    }
+
+    /**
+     * Display monthly analytics dashboard.
+     */
+    public function monthly(): View
     {
         // === CHARTS DATA ===
         $salesSummary = $this->salesAnalyticsService->getSalesSummary(30);
@@ -88,7 +98,7 @@ class ReportController extends Controller
         $promotionDiscounts = $currentMonthAnalytics['promotion_discounts'];
         $rewardsRedeemed = $currentMonthAnalytics['rewards_redeemed'];
 
-        return view('admin.reports.index', [
+        return view('admin.reports.monthly', [
             // Charts
             'salesSummary' => $salesSummary,
             'topSellingProducts' => $topSellingProducts,
@@ -123,6 +133,79 @@ class ReportController extends Controller
             'promotionDiscounts' => $promotionDiscounts,
             'rewardsRedeemed' => $rewardsRedeemed,
             'promotionStats' => $promotionStats,
+        ]);
+    }
+
+    /**
+     * Display all-time analytics dashboard.
+     */
+    public function allTime(): View
+    {
+        // All-time date range (from beginning of business)
+        $startOfBusiness = Carbon::createFromDate(2020, 1, 1); // Assuming business started in 2020
+        $endOfNow = Carbon::now();
+
+        // === CHARTS DATA (All Time) ===
+        // Use monthly Jan-Dec view for current year
+        $salesSummary = $this->salesAnalyticsService->getMonthlyYearSummary();
+        $topSellingProducts = $this->salesAnalyticsService->getTopSellingProducts(10);
+        $salesByCategory = $this->salesAnalyticsService->getSalesByCategory();
+        $orderTypeBreakdown = $this->salesAnalyticsService->getOrderTypeBreakdown(3650); // ~10 years
+        $qrVsWeb = $this->salesAnalyticsService->getQrVsWebOrders(3650);
+
+        // === ALL-TIME ANALYTICS ===
+        $allTimeAnalytics = $this->salesAnalyticsService->getComprehensiveAnalytics(
+            $startOfBusiness,
+            $endOfNow
+        );
+
+        // === CUSTOMER METRICS ===
+        $customerRetention = $this->salesAnalyticsService->getCustomerRetention(3650);
+
+        // === PROMOTION EFFECTIVENESS ===
+        $promotionStats = $this->salesAnalyticsService->getPromotionEffectiveness(3650);
+
+        // === TOTAL CUSTOMERS (All Time) ===
+        $totalCustomers = \App\Models\User::whereHas('roles', function($q) {
+            $q->where('name', 'customer');
+        })->count();
+
+        return view('admin.reports.all-time', [
+            // Charts
+            'salesSummary' => $salesSummary,
+            'topSellingProducts' => $topSellingProducts,
+            'salesByCategory' => $salesByCategory,
+            'orderTypeBreakdown' => $orderTypeBreakdown,
+            'qrVsWeb' => $qrVsWeb,
+
+            // Core Metrics
+            'totalRevenue' => $allTimeAnalytics['total_revenue'],
+            'totalOrders' => $allTimeAnalytics['total_orders'],
+            'avgOrderValue' => $allTimeAnalytics['avg_order_value'],
+            'totalCustomers' => $totalCustomers,
+
+            // Customer Metrics
+            'customerRetention' => $customerRetention,
+            'newCustomers' => $allTimeAnalytics['new_customers'],
+            'returningCustomers' => $allTimeAnalytics['returning_customers'],
+
+            // QR & Table Analytics
+            'qrOrders' => $allTimeAnalytics['qr_orders'],
+            'qrRevenue' => $allTimeAnalytics['qr_revenue'],
+            'tableBookings' => $allTimeAnalytics['table_bookings'],
+
+            // Promotions & Rewards
+            'promotionsUsed' => $allTimeAnalytics['promotions_used'],
+            'promotionDiscounts' => $allTimeAnalytics['promotion_discounts'],
+            'rewardsRedeemed' => $allTimeAnalytics['rewards_redeemed'],
+            'promotionStats' => $promotionStats,
+
+            // Metadata
+            'dateRange' => [
+                'start' => $startOfBusiness->toDateString(),
+                'end' => $endOfNow->toDateString(),
+                'label' => 'All Time (Since 2020) - Yearly View'
+            ],
         ]);
     }
 
@@ -436,6 +519,136 @@ class ReportController extends Controller
             ],
             'timestamp' => now()->toDateTimeString(),
         ]);
+    }
+
+    /**
+     * Get all-time analytics data for the "All Time" tab view.
+     * This provides comprehensive historical data since the business started.
+     */
+    public function getAllTimeAnalytics(): JsonResponse
+    {
+        // All-time date range (from beginning of business)
+        $startOfBusiness = Carbon::createFromDate(2020, 1, 1); // Assuming business started in 2020
+        $endOfNow = Carbon::now();
+
+        // === CHARTS DATA (All Time) ===
+        // Use smart date range method to automatically select best granularity
+        $salesSummary = $this->salesAnalyticsService->getSalesSummaryByDateRange($startOfBusiness, $endOfNow);
+        $topSellingProducts = $this->salesAnalyticsService->getTopSellingProducts(10);
+        $salesByCategory = $this->salesAnalyticsService->getSalesByCategory();
+        $orderTypeBreakdown = $this->salesAnalyticsService->getOrderTypeBreakdown(3650);
+        $qrVsWeb = $this->salesAnalyticsService->getQrVsWebOrders(3650);
+
+        // === ALL-TIME ANALYTICS ===
+        $allTimeAnalytics = $this->salesAnalyticsService->getComprehensiveAnalytics(
+            $startOfBusiness,
+            $endOfNow
+        );
+
+        // === CUSTOMER METRICS ===
+        $customerRetention = $this->salesAnalyticsService->getCustomerRetention(3650);
+
+        // === PROMOTION EFFECTIVENESS ===
+        $promotionStats = $this->salesAnalyticsService->getPromotionEffectiveness(3650);
+
+        // === MENU ITEMS (All Time) ===
+        $activeItems = MenuItem::where('is_available', 1)->count();
+        $totalItemsEver = MenuItem::count();
+
+        // === BUILD RESPONSE DATA ===
+        return response()->json([
+            'success' => true,
+
+            // KPI Data for dashboard cards
+            'kpi' => [
+                'total_revenue' => $allTimeAnalytics['total_revenue'],
+                'total_orders' => $allTimeAnalytics['total_orders'],
+                'avg_order_value' => $allTimeAnalytics['avg_order_value'],
+                'active_items' => $activeItems,
+                'qr_orders' => $allTimeAnalytics['qr_orders'],
+                'table_bookings' => $allTimeAnalytics['table_bookings'],
+                'new_customers' => $allTimeAnalytics['new_customers'],
+                'returning_customers' => $allTimeAnalytics['returning_customers'],
+                'customer_retention_rate' => $allTimeAnalytics['customer_retention_rate'],
+            ],
+
+            // Chart Data
+            'salesSummary' => $salesSummary,
+            'topSellingProducts' => $topSellingProducts,
+            'salesByCategory' => $salesByCategory,
+            'orderTypeBreakdown' => $orderTypeBreakdown,
+            'qrVsWeb' => $qrVsWeb,
+
+            // Additional metrics
+            'promotionStats' => $promotionStats,
+            'promotionsUsed' => $allTimeAnalytics['promotions_used'],
+            'promotionDiscounts' => $allTimeAnalytics['promotion_discounts'],
+            'rewardsRedeemed' => $allTimeAnalytics['rewards_redeemed'],
+            'customerRetention' => $customerRetention,
+
+            // Metadata
+            'dateRange' => [
+                'start' => $startOfBusiness->toDateString(),
+                'end' => $endOfNow->toDateString(),
+                'label' => 'All Time (Since 2020) - Yearly View'
+            ],
+            'timestamp' => now()->toDateTimeString(),
+        ]);
+    }
+
+    /**
+     * Display Order Activity Logs report
+     */
+    public function orderActivityLogs(Request $request): View
+    {
+        $query = OrderActivityLog::with(['order', 'triggeredBy'])
+            ->latest('created_at');
+
+        // Filter by activity type
+        if ($request->filled('activity_type') && $request->activity_type !== 'all') {
+            $query->where('activity_type', $request->activity_type);
+        }
+
+        // Filter by date range
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Filter by order number (search)
+        if ($request->filled('search')) {
+            $query->whereHas('order', function ($q) use ($request) {
+                $q->where('confirmation_code', 'like', '%' . $request->search . '%')
+                  ->orWhere('id', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // Pagination
+        $activityLogs = $query->paginate(50);
+
+        // Statistics
+        $totalLogs = OrderActivityLog::count();
+        $criticalCount = OrderActivityLog::where('activity_type', 'critical')->count();
+        $errorCount = OrderActivityLog::where('activity_type', 'error')->count();
+        $warningCount = OrderActivityLog::where('activity_type', 'warning')->count();
+        $infoCount = OrderActivityLog::where('activity_type', 'info')->count();
+
+        // Recent problems (last 24 hours)
+        $recentProblems = OrderActivityLog::problems()
+            ->where('created_at', '>=', now()->subDay())
+            ->count();
+
+        return view('admin.reports.activity-logs', compact(
+            'activityLogs',
+            'totalLogs',
+            'criticalCount',
+            'errorCount',
+            'warningCount',
+            'infoCount',
+            'recentProblems'
+        ));
     }
 
     private function calculateChangePercentage($current, $previous)

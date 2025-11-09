@@ -153,7 +153,7 @@
           <div class="card-icon"><i class="fas fa-cog"></i></div>
           <h2 class="card-title">Preferences</h2>
         </div>
-        <div class="toggle-group">
+        {{-- <div class="toggle-group">
           <div class="toggle-info">
             <div class="toggle-label">Email Notifications</div>
             <div class="toggle-description">Receive order updates and promotions</div>
@@ -179,8 +179,17 @@
           <div class="toggle-switch active" data-toggle="marketing">
             <div class="toggle-slider"></div>
           </div>
-        </div>
+        </div> --}}
         <div class="toggle-group">
+          <div class="toggle-info">
+            <div class="toggle-label">Push Notifications</div>
+            <div class="toggle-description">Get instant order updates (preparing, ready, completed)</div>
+          </div>
+          <div class="toggle-switch" data-toggle="push-notifications" id="push-notification-toggle">
+            <div class="toggle-slider"></div>
+          </div>
+        </div>
+        {{-- <div class="toggle-group">
           <div class="toggle-info">
             <div class="toggle-label">Dark Mode</div>
             <div class="toggle-description">Switch to dark theme</div>
@@ -188,7 +197,7 @@
           <div class="toggle-switch" data-toggle="darkmode">
             <div class="toggle-slider"></div>
           </div>
-        </div>
+        </div> --}}
       </div>
 
       <!-- Security Settings -->
@@ -657,60 +666,6 @@ if (deleteModal) {
     });
 }
 
-// Form validation for delete confirmation
-const deleteAccountForm = document.getElementById('deleteAccountForm');
-if (deleteAccountForm) {
-    deleteAccountForm.addEventListener('submit', function(e) {
-        const confirmInput = document.getElementById('confirm_delete').value;
-        const passwordInput = document.getElementById('delete_password').value;
-
-        if (confirmInput !== 'DELETE') {
-            e.preventDefault();
-            showToast('Please type "DELETE" in capital letters to confirm account deletion.', 'error');
-            return false;
-        }
-
-        if (!passwordInput) {
-            e.preventDefault();
-            showToast('Please enter your password to confirm account deletion.', 'error');
-            return false;
-        }
-
-        e.preventDefault();
-
-        // Use modern confirmation modal
-        if (typeof showConfirm === 'function') {
-            showConfirm(
-                'Delete Account?',
-                'Are you absolutely sure you want to delete your account? This action cannot be undone.',
-                'danger',
-                'Delete Account',
-                'Cancel'
-            ).then(confirmed => {
-                if (confirmed) {
-                    // Show loading state
-                    const submitBtn = document.getElementById('confirmDeleteBtn');
-                    if (submitBtn) {
-                        submitBtn.disabled = true;
-                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
-                    }
-                    // Submit form
-                    e.target.submit();
-                }
-            });
-        } else {
-            // Fallback to native confirm
-            if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
-                const submitBtn = document.getElementById('confirmDeleteBtn');
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
-                }
-                e.target.submit();
-            }
-        }
-    });
-
 // Logout confirmation with toast
 function confirmLogout() {
     const logoutForm = document.getElementById('logoutForm');
@@ -788,6 +743,61 @@ function confirmLogout() {
     }, 10000);
 }
 
+// Form validation for delete confirmation
+const deleteAccountForm = document.getElementById('deleteAccountForm');
+if (deleteAccountForm) {
+    deleteAccountForm.addEventListener('submit', function(e) {
+        const confirmInput = document.getElementById('confirm_delete').value;
+        const passwordInput = document.getElementById('delete_password').value;
+
+        if (confirmInput !== 'DELETE') {
+            e.preventDefault();
+            showToast('Please type "DELETE" in capital letters to confirm account deletion.', 'error');
+            return false;
+        }
+
+        if (!passwordInput) {
+            e.preventDefault();
+            showToast('Please enter your password to confirm account deletion.', 'error');
+            return false;
+        }
+
+        e.preventDefault();
+
+        // Use modern confirmation modal
+        if (typeof showConfirm === 'function') {
+            showConfirm(
+                'Delete Account?',
+                'Are you absolutely sure you want to delete your account? This action cannot be undone.',
+                'danger',
+                'Delete Account',
+                'Cancel'
+            ).then(confirmed => {
+                if (confirmed) {
+                    // Show loading state
+                    const submitBtn = document.getElementById('confirmDeleteBtn');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+                    }
+                    // Submit form
+                    e.target.submit();
+                }
+            });
+        } else {
+            // Fallback to native confirm
+            if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
+                const submitBtn = document.getElementById('confirmDeleteBtn');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+                }
+                e.target.submit();
+            }
+        }
+    });
+}
+
 // Custom password toggle for customer account page (eye icon only, no lock icon)
 document.addEventListener('DOMContentLoaded', function() {
     const passwordFields = document.querySelectorAll('#current_password, #new_password, #new_password_confirmation, #delete_password');
@@ -857,6 +867,78 @@ document.addEventListener('DOMContentLoaded', function() {
         // Append toggle button to input group
         inputGroup.appendChild(toggleButton);
     });
+
+    // ==========================================
+    // Push Notification Toggle Handler
+    // ==========================================
+    const pushToggle = document.getElementById('push-notification-toggle');
+
+    if (pushToggle && typeof window.FCMNotifications !== 'undefined') {
+        // Check current notification permission status
+        const updateToggleState = async () => {
+            // Wait for FCM to be fully initialized
+            if (!window.FCMNotifications) {
+                setTimeout(updateToggleState, 100);
+                return;
+            }
+
+            // Check permission - this is the most reliable indicator
+            if (Notification.permission === 'granted') {
+                pushToggle.classList.add('active');
+            } else {
+                pushToggle.classList.remove('active');
+            }
+        };
+
+        // Initial state - wait a bit for FCM to initialize
+        setTimeout(updateToggleState, 500);
+
+        // Handle toggle click
+        pushToggle.addEventListener('click', async function() {
+            if (this.classList.contains('active')) {
+                // Currently enabled - disable notifications
+                if (confirm('Disable push notifications? You will no longer receive instant order updates.')) {
+                    // Clear token from backend (optional - implement if needed)
+                    this.classList.remove('active');
+                    showToast('Push notifications disabled', 'info');
+                }
+            } else {
+                // Currently disabled - enable notifications
+                try {
+                    showToast('Requesting notification permission...', 'info', 3000);
+
+                    // Request permission and register device
+                    await window.FCMNotifications.initialize();
+                    await window.FCMNotifications.registerDevice();
+
+                    // Update toggle state
+                    updateToggleState();
+
+                    if (Notification.permission === 'granted') {
+                        showToast('Push notifications enabled! You will receive order updates.', 'success');
+                    } else {
+                        showToast('Notification permission denied. Please enable in browser settings.', 'warning');
+                    }
+                } catch (error) {
+                    console.error('Failed to enable push notifications:', error);
+                    showToast('Failed to enable push notifications. Please try again.', 'error');
+                }
+            }
+        });
+
+        // Listen for FCM registration events
+        window.addEventListener('fcm-registered', () => {
+            updateToggleState();
+        });
+    } else if (pushToggle) {
+        // FCM not available - disable toggle
+        pushToggle.style.opacity = '0.5';
+        pushToggle.style.cursor = 'not-allowed';
+        pushToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            showToast('Push notifications are not available on this browser', 'warning');
+        });
+    }
 });
 </script>
 @endsection

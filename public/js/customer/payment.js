@@ -205,7 +205,8 @@ document.addEventListener('DOMContentLoaded', () => {
         cart = [{
             id: singleOrder.item_id,
             name: singleOrder.item_name,
-            price: singleOrder.item_price,
+            price: singleOrder.item_price, // Display string
+            unit_price: singleOrder.unit_price, // IMPORTANT: Numeric value (includes discount)
             quantity: singleOrder.quantity,
             notes: singleOrder.notes,
             // Remove payment_method from order data - user will select on this page
@@ -244,9 +245,18 @@ document.addEventListener('DOMContentLoaded', () => {
         let subtotal = 0;
         orderItemsContainer.innerHTML = '';
         cart.forEach(item => {
-            const priceString = item.price || '0';
-            const priceMatch = priceString.match(/[\d.]+/);
-            const unitPrice = priceMatch ? parseFloat(priceMatch[0]) : 0;
+            // IMPORTANT: Use unit_price (numeric) if available, which includes discounts
+            // Fallback to parsing price string if unit_price not set
+            let unitPrice = 0;
+            if (item.unit_price !== undefined && item.unit_price !== null) {
+                // Use unit_price directly (already numeric, includes item discounts)
+                unitPrice = parseFloat(item.unit_price);
+            } else if (item.price) {
+                // Fallback: parse from price string
+                const priceString = item.price || '0';
+                const priceMatch = priceString.match(/[\d.]+/);
+                unitPrice = priceMatch ? parseFloat(priceMatch[0]) : 0;
+            }
             const itemTotal = unitPrice * item.quantity;
             subtotal += itemTotal;
 
