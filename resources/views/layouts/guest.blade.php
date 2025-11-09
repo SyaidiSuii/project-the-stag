@@ -268,20 +268,256 @@
             border: 1px solid rgba(245, 158, 11, 0.2);
         }
 
-        /* Responsive design */
-        @media (max-width: 480px) {
+        /* ===== Responsive Design - 4-Tier Breakpoint System ===== */
+        
+        /* Tablet (769px - 1199px) - 20-25% reduction */
+        @media (min-width: 769px) and (max-width: 1199px) {
+            body {
+                padding: 16px;
+            }
+            
             .app-container {
-                max-width: 100%;
+                max-width: 360px;
+                border-radius: 14px;
+            }
+            
+            .app-header {
+                padding: 16px;
+                border-radius: 14px 14px 0 0;
+            }
+            
+            .logo {
+                gap: 10px;
+                font-size: 21px;
+                margin-bottom: 8px;
+            }
+            
+            .logo i {
+                font-size: 28px;
+            }
+            
+            .app-header p {
+                font-size: 0.9rem;
             }
             
             .app-content {
                 padding: 20px;
             }
             
+            .form-title {
+                font-size: 19px;
+                margin-bottom: 4px;
+            }
+            
+            .form-subtitle {
+                font-size: 0.9rem;
+                margin-bottom: 20px;
+            }
+            
+            .form-group {
+                margin-bottom: 16px;
+            }
+            
+            .form-label {
+                margin-bottom: 7px;
+                font-size: 13px;
+            }
+            
+            .form-input {
+                padding: 12px 14px;
+                font-size: 15px;
+                border-radius: 10px;
+            }
+            
+            .input-icon {
+                right: 13px;
+                font-size: 0.9rem;
+            }
+            
+            .remember-forgot {
+                margin-bottom: 20px;
+                font-size: 13px;
+            }
+            
+            .remember {
+                gap: 7px;
+            }
+            
+            .btn {
+                padding: 14px;
+                font-size: 15px;
+                gap: 7px;
+                border-radius: 10px;
+            }
+            
+            .switch-form {
+                margin-top: 20px;
+                font-size: 0.9rem;
+            }
+            
+            .error-message,
+            .success-message {
+                font-size: 13px;
+                margin-top: 7px;
+                gap: 5px;
+            }
+            
+            .alert {
+                padding: 10px 14px;
+                margin-bottom: 16px;
+                gap: 7px;
+                border-radius: 10px;
+            }
+            
+            /* Register page password requirements */
+            [style*="background: #f0f9ff"] {
+                margin-top: 7px !important;
+                padding: 9px !important;
+                border-radius: 3px !important;
+            }
+            
+            [style*="background: #f0f9ff"] div {
+                font-size: 12px !important;
+                margin-bottom: 5px !important;
+            }
+            
+            [style*="background: #f0f9ff"] ul {
+                font-size: 11px !important;
+            }
+        }
+        
+        /* Mobile (max-width: 768px) - 35-40% reduction */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+            
+            .app-container {
+                max-width: 100%;
+                border-radius: 12px;
+            }
+            
+            .app-header {
+                padding: 16px;
+                border-radius: 12px 12px 0 0;
+            }
+            
+            .logo {
+                gap: 8px;
+                font-size: 18px;
+                margin-bottom: 6px;
+            }
+            
+            .logo i {
+                font-size: 24px;
+            }
+            
+            .app-header p {
+                font-size: 0.85rem;
+            }
+            
+            .app-content {
+                padding: 16px;
+            }
+            
+            .form-title {
+                font-size: 17px;
+                margin-bottom: 4px;
+            }
+            
+            .form-subtitle {
+                font-size: 0.85rem;
+                margin-bottom: 18px;
+            }
+            
+            .form-group {
+                margin-bottom: 14px;
+            }
+            
+            .form-label {
+                margin-bottom: 6px;
+                font-size: 12px;
+            }
+            
+            .form-input {
+                padding: 11px 12px;
+                font-size: 14px;
+                border-radius: 9px;
+            }
+            
+            .input-icon {
+                right: 12px;
+                font-size: 0.85rem;
+            }
+            
             .remember-forgot {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 10px;
+                gap: 8px;
+                margin-bottom: 18px;
+                font-size: 12px;
+            }
+            
+            .remember {
+                gap: 6px;
+            }
+            
+            .remember label {
+                font-size: 12px;
+            }
+            
+            .btn {
+                padding: 12px;
+                font-size: 14px;
+                gap: 6px;
+                border-radius: 9px;
+            }
+            
+            .switch-form {
+                margin-top: 18px;
+                font-size: 0.85rem;
+            }
+            
+            .error-message,
+            .success-message {
+                font-size: 12px;
+                margin-top: 6px;
+                gap: 4px;
+            }
+            
+            .alert {
+                padding: 10px 12px;
+                margin-bottom: 14px;
+                gap: 6px;
+                border-radius: 9px;
+                font-size: 0.85rem;
+            }
+            
+            .alert i {
+                font-size: 0.9rem;
+            }
+            
+            /* Register page password requirements */
+            [style*="background: #f0f9ff"] {
+                margin-top: 6px !important;
+                padding: 8px !important;
+                border-radius: 3px !important;
+            }
+            
+            [style*="background: #f0f9ff"] div {
+                font-size: 11px !important;
+                margin-bottom: 4px !important;
+            }
+            
+            [style*="background: #f0f9ff"] ul {
+                font-size: 10px !important;
+                padding-left: 16px !important;
+            }
+            
+            /* Terms checkbox label */
+            .remember[style*="margin-bottom: 20px"] label {
+                font-size: 11px !important;
+                line-height: 1.4;
             }
         }
 

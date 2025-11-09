@@ -251,6 +251,269 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
+
+/* ===== RESPONSIVE DESIGN - 4-TIER BREAKPOINT SYSTEM ===== */
+
+/* Large Desktop (≥1600px) */
+@media (min-width: 1600px) {
+    .stats-header {
+        padding: 40px;
+    }
+    .stats-header h1 {
+        font-size: 2.4rem;
+    }
+    .stats-grid {
+        gap: 28px;
+    }
+    .stat-card {
+        padding: 32px;
+    }
+    .stat-value {
+        font-size: 3.2rem;
+    }
+    .chart-card {
+        padding: 36px;
+    }
+    .chart-title {
+        font-size: 1.6rem;
+    }
+}
+
+/* Tablet (769px-1199px) */
+@media (max-width: 1199px) and (min-width: 769px) {
+    .action-buttons {
+        gap: 10px;
+    }
+    .btn-back,
+    .btn-export {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+    .stats-header {
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .stats-header h1 {
+        font-size: 1.5rem;
+    }
+    .stats-header p {
+        font-size: 0.9rem !important;
+    }
+    .stats-header-meta {
+        gap: 16px;
+    }
+    .stats-header-item {
+        font-size: 0.85rem;
+    }
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+    .stat-card {
+        padding: 18px;
+    }
+    .stat-label {
+        font-size: 0.75rem;
+    }
+    .stat-value {
+        font-size: 2rem;
+    }
+    .stat-description {
+        font-size: 0.75rem;
+    }
+    .chart-card {
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+    .chart-title {
+        font-size: 1.1rem;
+        margin-bottom: 16px;
+    }
+    .progress-label {
+        font-size: 0.85rem;
+    }
+    .usage-logs-table th,
+    .usage-logs-table td {
+        padding: 10px 14px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Mobile (≤768px) */
+@media (max-width: 768px) {
+    .admin-section {
+        padding: 16px;
+    }
+    .action-buttons {
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+    .btn-back,
+    .btn-export {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+    .stats-header {
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 12px;
+    }
+    .stats-header h1 {
+        font-size: 1.3rem;
+        margin-bottom: 6px;
+    }
+    .stats-header p {
+        font-size: 0.85rem !important;
+        margin-top: 6px !important;
+    }
+    .stats-header-meta {
+        gap: 10px;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-top: 12px;
+    }
+    .stats-header-item {
+        font-size: 0.8rem;
+    }
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .stat-card {
+        padding: 16px;
+    }
+    .stat-label {
+        font-size: 0.7rem;
+        margin-bottom: 6px;
+    }
+    .stat-value {
+        font-size: 1.8rem;
+        margin-bottom: 6px;
+    }
+    .stat-description {
+        font-size: 0.75rem;
+    }
+    .chart-card {
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+    .chart-title {
+        font-size: 1rem;
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+    }
+    .progress-bar-container {
+        margin-bottom: 16px;
+    }
+    .progress-label {
+        font-size: 0.8rem;
+        margin-bottom: 6px;
+    }
+    .progress-bar {
+        height: 10px;
+    }
+    .usage-logs-table {
+        display: block;
+        overflow-x: auto;
+    }
+    .usage-logs-table th,
+    .usage-logs-table td {
+        padding: 10px 12px;
+        font-size: 0.8rem;
+    }
+    .usage-logs-table th {
+        font-size: 0.75rem;
+    }
+    .badge {
+        padding: 3px 8px;
+        font-size: 0.7rem;
+    }
+    .empty-state {
+        padding: 40px 16px;
+    }
+    .empty-state-icon {
+        font-size: 3rem;
+    }
+    .empty-state-text {
+        font-size: 0.95rem;
+    }
+}
+
+/* Small Mobile (≤480px) */
+@media (max-width: 480px) {
+    .admin-section {
+        padding: 12px;
+    }
+    .action-buttons {
+        gap: 8px;
+    }
+    .btn-back,
+    .btn-export {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+    .stats-header {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    .stats-header h1 {
+        font-size: 1.1rem;
+    }
+    .stats-header p {
+        font-size: 0.8rem !important;
+    }
+    .stats-header-item {
+        font-size: 0.75rem;
+    }
+    .stats-grid {
+        gap: 10px;
+    }
+    .stat-card {
+        padding: 12px;
+        border-left-width: 3px;
+    }
+    .stat-label {
+        font-size: 0.65rem;
+        margin-bottom: 5px;
+    }
+    .stat-value {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+    .stat-description {
+        font-size: 0.7rem;
+    }
+    .chart-card {
+        padding: 12px;
+    }
+    .chart-title {
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+    }
+    .progress-label {
+        font-size: 0.75rem;
+    }
+    .progress-bar {
+        height: 8px;
+    }
+    .usage-logs-table th,
+    .usage-logs-table td {
+        padding: 8px 10px;
+        font-size: 0.75rem;
+    }
+    .usage-logs-table th {
+        font-size: 0.7rem;
+    }
+    .badge {
+        padding: 2px 6px;
+        font-size: 0.65rem;
+    }
+}
 </style>
 @endsection
 

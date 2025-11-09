@@ -340,6 +340,251 @@
         background: rgba(99, 102, 241, 0.1);
         color: var(--brand);
     }
+
+    /* ===== RESPONSIVE DESIGN - 4-TIER BREAKPOINT SYSTEM ===== */
+    
+    /* Large Desktop (≥1600px) - 30-40% larger */
+    @media (min-width: 1600px) {
+        .rewards-dashboard {
+            padding: 30px;
+        }
+        .admin-cards {
+            gap: 28px;
+        }
+        .admin-card {
+            padding: 28px;
+        }
+        .admin-card-title {
+            font-size: 17px;
+        }
+        .admin-card-value {
+            font-size: 36px;
+        }
+        .tab-nav-item {
+            padding: 14px 28px;
+            font-size: 16px;
+        }
+        .tab-content {
+            padding: 40px;
+        }
+        .section-header h2 {
+            font-size: 26px;
+        }
+    }
+
+    /* Tablet (769px-1199px) - 20-25% smaller */
+    @media (max-width: 1199px) and (min-width: 769px) {
+        .rewards-dashboard {
+            padding: 16px;
+        }
+        .admin-cards {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .admin-card {
+            padding: 18px;
+        }
+        .admin-card-title {
+            font-size: 13px;
+        }
+        .admin-card-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+        }
+        .admin-card-value {
+            font-size: 22px;
+        }
+        .admin-card-desc {
+            font-size: 12px;
+        }
+        .tab-navigation {
+            gap: 6px;
+            padding: 10px;
+        }
+        .tab-nav-item {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+        .tab-content {
+            padding: 20px;
+        }
+        .section-header h2 {
+            font-size: 17px;
+        }
+        .btn {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+        .data-table th,
+        .data-table td {
+            padding: 10px;
+            font-size: 13px;
+        }
+    }
+
+    /* Mobile (≤768px) - 35-40% smaller, single column */
+    @media (max-width: 768px) {
+        .rewards-dashboard {
+            padding: 12px;
+        }
+        .admin-cards {
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .admin-card {
+            padding: 16px;
+        }
+        .admin-card-title {
+            font-size: 12px;
+        }
+        .admin-card-icon {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+        }
+        .admin-card-value {
+            font-size: 20px;
+        }
+        .admin-card-desc {
+            font-size: 11px;
+        }
+        .tab-navigation {
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 8px;
+        }
+        .tab-nav-item {
+            padding: 8px 14px;
+            font-size: 12px;
+            flex: 1 1 calc(50% - 6px);
+            min-width: 120px;
+            justify-content: center;
+        }
+        .tab-nav-item i {
+            font-size: 11px;
+        }
+        .tab-content {
+            padding: 16px;
+        }
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .section-header h2 {
+            font-size: 16px;
+        }
+        .btn {
+            padding: 8px 14px;
+            font-size: 12px;
+            width: 100%;
+        }
+        .btn i {
+            font-size: 11px;
+        }
+        /* Table Responsive */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        .data-table {
+            min-width: 600px;
+        }
+        .data-table th,
+        .data-table td {
+            padding: 8px;
+            font-size: 12px;
+        }
+        .action-buttons {
+            flex-direction: column;
+            gap: 6px;
+        }
+        .action-buttons .btn {
+            width: 100%;
+        }
+        .badge {
+            font-size: 10px;
+            padding: 3px 8px;
+        }
+        /* Check-in Settings Form */
+        .admin-table input[type="number"] {
+            width: 80px;
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+        .empty-state {
+            padding: 40px 16px;
+        }
+        .empty-state i {
+            font-size: 48px;
+        }
+        .empty-state h3 {
+            font-size: 16px;
+        }
+        .empty-state p {
+            font-size: 13px;
+        }
+    }
+
+    /* Small Mobile (≤480px) - Ultra compact */
+    @media (max-width: 480px) {
+        .rewards-dashboard {
+            padding: 10px;
+        }
+        .admin-cards {
+            gap: 10px;
+        }
+        .admin-card {
+            padding: 12px;
+        }
+        .admin-card-header {
+            margin-bottom: 10px;
+        }
+        .admin-card-title {
+            font-size: 11px;
+        }
+        .admin-card-icon {
+            width: 28px;
+            height: 28px;
+            font-size: 12px;
+        }
+        .admin-card-value {
+            font-size: 18px;
+        }
+        .admin-card-desc {
+            font-size: 10px;
+        }
+        .tab-navigation {
+            padding: 6px;
+            gap: 4px;
+        }
+        .tab-nav-item {
+            padding: 6px 10px;
+            font-size: 11px;
+            flex: 1 1 100%;
+        }
+        .tab-content {
+            padding: 12px;
+        }
+        .section-header h2 {
+            font-size: 14px;
+        }
+        .btn {
+            padding: 6px 12px;
+            font-size: 11px;
+        }
+        .data-table th,
+        .data-table td {
+            padding: 6px;
+            font-size: 11px;
+        }
+        .badge {
+            font-size: 9px;
+            padding: 2px 6px;
+        }
+    }
 </style>
 @endsection
 

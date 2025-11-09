@@ -208,6 +208,249 @@
     color: var(--text-3);
     white-space: nowrap;
 }
+
+/* ===== RESPONSIVE DESIGN - 4-TIER BREAKPOINT SYSTEM ===== */
+
+/* Large Desktop (≥1600px) */
+@media (min-width: 1600px) {
+    .analytics-header {
+        padding: 32px;
+    }
+    .analytics-header h1 {
+        font-size: 32px;
+    }
+    .stats-grid {
+        gap: 28px;
+    }
+    .stat-card {
+        padding: 28px;
+    }
+    .stat-card-value {
+        font-size: 36px;
+    }
+    .chart-card,
+    .table-card {
+        padding: 32px;
+    }
+}
+
+/* Tablet (769px-1199px) */
+@media (max-width: 1199px) and (min-width: 769px) {
+    .analytics-header {
+        padding: 20px;
+    }
+    .analytics-header h1 {
+        font-size: 20px;
+    }
+    .analytics-header .subtitle {
+        font-size: 13px;
+    }
+    .date-filter {
+        padding: 14px;
+        flex-wrap: wrap;
+    }
+    .date-filter input,
+    .date-filter button {
+        font-size: 13px;
+        padding: 7px 12px;
+    }
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+    .stat-card {
+        padding: 18px;
+    }
+    .stat-card-title {
+        font-size: 13px;
+    }
+    .stat-card-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+    .stat-card-value {
+        font-size: 22px;
+    }
+    .stat-card-desc {
+        font-size: 11px;
+    }
+    .chart-card,
+    .table-card {
+        padding: 20px;
+    }
+    .chart-card-title,
+    .table-card-title {
+        font-size: 16px;
+    }
+}
+
+/* Mobile (≤768px) */
+@media (max-width: 768px) {
+    .analytics-header {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    .analytics-header h1 {
+        font-size: 18px;
+        margin-bottom: 6px;
+    }
+    .analytics-header .subtitle {
+        font-size: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .date-filter {
+        flex-direction: column;
+        padding: 12px;
+        gap: 10px;
+    }
+    .date-filter label {
+        font-size: 13px;
+    }
+    .date-filter input,
+    .date-filter button,
+    .date-filter .admin-btn {
+        width: 100%;
+        font-size: 13px;
+        padding: 10px 12px;
+    }
+    .date-filter .admin-btn {
+        margin-left: 0 !important;
+    }
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .stat-card {
+        padding: 16px;
+    }
+    .stat-card-title {
+        font-size: 12px;
+    }
+    .stat-card-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+    .stat-card-value {
+        font-size: 20px;
+    }
+    .stat-card-desc {
+        font-size: 11px;
+    }
+    .chart-card,
+    .table-card {
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+    .chart-card-title,
+    .table-card-title {
+        font-size: 15px;
+        margin-bottom: 12px;
+    }
+    .trend-chart {
+        height: 200px;
+        padding: 12px;
+    }
+    .peak-hours-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+    .hour-badge {
+        padding: 8px 6px;
+        font-size: 12px;
+    }
+    .hour-badge > div:first-child {
+        font-size: 14px !important;
+    }
+    .hour-badge > div:last-child {
+        font-size: 10px !important;
+    }
+    .table-container {
+        overflow-x: auto;
+    }
+    .admin-table {
+        min-width: 600px;
+    }
+    .admin-table th,
+    .admin-table td {
+        padding: 8px;
+        font-size: 12px;
+    }
+}
+
+/* Small Mobile (≤480px) */
+@media (max-width: 480px) {
+    .analytics-header {
+        padding: 12px;
+    }
+    .analytics-header h1 {
+        font-size: 16px;
+    }
+    .analytics-header .subtitle {
+        font-size: 11px;
+    }
+    .date-filter {
+        padding: 10px;
+    }
+    .stats-grid {
+        gap: 10px;
+    }
+    .stat-card {
+        padding: 12px;
+    }
+    .stat-card-header {
+        margin-bottom: 10px;
+    }
+    .stat-card-title {
+        font-size: 11px;
+    }
+    .stat-card-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    .stat-card-value {
+        font-size: 18px;
+    }
+    .stat-card-desc {
+        font-size: 10px;
+    }
+    .chart-card,
+    .table-card {
+        padding: 12px;
+    }
+    .chart-card-title,
+    .table-card-title {
+        font-size: 14px;
+    }
+    .trend-chart {
+        height: 150px;
+        padding: 8px;
+    }
+    .peak-hours-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+    .hour-badge {
+        padding: 6px 4px;
+        font-size: 11px;
+    }
+    .hour-badge > div:first-child {
+        font-size: 12px !important;
+    }
+    .hour-badge > div:last-child {
+        font-size: 9px !important;
+    }
+    .admin-table th,
+    .admin-table td {
+        padding: 6px;
+        font-size: 11px;
+    }
+}
 </style>
 @endsection
 

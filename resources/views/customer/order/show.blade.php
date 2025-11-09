@@ -191,7 +191,7 @@
 .progress-stepper::before {
     content: '';
     position: absolute;
-    top: calc(32px + 28px - 2px);
+    top: calc(32px + 28px);
     left: 10%;
     right: 10%;
     height: 4px;
@@ -201,7 +201,7 @@
 
 .progress-line-fill {
     position: absolute;
-    top: calc(32px + 28px - 2px);
+    top: calc(32px + 28px);
     left: 10%;
     height: 4px;
     background: linear-gradient(90deg, #10b981 0%, #6366f1 100%);
@@ -719,36 +719,765 @@
     font-size: 16px;
 }
 
-/* Responsive */
+/* Responsive Design - Mobile (768px) ~20% reduction */
 @media (max-width: 768px) {
+    /* Container & Layout */
+    .order-details-fullscreen {
+        min-height: calc(100vh - 70px);
+        padding: 20px 0; /* ~38% reduction */
+    }
+
+    .order-details-container {
+        padding: 0 16px; /* ~33% reduction */
+    }
+
+    .order-details-card {
+        padding: 24px; /* ~40% reduction */
+        border-radius: 16px;
+    }
+
+    /* Back Button */
+    .back-button {
+        padding: 10px 16px; /* ~20% reduction */
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+
+    /* Order Header */
     .order-header {
         flex-direction: column;
+        padding-bottom: 20px; /* ~38% reduction */
+        margin-bottom: 20px;
+    }
+
+    .order-id-large {
+        font-size: 24px; /* ~25% reduction */
+        margin-bottom: 6px;
+    }
+
+    .order-date-time {
+        font-size: 13px; /* ~13% reduction */
+        margin-bottom: 12px;
     }
 
     .order-meta {
         grid-template-columns: 1fr;
+        gap: 10px; /* ~38% reduction */
+        margin-top: 12px;
+    }
+
+    .meta-item {
+        padding: 12px; /* ~25% reduction */
+        border-radius: 10px;
+    }
+
+    .meta-label {
+        font-size: 11px; /* ~15% reduction */
+    }
+
+    .meta-value {
+        font-size: 14px; /* ~13% reduction */
+    }
+
+    /* Progress Section */
+    .progress-section {
+        margin: 20px 0; /* ~38% reduction */
+    }
+
+    .section-title {
+        font-size: 16px; /* ~20% reduction */
+        margin-bottom: 16px; /* ~33% reduction */
     }
 
     .progress-stepper {
-        padding: 24px 16px;
+        padding: 24px 16px; /* Better spacing for mobile */
+        border-radius: 12px;
     }
 
     .step-circle {
-        width: 48px;
+        width: 48px; /* Slightly larger for better visibility */
         height: 48px;
-        font-size: 20px;
+        font-size: 20px; /* Larger emoji/icon size */
+        margin-bottom: 10px;
+        border-width: 3px;
     }
 
     .step-label {
-        font-size: 12px;
+        font-size: 12px; /* More readable text size */
+        line-height: 1.3;
+        max-width: 70px; /* Prevent awkward wrapping */
+        word-wrap: break-word;
+    }
+
+    .step-time {
+        font-size: 10px;
+        margin-top: 2px;
+    }
+
+    /* Progress line adjustments */
+    .progress-stepper::before {
+        top: 46px; /* Perfectly centered: 24px padding + 24px (half of 48px circle) - 1.5px (half of 3px line) */
+        left: 12%;
+        right: 12%;
+        height: 3px;
+    }
+
+    .progress-line-fill {
+        top: 46px; /* Perfectly centered: 24px padding + 24px (half of 48px circle) - 1.5px (half of 3px line) */
+        left: 12%;
+        height: 3px;
+    }
+
+    .payment-stepper {
+        padding: 24px 50px; /* Better spacing for 2-step layout */
+    }
+
+    .payment-stepper::before {
+        left: calc(25% + 24px); /* Updated for 48px circles */
+        right: calc(25% + 24px);
+    }
+
+    .payment-stepper .progress-line-fill {
+        left: calc(25% + 24px); /* Updated for 48px circles */
+    }
+
+    /* ETA Card */
+    .eta-card {
+        padding: 18px; /* ~25% reduction */
+        border-radius: 12px;
+        margin: 18px 0; /* ~25% reduction */
+    }
+
+    .eta-icon {
+        font-size: 36px; /* ~25% reduction */
+        margin-bottom: 8px; /* ~33% reduction */
+    }
+
+    .eta-title {
+        font-size: 15px; /* ~17% reduction */
+        margin-bottom: 6px; /* ~25% reduction */
+    }
+
+    .eta-time {
+        font-size: 24px; /* ~25% reduction */
+    }
+
+    .eta-subtitle {
+        font-size: 12px; /* ~14% reduction */
+        margin-top: 6px; /* ~25% reduction */
+    }
+
+    /* Order Items Section */
+    .order-items-section {
+        margin: 20px 0; /* ~38% reduction */
+    }
+
+    /* Promotion Groups */
+    .order-promotion-group {
+        padding: 18px; /* ~25% reduction */
+        border-radius: 12px;
+        margin-bottom: 18px; /* ~25% reduction */
+    }
+
+    .promotion-group-header {
+        margin-bottom: 12px; /* ~25% reduction */
+        padding-bottom: 10px; /* ~17% reduction */
+    }
+
+    .promotion-group-title {
+        font-size: 15px; /* ~17% reduction */
+        gap: 8px; /* ~20% reduction */
+    }
+
+    .promotion-group-title i {
+        font-size: 16px; /* ~20% reduction */
+    }
+
+    .promotion-type-badge {
+        font-size: 9px; /* ~18% reduction */
+        padding: 3px 8px; /* ~25% reduction */
+        border-radius: 5px;
+    }
+
+    .promotion-savings {
+        font-size: 12px; /* ~14% reduction */
+        gap: 5px; /* ~17% reduction */
+    }
+
+    .promotion-savings i {
+        font-size: 13px; /* ~19% reduction */
+    }
+
+    .promotion-group-items {
+        margin-bottom: 12px; /* ~25% reduction */
+    }
+
+    .promotion-item {
+        margin-bottom: 10px; /* ~17% reduction */
+    }
+
+    .promotion-group-total {
+        padding-top: 12px; /* ~25% reduction */
+        font-size: 15px; /* ~17% reduction */
+    }
+
+    /* Item Discount Group */
+    .item-discount-group {
+        padding: 18px; /* ~25% reduction */
+        border-radius: 12px;
+        margin-bottom: 18px; /* ~25% reduction */
+    }
+
+    .item-discount-header {
+        margin-bottom: 12px; /* ~25% reduction */
+        padding-bottom: 10px; /* ~17% reduction */
+    }
+
+    .item-discount-title {
+        font-size: 15px; /* ~17% reduction */
+        gap: 8px; /* ~20% reduction */
+    }
+
+    .item-discount-title i {
+        font-size: 16px; /* ~20% reduction */
+    }
+
+    .item-discount-badge {
+        font-size: 9px; /* ~18% reduction */
+        padding: 3px 8px; /* ~25% reduction */
+        border-radius: 5px;
+    }
+
+    .item-discount-savings {
+        font-size: 12px; /* ~14% reduction */
+        gap: 5px; /* ~17% reduction */
+    }
+
+    .item-discount-savings i {
+        font-size: 13px; /* ~19% reduction */
+    }
+
+    .item-discount-items {
+        margin-bottom: 12px; /* ~25% reduction */
+    }
+
+    .item-discount-item {
+        margin-bottom: 10px; /* ~17% reduction */
+    }
+
+    /* Order Item Card */
+    .order-item {
+        gap: 14px; /* ~30% reduction */
+        padding: 14px; /* ~30% reduction */
+        border-radius: 12px;
+        margin-bottom: 12px; /* ~25% reduction */
+    }
+
+    .item-image {
+        width: 70px; /* ~30% reduction */
+        height: 70px;
+        border-radius: 10px;
+    }
+
+    .item-name {
+        font-size: 14px; /* ~22% reduction */
+        margin-bottom: 6px; /* ~25% reduction */
+    }
+
+    .item-quantity-price {
+        gap: 12px; /* ~25% reduction */
+        margin-bottom: 6px; /* ~25% reduction */
+    }
+
+    .item-quantity {
+        font-size: 11px; /* ~21% reduction */
+        padding: 5px 10px; /* ~17% reduction */
+        border-radius: 6px;
+    }
+
+    .item-unit-price {
+        font-size: 11px; /* ~21% reduction */
+    }
+
+    .item-notes {
+        font-size: 11px; /* ~15% reduction */
+        padding: 6px 10px; /* ~25% & ~17% reduction */
+        border-radius: 6px;
+        margin-top: 6px; /* ~25% reduction */
+    }
+
+    .item-price {
+        font-size: 16px; /* ~20% reduction */
+    }
+
+    .free-badge {
+        font-size: 8px; /* ~20% reduction */
+        padding: 2px 6px; /* ~33% & ~25% reduction */
+        border-radius: 3px;
+        margin-left: 6px; /* ~25% reduction */
+    }
+
+    .original-price {
+        margin-left: 6px; /* ~25% reduction */
+        font-size: 11px; /* ~15% reduction */
+    }
+
+    /* Order Summary */
+    .order-summary-card {
+        padding: 20px; /* ~38% reduction */
+        border-radius: 16px;
+    }
+
+    .summary-row {
+        padding: 10px 0; /* ~29% reduction */
+        font-size: 13px; /* ~19% reduction */
+    }
+
+    .summary-row.total {
+        margin-top: 10px; /* ~17% reduction */
+        padding-top: 16px; /* ~20% reduction */
+        font-size: 18px; /* ~25% reduction */
+    }
+
+    /* Review Section */
+    .review-section {
+        margin-top: 20px; /* ~38% reduction */
+        padding-top: 20px; /* ~38% reduction */
+    }
+
+    .review-items-list {
+        gap: 16px; /* ~20% reduction */
+        margin-top: 18px; /* ~25% reduction */
+    }
+
+    .review-item-card {
+        padding: 18px; /* ~25% reduction */
+        border-radius: 12px;
+    }
+
+    .review-item-header {
+        margin-bottom: 12px; /* ~25% reduction */
+        padding-bottom: 12px; /* ~25% reduction */
+    }
+
+    .review-item-name {
+        font-size: 15px; /* ~17% reduction */
+    }
+
+    .review-item-quantity {
+        padding: 5px 12px; /* ~17% & ~25% reduction */
+        font-size: 12px; /* ~14% reduction */
+    }
+
+    .rating-section {
+        margin-bottom: 12px; /* ~25% reduction */
+    }
+
+    .rating-label {
+        margin-bottom: 6px; /* ~25% reduction */
+        font-size: 12px; /* ~14% reduction */
+    }
+
+    .star-rating {
+        gap: 6px; /* ~25% reduction */
+        font-size: 26px; /* ~19% reduction */
+    }
+
+    .review-textarea {
+        min-height: 80px; /* ~20% reduction */
+        padding: 10px; /* ~17% reduction */
+        border-radius: 10px;
+        font-size: 12px; /* ~14% reduction */
+    }
+
+    .anonymous-checkbox {
+        gap: 6px; /* ~25% reduction */
+        margin-top: 10px; /* ~17% reduction */
+    }
+
+    .anonymous-checkbox input[type="checkbox"] {
+        width: 16px; /* ~11% reduction */
+        height: 16px;
+    }
+
+    .anonymous-checkbox label {
+        font-size: 12px; /* ~14% reduction */
     }
 
     .submit-review-section {
+        margin-top: 20px; /* ~38% reduction */
+        gap: 10px; /* ~17% reduction */
         flex-direction: column;
     }
 
     .btn-submit-review {
         width: 100%;
+        padding: 12px 24px; /* ~14% & ~25% reduction */
+        font-size: 14px; /* ~13% reduction */
+        border-radius: 10px;
+    }
+
+    .success-message, .error-message {
+        padding: 12px; /* ~25% reduction */
+        border-radius: 10px;
+        margin-bottom: 16px; /* ~20% reduction */
+        font-size: 14px;
+    }
+
+    .already-reviewed-badge {
+        padding: 10px 18px; /* ~17% & ~25% reduction */
+        border-radius: 10px;
+        font-size: 14px; /* ~13% reduction */
+    }
+}
+
+/* Small Mobile (480px) - Extra compact ~30% total reduction */
+@media (max-width: 480px) {
+    .order-details-fullscreen {
+        padding: 16px 0; /* ~50% reduction */
+    }
+
+    .order-details-container {
+        padding: 0 12px; /* ~50% reduction */
+    }
+
+    .order-details-card {
+        padding: 16px; /* ~60% reduction */
+        border-radius: 14px;
+    }
+
+    .back-button {
+        padding: 8px 14px;
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+
+    .order-id-large {
+        font-size: 20px; /* ~38% reduction */
+        margin-bottom: 5px;
+    }
+
+    .order-date-time {
+        font-size: 12px; /* ~20% reduction */
+        margin-bottom: 10px;
+    }
+
+    .order-meta {
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .meta-item {
+        padding: 10px; /* ~38% reduction */
+        border-radius: 8px;
+    }
+
+    .meta-label {
+        font-size: 10px; /* ~23% reduction */
+    }
+
+    .meta-value {
+        font-size: 13px; /* ~19% reduction */
+    }
+
+    .section-title {
+        font-size: 14px; /* ~30% reduction */
+        margin-bottom: 12px; /* ~50% reduction */
+    }
+
+    .progress-stepper {
+        padding: 16px 8px; /* ~50% & ~75% reduction */
+        border-radius: 10px;
+    }
+
+    .step-circle {
+        width: 38px; /* ~32% reduction */
+        height: 38px;
+        font-size: 16px; /* ~33% reduction */
+        margin-bottom: 6px; /* ~50% reduction */
+        border-width: 2px;
+    }
+
+    .step-label {
+        font-size: 10px; /* ~29% reduction */
+    }
+
+    .step-time {
+        font-size: 9px; /* ~25% reduction */
+    }
+
+    .progress-stepper::before {
+        top: calc(16px + 19px);
+        left: 14%;
+        right: 14%;
+        height: 2px;
+    }
+
+    .progress-line-fill {
+        top: calc(16px + 19px);
+        left: 14%;
+        height: 2px;
+    }
+
+    .payment-stepper {
+        padding: 14px 30px; /* ~42% & ~50% reduction */
+    }
+
+    .payment-stepper::before {
+        left: calc(25% + 19px);
+        right: calc(25% + 19px);
+    }
+
+    .payment-stepper .progress-line-fill {
+        left: calc(25% + 19px);
+    }
+
+    .eta-card {
+        padding: 14px; /* ~42% reduction */
+        border-radius: 10px;
+        margin: 14px 0; /* ~42% reduction */
+    }
+
+    .eta-icon {
+        font-size: 32px; /* ~33% reduction */
+        margin-bottom: 6px; /* ~50% reduction */
+    }
+
+    .eta-title {
+        font-size: 14px; /* ~22% reduction */
+        margin-bottom: 5px; /* ~38% reduction */
+    }
+
+    .eta-time {
+        font-size: 22px; /* ~31% reduction */
+    }
+
+    .eta-subtitle {
+        font-size: 11px; /* ~21% reduction */
+        margin-top: 5px; /* ~38% reduction */
+    }
+
+    .order-items-section {
+        margin: 16px 0; /* ~50% reduction */
+    }
+
+    .order-promotion-group,
+    .item-discount-group {
+        padding: 14px; /* ~42% reduction */
+        border-radius: 10px;
+        margin-bottom: 14px; /* ~42% reduction */
+    }
+
+    .promotion-group-header,
+    .item-discount-header {
+        margin-bottom: 10px; /* ~38% reduction */
+        padding-bottom: 8px; /* ~33% reduction */
+    }
+
+    .promotion-group-title,
+    .item-discount-title {
+        font-size: 13px; /* ~28% reduction */
+        gap: 6px; /* ~40% reduction */
+        flex-wrap: wrap;
+    }
+
+    .promotion-group-title i,
+    .item-discount-title i {
+        font-size: 14px; /* ~30% reduction */
+    }
+
+    .promotion-type-badge,
+    .item-discount-badge {
+        font-size: 8px; /* ~27% reduction */
+        padding: 2px 6px; /* ~50% & ~40% reduction */
+        border-radius: 4px;
+    }
+
+    .promotion-savings,
+    .item-discount-savings {
+        font-size: 11px; /* ~21% reduction */
+        gap: 4px; /* ~33% reduction */
+    }
+
+    .promotion-savings i,
+    .item-discount-savings i {
+        font-size: 12px; /* ~25% reduction */
+    }
+
+    .promotion-group-items,
+    .item-discount-items {
+        margin-bottom: 10px; /* ~38% reduction */
+    }
+
+    .promotion-item,
+    .item-discount-item {
+        margin-bottom: 8px; /* ~33% reduction */
+    }
+
+    .promotion-group-total {
+        padding-top: 10px; /* ~38% reduction */
+        font-size: 13px; /* ~28% reduction */
+    }
+
+    .order-item {
+        gap: 10px; /* ~50% reduction */
+        padding: 10px; /* ~50% reduction */
+        border-radius: 10px;
+        margin-bottom: 10px; /* ~38% reduction */
+    }
+
+    .item-image {
+        width: 60px; /* ~40% reduction */
+        height: 60px;
+        border-radius: 8px;
+    }
+
+    .item-name {
+        font-size: 13px; /* ~28% reduction */
+        margin-bottom: 5px; /* ~38% reduction */
+    }
+
+    .item-quantity-price {
+        gap: 8px; /* ~50% reduction */
+        margin-bottom: 5px; /* ~38% reduction */
+        flex-wrap: wrap;
+    }
+
+    .item-quantity {
+        font-size: 10px; /* ~29% reduction */
+        padding: 4px 8px; /* ~33% reduction */
+        border-radius: 5px;
+    }
+
+    .item-unit-price {
+        font-size: 10px; /* ~29% reduction */
+    }
+
+    .item-notes {
+        font-size: 10px; /* ~23% reduction */
+        padding: 5px 8px; /* ~38% & ~33% reduction */
+        border-radius: 5px;
+        margin-top: 5px; /* ~38% reduction */
+    }
+
+    .item-price {
+        font-size: 14px; /* ~30% reduction */
+    }
+
+    .free-badge {
+        font-size: 7px; /* ~30% reduction */
+        padding: 2px 5px; /* ~33% & ~38% reduction */
+        border-radius: 3px;
+        margin-left: 5px; /* ~38% reduction */
+    }
+
+    .original-price {
+        margin-left: 5px; /* ~38% reduction */
+        font-size: 10px; /* ~23% reduction */
+    }
+
+    .order-summary-card {
+        padding: 16px; /* ~50% reduction */
+        border-radius: 14px;
+    }
+
+    .summary-row {
+        padding: 8px 0; /* ~43% reduction */
+        font-size: 12px; /* ~25% reduction */
+    }
+
+    .summary-row.total {
+        margin-top: 8px; /* ~33% reduction */
+        padding-top: 12px; /* ~40% reduction */
+        font-size: 16px; /* ~33% reduction */
+    }
+
+    .review-section {
+        margin-top: 16px; /* ~50% reduction */
+        padding-top: 16px; /* ~50% reduction */
+    }
+
+    .review-items-list {
+        gap: 12px; /* ~40% reduction */
+        margin-top: 14px; /* ~42% reduction */
+    }
+
+    .review-item-card {
+        padding: 14px; /* ~42% reduction */
+        border-radius: 10px;
+    }
+
+    .review-item-header {
+        margin-bottom: 10px; /* ~38% reduction */
+        padding-bottom: 10px; /* ~38% reduction */
+    }
+
+    .review-item-name {
+        font-size: 13px; /* ~28% reduction */
+    }
+
+    .review-item-quantity {
+        padding: 4px 10px; /* ~33% & ~38% reduction */
+        font-size: 11px; /* ~21% reduction */
+    }
+
+    .rating-section {
+        margin-bottom: 10px; /* ~38% reduction */
+    }
+
+    .rating-label {
+        margin-bottom: 5px; /* ~38% reduction */
+        font-size: 11px; /* ~21% reduction */
+    }
+
+    .star-rating {
+        gap: 5px; /* ~38% reduction */
+        font-size: 24px; /* ~25% reduction */
+    }
+
+    .review-textarea {
+        min-height: 70px; /* ~30% reduction */
+        padding: 8px; /* ~33% reduction */
+        border-radius: 8px;
+        font-size: 11px; /* ~21% reduction */
+    }
+
+    .anonymous-checkbox {
+        gap: 5px; /* ~38% reduction */
+        margin-top: 8px; /* ~33% reduction */
+    }
+
+    .anonymous-checkbox input[type="checkbox"] {
+        width: 14px; /* ~22% reduction */
+        height: 14px;
+    }
+
+    .anonymous-checkbox label {
+        font-size: 11px; /* ~21% reduction */
+    }
+
+    .submit-review-section {
+        margin-top: 16px; /* ~50% reduction */
+        gap: 8px; /* ~33% reduction */
+    }
+
+    .btn-submit-review {
+        padding: 10px 20px; /* ~29% & ~38% reduction */
+        font-size: 13px; /* ~19% reduction */
+        border-radius: 8px;
+    }
+
+    .success-message, .error-message {
+        padding: 10px; /* ~38% reduction */
+        border-radius: 8px;
+        margin-bottom: 12px; /* ~40% reduction */
+        font-size: 13px;
+    }
+
+    .already-reviewed-badge {
+        padding: 8px 14px; /* ~33% & ~42% reduction */
+        border-radius: 8px;
+        font-size: 13px; /* ~19% reduction */
     }
 }
 </style>

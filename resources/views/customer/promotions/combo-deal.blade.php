@@ -635,6 +635,84 @@
             width: 100%;
         }
     }
+
+    /* ===== Large Desktop (1600px+) ===== */
+    @media (min-width: 1600px) {
+        .combo-container { max-width: 1500px; padding: 28px; }
+        .hero-banner { border-radius: 30px; padding: 60px; }
+        .hero-icon { font-size: 60px; }
+        .hero-title { font-size: 52px; }
+        .card { padding: 50px; margin-bottom: 40px; }
+        .card-title { font-size: 35px; }
+        .price-main { font-size: 80px; }
+        .item-image, .item-placeholder { width: 130px; height: 130px; }
+        .cta-button { padding: 30px; font-size: 25px; }
+    }
+
+    /* ===== Tablet (769px - 1199px) ===== */
+    @media (max-width: 1199px) and (min-width: 769px) {
+        .combo-container { padding: 18px; }
+        .back-link { font-size: 0.9rem; margin-bottom: 20px; }
+        .hero-banner { border-radius: 20px; padding: 40px; margin-bottom: 28px; }
+        .hero-header { gap: 18px; margin-bottom: 20px; }
+        .hero-icon { font-size: 42px; }
+        .hero-title { font-size: 36px; }
+        .hero-description { font-size: 16px; }
+        .hero-image { max-height: 350px; border-radius: 14px; }
+        .card { border-radius: 20px; padding: 32px; margin-bottom: 28px; }
+        .card-title { font-size: 24px; margin-bottom: 24px; }
+        .price-main { font-size: 54px; }
+        .price-regular { font-size: 18px; }
+        .savings-badge { padding: 20px 28px; }
+        .savings-amount { font-size: 30px; }
+        .combo-items-grid { gap: 18px; }
+        .combo-item { gap: 18px; padding: 18px; border-radius: 14px; }
+        .item-image, .item-placeholder { width: 85px; height: 85px; }
+        .item-name { font-size: 18px; }
+        .item-description { font-size: 13px; }
+        .tag { padding: 5px 12px; font-size: 12px; }
+        .item-total-price { font-size: 21px; }
+        .validity-card { padding: 24px; }
+        .cta-button { padding: 20px; font-size: 18px; }
+        .cta-info { font-size: 13px; }
+    }
+
+    /* ===== Mobile (max-width: 768px) - Enhanced ===== */
+    @media (max-width: 768px) {
+        .combo-container { padding: 15px; }
+        .back-link { font-size: 0.85rem; margin-bottom: 18px; }
+        .hero-banner { padding: 28px 20px; border-radius: 18px; margin-bottom: 24px; }
+        .hero-header { gap: 14px; flex-direction: column; align-items: center; text-align: center; }
+        .hero-icon { font-size: 36px; }
+        .hero-title { font-size: 26px; }
+        .hero-description { font-size: 14px; }
+        .hero-image { max-height: 280px; border-radius: 12px; }
+        .card { border-radius: 18px; padding: 20px 16px; margin-bottom: 24px; }
+        .card-title { font-size: 19px; margin-bottom: 20px; }
+        .price-main { font-size: 40px; }
+        .price-regular { font-size: 15px; }
+        .savings-badge { padding: 16px 20px; width: 100%; }
+        .savings-amount { font-size: 26px; }
+        .combo-items-grid { gap: 14px; }
+        .combo-item { flex-direction: column; text-align: center; gap: 14px; padding: 16px; }
+        .item-image, .item-placeholder { width: 80px; height: 80px; }
+        .item-name { font-size: 15px; }
+        .item-description { font-size: 11.5px; }
+        .item-tags { justify-content: center; gap: 6px; }
+        .tag { padding: 4px 9px; font-size: 10.5px; }
+        .item-total { text-align: center; width: 100%; }
+        .item-total-price { font-size: 19px; }
+        .validity-grid { grid-template-columns: 1fr; gap: 14px; }
+        .validity-card { padding: 18px; }
+        .cta-button { padding: 17px; font-size: 15px; }
+        .cta-info { font-size: 11.5px; }
+        .message-modal { padding: 26px 18px; width: 100%; border-radius: 18px; }
+        .message-icon { font-size: 40px; }
+        .message-title { font-size: 20px; }
+        .message-content { font-size: 13px; }
+        .message-buttons { flex-direction: column; gap: 10px; }
+        .message-btn { width: 100%; padding: 12px; font-size: 13px; }
+    }
 </style>
 
 <div class="combo-container">

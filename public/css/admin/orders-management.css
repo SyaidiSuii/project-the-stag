@@ -1482,6 +1482,62 @@
   }
 
   /* ===== Pagination ===== */
+  
+  /* Responsive scaling for Orders Admin */
+  @media (min-width: 769px) and (max-width: 1199px) {
+    .admin-header { padding-top: 20px; margin-top: 0; }
+    .admin-title { font-size: 20px; }
+    .admin-section { padding: 20px; }
+    .admin-cards { gap: 16px; }
+    .admin-card { padding: 20px; }
+    .admin-card-title { font-size: 15px; }
+    .admin-card-value { font-size: 24px; }
+    .admin-btn { padding: 8px 16px; font-size: 13px; }
+    .btn-icon { width: 40px; height: 40px; }
+    .search-input { padding: 10px 14px 10px 38px; font-size: 13px; }
+    .filter-select { padding: 10px 14px; font-size: 13px; min-width: 180px; }
+    .admin-table th { padding: 10px 12px; font-size: 13px; }
+    .admin-table td { padding: 10px 12px; font-size: 13px; }
+    .pagination-btn { width: 34px; height: 34px; font-size: 13px; }
+  }
+  
+  @media (max-width: 768px) {
+    .admin-cards { gap: 6px; }
+    .admin-section { padding: 16px; }
+    .section-header { flex-direction: column; gap: 10px; align-items: flex-start; }
+    .search-filter { flex-direction: column; gap: 10px; }
+    .search-box { min-width: 100%; }
+    .filter-group { width: 100%; flex-direction: column; }
+    .filter-select { width: 100%; min-width: 0; }
+    .search-input { font-size: 13px; padding: 10px 12px 10px 36px; }
+    .admin-btn { padding: 8px 14px; font-size: 13px; }
+    .btn-icon { width: 36px; height: 36px; }
+    .admin-table th { padding: 8px 10px; font-size: 12px; }
+    .admin-table td { padding: 8px 10px; font-size: 12px; white-space: normal; }
+    .table-container { max-height: 65vh; }
+    .table-actions { grid-template-columns: repeat(2, 1fr); gap: 6px; max-width: 110px; }
+    .modal { max-height: 350px; }
+    .modal-header { padding: 14px 16px; }
+    .modal-title { font-size: 1.1rem; }
+    .modal-body { padding: 16px; }
+    .modal-footer { padding: 14px 16px; }
+    .empty-state-icon { font-size: 36px; }
+    .empty-state-text { font-size: 13px; }
+    .pagination { justify-content: center; gap: 6px; }
+    .pagination-btn { width: 32px; height: 32px; font-size: 12px; }
+  }
+  
+  @media (max-width: 480px) {
+    .admin-title { font-size: 18px; }
+    .admin-card { padding: 16px; }
+    .admin-card-value { font-size: 22px; }
+    .search-filter { gap: 8px; }
+    .admin-table th, .admin-table td { padding: 6px 8px; font-size: 11px; }
+    .table-actions { gap: 5px; max-width: 100px; }
+    .pagination-btn { width: 30px; height: 30px; font-size: 11px; }
+  }
+  
+  /* ===== Pagination ===== */
   .pagination {
     display: flex;
     justify-content: flex-end;

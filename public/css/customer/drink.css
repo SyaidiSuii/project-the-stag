@@ -835,14 +835,14 @@
       
       /* Adjust FAB position for mobile */
       .cart-fab {
-        bottom: 90px; /* Above bottom nav */
+        bottom: 110px; /* Above bottom nav */
         right: 20px;
         width: 60px;
         height: 60px;
         font-size: 26px;
       }
       .cart-fab.logged-out {
-        bottom: 20px; /* Lower position on mobile when not logged in */
+        bottom: 110px; /* Keep above bottom nav even when logged out */
       }
       .cart-modal-container {
         width: 95%;
@@ -872,6 +872,286 @@
       .quantity-controls {
         margin-left: auto;
       }
+    }
+
+    /* ===== COMPREHENSIVE RESPONSIVE SCALING ===== */
+
+    /* ===== Tablet (768px - 992px): ~20-25% reduction ===== */
+    @media (max-width: 992px) and (min-width: 768px) {
+      /* Font Sizes */
+      .category-title { font-size: 1.75rem; }
+      .subcategory-title { font-size: 1.5rem; }
+      .drink-name { font-size: 1rem; }
+      .drink-price { font-size: 1.1rem; }
+      .btn { padding: 9px 14px; font-size: 12px; }
+      .tab { padding: 9px 14px; font-size: 12px; }
+      .search-input { font-size: 14px; height: 36px; }
+      .search-icon { font-size: 15px; }
+      .clear-btn { font-size: 15px; }
+
+      /* Icons & Images */
+      .drink-image { height: 140px; font-size: 2.5rem; }
+      .empty-cart-icon { font-size: 2.5rem; }
+
+      /* Padding & Margins */
+      .main-content { padding: 18px; }
+      .header-section { padding: 18px 0; margin-bottom: 18px; }
+      .drink-card { padding: 16px; }
+      .drink-image { margin-bottom: 14px; }
+      .drink-actions { gap: 9px; }
+
+      /* Border Radius */
+      .search-bar { border-radius: 22px; }
+      .search-input { border-radius: 18px; }
+      .tab { border-radius: 18px; }
+      .drink-image { border-radius: 14px; }
+      .btn { border-radius: 11px; }
+
+      /* Cart FAB */
+      .cart-fab {
+        width: 60px;
+        height: 60px;
+        font-size: 26px;
+        right: 26px;
+      }
+      .cart-badge {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+      }
+
+      /* Cart Modal */
+      .cart-modal-container { border-radius: 22px; }
+      .cart-modal-header { padding: 1.2rem 1.4rem; }
+      .cart-modal-title { font-size: 1.3rem; }
+      .cart-modal-close { width: 36px; height: 36px; font-size: 18px; }
+      .cart-modal-content { padding: 0.9rem; }
+      .cart-item { border-radius: 16px; padding: 0.9rem; gap: 0.9rem; }
+      .cart-item-image { width: 48px; height: 48px; font-size: 1.6rem; border-radius: 14px; }
+      .cart-item-name { font-size: 0.85rem; }
+      .cart-item-price { font-size: 0.75rem; }
+      .cart-item-addons { font-size: 0.7rem; }
+      .qty-btn { width: 26px; height: 26px; font-size: 0.75rem; border-radius: 7px; }
+      .quantity { font-size: 0.95rem; }
+      .cart-total-label { font-size: 0.75rem; }
+      .cart-total-amount { font-size: 1.1rem; }
+      .cart-modal-checkout { padding: 0.85rem; font-size: 0.95rem; border-radius: 16px; }
+      .cart-modal-total { padding: 0.75rem; border-radius: 16px; }
+
+      /* Add-on Modal */
+      .modal-content { border-radius: 18px; }
+      .modal-content h3 { font-size: 1.3rem; }
+      .modal-item-info { padding: 0.85rem; border-radius: 11px; }
+      .modal-item-name { font-size: 0.95rem; }
+      .modal-item-price { font-size: 0.9rem; }
+      .addon-options h4 { font-size: 0.85rem; }
+      .addon-options label { padding: 0.65rem; font-size: 0.8rem; border-radius: 11px; }
+      .modal-actions { padding: 1.1rem 1.6rem; }
+      .modal-actions .btn { padding: 0.65rem 1.1rem; font-size: 0.8rem; border-radius: 11px; }
+
+      /* Confirmation Modal */
+      .confirmation-modal-content { padding: 1.8rem; border-radius: 18px; }
+      .confirmation-modal-icon { width: 52px; height: 52px; font-size: 1.8rem; }
+      .confirmation-modal-title { font-size: 1.3rem; }
+      .confirmation-modal-actions .btn { padding: 0.75rem 1.4rem; font-size: 0.85rem; border-radius: 11px; }
+    }
+
+    /* ===== Mobile (481px - 768px): ~35-40% reduction ===== */
+    @media (max-width: 768px) and (min-width: 481px) {
+      /* Font Sizes */
+      .category-title { font-size: 1.4rem; }
+      .subcategory-title { font-size: 1.2rem; }
+      .drink-name { font-size: 0.9rem; }
+      .drink-price { font-size: 1rem; }
+      .btn { padding: 8px 12px; font-size: 11px; }
+      .tab { padding: 8px 12px; font-size: 11px; }
+      .search-input { font-size: 13px; height: 34px; }
+      .search-icon { font-size: 14px; }
+      .clear-btn { font-size: 14px; }
+      .no-results { font-size: 0.95rem; }
+
+      /* Icons & Images */
+      .drink-image { height: 120px; font-size: 2rem; }
+      .empty-cart-icon { font-size: 2rem; }
+
+      /* Padding & Margins */
+      .main-content { padding: 15px; }
+      .header-section { padding: 15px 0; margin-bottom: 15px; }
+      .drink-card { padding: 14px; }
+      .drink-image { margin-bottom: 12px; }
+      .drink-actions { gap: 8px; }
+      .category-section { margin-bottom: 30px; }
+
+      /* Border Radius */
+      .search-bar { border-radius: 20px; }
+      .search-input { border-radius: 16px; }
+      .tab { border-radius: 16px; }
+      .drink-image { border-radius: 12px; }
+      .btn { border-radius: 10px; }
+
+      /* Cart FAB - Size only, NOT position */
+      .cart-fab {
+        width: 55px;
+        height: 55px;
+        font-size: 24px;
+        right: 20px;
+      }
+      .cart-badge {
+        width: 22px;
+        height: 22px;
+        font-size: 11px;
+        top: -4px;
+        right: -4px;
+      }
+
+      /* Cart Modal */
+      .cart-modal-container { border-radius: 20px; }
+      .cart-modal-header { padding: 1rem 1.2rem; }
+      .cart-modal-title { font-size: 1.2rem; }
+      .cart-modal-close { width: 34px; height: 34px; font-size: 17px; top: 12px; right: 12px; }
+      .cart-modal-content { padding: 0.8rem; }
+      .cart-item { border-radius: 14px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.8rem; }
+      .cart-item-image { width: 38px; height: 38px; font-size: 1.4rem; border-radius: 12px; }
+      .cart-item-name { font-size: 0.8rem; margin-bottom: 0.35rem; }
+      .cart-item-price { font-size: 0.7rem; }
+      .cart-item-addons { font-size: 0.68rem; margin-top: 0.35rem; }
+      .qty-btn { width: 24px; height: 24px; font-size: 0.7rem; border-radius: 6px; }
+      .quantity { font-size: 0.9rem; min-width: 24px; }
+      .quantity-controls { gap: 0.4rem; }
+      .cart-modal-footer { padding: 0.8rem; }
+      .cart-modal-total { padding: 0.7rem; margin-bottom: 1rem; border-radius: 14px; }
+      .cart-total-label { font-size: 0.7rem; }
+      .cart-total-amount { font-size: 1rem; }
+      .cart-modal-checkout { padding: 0.75rem; font-size: 0.9rem; border-radius: 14px; }
+      .cart-modal-toolbar { margin-bottom: 0.6rem; }
+      .cart-modal-count { padding: 0.25rem 0.6rem; font-size: 0.75rem; border-radius: 10px; }
+      .cart-modal-clear { padding: 0.25rem 0.6rem; font-size: 0.7rem; border-radius: 10px; }
+      .empty-cart { padding: 1.5rem; }
+      .empty-cart-text { font-size: 0.9rem; }
+      .empty-cart-subtext { font-size: 0.8rem; }
+
+      /* Add-on Modal */
+      .modal-content { border-radius: 16px; }
+      .modal-content h3 { font-size: 1.2rem; margin-bottom: 1rem; }
+      .modal-body-scrollable { padding: 1.5rem; }
+      .modal-item-info { padding: 0.75rem; border-radius: 10px; margin-bottom: 1rem; }
+      .modal-item-name { font-size: 0.9rem; margin-bottom: 0.4rem; }
+      .modal-item-price { font-size: 0.85rem; }
+      .addon-options { margin-bottom: 1rem; }
+      .addon-options h4 { font-size: 0.8rem; margin-bottom: 0.7rem; }
+      .addon-options label { padding: 0.6rem; margin-bottom: 0.4rem; font-size: 0.75rem; border-radius: 10px; }
+      .addon-options input[type="checkbox"] { width: 14px; height: 14px; margin-right: 0.7rem; }
+      .modal-actions { padding: 1rem 1.5rem; gap: 0.8rem; }
+      .modal-actions .btn { padding: 0.6rem 1rem; font-size: 0.75rem; border-radius: 10px; }
+
+      /* Confirmation Modal */
+      .confirmation-modal-content { padding: 1.5rem; border-radius: 16px; }
+      .confirmation-modal-icon { width: 46px; height: 46px; font-size: 1.6rem; margin-bottom: 0.8rem; }
+      .confirmation-modal-title { font-size: 1.2rem; margin-bottom: 0.4rem; }
+      .confirmation-modal-text { margin-bottom: 1.2rem; font-size: 0.9rem; }
+      .confirmation-modal-actions { gap: 0.8rem; }
+      .confirmation-modal-actions .btn { padding: 0.7rem 1.2rem; font-size: 0.8rem; border-radius: 10px; }
+    }
+
+    /* ===== Small Mobile (< 480px): ~45-50% reduction ===== */
+    @media (max-width: 480px) {
+      /* Font Sizes */
+      .category-title { font-size: 1.2rem; letter-spacing: 0.5px; margin-bottom: 12px; }
+      .subcategory-title { font-size: 1.1rem; padding-left: 12px; margin: 24px 0 16px; border-left-width: 5px; }
+      .drink-name { font-size: 0.85rem; margin-bottom: 6px; }
+      .drink-price { font-size: 0.95rem; margin-bottom: 12px; }
+      .btn { padding: 8px 12px; font-size: 11px; }
+      .tab { padding: 7px 10px; font-size: 10px; }
+      .search-input { font-size: 13px; height: 32px; padding: 0 36px 0 32px; }
+      .search-icon { font-size: 13px; left: 12px; }
+      .clear-btn { font-size: 13px; right: 10px; padding: 5px; }
+      .no-results { font-size: 0.9rem; padding: 1.5rem; }
+
+      /* Icons & Images */
+      .drink-image { height: 100px; font-size: 1.8rem; }
+      .empty-cart-icon { font-size: 1.8rem; }
+
+      /* Padding & Margins */
+      .main-content { padding: 12px; }
+      .header-section { padding: 12px 0; margin-bottom: 12px; }
+      .search-bar-container { margin-bottom: 12px; }
+      .category-tabs { gap: 6px; margin-bottom: 12px; padding: 0 8px; }
+      .drink-card { padding: 12px; }
+      .drink-image { margin-bottom: 10px; }
+      .drink-actions { gap: 7px; }
+      .category-section { margin-bottom: 30px; }
+
+      /* Border Radius */
+      .search-bar { border-radius: 18px; padding: 6px 10px; }
+      .search-input { border-radius: 14px; }
+      .tab { border-radius: 14px; }
+      .drink-image { border-radius: 10px; }
+      .btn { border-radius: 8px; }
+      .clear-btn { border-radius: 5px; }
+
+      /* Cart FAB - Size only, NOT position */
+      .cart-fab {
+        width: 50px;
+        height: 50px;
+        font-size: 22px;
+        right: 15px;
+      }
+      .cart-badge {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+        top: -3px;
+        right: -3px;
+      }
+
+      /* Cart Modal */
+      .cart-modal-container { border-radius: 18px; }
+      .cart-modal-header { padding: 0.9rem 1rem; }
+      .cart-modal-title { font-size: 1.1rem; margin-bottom: 0.4rem; }
+      .cart-modal-close { width: 32px; height: 32px; font-size: 16px; top: 10px; right: 10px; }
+      .cart-modal-content { padding: 0.7rem; }
+      .cart-modal-items { padding: 0 0.4rem 1.2rem 0; }
+      .cart-item { border-radius: 12px; padding: 0.7rem; gap: 0.7rem; margin-bottom: 0.7rem; }
+      .cart-item-image { width: 30px; height: 30px; font-size: 1.2rem; border-radius: 10px; }
+      .cart-item-name { font-size: 0.75rem; margin-bottom: 0.3rem; }
+      .cart-item-price { font-size: 0.65rem; }
+      .cart-item-addons { font-size: 0.65rem; margin-top: 0.3rem; }
+      .qty-btn { width: 22px; height: 22px; font-size: 0.65rem; border-radius: 6px; }
+      .quantity { font-size: 0.85rem; min-width: 22px; }
+      .quantity-controls { gap: 0.35rem; }
+      .cart-modal-footer { padding: 0.7rem; }
+      .cart-modal-total { padding: 0.6rem; margin-bottom: 0.9rem; border-radius: 12px; }
+      .cart-total-label { font-size: 0.65rem; }
+      .cart-total-amount { font-size: 0.95rem; }
+      .cart-modal-checkout { padding: 0.7rem; font-size: 0.85rem; border-radius: 12px; }
+      .cart-modal-toolbar { margin-bottom: 0.5rem; }
+      .cart-modal-count { padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: 8px; }
+      .cart-modal-clear { padding: 0.2rem 0.5rem; font-size: 0.65rem; border-radius: 8px; }
+      .empty-cart { padding: 1.2rem; }
+      .empty-cart-text { font-size: 0.85rem; margin-bottom: 0.4rem; }
+      .empty-cart-subtext { font-size: 0.75rem; }
+
+      /* Add-on Modal */
+      .modal-content { border-radius: 14px; }
+      .modal-content h3 { font-size: 1.1rem; margin-bottom: 0.9rem; }
+      .modal-body-scrollable { padding: 1.2rem; }
+      .modal-item-info { padding: 0.7rem; border-radius: 8px; margin-bottom: 0.9rem; }
+      .modal-item-name { font-size: 0.85rem; margin-bottom: 0.35rem; }
+      .modal-item-price { font-size: 0.8rem; }
+      .addon-options { margin-bottom: 0.9rem; }
+      .addon-options h4 { font-size: 0.75rem; margin-bottom: 0.6rem; }
+      .addon-options label { padding: 0.55rem; margin-bottom: 0.35rem; font-size: 0.7rem; border-radius: 8px; }
+      .addon-options input[type="checkbox"] { width: 13px; height: 13px; margin-right: 0.6rem; }
+      .modal-actions { padding: 0.9rem 1.2rem; gap: 0.7rem; }
+      .modal-actions .btn { padding: 0.55rem 0.9rem; font-size: 0.7rem; border-radius: 8px; }
+
+      /* Confirmation Modal */
+      .confirmation-modal-content { padding: 1.2rem; border-radius: 14px; }
+      .confirmation-modal-icon { width: 40px; height: 40px; font-size: 1.4rem; margin-bottom: 0.7rem; }
+      .confirmation-modal-title { font-size: 1.1rem; margin-bottom: 0.35rem; }
+      .confirmation-modal-text { margin-bottom: 1rem; font-size: 0.85rem; line-height: 1.4; }
+      .confirmation-modal-actions { gap: 0.7rem; }
+      .confirmation-modal-actions .btn { padding: 0.65rem 1rem; font-size: 0.75rem; border-radius: 8px; }
     }
 
 /* ===== Confirmation Modal ===== */

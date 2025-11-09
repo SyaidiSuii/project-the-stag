@@ -207,6 +207,351 @@
     color: #34d399 !important;
     font-weight: 600;
 }
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablet View (769px - 1199px) */
+@media (max-width: 1199px) and (min-width: 769px) {
+    .order-card {
+        padding: 16px;
+        margin-bottom: 14px;
+    }
+
+    .order-header {
+        gap: 10px;
+    }
+
+    .order-info strong {
+        font-size: 16px !important;
+    }
+
+    .order-info small {
+        font-size: 12px;
+    }
+
+    .station-filter-tabs {
+        gap: 6px;
+    }
+
+    .station-tab {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    .badge {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+}
+
+/* Mobile View (≤768px) */
+@media (max-width: 768px) {
+    /* Order Cards */
+    .order-card {
+        padding: 14px;
+        margin-bottom: 12px;
+        border-left-width: 3px;
+    }
+
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .order-info {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .order-info strong {
+        font-size: 16px !important;
+    }
+
+    .order-info small {
+        font-size: 11px;
+    }
+
+    .order-header > div:last-child {
+        width: 100%;
+        text-align: left !important;
+    }
+
+    /* Station Filter Tabs - Scrollable */
+    .station-filter-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+        padding-bottom: 8px;
+        gap: 6px;
+        margin-bottom: 16px;
+    }
+
+    .station-tab {
+        padding: 8px 14px;
+        font-size: 12px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .station-tab i {
+        font-size: 11px;
+    }
+
+    /* Order Items List */
+    .order-items-list {
+        margin: 12px 0;
+    }
+
+    .order-items-list li {
+        padding: 6px 0;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .order-items-list li strong {
+        font-size: 13px;
+    }
+
+    .order-items-list li small {
+        font-size: 11px;
+    }
+
+    .order-items-list li > div:last-child {
+        width: 100%;
+        text-align: left !important;
+        margin-top: 4px;
+    }
+
+    .order-items-list li span {
+        font-size: 16px !important;
+    }
+
+    /* Station Assignments */
+    .order-card > div[style*="background: #f8fafc"] {
+        padding: 10px !important;
+        margin: 10px 0 !important;
+    }
+
+    .order-card > div[style*="background: #f8fafc"] strong {
+        font-size: 11px !important;
+    }
+
+    .order-card > div[style*="background: #f8fafc"] > div {
+        margin-top: 6px !important;
+    }
+
+    .order-card > div[style*="background: #f8fafc"] > div > div {
+        padding: 5px 10px !important;
+        font-size: 11px !important;
+    }
+
+    .order-card > div[style*="background: #f8fafc"] i {
+        font-size: 12px !important;
+    }
+
+    .order-card > div[style*="background: #f8fafc"] .badge {
+        font-size: 9px !important;
+        padding: 2px 6px !important;
+    }
+
+    /* Order Footer */
+    .order-card > div[style*="border-top"] {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 12px;
+        margin-top: 12px !important;
+        padding-top: 12px !important;
+    }
+
+    .order-card > div[style*="border-top"] > div:first-child strong {
+        font-size: 14px !important;
+    }
+
+    .order-card > div[style*="border-top"] > div:first-child small {
+        font-size: 11px !important;
+    }
+
+    .order-card > div[style*="border-top"] > div:last-child {
+        width: 100%;
+        flex-direction: column;
+        gap: 6px !important;
+    }
+
+    .order-card > div[style*="border-top"] > div:last-child form,
+    .order-card > div[style*="border-top"] > div:last-child a {
+        width: 100%;
+    }
+
+    .order-card > div[style*="border-top"] > div:last-child button,
+    .order-card > div[style*="border-top"] > div:last-child .admin-btn {
+        width: 100%;
+        justify-content: center;
+        font-size: 12px !important;
+        padding: 8px 12px !important;
+    }
+
+    /* Load Information */
+    .order-card > div[style*="background: #eff6ff"] {
+        margin-top: 10px !important;
+        padding: 6px 10px !important;
+        font-size: 11px !important;
+    }
+
+    /* Badges */
+    .badge {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    .badge i {
+        font-size: 10px;
+    }
+
+    .badge.badge-danger,
+    .badge.badge-warning,
+    .badge.badge-success,
+    .badge.badge-primary,
+    .badge.badge-secondary {
+        font-size: 11px !important;
+        padding: 6px 10px !important;
+    }
+
+    /* Pagination */
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .page-link {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    /* Empty State */
+    .order-card + div[style*="text-align: center"] {
+        padding: 50px 16px !important;
+    }
+
+    .order-card + div[style*="text-align: center"] i {
+        font-size: 48px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .order-card + div[style*="text-align: center"] h3 {
+        font-size: 16px !important;
+        margin-bottom: 6px !important;
+    }
+
+    .order-card + div[style*="text-align: center"] p {
+        font-size: 12px !important;
+    }
+
+    /* Section controls */
+    .section-controls {
+        width: 100%;
+    }
+
+    .section-controls .admin-btn {
+        width: 100%;
+        justify-content: center;
+        font-size: 13px !important;
+        padding: 8px 16px !important;
+    }
+
+    /* Section header */
+    .section-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px;
+        margin-bottom: 16px !important;
+    }
+
+    .section-header > div:first-child h2 {
+        font-size: 18px !important;
+        margin-bottom: 3px !important;
+    }
+
+    .section-header > div:first-child p {
+        font-size: 12px !important;
+    }
+}
+
+/* Small Mobile (≤480px) */
+@media (max-width: 480px) {
+    .order-card {
+        padding: 12px;
+    }
+
+    .order-info strong {
+        font-size: 15px !important;
+    }
+
+    .order-items-list li strong {
+        font-size: 12px;
+    }
+
+    .station-tab {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+
+    .badge {
+        padding: 3px 6px;
+        font-size: 10px;
+    }
+
+    .page-link {
+        padding: 5px 8px;
+        font-size: 11px;
+    }
+}
+
+/* Large Desktop (≥1600px) */
+@media (min-width: 1600px) {
+    .order-card {
+        padding: 28px;
+        margin-bottom: 20px;
+    }
+
+    .order-header {
+        margin-bottom: 20px;
+    }
+
+    .order-info strong {
+        font-size: 20px !important;
+    }
+
+    .order-info small {
+        font-size: 15px;
+    }
+
+    .order-items-list li {
+        padding: 10px 0;
+    }
+
+    .order-items-list li strong {
+        font-size: 16px;
+    }
+
+    .station-tab {
+        padding: 12px 24px;
+        font-size: 15px;
+    }
+
+    .badge {
+        padding: 8px 14px;
+        font-size: 14px;
+    }
+
+    .page-link {
+        padding: 10px 14px;
+        font-size: 15px;
+    }
+}
 </style>
 @endsection
 

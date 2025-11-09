@@ -13,27 +13,32 @@ use Carbon\Carbon;
 class KitchenController extends Controller
 {
     /**
-     * Kitchen Dashboard - Overview of all kitchen operations
+     * Kitchen Dashboard - Overview of all kitchen operations (TODAY ONLY)
      */
     public function index()
     {
         // Get all kitchen stations (not mapped, return full models for blade methods)
         $stations = KitchenStation::where('is_active', true)
             ->with('stationType')
-            ->get();
+            ->get()
+            ->map(function ($station) {
+                // Add today's load as attribute for display
+                $station->today_load_display = $station->today_load;
+                $station->load_percentage_display = $station->load_percentage;
+                return $station;
+            });
 
-        // Get bottlenecks (stations at >85% capacity)
+        // Get bottlenecks (stations at >85% capacity based on TODAY's load)
         $bottlenecks = $stations->filter(function ($station) {
             return $station->isOverloaded();
         })->map(function ($station) {
-            $loadPercentage = $station->max_capacity > 0
-                ? round(($station->current_load / $station->max_capacity) * 100, 1)
-                : 0;
+            $loadPercentage = $station->load_percentage;
+            $todayLoad = $station->today_load;
 
             return [
                 'station' => $station,
                 'load_percentage' => $loadPercentage,
-                'current_load' => $station->current_load,
+                'current_load' => $todayLoad,
                 'max_capacity' => $station->max_capacity,
                 'suggested_action' => $loadPercentage >= 95
                     ? 'Critical: Redistribute orders immediately'
@@ -85,9 +90,9 @@ class KitchenController extends Controller
 
             $avgTime = $station->getAverageCompletionTime();
 
-            // Calculate efficiency (inverse of load percentage - lower is better)
+            // Calculate efficiency based on today's load percentage
             $efficiency = $station->max_capacity > 0
-                ? max(0, 100 - round(($station->current_load / $station->max_capacity) * 100))
+                ? max(0, 100 - round($station->load_percentage))
                 : 100;
 
             return [

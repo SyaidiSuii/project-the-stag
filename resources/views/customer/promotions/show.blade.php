@@ -521,31 +521,442 @@ body {
     color: #2563eb;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* ===== Responsive Design ===== */
+
+/* Large Desktop (1600px+) - 30-40% increase */
+@media (min-width: 1600px) {
+    .promotion-detail-container {
+        max-width: 1500px;
+        padding: 42px 28px;
+    }
+
+    .back-button {
+        padding: 13px 26px;
+        font-size: 1.05rem;
+    }
+
+    .promotion-hero {
+        border-radius: 30px;
+        padding: 75px 50px;
+    }
+
+    .promotion-hero.has-image {
+        height: 500px;
+    }
+
+    .type-badge-large {
+        padding: 10px 26px;
+        font-size: 1.1rem;
+    }
+
+    .promotion-icon-large {
+        font-size: 6.5rem;
+    }
+
     .promotion-name {
-        font-size: 2rem;
+        font-size: 3.5rem;
     }
 
     .promotion-discount-large {
-        font-size: 3rem;
+        font-size: 5rem;
+    }
+
+    .promotion-subtitle {
+        font-size: 1.5rem;
+    }
+
+    .promo-code-section {
+        padding: 50px;
+        margin-bottom: 40px;
     }
 
     .promo-code-text {
-        font-size: 1.8rem;
-        letter-spacing: 2px;
+        font-size: 3.2rem;
+    }
+
+    .copy-code-button {
+        padding: 18px 40px;
+        font-size: 1.3rem;
     }
 
     .details-grid {
+        gap: 32px;
+    }
+
+    .detail-card {
+        padding: 35px;
+    }
+
+    .detail-card-title {
+        font-size: 1.6rem;
+    }
+
+    .items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+
+    .shop-now-btn {
+        padding: 24px 60px;
+        font-size: 1.6rem;
+    }
+}
+
+/* Tablet (769px - 1199px) - 20-25% reduction */
+@media (max-width: 1199px) and (min-width: 769px) {
+    .promotion-detail-container {
+        padding: 28px 18px;
+    }
+
+    .back-button {
+        padding: 9px 18px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+    }
+
+    .promotion-hero {
+        border-radius: 20px;
+        padding: 50px 35px;
+        margin-bottom: 28px;
+    }
+
+    .promotion-hero.has-image {
+        height: 350px;
+    }
+
+    .type-badge-large {
+        padding: 7px 18px;
+        font-size: 0.8rem;
+        margin-bottom: 14px;
+    }
+
+    .promotion-icon-large {
+        font-size: 4.5rem;
+        margin-bottom: 18px;
+    }
+
+    .promotion-name {
+        font-size: 2.4rem;
+        margin-bottom: 14px;
+    }
+
+    .promotion-discount-large {
+        font-size: 3.5rem;
+        margin: 18px 0;
+    }
+
+    .promotion-subtitle {
+        font-size: 1.05rem;
+        margin-bottom: 20px;
+    }
+
+    .validity-badge {
+        padding: 9px 18px;
+        font-size: 0.9rem;
+    }
+
+    .promo-code-section {
+        border-radius: 18px;
+        padding: 35px;
+        margin-bottom: 28px;
+    }
+
+    .promo-code-title {
+        font-size: 1rem;
+        margin-bottom: 14px;
+    }
+
+    .promo-code-display {
+        padding: 20px;
+        margin-bottom: 18px;
+        border-radius: 14px;
+    }
+
+    .promo-code-text {
+        font-size: 2.2rem;
+        letter-spacing: 3px;
+    }
+
+    .copy-code-button {
+        padding: 12px 28px;
+        font-size: 1rem;
+        border-radius: 10px;
+    }
+
+    .details-grid {
+        gap: 20px;
+        margin-bottom: 28px;
         grid-template-columns: 1fr;
+    }
+
+    .detail-card {
+        border-radius: 14px;
+        padding: 24px;
+    }
+
+    .detail-card-title {
+        font-size: 1.15rem;
+        margin-bottom: 18px;
+        padding-bottom: 10px;
+    }
+
+    .detail-item {
+        padding: 14px 0;
+    }
+
+    .detail-label {
+        font-size: 0.8rem;
+    }
+
+    .detail-value {
+        font-size: 1.05rem;
+    }
+
+    .combo-items-card, .terms-card {
+        padding: 24px;
+        margin-bottom: 28px;
+        border-radius: 14px;
+    }
+
+    .items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 14px;
+        margin-top: 18px;
+    }
+
+    .item-card {
+        padding: 14px;
+        border-radius: 10px;
+    }
+
+    .item-name {
+        font-size: 0.9rem;
+    }
+
+    .item-price {
+        font-size: 0.85rem;
+    }
+
+    .terms-list {
+        margin-top: 18px;
+    }
+
+    .terms-list li {
+        padding: 10px 0 10px 28px;
+        font-size: 0.9rem;
+    }
+
+    .cta-section {
+        padding: 35px 18px;
+    }
+
+    .shop-now-btn {
+        padding: 16px 42px;
+        font-size: 1.15rem;
+        border-radius: 12px;
+    }
+
+    .alert-badge {
+        padding: 10px 18px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Mobile (max-width: 768px) - 35-40% reduction */
+@media (max-width: 768px) {
+    .promotion-detail-container {
+        padding: 24px 15px;
+    }
+
+    .back-button {
+        padding: 8px 16px;
+        margin-bottom: 18px;
+        font-size: 0.85rem;
+        border-radius: 8px;
+    }
+
+    .promotion-hero {
+        border-radius: 16px;
+        padding: 35px 20px;
+        margin-bottom: 24px;
+    }
+
+    .promotion-hero.has-image {
+        height: 280px;
+    }
+
+    .type-badge-large {
+        padding: 6px 14px;
+        font-size: 0.75rem;
+        margin-bottom: 12px;
+        border-radius: 16px;
+    }
+
+    .promotion-icon-large {
+        font-size: 3.5rem;
+        margin-bottom: 14px;
+    }
+
+    .promotion-name {
+        font-size: 1.8rem;
+        margin-bottom: 12px;
+    }
+
+    .promotion-discount-large {
+        font-size: 2.5rem;
+        margin: 14px 0;
+    }
+
+    .promotion-subtitle {
+        font-size: 0.95rem;
+        margin-bottom: 18px;
+    }
+
+    .validity-badge {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+        border-radius: 16px;
+    }
+
+    .promo-code-section {
+        border-radius: 16px;
+        padding: 28px 20px;
+        margin-bottom: 24px;
+    }
+
+    .promo-code-title {
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+    }
+
+    .promo-code-display {
+        padding: 16px;
+        margin-bottom: 16px;
+        border-radius: 12px;
+    }
+
+    .promo-code-text {
+        font-size: 1.6rem;
+        letter-spacing: 2px;
+    }
+
+    .copy-code-button {
+        padding: 11px 24px;
+        font-size: 0.95rem;
+        border-radius: 10px;
+    }
+
+    .copy-success {
+        font-size: 0.9rem;
+        margin-top: 10px;
+    }
+
+    .details-grid {
+        gap: 18px;
+        margin-bottom: 24px;
+        grid-template-columns: 1fr;
+    }
+
+    .detail-card {
+        border-radius: 14px;
+        padding: 20px;
+    }
+
+    .detail-card-title {
+        font-size: 1.05rem;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+    }
+
+    .detail-item {
+        padding: 12px 0;
+    }
+
+    .detail-label {
+        font-size: 0.75rem;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+    }
+
+    .combo-items-card, .terms-card {
+        padding: 20px;
+        margin-bottom: 24px;
+        border-radius: 14px;
     }
 
     .items-grid {
         grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 16px;
     }
 
-    .promotion-hero {
-        padding: 40px 20px;
+    .item-card {
+        padding: 12px;
+        border-radius: 10px;
+    }
+
+    .item-name {
+        font-size: 0.85rem;
+    }
+
+    .item-price {
+        font-size: 0.8rem;
+    }
+
+    .terms-list {
+        margin-top: 16px;
+    }
+
+    .terms-list li {
+        padding: 9px 0 9px 26px;
+        font-size: 0.85rem;
+        line-height: 1.6;
+    }
+
+    .terms-list li::before {
+        font-size: 1.05rem;
+    }
+
+    .cta-section {
+        padding: 30px 15px;
+    }
+
+    .shop-now-btn {
+        padding: 14px 36px;
+        font-size: 1.05rem;
+        border-radius: 12px;
+    }
+
+    .alert-badge {
+        padding: 9px 16px;
+        font-size: 0.85rem;
+        border-radius: 10px;
+    }
+
+    .copy-toast {
+        top: 12px;
+        right: 12px;
+        left: 12px;
+        padding: 14px 18px;
+        border-radius: 12px;
+    }
+
+    .copy-toast-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .copy-toast-icon i {
+        font-size: 18px;
+    }
+
+    .copy-toast-content h4 {
+        font-size: 0.95rem;
+    }
+
+    .copy-toast-content p {
+        font-size: 0.8rem;
     }
 }
 </style>

@@ -152,10 +152,10 @@
         <tbody>
             @forelse($recentActivity ?? [] as $user)
             <tr>
-                <td>{{ $user->name }}</td>
-                <td>Profile Update</td>
-                <td>{{ $user->updated_at ? $user->updated_at->diffForHumans() : 'Never' }}</td>
-                <td>{{ $user->email }}</td>
+                <td data-label="User">{{ $user->name }}</td>
+                <td data-label="Activity">Profile Update</td>
+                <td data-label="Time">{{ $user->updated_at ? $user->updated_at->diffForHumans() : 'Never' }}</td>
+                <td data-label="Details">{{ $user->email }}</td>
             </tr>
             @empty
             <tr>
@@ -188,11 +188,11 @@
         <tbody>
           @forelse($popularMenuItems ?? [] as $item)
           <tr>
-            <td>{{ $item->name }}</td>
-            <td>{{ $item->category->name ?? 'N/A' }}</td>
-            <td>{{ $item->order_items_count }}</td>
-            <td>RM {{ number_format($item->price, 2) }}</td>
-            <td>-</td>
+            <td data-label="Item">{{ $item->name }}</td>
+            <td data-label="Category">{{ $item->category->name ?? 'N/A' }}</td>
+            <td data-label="Orders">{{ $item->order_items_count }}</td>
+            <td data-label="Revenue">RM {{ number_format($item->price, 2) }}</td>
+            <td data-label="Trend">-</td>
           </tr>
           @empty
           <tr>

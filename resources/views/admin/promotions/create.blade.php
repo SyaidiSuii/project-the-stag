@@ -88,6 +88,226 @@
 .item-checkbox input {
     margin-right: 8px;
 }
+
+/* ===== RESPONSIVE DESIGN - 4-TIER BREAKPOINT SYSTEM ===== */
+
+/* Large Desktop (≥1600px) - 30-40% larger */
+@media (min-width: 1600px) {
+    .admin-section {
+        padding: 32px;
+    }
+    .section-title {
+        font-size: 24px;
+    }
+    .type-selector {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+    }
+    .type-card {
+        padding: 20px;
+    }
+    .type-icon {
+        font-size: 40px;
+    }
+    .type-name {
+        font-size: 16px;
+    }
+    .form-label {
+        font-size: 16px;
+    }
+    .form-control {
+        padding: 14px 18px;
+        font-size: 15px;
+    }
+}
+
+/* Tablet (769px-1199px) - 20-25% smaller */
+@media (max-width: 1199px) and (min-width: 769px) {
+    .admin-section {
+        padding: 20px;
+    }
+    .section-title {
+        font-size: 16px;
+    }
+    .type-selector {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    .type-card {
+        padding: 12px;
+    }
+    .type-icon {
+        font-size: 28px;
+    }
+    .type-name {
+        font-size: 13px;
+    }
+    .type-description {
+        font-size: 11px;
+    }
+    .form-row {
+        gap: 12px;
+    }
+    .form-label {
+        font-size: 13px;
+    }
+    .form-control {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+    .btn-save,
+    .btn-cancel {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+}
+
+/* Mobile (≤768px) - 35-40% smaller, single column */
+@media (max-width: 768px) {
+    .admin-section {
+        padding: 16px;
+    }
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .section-title {
+        font-size: 15px;
+    }
+    .btn-cancel {
+        width: 100%;
+        justify-content: center;
+    }
+    /* Type selector - 2 columns on mobile */
+    .type-selector {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+    .type-card {
+        padding: 12px;
+    }
+    .type-icon {
+        font-size: 24px;
+        margin-bottom: 6px;
+    }
+    .type-name {
+        font-size: 12px;
+    }
+    .type-description {
+        font-size: 10px;
+    }
+    /* Form sections */
+    .form-section h3 {
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .form-group {
+        margin-bottom: 16px;
+    }
+    .form-label {
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+    .form-control {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+    .form-control small {
+        font-size: 11px;
+    }
+    /* Item selector */
+    .item-selector {
+        max-height: 250px;
+        padding: 10px;
+    }
+    .item-checkbox {
+        padding: 6px;
+        font-size: 12px;
+    }
+    /* Combo/Bundle item rows */
+    .combo-item-row,
+    .bundle-item-row {
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+    .combo-item-row select,
+    .bundle-item-row select {
+        width: 100% !important;
+    }
+    .combo-item-row input[type="number"],
+    .bundle-item-row input[type="number"] {
+        width: 100% !important;
+    }
+    /* Form actions */
+    .form-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .btn-save,
+    .btn-cancel {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 13px;
+        justify-content: center;
+    }
+    /* Error messages */
+    .admin-section > div[style*="background: #fee2e2"] {
+        padding: 12px !important;
+        font-size: 13px !important;
+    }
+}
+
+/* Small Mobile (≤480px) - Ultra compact */
+@media (max-width: 480px) {
+    .admin-section {
+        padding: 12px;
+    }
+    .section-title {
+        font-size: 14px;
+    }
+    /* Type selector - single column on very small screens */
+    .type-selector {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    .type-card {
+        padding: 10px;
+    }
+    .type-icon {
+        font-size: 20px;
+        margin-bottom: 4px;
+    }
+    .type-name {
+        font-size: 11px;
+    }
+    .type-description {
+        font-size: 9px;
+    }
+    .form-section h3 {
+        font-size: 13px;
+    }
+    .form-label {
+        font-size: 12px;
+    }
+    .form-control {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    .btn-save,
+    .btn-cancel {
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+    .item-checkbox {
+        font-size: 11px;
+    }
+}
 </style>
 @endsection
 
