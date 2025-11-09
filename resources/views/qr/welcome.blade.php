@@ -56,14 +56,19 @@
         }
 
         .logo {
-            font-size: 64px;
-            margin-bottom: 24px;
-            animation: bounce 2s ease-in-out infinite;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px auto;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            background: white;
+            padding: 8px;
         }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .welcome-title {
@@ -226,17 +231,235 @@
             line-height: 1.6;
         }
 
-        @media (max-width: 480px) {
+        /* Tablet View (769px - 1199px) - 20-25% reduction */
+        @media (max-width: 1199px) and (min-width: 769px) {
             .welcome-card {
-                padding: 36px 24px;
+                padding: 40px 28px;
+            }
+
+            .logo {
+                width: 70px;
+                height: 70px;
+                margin-bottom: 20px;
             }
 
             .welcome-title {
                 font-size: 28px;
+                margin-bottom: 10px;
+            }
+
+            .welcome-subtitle {
+                font-size: 14px;
+                margin-bottom: 6px;
+            }
+
+            .table-info {
+                padding: 10px 20px;
+                margin: 20px 0 28px 0;
+                border-radius: 14px;
+            }
+
+            .table-info i {
+                font-size: 18px;
+            }
+
+            .options-container {
+                gap: 14px;
+            }
+
+            .option-btn {
+                padding: 18px;
+                border-radius: 14px;
+                font-size: 15px;
+                gap: 10px;
+            }
+
+            .divider {
+                margin: 20px 0;
+                font-size: 13px;
+            }
+
+            .divider span {
+                padding: 0 14px;
+            }
+
+            .feature-list {
+                margin-top: 28px;
+                padding-top: 28px;
+            }
+
+            .feature-item {
+                gap: 10px;
+                padding: 10px 0;
+                font-size: 13px;
+            }
+
+            .feature-item i {
+                width: 28px;
+                height: 28px;
+                font-size: 13px;
+            }
+
+            .info-text {
+                font-size: 12px;
+                margin-top: 20px;
+            }
+        }
+
+        /* Mobile View (max-width: 768px) - 35-40% reduction */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .welcome-card {
+                padding: 32px 20px;
+                border-radius: 20px;
+            }
+
+            .welcome-card::before {
+                height: 5px;
             }
 
             .logo {
-                font-size: 56px;
+                width: 60px;
+                height: 60px;
+                margin-bottom: 18px;
+            }
+
+            .welcome-title {
+                font-size: 24px;
+                margin-bottom: 8px;
+            }
+
+            .welcome-subtitle {
+                font-size: 13px;
+                margin-bottom: 6px;
+            }
+
+            .table-info {
+                padding: 10px 18px;
+                margin: 18px 0 24px 0;
+                border-radius: 12px;
+                font-size: 15px;
+            }
+
+            .table-info i {
+                font-size: 16px;
+            }
+
+            .options-container {
+                gap: 12px;
+            }
+
+            .option-btn {
+                padding: 16px;
+                border-radius: 12px;
+                font-size: 14px;
+                gap: 10px;
+            }
+
+            .option-btn.secondary {
+                border: 2px solid #667eea;
+            }
+
+            .divider {
+                margin: 18px 0;
+                font-size: 12px;
+            }
+
+            .divider span {
+                padding: 0 12px;
+            }
+
+            .feature-list {
+                margin-top: 24px;
+                padding-top: 24px;
+            }
+
+            .feature-item {
+                gap: 10px;
+                padding: 8px 0;
+                font-size: 12px;
+            }
+
+            .feature-item i {
+                width: 28px;
+                height: 28px;
+                border-radius: 8px;
+                font-size: 12px;
+            }
+
+            .info-text {
+                font-size: 11px;
+                margin-top: 18px;
+            }
+        }
+
+        /* Small Mobile View (max-width: 480px) - Additional optimization */
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+            }
+
+            .welcome-card {
+                padding: 28px 18px;
+                border-radius: 18px;
+            }
+
+            .logo {
+                width: 54px;
+                height: 54px;
+                margin-bottom: 16px;
+            }
+
+            .welcome-title {
+                font-size: 22px;
+                margin-bottom: 8px;
+            }
+
+            .welcome-subtitle {
+                font-size: 12px;
+            }
+
+            .table-info {
+                padding: 8px 16px;
+                margin: 16px 0 20px 0;
+                font-size: 14px;
+            }
+
+            .table-info i {
+                font-size: 14px;
+            }
+
+            .option-btn {
+                padding: 14px;
+                font-size: 13px;
+                gap: 8px;
+            }
+
+            .divider {
+                margin: 16px 0;
+            }
+
+            .feature-list {
+                margin-top: 20px;
+                padding-top: 20px;
+            }
+
+            .feature-item {
+                font-size: 11px;
+            }
+
+            .feature-item i {
+                width: 26px;
+                height: 26px;
+                font-size: 11px;
+            }
+
+            .info-text {
+                font-size: 10px;
+                margin-top: 16px;
             }
         }
     </style>
@@ -244,7 +467,9 @@
 <body>
     <div class="welcome-container">
         <div class="welcome-card">
-            <div class="logo">🦌</div>
+            <div class="logo">
+                <img src="{{ asset('images/logo.png') }}" alt="The Stag Logo">
+            </div>
             <h1 class="welcome-title">Welcome to The Stag!</h1>
             <p class="welcome-subtitle">SmartDine Experience</p>
 

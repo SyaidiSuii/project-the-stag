@@ -277,19 +277,461 @@
             margin-bottom: 10px;
         }
 
+        /* ============================================
+           RESPONSIVE DESIGN - 4-TIER BREAKPOINT SYSTEM
+           ============================================ */
+
+        /* Mobile: ≤768px (~35-40% reduction) */
         @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+
+            .header {
+                padding: 14px;
+                border-radius: 14px;
+                margin-bottom: 14px;
+            }
+
+            .header h1 {
+                font-size: 1.1rem;
+                margin-bottom: 5px;
+            }
+
+            .header p {
+                font-size: 0.8rem;
+            }
+
+            .back-button {
+                font-size: 0.85rem;
+                margin-bottom: 14px;
+            }
+
+            .cart-items {
+                padding: 12px;
+                border-radius: 14px;
+                margin-bottom: 16px;
+            }
+
             .cart-item {
-                flex-wrap: wrap;
+                padding: 10px 0;
             }
 
             .item-image {
-                margin-bottom: 10px;
+                width: 55px;
+                height: 55px;
+                border-radius: 8px;
+                font-size: 1.4rem;
+                margin-right: 10px;
+            }
+
+            .item-name {
+                font-size: 0.85rem;
+                margin-bottom: 3px;
+            }
+
+            .item-price {
+                font-size: 0.75rem;
             }
 
             .quantity-controls {
-                width: 100%;
-                margin-top: 10px;
-                justify-content: flex-end;
+                gap: 6px;
+            }
+
+            .quantity-btn {
+                width: 24px;
+                height: 24px;
+                border-radius: 6px;
+                font-size: 0.85rem;
+            }
+
+            .quantity {
+                min-width: 24px;
+                font-size: 0.85rem;
+            }
+
+            .remove-btn {
+                font-size: 0.9rem;
+                margin-left: 8px;
+            }
+
+            .cart-summary {
+                padding: 14px;
+                border-radius: 14px;
+                margin-bottom: 16px;
+            }
+
+            .summary-row {
+                font-size: 0.85rem;
+                margin-bottom: 6px;
+            }
+
+            .summary-total {
+                padding-top: 10px;
+                font-size: 0.95rem;
+            }
+
+            .checkout-btn {
+                padding: 12px;
+                border-radius: 12px;
+                font-size: 0.9rem;
+            }
+
+            .empty-cart {
+                padding: 28px 14px;
+            }
+
+            .empty-cart-icon {
+                font-size: 2.8rem;
+                margin-bottom: 14px;
+            }
+
+            .empty-cart-text {
+                font-size: 0.95rem;
+                margin-bottom: 6px;
+            }
+
+            .empty-cart p {
+                font-size: 0.8rem;
+            }
+
+            /* Modal responsiveness */
+            #remove-confirm-modal > div,
+            #back-confirm-modal > div {
+                padding: 1.5rem !important;
+                max-width: 90% !important;
+                border-radius: 14px !important;
+            }
+
+            #remove-confirm-modal > div > div:first-child,
+            #back-confirm-modal > div > div:first-child {
+                font-size: 2.5rem !important;
+                margin-bottom: 1rem !important;
+            }
+
+            #remove-confirm-modal h2,
+            #back-confirm-modal h2 {
+                font-size: 1.2rem !important;
+                margin-bottom: 0.7rem !important;
+            }
+
+            #remove-confirm-modal p,
+            #back-confirm-modal p {
+                font-size: 0.85rem !important;
+                margin-bottom: 1rem !important;
+            }
+
+            #remove-confirm-modal button,
+            #back-confirm-modal button {
+                padding: 0.65rem 1.2rem !important;
+                font-size: 0.85rem !important;
+                border-radius: 10px !important;
+            }
+        }
+
+        /* Tablet: 769px - 1199px (~20-25% reduction) */
+        @media (min-width: 769px) and (max-width: 1199px) {
+            body {
+                padding: 16px;
+            }
+
+            .container {
+                max-width: 650px;
+            }
+
+            .header {
+                padding: 16px;
+                border-radius: 16px;
+                margin-bottom: 16px;
+            }
+
+            .header h1 {
+                font-size: 1.4rem;
+                margin-bottom: 6px;
+            }
+
+            .header p {
+                font-size: 0.85rem;
+            }
+
+            .back-button {
+                font-size: 0.9rem;
+                margin-bottom: 16px;
+            }
+
+            .cart-items {
+                padding: 16px;
+                border-radius: 16px;
+                margin-bottom: 20px;
+            }
+
+            .cart-item {
+                padding: 12px 0;
+            }
+
+            .item-image {
+                width: 65px;
+                height: 65px;
+                border-radius: 10px;
+                font-size: 1.6rem;
+                margin-right: 12px;
+            }
+
+            .item-name {
+                font-size: 0.95rem;
+            }
+
+            .item-price {
+                font-size: 0.8rem;
+            }
+
+            .quantity-controls {
+                gap: 8px;
+            }
+
+            .quantity-btn {
+                width: 28px;
+                height: 28px;
+                border-radius: 7px;
+                font-size: 0.9rem;
+            }
+
+            .quantity {
+                min-width: 28px;
+                font-size: 0.9rem;
+            }
+
+            .remove-btn {
+                font-size: 1rem;
+                margin-left: 12px;
+            }
+
+            .cart-summary {
+                padding: 16px;
+                border-radius: 16px;
+                margin-bottom: 20px;
+            }
+
+            .summary-row {
+                font-size: 0.9rem;
+                margin-bottom: 8px;
+            }
+
+            .summary-total {
+                padding-top: 12px;
+                font-size: 1rem;
+            }
+
+            .checkout-btn {
+                padding: 13px;
+                border-radius: 13px;
+                font-size: 0.95rem;
+            }
+
+            .empty-cart {
+                padding: 35px 16px;
+            }
+
+            .empty-cart-icon {
+                font-size: 3.2rem;
+                margin-bottom: 16px;
+            }
+
+            .empty-cart-text {
+                font-size: 1rem;
+                margin-bottom: 8px;
+            }
+
+            .empty-cart p {
+                font-size: 0.85rem;
+            }
+
+            /* Modal responsiveness */
+            #remove-confirm-modal > div,
+            #back-confirm-modal > div {
+                padding: 2rem !important;
+                max-width: 450px !important;
+                border-radius: 16px !important;
+            }
+
+            #remove-confirm-modal > div > div:first-child,
+            #back-confirm-modal > div > div:first-child {
+                font-size: 3.2rem !important;
+                margin-bottom: 1.2rem !important;
+            }
+
+            #remove-confirm-modal h2,
+            #back-confirm-modal h2 {
+                font-size: 1.4rem !important;
+                margin-bottom: 0.8rem !important;
+            }
+
+            #remove-confirm-modal p,
+            #back-confirm-modal p {
+                font-size: 0.9rem !important;
+                margin-bottom: 1.2rem !important;
+            }
+
+            #remove-confirm-modal button,
+            #back-confirm-modal button {
+                padding: 0.75rem 1.5rem !important;
+                font-size: 0.9rem !important;
+                border-radius: 11px !important;
+            }
+        }
+
+        /* Large Desktop: ≥1600px (~30-40% increase) */
+        @media (min-width: 1600px) {
+            body {
+                padding: 28px;
+            }
+
+            .container {
+                max-width: 1100px;
+            }
+
+            .header {
+                padding: 28px;
+                border-radius: 28px;
+                margin-bottom: 28px;
+            }
+
+            .header h1 {
+                font-size: 2.4rem;
+                margin-bottom: 12px;
+            }
+
+            .header p {
+                font-size: 1.3rem;
+            }
+
+            .back-button {
+                font-size: 1.2rem;
+                margin-bottom: 28px;
+            }
+
+            .cart-items {
+                padding: 28px;
+                border-radius: 28px;
+                margin-bottom: 35px;
+            }
+
+            .cart-item {
+                padding: 20px 0;
+            }
+
+            .item-image {
+                width: 110px;
+                height: 110px;
+                border-radius: 16px;
+                font-size: 2.8rem;
+                margin-right: 20px;
+            }
+
+            .item-name {
+                font-size: 1.3rem;
+            }
+
+            .item-price {
+                font-size: 1.1rem;
+            }
+
+            .quantity-controls {
+                gap: 14px;
+            }
+
+            .quantity-btn {
+                width: 42px;
+                height: 42px;
+                border-radius: 11px;
+                font-size: 1.2rem;
+            }
+
+            .quantity {
+                min-width: 42px;
+                font-size: 1.2rem;
+            }
+
+            .remove-btn {
+                font-size: 1.6rem;
+                margin-left: 20px;
+            }
+
+            .cart-summary {
+                padding: 28px;
+                border-radius: 28px;
+                margin-bottom: 35px;
+            }
+
+            .summary-row {
+                font-size: 1.2rem;
+                margin-bottom: 14px;
+            }
+
+            .summary-total {
+                padding-top: 20px;
+                font-size: 1.6rem;
+            }
+
+            .checkout-btn {
+                padding: 20px;
+                border-radius: 20px;
+                font-size: 1.4rem;
+            }
+
+            .empty-cart {
+                padding: 55px 28px;
+            }
+
+            .empty-cart-icon {
+                font-size: 5.5rem;
+                margin-bottom: 28px;
+            }
+
+            .empty-cart-text {
+                font-size: 1.6rem;
+                margin-bottom: 14px;
+            }
+
+            .empty-cart p {
+                font-size: 1.2rem;
+            }
+
+            /* Modal responsiveness */
+            #remove-confirm-modal > div,
+            #back-confirm-modal > div {
+                padding: 3.5rem !important;
+                max-width: 700px !important;
+                border-radius: 28px !important;
+            }
+
+            #remove-confirm-modal > div > div:first-child,
+            #back-confirm-modal > div > div:first-child {
+                font-size: 5.5rem !important;
+                margin-bottom: 2rem !important;
+            }
+
+            #remove-confirm-modal h2,
+            #back-confirm-modal h2 {
+                font-size: 2.4rem !important;
+                margin-bottom: 1.4rem !important;
+            }
+
+            #remove-confirm-modal p,
+            #back-confirm-modal p {
+                font-size: 1.2rem !important;
+                margin-bottom: 2rem !important;
+            }
+
+            #remove-confirm-modal button,
+            #back-confirm-modal button {
+                padding: 1.2rem 2.4rem !important;
+                font-size: 1.2rem !important;
+                border-radius: 16px !important;
             }
         }
     </style>

@@ -6,22 +6,22 @@
 <link rel="stylesheet" href="{{ asset('css/customer/food.css') }}">
 <link rel="stylesheet" href="{{ asset('css/customer/promotion-cart.css') }}">
 <style>
-/* Back Button - Fixed position, vertically centered in banner */
+/* Back Button - Fixed position at top left corner (like order-type-fab) */
 .back-button {
     position: fixed;
-    top: 75px;
-    left: 140px;
+    top: 85px; /* Below sidebar navbar on desktop */
+    left: 115px; /* Aligned with main content area */
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
+    gap: 6px;
+    padding: 10px 18px;
     background: rgba(255, 255, 255, 0.95);
     border: 2px solid rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(10px);
-    border-radius: 12px;
+    border-radius: 24px;
     color: #000000;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     transition: all 0.3s;
     z-index: 1000;
@@ -33,6 +33,10 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
     color: #000000;
+}
+
+.back-button i {
+    font-size: 16px;
 }
 
 /* Wait Time Badge */
@@ -50,19 +54,7 @@
     z-index: 2;
 }
 
-/* Purple button for Add to Cart */
-.food-card .btn.btn-cart {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    border: 2px solid #667eea !important;
-    width: 100%;
-}
-
-.food-card .btn.btn-cart:hover {
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4) !important;
-}
-
-/* Adjust main content padding */
+/* Adjust main content padding to match menu page */
 .main-content {
     padding: 20px;
 }
@@ -83,6 +75,81 @@
 
 .food-card .food-actions {
     margin-top: 12px;
+}
+
+/* Responsive Styles */
+/* Tablet (769px - 1199px) - 2 columns grid */
+@media (max-width: 1199px) {
+    .main-content {
+        padding: 15px;
+    }
+
+    .food-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    /* Back Button - Tablet */
+    .back-button {
+        padding: 9px 16px;
+        font-size: 12px;
+        border-radius: 22px;
+        top: 28px;
+        left: 28px;
+    }
+    .back-button i {
+        font-size: 15px;
+    }
+}
+
+/* Mobile (481px - 768px) - 2 columns grid */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 10px;
+    }
+
+    .food-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    /* Back Button - Mobile */
+    .back-button {
+        padding: 8px 14px;
+        font-size: 11px;
+        border-radius: 20px;
+        top: 18px;
+        left: 18px;
+        gap: 5px;
+    }
+    .back-button i {
+        font-size: 14px;
+    }
+}
+
+/* Small Mobile (< 480px) - 2 columns grid */
+@media (max-width: 480px) {
+    .main-content {
+        padding: 10px;
+    }
+
+    .food-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    /* Back Button - Small Mobile */
+    .back-button {
+        padding: 7px 13px;
+        font-size: 10.5px;
+        border-radius: 19px;
+        top: 16px;
+        left: 16px;
+        gap: 4px;
+    }
+    .back-button i {
+        font-size: 13px;
+    }
 }
 </style>
 @endsection

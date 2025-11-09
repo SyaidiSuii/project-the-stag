@@ -209,6 +209,178 @@
         .progress-step.active .step-label {
             color: var(--brand-2);
         }
+
+        /* ===== Responsive Design - 4-Tier Breakpoint System ===== */
+        
+        /* Tablet (769px - 1199px) - 20-25% reduction */
+        @media (min-width: 769px) and (max-width: 1199px) {
+            body {
+                padding: 16px;
+            }
+            
+            .container {
+                max-width: 500px;
+            }
+            
+            .progress-container {
+                padding: 20px;
+                margin-bottom: 16px;
+                border-radius: 16px;
+            }
+            
+            .progress-bar::before {
+                top: 18px;
+                height: 3px;
+            }
+            
+            .step-circle {
+                width: 36px;
+                height: 36px;
+                margin-bottom: 8px;
+                font-size: 0.9rem;
+            }
+            
+            .step-label {
+                font-size: 0.78rem;
+            }
+            
+            .confirmation-card {
+                padding: 32px;
+                border-radius: 16px;
+            }
+            
+            .confirmation-icon {
+                font-size: 3.3rem;
+                margin-bottom: 16px;
+            }
+            
+            .confirmation-title {
+                font-size: 1.65rem;
+                margin-bottom: 12px;
+            }
+            
+            .confirmation-message {
+                font-size: 0.95rem;
+                margin-bottom: 24px;
+            }
+            
+            .order-details {
+                padding: 16px;
+                margin-bottom: 24px;
+                border-radius: 13px;
+            }
+            
+            .detail-row {
+                padding: 8px 0;
+                font-size: 0.9rem;
+            }
+            
+            .detail-label,
+            .detail-value {
+                font-size: 0.9rem;
+            }
+            
+            .actions {
+                gap: 12px;
+            }
+            
+            .btn {
+                padding: 10px 22px;
+                border-radius: 10px;
+                font-size: 0.9rem;
+                gap: 7px;
+            }
+        }
+        
+        /* Mobile (max-width: 768px) - 35-40% reduction */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+            
+            .container {
+                max-width: 100%;
+            }
+            
+            .progress-container {
+                padding: 16px;
+                margin-bottom: 12px;
+                border-radius: 14px;
+            }
+            
+            .progress-bar::before {
+                top: 16px;
+                height: 2.5px;
+            }
+            
+            .step-circle {
+                width: 32px;
+                height: 32px;
+                margin-bottom: 6px;
+                font-size: 0.8rem;
+            }
+            
+            .step-label {
+                font-size: 0.7rem;
+            }
+            
+            .confirmation-card {
+                padding: 24px;
+                border-radius: 14px;
+            }
+            
+            .confirmation-icon {
+                font-size: 2.6rem;
+                margin-bottom: 12px;
+            }
+            
+            .confirmation-title {
+                font-size: 1.3rem;
+                margin-bottom: 10px;
+            }
+            
+            .confirmation-message {
+                font-size: 0.85rem;
+                margin-bottom: 20px;
+            }
+            
+            .order-details {
+                padding: 14px;
+                margin-bottom: 20px;
+                border-radius: 11px;
+            }
+            
+            .detail-row {
+                padding: 7px 0;
+                font-size: 0.85rem;
+                flex-direction: column;
+                gap: 4px;
+                align-items: flex-start;
+            }
+            
+            .detail-label {
+                font-size: 0.75rem;
+            }
+            
+            .detail-value {
+                font-size: 0.9rem;
+            }
+            
+            .actions {
+                gap: 10px;
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn {
+                padding: 11px 20px;
+                border-radius: 10px;
+                font-size: 0.85rem;
+                gap: 6px;
+                width: 100%;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 

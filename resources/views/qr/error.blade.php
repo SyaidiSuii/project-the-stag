@@ -5,6 +5,194 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Error - The Stag</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* ===== Responsive Design ===== */
+        
+        /* Large Desktop (1600px+) - 30-40% increase */
+        @media (min-width: 1600px) {
+            .max-w-md {
+                max-width: 38rem !important;
+            }
+            
+            .p-8 {
+                padding: 2.6rem !important;
+            }
+            
+            .w-20 {
+                width: 6.5rem !important;
+                height: 6.5rem !important;
+            }
+            
+            .w-10 {
+                width: 3.2rem !important;
+                height: 3.2rem !important;
+            }
+            
+            .text-2xl {
+                font-size: 2rem !important;
+            }
+            
+            .text-sm {
+                font-size: 1.05rem !important;
+            }
+            
+            .py-2 {
+                padding-top: 0.65rem !important;
+                padding-bottom: 0.65rem !important;
+            }
+            
+            .px-4 {
+                padding-left: 1.3rem !important;
+                padding-right: 1.3rem !important;
+            }
+        }
+        
+        /* Tablet (769px - 1199px) - 20-25% reduction */
+        @media (max-width: 1199px) and (min-width: 769px) {
+            .max-w-md {
+                max-width: 26rem !important;
+            }
+            
+            .p-8 {
+                padding: 1.8rem !important;
+            }
+            
+            .w-20 {
+                width: 4.5rem !important;
+                height: 4.5rem !important;
+            }
+            
+            .mb-4 {
+                margin-bottom: 0.9rem !important;
+            }
+            
+            .w-10 {
+                width: 2.2rem !important;
+                height: 2.2rem !important;
+            }
+            
+            .text-2xl {
+                font-size: 1.4rem !important;
+            }
+            
+            .mb-2 {
+                margin-bottom: 0.45rem !important;
+            }
+            
+            .text-base {
+                font-size: 0.9rem !important;
+            }
+            
+            .mb-6 {
+                margin-bottom: 1.3rem !important;
+            }
+            
+            .p-4 {
+                padding: 0.9rem !important;
+            }
+            
+            .text-sm {
+                font-size: 0.8rem !important;
+            }
+            
+            .mb-8, .mt-8 {
+                margin-bottom: 1.8rem !important;
+                margin-top: 1.8rem !important;
+            }
+            
+            .pt-6 {
+                padding-top: 1.3rem !important;
+            }
+        }
+        
+        /* Mobile (max-width: 768px) - 35-40% reduction */
+        @media (max-width: 768px) {
+            .min-h-screen {
+                padding: 15px !important;
+            }
+            
+            .max-w-md {
+                max-width: 100% !important;
+            }
+            
+            .rounded-lg {
+                border-radius: 14px !important;
+            }
+            
+            .p-8 {
+                padding: 1.5rem !important;
+            }
+            
+            .w-20 {
+                width: 4rem !important;
+                height: 4rem !important;
+            }
+            
+            .mb-4 {
+                margin-bottom: 0.8rem !important;
+            }
+            
+            .w-10 {
+                width: 2rem !important;
+                height: 2rem !important;
+            }
+            
+            .text-2xl {
+                font-size: 1.3rem !important;
+            }
+            
+            .mb-2 {
+                margin-bottom: 0.4rem !important;
+            }
+            
+            .text-base {
+                font-size: 0.85rem !important;
+            }
+            
+            .mb-6 {
+                margin-bottom: 1.2rem !important;
+            }
+            
+            .p-4 {
+                padding: 0.85rem !important;
+            }
+            
+            .text-sm {
+                font-size: 0.75rem !important;
+            }
+            
+            .space-y-1 > * + * {
+                margin-top: 0.2rem !important;
+            }
+            
+            .space-y-3 > * + * {
+                margin-top: 0.7rem !important;
+            }
+            
+            .space-y-4 > * + * {
+                margin-top: 0.9rem !important;
+            }
+            
+            .py-2 {
+                padding-top: 0.5rem !important;
+                padding-bottom: 0.5rem !important;
+            }
+            
+            .px-4 {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+            
+            .mb-8, .mt-8 {
+                margin-bottom: 1.6rem !important;
+                margin-top: 1.6rem !important;
+            }
+            
+            .pt-6 {
+                padding-top: 1.2rem !important;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center">
     <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-8 text-center">

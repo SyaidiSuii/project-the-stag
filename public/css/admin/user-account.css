@@ -832,8 +832,381 @@
     background-color: #f9fafb;
 }
 
-/* Mobile Responsive */
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+    text-align: center;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+    color: var(--text-3);
+}
+
+.empty-state-title {
+    font-weight: 600;
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--text);
+}
+
+.empty-state-text {
+    color: var(--text-3);
+    font-size: 14px;
+}
+
+/* ===== Responsive Tablet (769px - 1199px) ===== */
+@media (max-width: 1199px) {
+    /* Stats Cards - 2 columns */
+    .admin-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .admin-card {
+        padding: 20px;
+    }
+
+    .admin-card-value {
+        font-size: 24px;
+    }
+
+    .admin-card-title {
+        font-size: 14px;
+    }
+
+    .admin-card-desc {
+        font-size: 13px;
+    }
+
+    .admin-card-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+
+    /* Section */
+    .admin-section {
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+
+    .section-title {
+        font-size: 16px;
+    }
+
+    /* Search & Filter */
+    .search-input {
+        padding: 10px 14px 10px 38px;
+        font-size: 13px;
+    }
+
+    .filter-select {
+        padding: 10px 14px;
+        font-size: 13px;
+        min-width: 130px;
+    }
+
+    /* Table */
+    .admin-table th,
+    .admin-table td {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .customer-avatar {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        font-size: 14px;
+    }
+
+    .customer-name {
+        font-size: 13px;
+    }
+
+    .customer-email {
+        font-size: 12px;
+    }
+
+    .status {
+        padding: 3px 8px;
+        font-size: 11px;
+    }
+
+    .action-btn {
+        padding: 5px 8px;
+        font-size: 11px;
+    }
+
+    /* Pagination */
+    .pagination-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 24px 16px;
+    }
+
+    .empty-state-icon {
+        font-size: 42px;
+    }
+
+    .empty-state-title {
+        font-size: 16px;
+    }
+
+    .empty-state-text {
+        font-size: 13px;
+    }
+}
+
+/* ===== Responsive Mobile (max-width: 768px) ===== */
 @media (max-width: 768px) {
+    /* Stats Cards - Single column */
+    .admin-cards {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .admin-card {
+        padding: 16px;
+    }
+
+    .admin-card-header {
+        margin-bottom: 12px;
+    }
+
+    .admin-card-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+
+    .admin-card-value {
+        font-size: 22px;
+        margin-bottom: 6px;
+    }
+
+    .admin-card-title {
+        font-size: 13px;
+    }
+
+    .admin-card-desc {
+        font-size: 12px;
+    }
+
+    /* Section */
+    .admin-section {
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .section-title {
+        font-size: 15px;
+    }
+
+    /* Search & Filter - Stack vertically */
+    .search-filter {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .search-box {
+        min-width: 100%;
+        width: 100%;
+    }
+
+    .search-input {
+        padding: 10px 14px 10px 36px;
+        font-size: 13px;
+    }
+
+    .search-icon {
+        left: 10px;
+        font-size: 14px;
+    }
+
+    .filter-group {
+        width: 100%;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .filter-select {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+
+    .admin-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+
+    /* Table - Card-based layout */
+    .table-container {
+        max-height: none;
+        overflow-y: visible;
+        border: none;
+    }
+
+    .admin-table {
+        display: block;
+    }
+
+    .admin-table thead {
+        display: none;
+    }
+
+    .admin-table tbody {
+        display: block;
+    }
+
+    .admin-table tr {
+        display: block;
+        margin-bottom: 12px;
+        border: 1px solid var(--muted);
+        border-radius: var(--radius);
+        padding: 12px;
+        background: white;
+    }
+
+    .admin-table td {
+        display: block;
+        padding: 8px 0;
+        border-bottom: none;
+        text-align: left !important;
+        position: relative;
+        padding-left: 40%;
+        font-size: 13px;
+    }
+
+    .admin-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 38%;
+        padding-right: 8px;
+        font-weight: 600;
+        color: var(--text-2);
+        font-size: 12px;
+    }
+
+    /* Special handling for customer info */
+    .admin-table td:first-child {
+        padding-left: 40%;
+    }
+
+    .admin-table td:first-child:before {
+        content: 'User ID:';
+    }
+
+    .customer-info {
+        justify-content: flex-start;
+    }
+
+    .customer-avatar {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+        font-size: 13px;
+    }
+
+    .customer-name {
+        font-size: 13px;
+    }
+
+    .customer-email {
+        font-size: 12px;
+    }
+
+    .status {
+        padding: 3px 8px;
+        font-size: 11px;
+    }
+
+    .status-station {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+
+    .status-station i {
+        font-size: 10px;
+    }
+
+    /* Action buttons in mobile */
+    .table-actions {
+        justify-content: flex-start;
+        padding-left: 40%;
+    }
+
+    .action-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    /* Pagination - Mobile */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 16px;
+    }
+
+    .pagination > span:first-child,
+    .pagination > div:first-child {
+        width: 100%;
+        margin-bottom: 8px;
+        font-size: 12px;
+    }
+
+    .pagination-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 24px 16px;
+    }
+
+    .empty-state-icon {
+        font-size: 40px;
+    }
+
+    .empty-state-title {
+        font-size: 15px;
+    }
+
+    .empty-state-text {
+        font-size: 13px;
+    }
+
+    /* Form Responsive */
     .form-row {
         grid-template-columns: 1fr;
         gap: 0;
@@ -850,5 +1223,140 @@
 
     .btn-save, .btn-cancel {
         width: 100%;
+    }
+}
+
+/* ===== Responsive Small Mobile (max-width: 480px) ===== */
+@media (max-width: 480px) {
+    /* Stats Cards */
+    .admin-card {
+        padding: 14px;
+    }
+
+    .admin-card-value {
+        font-size: 20px;
+    }
+
+    .admin-card-title {
+        font-size: 12px;
+    }
+
+    .admin-card-desc {
+        font-size: 11px;
+    }
+
+    .admin-card-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
+    }
+
+    /* Section */
+    .admin-section {
+        padding: 12px;
+    }
+
+    .section-title {
+        font-size: 14px;
+    }
+
+    /* Search & Filter */
+    .search-input {
+        padding: 9px 12px 9px 34px;
+        font-size: 12px;
+    }
+
+    .filter-select {
+        padding: 9px 12px;
+        font-size: 12px;
+    }
+
+    .admin-btn {
+        padding: 9px 14px;
+        font-size: 12px;
+    }
+
+    /* Table Cards */
+    .admin-table tr {
+        padding: 10px;
+    }
+
+    .admin-table td {
+        padding: 6px 0;
+        padding-left: 45%;
+        font-size: 12px;
+    }
+
+    .admin-table td:before {
+        width: 42%;
+        font-size: 11px;
+    }
+
+    .admin-table td:first-child {
+        padding-left: 45%;
+    }
+
+    .customer-avatar {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        min-height: 28px;
+        font-size: 12px;
+    }
+
+    .customer-info {
+        gap: 8px;
+    }
+
+    .customer-name {
+        font-size: 12px;
+    }
+
+    .customer-email {
+        font-size: 11px;
+    }
+
+    .status {
+        padding: 2px 6px;
+        font-size: 10px;
+    }
+
+    .status-station {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+
+    .table-actions {
+        padding-left: 45%;
+        gap: 6px;
+    }
+
+    .action-btn {
+        padding: 5px 8px;
+        font-size: 10px;
+    }
+
+    /* Pagination */
+    .pagination-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 20px 12px;
+    }
+
+    .empty-state-icon {
+        font-size: 36px;
+    }
+
+    .empty-state-title {
+        font-size: 14px;
+    }
+
+    .empty-state-text {
+        font-size: 12px;
     }
 }

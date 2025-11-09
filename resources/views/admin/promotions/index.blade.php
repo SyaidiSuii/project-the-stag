@@ -201,6 +201,281 @@
       color: var(--text-3);
       font-size: 14px;
     }
+
+/* ===== RESPONSIVE DESIGN - 4-TIER BREAKPOINT SYSTEM ===== */
+
+/* Large Desktop (≥1600px) - 30-40% larger */
+@media (min-width: 1600px) {
+    .admin-cards {
+        gap: 28px;
+        margin-bottom: 40px;
+    }
+    .admin-card {
+        padding: 32px;
+    }
+    .admin-card-title {
+        font-size: 18px;
+    }
+    .admin-card-value {
+        font-size: 36px;
+    }
+    .admin-tabs {
+        padding: 16px;
+        gap: 12px;
+    }
+    .admin-tab {
+        padding: 14px 28px;
+        font-size: 16px;
+    }
+    .section-title {
+        font-size: 24px;
+    }
+    .admin-table th,
+    .admin-table td {
+        padding: 16px;
+        font-size: 15px;
+    }
+}
+
+/* Tablet (769px-1199px) - 20-25% smaller */
+@media (max-width: 1199px) and (min-width: 769px) {
+    .admin-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-top: 0;
+    }
+    .admin-card {
+        padding: 18px;
+    }
+    .admin-card-title {
+        font-size: 13px;
+    }
+    .admin-card-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+    .admin-card-value {
+        font-size: 22px;
+    }
+    .admin-card-desc {
+        font-size: 12px;
+    }
+    .admin-tabs {
+        padding: 10px;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    .admin-tab {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+    .section-title {
+        font-size: 16px;
+    }
+    .search-filter {
+        gap: 12px;
+    }
+    .admin-table th,
+    .admin-table td {
+        padding: 10px;
+        font-size: 13px;
+    }
+    .discount-badge,
+    .promo-code-badge {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+    .action-btn {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+}
+
+/* Mobile (≤768px) - 35-40% smaller, single column */
+@media (max-width: 768px) {
+    .admin-cards {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .admin-card {
+        padding: 16px;
+    }
+    .admin-card-title {
+        font-size: 12px;
+    }
+    .admin-card-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+    .admin-card-value {
+        font-size: 20px;
+    }
+    .admin-card-desc {
+        font-size: 11px;
+    }
+    .admin-tabs {
+        padding: 8px;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    .admin-tab {
+        padding: 8px 14px;
+        font-size: 12px;
+        flex: 1 1 calc(50% - 6px);
+        min-width: 120px;
+        justify-content: center;
+    }
+    .admin-tab i {
+        font-size: 11px;
+    }
+    .admin-section {
+        padding: 16px;
+    }
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .section-title {
+        font-size: 15px;
+    }
+    .search-filter {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .admin-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+    /* Table Responsive - Horizontal scroll */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .admin-table {
+        min-width: 900px;
+    }
+    .admin-table th,
+    .admin-table td {
+        padding: 8px;
+        font-size: 12px;
+    }
+    .discount-badge,
+    .promo-code-badge {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+    .promo-code-badge .code-text {
+        font-size: 11px;
+    }
+    /* Action buttons grid - stack on mobile */
+    .admin-table td:last-child > div {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+        max-width: 120px;
+    }
+    .action-btn {
+        padding: 6px;
+        font-size: 11px;
+    }
+    .toggle-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+    /* Status badges */
+    .status {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+    .status i {
+        font-size: 10px;
+    }
+    /* Empty state */
+    .empty-state {
+        padding: 40px 16px;
+    }
+    .empty-state-icon {
+        font-size: 36px;
+    }
+    .empty-state-title {
+        font-size: 16px;
+    }
+    .empty-state-text {
+        font-size: 12px;
+    }
+}
+
+/* Small Mobile (≤480px) - Ultra compact */
+@media (max-width: 480px) {
+    .admin-cards {
+        gap: 10px;
+    }
+    .admin-card {
+        padding: 12px;
+    }
+    .admin-card-header {
+        margin-bottom: 10px;
+    }
+    .admin-card-title {
+        font-size: 11px;
+    }
+    .admin-card-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    .admin-card-value {
+        font-size: 18px;
+    }
+    .admin-card-desc {
+        font-size: 10px;
+    }
+    .admin-tabs {
+        padding: 6px;
+        gap: 4px;
+    }
+    .admin-tab {
+        padding: 6px 10px;
+        font-size: 11px;
+        flex: 1 1 100%;
+    }
+    .admin-section {
+        padding: 12px;
+    }
+    .section-title {
+        font-size: 14px;
+    }
+    .admin-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    .admin-table {
+        min-width: 800px;
+    }
+    .admin-table th,
+    .admin-table td {
+        padding: 6px;
+        font-size: 11px;
+    }
+    .discount-badge,
+    .promo-code-badge {
+        font-size: 10px;
+        padding: 3px 6px;
+    }
+    .action-btn {
+        padding: 5px;
+        font-size: 10px;
+    }
+    .toggle-btn {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+}
 </style>
 @endsection
 

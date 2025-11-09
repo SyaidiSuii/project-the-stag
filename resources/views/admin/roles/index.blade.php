@@ -43,25 +43,25 @@
             <tbody>
                 @foreach($roles as $role)
                 <tr>
-                    <td>
+                    <td data-label="Role Name">
                         <div class="customer-info">
                             <div class="customer-name">{{ ucfirst($role->name) }}</div>
                         </div>
                     </td>
-                    <td>
+                    <td data-label="Users">
                         <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
                             <span class="status status-active">{{ $role->users_count }} users</span>
                         </div>
                     </td>
-                    <td>
+                    <td data-label="Permissions">
                         <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
                             <span class="status status-active">{{ $role->permissions_count }} permissions</span>
                         </div>
                     </td>
-                    <td>
+                    <td data-label="Created Date">
                         <div style="font-size: 13px;">{{ $role->created_at->format('d M Y') }}</div>
                     </td>
-                    <td>
+                    <td data-label="Actions">
                         <div class="table-actions">
                             <a href="{{ route('admin.roles.show', $role->id) }}"
                                 class="action-btn view-btn" title="View Details">

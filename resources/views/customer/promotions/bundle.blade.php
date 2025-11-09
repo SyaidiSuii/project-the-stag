@@ -607,6 +607,555 @@
             width: 100%;
         }
     }
+
+    /* ===== Large Desktop (1600px+) - 30-40% increase ===== */
+    @media (min-width: 1600px) {
+        .bundle-container {
+            max-width: 1500px;
+            padding: 28px;
+        }
+
+        .back-link {
+            font-size: 1.05rem;
+            margin-bottom: 30px;
+        }
+
+        .hero-banner {
+            border-radius: 30px;
+            padding: 60px;
+            margin-bottom: 40px;
+        }
+
+        .hero-icon {
+            font-size: 60px;
+        }
+
+        .hero-title {
+            font-size: 52px;
+        }
+
+        .hero-description {
+            font-size: 22px;
+        }
+
+        .hero-image {
+            max-height: 500px;
+            border-radius: 20px;
+        }
+
+        .card {
+            border-radius: 30px;
+            padding: 50px;
+            margin-bottom: 40px;
+        }
+
+        .card-title {
+            font-size: 35px;
+            margin-bottom: 35px;
+        }
+
+        .card-title i {
+            font-size: 40px;
+        }
+
+        .price-main {
+            font-size: 80px;
+        }
+
+        .price-regular {
+            font-size: 25px;
+        }
+
+        .savings-badge {
+            padding: 30px 40px;
+        }
+
+        .savings-amount {
+            font-size: 45px;
+        }
+
+        .item-image, .item-placeholder {
+            width: 130px;
+            height: 130px;
+        }
+
+        .item-name {
+            font-size: 25px;
+        }
+
+        .cta-button {
+            padding: 30px;
+            font-size: 25px;
+        }
+    }
+
+    /* ===== Tablet (769px - 1199px) - 20-25% reduction ===== */
+    @media (max-width: 1199px) and (min-width: 769px) {
+        .bundle-container {
+            padding: 18px;
+        }
+
+        .back-link {
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .hero-banner {
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 28px;
+        }
+
+        .hero-header {
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .hero-icon {
+            font-size: 42px;
+        }
+
+        .hero-title {
+            font-size: 36px;
+        }
+
+        .hero-description {
+            font-size: 16px;
+        }
+
+        .hero-image {
+            max-height: 350px;
+            border-radius: 14px;
+            margin-top: 20px;
+        }
+
+        .card {
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 28px;
+        }
+
+        .card-title {
+            font-size: 24px;
+            margin-bottom: 24px;
+            gap: 10px;
+        }
+
+        .card-title i {
+            font-size: 28px;
+        }
+
+        .price-container {
+            gap: 20px;
+        }
+
+        .price-main {
+            font-size: 54px;
+        }
+
+        .price-regular {
+            font-size: 18px;
+            margin-top: 6px;
+        }
+
+        .savings-badge {
+            padding: 20px 28px;
+            border-radius: 14px;
+        }
+
+        .savings-label {
+            font-size: 11px;
+        }
+
+        .savings-amount {
+            font-size: 30px;
+            margin-top: 6px;
+        }
+
+        .savings-percent {
+            font-size: 13px;
+        }
+
+        .bundle-items-grid {
+            gap: 18px;
+        }
+
+        .bundle-item {
+            gap: 18px;
+            padding: 18px;
+            border-radius: 14px;
+        }
+
+        .item-image, .item-placeholder {
+            width: 85px;
+            height: 85px;
+            border-radius: 10px;
+        }
+
+        .item-name {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .item-description {
+            font-size: 13px;
+        }
+
+        .item-tags {
+            margin-top: 10px;
+            gap: 10px;
+        }
+
+        .tag {
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+
+        .item-total {
+            min-width: 105px;
+        }
+
+        .item-total-price {
+            font-size: 21px;
+        }
+
+        .item-total-label {
+            font-size: 11px;
+        }
+
+        .summary-section {
+            margin-top: 28px;
+            padding-top: 28px;
+        }
+
+        .summary-row {
+            font-size: 14.5px;
+            margin-bottom: 10px;
+        }
+
+        .summary-row.total {
+            font-size: 24px;
+            margin-top: 14px;
+            padding-top: 14px;
+        }
+
+        .validity-grid {
+            gap: 18px;
+        }
+
+        .validity-card {
+            padding: 24px;
+            border-radius: 14px;
+        }
+
+        .validity-label {
+            font-size: 11px;
+            margin-bottom: 10px;
+        }
+
+        .validity-value {
+            font-size: 19px;
+        }
+
+        .cta-button {
+            padding: 20px;
+            font-size: 18px;
+            border-radius: 14px;
+        }
+
+        .cta-info {
+            font-size: 13px;
+            margin-top: 14px;
+        }
+
+        .empty-state {
+            padding: 50px 18px;
+            font-size: 14.5px;
+        }
+
+        .message-modal {
+            padding: 35px;
+            max-width: 450px;
+        }
+
+        .message-icon {
+            font-size: 56px;
+            margin-bottom: 20px;
+        }
+
+        .message-title {
+            font-size: 24px;
+            margin-bottom: 14px;
+        }
+
+        .message-content {
+            font-size: 14.5px;
+            margin-bottom: 24px;
+        }
+
+        .message-items {
+            padding: 18px;
+            margin-bottom: 24px;
+        }
+
+        .message-btn {
+            padding: 14px 28px;
+            font-size: 14.5px;
+            min-width: 110px;
+        }
+    }
+
+    /* ===== Mobile (max-width: 768px) - Enhanced ===== */
+    @media (max-width: 768px) {
+        .bundle-container {
+            padding: 15px;
+        }
+
+        .back-link {
+            font-size: 0.85rem;
+            margin-bottom: 18px;
+        }
+
+        .hero-banner {
+            padding: 28px 20px;
+            border-radius: 18px;
+            margin-bottom: 24px;
+        }
+
+        .hero-header {
+            gap: 14px;
+            margin-bottom: 18px;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero-icon {
+            font-size: 36px;
+        }
+
+        .hero-title {
+            font-size: 28px;
+        }
+
+        .hero-description {
+            font-size: 15px;
+        }
+
+        .hero-image {
+            max-height: 280px;
+            border-radius: 12px;
+            margin-top: 18px;
+        }
+
+        .card {
+            border-radius: 18px;
+            padding: 24px 18px;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 21px;
+            margin-bottom: 22px;
+            gap: 8px;
+        }
+
+        .card-title i {
+            font-size: 24px;
+        }
+
+        .price-container {
+            gap: 18px;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .price-main {
+            font-size: 42px;
+        }
+
+        .price-regular {
+            font-size: 16px;
+            margin-top: 6px;
+        }
+
+        .savings-badge {
+            padding: 18px 24px;
+            border-radius: 12px;
+            width: 100%;
+        }
+
+        .savings-label {
+            font-size: 10px;
+        }
+
+        .savings-amount {
+            font-size: 28px;
+            margin-top: 6px;
+        }
+
+        .savings-percent {
+            font-size: 12px;
+        }
+
+        .bundle-items-grid {
+            gap: 14px;
+        }
+
+        .bundle-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 14px;
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .item-image, .item-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+        }
+
+        .item-name {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .item-description {
+            font-size: 12px;
+        }
+
+        .item-tags {
+            margin-top: 8px;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .tag {
+            padding: 4px 10px;
+            font-size: 11px;
+        }
+
+        .item-total {
+            text-align: center;
+            min-width: auto;
+            width: 100%;
+        }
+
+        .item-total-price {
+            font-size: 20px;
+        }
+
+        .item-total-label {
+            font-size: 10px;
+        }
+
+        .summary-section {
+            margin-top: 24px;
+            padding-top: 24px;
+        }
+
+        .summary-row {
+            font-size: 13.5px;
+            margin-bottom: 9px;
+        }
+
+        .summary-row.total {
+            font-size: 22px;
+            margin-top: 12px;
+            padding-top: 12px;
+        }
+
+        .validity-grid {
+            gap: 14px;
+            grid-template-columns: 1fr;
+        }
+
+        .validity-card {
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .validity-label {
+            font-size: 10px;
+            margin-bottom: 9px;
+        }
+
+        .validity-value {
+            font-size: 18px;
+        }
+
+        .cta-button {
+            padding: 18px;
+            font-size: 16px;
+            border-radius: 12px;
+        }
+
+        .cta-info {
+            font-size: 12px;
+            margin-top: 12px;
+        }
+
+        .empty-state {
+            padding: 45px 15px;
+            font-size: 13.5px;
+        }
+
+        .message-overlay {
+            padding: 12px;
+        }
+
+        .message-modal {
+            padding: 28px 20px;
+            max-width: none;
+            width: 100%;
+            border-radius: 18px;
+        }
+
+        .message-icon {
+            font-size: 42px;
+            margin-bottom: 18px;
+        }
+
+        .message-title {
+            font-size: 21px;
+            margin-bottom: 12px;
+        }
+
+        .message-content {
+            font-size: 13.5px;
+            margin-bottom: 22px;
+        }
+
+        .message-items {
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 22px;
+        }
+
+        .message-items-title {
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .message-items-list li {
+            padding: 6px 0;
+            font-size: 13px;
+        }
+
+        .message-buttons {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message-btn {
+            padding: 12px 24px;
+            font-size: 13.5px;
+            min-width: auto;
+            width: 100%;
+            border-radius: 10px;
+        }
+    }
 </style>
 
 <div class="bundle-container">

@@ -380,6 +380,333 @@
         font-weight: 700;
         color: #1f2937;
     }
+
+    /* ===== RESPONSIVE DESIGN - 4-TIER BREAKPOINT SYSTEM ===== */
+
+    /* Large Desktop (≥1600px) - 30-40% larger */
+    @media (min-width: 1600px) {
+        .promotion-detail-container {
+            padding: 32px;
+        }
+        .modern-header {
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+        .modern-header h1 {
+            font-size: 44px;
+        }
+        .action-grid {
+            gap: 28px;
+            margin-bottom: 40px;
+        }
+        .content-grid {
+            grid-template-columns: 480px 1fr;
+            gap: 40px;
+        }
+        .info-card {
+            padding: 36px;
+        }
+        .info-card-title {
+            font-size: 24px;
+        }
+    }
+
+    /* Tablet (769px-1199px) - 20-25% smaller */
+    @media (max-width: 1199px) and (min-width: 769px) {
+        .promotion-detail-container {
+            padding: 20px;
+        }
+        .modern-header {
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .modern-header h1 {
+            font-size: 28px;
+        }
+        .header-badge {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        .action-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .action-btn {
+            padding: 20px 18px !important;
+            min-height: 90px !important;
+        }
+        .action-btn-icon {
+            font-size: 28px !important;
+            margin-bottom: 8px !important;
+        }
+        .action-btn-text {
+            font-size: 13px !important;
+        }
+        .content-grid {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+        .image-card {
+            position: relative;
+            top: 0;
+        }
+        .info-card {
+            padding: 20px;
+        }
+        .info-card-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+        }
+        .info-card-title {
+            font-size: 17px;
+        }
+        .discount-number {
+            font-size: 52px;
+        }
+        .discount-label {
+            font-size: 16px;
+        }
+        .promo-code-text {
+            font-size: 26px;
+        }
+        .stat-value {
+            font-size: 20px;
+        }
+    }
+
+    /* Mobile (≤768px) - 35-40% smaller, single column */
+    @media (max-width: 768px) {
+        .promotion-detail-container {
+            padding: 16px;
+        }
+        .modern-header {
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 16px;
+        }
+        .modern-header h1 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        .header-meta {
+            gap: 8px;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .header-badge {
+            padding: 6px 10px;
+            font-size: 11px;
+        }
+        /* Action grid - single column */
+        .action-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .promotion-detail-container .action-grid .action-btn {
+            padding: 20px 16px !important;
+            min-height: 80px !important;
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .action-btn-icon {
+            font-size: 24px !important;
+            margin-bottom: 8px !important;
+        }
+        .action-btn-text {
+            font-size: 13px !important;
+        }
+        /* Content grid - single column */
+        .content-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .image-card {
+            position: relative;
+            top: 0;
+            padding: 16px;
+        }
+        .image-wrapper {
+            aspect-ratio: 16/9;
+        }
+        .no-image-state i {
+            font-size: 48px;
+        }
+        /* Info cards */
+        .info-card {
+            padding: 16px;
+        }
+        .info-card-header {
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+        }
+        .info-card-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+        }
+        .info-card-title {
+            font-size: 16px;
+        }
+        /* Discount showcase */
+        .discount-showcase {
+            padding: 24px 16px;
+        }
+        .discount-number {
+            font-size: 44px;
+            margin-bottom: 10px;
+        }
+        .discount-label {
+            font-size: 14px;
+        }
+        /* Promo code */
+        .promo-code-box {
+            padding: 16px;
+        }
+        .promo-code-text {
+            font-size: 22px;
+            letter-spacing: 1px;
+        }
+        /* Stats grid */
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .stat-item {
+            padding: 12px;
+        }
+        .stat-label {
+            font-size: 10px;
+            margin-bottom: 6px;
+        }
+        .stat-value {
+            font-size: 18px;
+        }
+        /* Date range */
+        .date-range-box {
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px;
+        }
+        .date-range-box > div[style*="font-size: 24px"] {
+            transform: rotate(90deg);
+        }
+        .date-box {
+            padding: 12px;
+        }
+        .date-label {
+            font-size: 11px;
+        }
+        .date-value {
+            font-size: 16px;
+        }
+        /* Status badges */
+        .status-badge {
+            padding: 10px 16px;
+            font-size: 12px;
+        }
+    }
+
+    /* Small Mobile (≤480px) - Ultra compact */
+    @media (max-width: 480px) {
+        .promotion-detail-container {
+            padding: 12px;
+        }
+        .modern-header {
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .modern-header h1 {
+            font-size: 18px;
+        }
+        .header-badge {
+            padding: 5px 8px;
+            font-size: 10px;
+        }
+        .action-grid {
+            gap: 10px;
+        }
+        .promotion-detail-container .action-grid .action-btn {
+            padding: 16px 12px !important;
+            min-height: 70px !important;
+        }
+        .action-btn-icon {
+            font-size: 20px !important;
+            margin-bottom: 6px !important;
+        }
+        .action-btn-text {
+            font-size: 12px !important;
+        }
+        .content-grid {
+            gap: 16px;
+        }
+        .image-card,
+        .info-card {
+            padding: 12px;
+            border-radius: 16px;
+        }
+        .info-card-header {
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+        }
+        .info-card-icon {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+        }
+        .info-card-title {
+            font-size: 14px;
+        }
+        .discount-showcase {
+            padding: 20px 12px;
+        }
+        .discount-number {
+            font-size: 36px;
+        }
+        .discount-label {
+            font-size: 13px;
+        }
+        .promo-code-box {
+            padding: 12px;
+        }
+        .promo-code-text {
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+        .stats-grid {
+            gap: 8px;
+        }
+        .stat-item {
+            padding: 10px;
+        }
+        .stat-label {
+            font-size: 9px;
+        }
+        .stat-value {
+            font-size: 16px;
+        }
+        .date-range-box {
+            padding: 12px;
+            gap: 10px;
+        }
+        .date-box {
+            padding: 10px;
+        }
+        .date-label {
+            font-size: 10px;
+        }
+        .date-value {
+            font-size: 14px;
+        }
+        .status-badge {
+            padding: 8px 12px;
+            font-size: 11px;
+        }
+    }
 </style>
 @endsection
 

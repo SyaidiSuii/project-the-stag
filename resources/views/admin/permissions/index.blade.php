@@ -37,13 +37,13 @@
             <tbody>
                 @foreach($permissions as $permission)
                 <tr>
-                    <td>
+                    <td data-label="Permission Name">
                         <div class="customer-info">
                             <div class="customer-name">{{ ucfirst(str_replace('-', ' ', $permission->name)) }}</div>
                             <div class="permission-code">{{ $permission->name }}</div>
                         </div>
                     </td>
-                    <td>
+                    <td data-label="Assigned Roles">
                         <div class="roles-list">
                             @if($permission->roles->count() > 0)
                             @foreach($permission->roles as $role)
@@ -54,10 +54,10 @@
                             @endif
                         </div>
                     </td>
-                    <td>
+                    <td data-label="Created Date">
                         <div style="font-size: 13px;">{{ $permission->created_at->format('d M Y') }}</div>
                     </td>
-                    <td>
+                    <td data-label="Actions">
                         <div class="table-actions">
                             <a href="{{ route('admin.permissions.show', $permission->id) }}"
                                 class="action-btn view-btn" title="View Details">

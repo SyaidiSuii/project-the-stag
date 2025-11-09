@@ -657,60 +657,6 @@ if (deleteModal) {
     });
 }
 
-// Form validation for delete confirmation
-const deleteAccountForm = document.getElementById('deleteAccountForm');
-if (deleteAccountForm) {
-    deleteAccountForm.addEventListener('submit', function(e) {
-        const confirmInput = document.getElementById('confirm_delete').value;
-        const passwordInput = document.getElementById('delete_password').value;
-
-        if (confirmInput !== 'DELETE') {
-            e.preventDefault();
-            showToast('Please type "DELETE" in capital letters to confirm account deletion.', 'error');
-            return false;
-        }
-
-        if (!passwordInput) {
-            e.preventDefault();
-            showToast('Please enter your password to confirm account deletion.', 'error');
-            return false;
-        }
-
-        e.preventDefault();
-
-        // Use modern confirmation modal
-        if (typeof showConfirm === 'function') {
-            showConfirm(
-                'Delete Account?',
-                'Are you absolutely sure you want to delete your account? This action cannot be undone.',
-                'danger',
-                'Delete Account',
-                'Cancel'
-            ).then(confirmed => {
-                if (confirmed) {
-                    // Show loading state
-                    const submitBtn = document.getElementById('confirmDeleteBtn');
-                    if (submitBtn) {
-                        submitBtn.disabled = true;
-                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
-                    }
-                    // Submit form
-                    e.target.submit();
-                }
-            });
-        } else {
-            // Fallback to native confirm
-            if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
-                const submitBtn = document.getElementById('confirmDeleteBtn');
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
-                }
-                e.target.submit();
-            }
-        }
-    });
-
 // Logout confirmation with toast
 function confirmLogout() {
     const logoutForm = document.getElementById('logoutForm');
@@ -786,6 +732,61 @@ function confirmLogout() {
             confirmToast.remove();
         }
     }, 10000);
+}
+
+// Form validation for delete confirmation
+const deleteAccountForm = document.getElementById('deleteAccountForm');
+if (deleteAccountForm) {
+    deleteAccountForm.addEventListener('submit', function(e) {
+        const confirmInput = document.getElementById('confirm_delete').value;
+        const passwordInput = document.getElementById('delete_password').value;
+
+        if (confirmInput !== 'DELETE') {
+            e.preventDefault();
+            showToast('Please type "DELETE" in capital letters to confirm account deletion.', 'error');
+            return false;
+        }
+
+        if (!passwordInput) {
+            e.preventDefault();
+            showToast('Please enter your password to confirm account deletion.', 'error');
+            return false;
+        }
+
+        e.preventDefault();
+
+        // Use modern confirmation modal
+        if (typeof showConfirm === 'function') {
+            showConfirm(
+                'Delete Account?',
+                'Are you absolutely sure you want to delete your account? This action cannot be undone.',
+                'danger',
+                'Delete Account',
+                'Cancel'
+            ).then(confirmed => {
+                if (confirmed) {
+                    // Show loading state
+                    const submitBtn = document.getElementById('confirmDeleteBtn');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+                    }
+                    // Submit form
+                    e.target.submit();
+                }
+            });
+        } else {
+            // Fallback to native confirm
+            if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
+                const submitBtn = document.getElementById('confirmDeleteBtn');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+                }
+                e.target.submit();
+            }
+        }
+    });
 }
 
 // Custom password toggle for customer account page (eye icon only, no lock icon)

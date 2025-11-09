@@ -376,6 +376,367 @@
     border-color: #10b981;
 }
 
+/* ===== Responsive Design ===== */
+
+/* Large Desktop (1600px+) - 30-40% increase */
+@media (min-width: 1600px) {
+    .reviews-container {
+        max-width: 1500px;
+        padding: 2.6rem 1.3rem;
+    }
+
+    .reviews-header h1 {
+        font-size: 3.2rem;
+    }
+
+    .reviews-header p {
+        font-size: 1.4rem;
+    }
+
+    .reviews-stats {
+        padding: 3.2rem;
+        margin-bottom: 4rem;
+    }
+
+    .stat-card {
+        padding: 0 2.6rem;
+    }
+
+    .stat-number {
+        font-size: 4.5rem;
+    }
+
+    .stat-label {
+        font-size: 1.1rem;
+    }
+
+    .review-card {
+        padding: 2.6rem;
+        margin-bottom: 2rem;
+    }
+
+    .review-item-info h3 {
+        font-size: 1.9rem;
+    }
+
+    .stars {
+        font-size: 2.2rem;
+    }
+
+    .review-text {
+        font-size: 1.25rem;
+        padding: 1.6rem;
+    }
+
+    .back-button, .btn-primary {
+        padding: 1.1rem 2.2rem;
+        font-size: 1.2rem;
+    }
+}
+
+/* Tablet (769px - 1199px) - 20-25% reduction */
+@media (max-width: 1199px) and (min-width: 769px) {
+    .reviews-container {
+        padding: 1.8rem 0.9rem;
+    }
+
+    .reviews-header {
+        margin-bottom: 2.5rem;
+    }
+
+    .reviews-header h1 {
+        font-size: 2.2rem;
+        gap: 0.65rem;
+    }
+
+    .reviews-header p {
+        font-size: 1rem;
+    }
+
+    .reviews-stats {
+        border-radius: 18px;
+        padding: 2.2rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+        padding: 0 1.8rem;
+    }
+
+    .stat-number {
+        font-size: 3rem;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+    }
+
+    .review-card {
+        border-radius: 18px;
+        padding: 1.8rem;
+        margin-bottom: 1.3rem;
+    }
+
+    .review-header {
+        margin-bottom: 1.3rem;
+        padding-bottom: 1.3rem;
+    }
+
+    .review-item-info h3 {
+        font-size: 1.3rem;
+        margin-bottom: 0.45rem;
+    }
+
+    .review-order-link {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.65rem;
+    }
+
+    .review-rating {
+        gap: 0.65rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .stars {
+        font-size: 1.5rem;
+    }
+
+    .rating-value {
+        font-size: 1rem;
+    }
+
+    .review-date {
+        font-size: 0.8rem;
+    }
+
+    .review-text {
+        font-size: 0.9rem;
+        margin-bottom: 1.1rem;
+        padding: 1.1rem;
+    }
+
+    .review-badges {
+        gap: 0.65rem;
+    }
+
+    .badge {
+        padding: 0.45rem 0.9rem;
+        font-size: 0.75rem;
+        border-radius: 10px;
+    }
+
+    .admin-response {
+        padding: 1.1rem 1.3rem;
+        margin-top: 1.1rem;
+        border-radius: 10px;
+    }
+
+    .admin-response-header {
+        font-size: 0.85rem;
+        margin-bottom: 0.65rem;
+    }
+
+    .admin-response-text {
+        font-size: 0.85rem;
+    }
+
+    .no-reviews {
+        padding: 4.5rem 1.8rem;
+        border-radius: 20px;
+    }
+
+    .no-reviews-icon {
+        font-size: 4.5rem;
+        margin-bottom: 1.3rem;
+    }
+
+    .no-reviews h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .back-button {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.85rem;
+        margin-bottom: 1.8rem;
+    }
+
+    .btn-primary {
+        padding: 0.9rem 1.8rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Mobile (max-width: 768px) - Enhanced */
+@media (max-width: 768px) {
+    .reviews-container {
+        padding: 1.5rem 0.8rem;
+    }
+
+    .reviews-header {
+        margin-bottom: 2.2rem;
+    }
+
+    .reviews-header h1 {
+        font-size: 1.8rem;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .reviews-header p {
+        font-size: 0.95rem;
+    }
+
+    .reviews-stats {
+        flex-direction: column;
+        gap: 1.8rem;
+        padding: 1.8rem 1.2rem;
+        margin-bottom: 2.2rem;
+        border-radius: 16px;
+    }
+
+    .stat-card {
+        padding: 0;
+    }
+
+    .stat-card:not(:last-child)::after {
+        display: none;
+    }
+
+    .stat-number {
+        font-size: 2.8rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+    }
+
+    .review-card {
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .review-header {
+        flex-direction: column;
+        gap: 0.9rem;
+        align-items: flex-start;
+        margin-bottom: 1.2rem;
+        padding-bottom: 1.2rem;
+    }
+
+    .review-item-info h3 {
+        font-size: 1.15rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .review-order-link {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+        border-radius: 6px;
+    }
+
+    .review-rating {
+        gap: 0.6rem;
+        margin-bottom: 0.85rem;
+    }
+
+    .stars {
+        font-size: 1.35rem;
+    }
+
+    .rating-value {
+        font-size: 0.95rem;
+    }
+
+    .review-date {
+        font-size: 0.75rem;
+        gap: 0.3rem;
+    }
+
+    .review-text {
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: 10px;
+    }
+
+    .review-text::before {
+        font-size: 2.2rem;
+        top: 0.4rem;
+        left: 0.4rem;
+    }
+
+    .review-badges {
+        gap: 0.6rem;
+    }
+
+    .badge {
+        padding: 0.4rem 0.85rem;
+        font-size: 0.7rem;
+        border-radius: 10px;
+    }
+
+    .admin-response {
+        padding: 1rem 1.2rem;
+        margin-top: 1rem;
+        border-radius: 10px;
+    }
+
+    .admin-response-header {
+        font-size: 0.8rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .admin-response-text {
+        font-size: 0.8rem;
+    }
+
+    .no-reviews {
+        padding: 4rem 1.5rem;
+        border-radius: 18px;
+    }
+
+    .no-reviews-icon {
+        font-size: 4.2rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .no-reviews h3 {
+        font-size: 1.4rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .no-reviews p {
+        font-size: 0.9rem;
+    }
+
+    .back-button {
+        width: 100%;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.8rem;
+        margin-bottom: 1.6rem;
+        border-radius: 10px;
+    }
+
+    .btn-primary {
+        padding: 0.85rem 1.7rem;
+        font-size: 0.85rem;
+        border-radius: 10px;
+    }
+
+    .pagination {
+        gap: 0.4rem;
+        margin-top: 2.5rem;
+    }
+
+    .pagination .page-link {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+        border-radius: 8px;
+    }
+}
 @media (max-width: 768px) {
     .reviews-header h1 {
         font-size: 2rem;

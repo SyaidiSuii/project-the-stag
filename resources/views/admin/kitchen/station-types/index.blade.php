@@ -5,6 +5,220 @@
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/admin/kitchen-dashboard.css') }}">
+<style>
+/* Station Types specific styles */
+.admin-section {
+    margin-bottom: 24px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.section-controls {
+    display: flex;
+    gap: 12px;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablet View (769px - 1199px) */
+@media (max-width: 1199px) and (min-width: 769px) {
+    .section-header {
+        margin-bottom: 18px;
+    }
+
+    .section-title {
+        font-size: 18px;
+    }
+
+    .section-controls {
+        gap: 10px;
+    }
+
+    .section-controls .admin-btn {
+        padding: 8px 16px !important;
+        font-size: 13px !important;
+    }
+
+    .admin-table thead th {
+        padding: 12px 16px;
+        font-size: 11px;
+    }
+
+    .admin-table tbody td {
+        padding: 14px 16px;
+        font-size: 13px;
+    }
+
+    .admin-table tbody td span[style*="font-size: 24px"] {
+        font-size: 20px !important;
+    }
+}
+
+/* Mobile View (≤768px) */
+@media (max-width: 768px) {
+    /* Section Header */
+    .section-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px;
+        margin-bottom: 16px !important;
+    }
+
+    .section-title {
+        font-size: 18px !important;
+    }
+
+    .section-controls {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .section-controls .admin-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 8px 16px !important;
+        font-size: 13px !important;
+    }
+
+    /* Table - Scrollable */
+    .admin-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .admin-table {
+        min-width: 650px;
+    }
+
+    .admin-table thead th {
+        padding: 10px 12px;
+        font-size: 10px;
+        white-space: nowrap;
+    }
+
+    .admin-table tbody td {
+        padding: 12px;
+        font-size: 12px;
+    }
+
+    /* Icon size */
+    .admin-table tbody td span[style*="font-size: 24px"] {
+        font-size: 20px !important;
+    }
+
+    /* Badges */
+    .admin-table .badge {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+
+    /* Action buttons */
+    .admin-table tbody td > div {
+        gap: 6px !important;
+    }
+
+    .admin-table .admin-btn {
+        padding: 6px 10px !important;
+        font-size: 11px !important;
+    }
+
+    .admin-table .admin-btn i {
+        font-size: 11px;
+    }
+
+    /* Empty State */
+    .admin-table tbody td[colspan] > div {
+        padding: 40px 16px !important;
+    }
+
+    .admin-table tbody td[colspan] i {
+        font-size: 40px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .admin-table tbody td[colspan] p {
+        font-size: 12px !important;
+    }
+}
+
+/* Small Mobile (≤480px) */
+@media (max-width: 480px) {
+    .section-title {
+        font-size: 16px !important;
+    }
+
+    .admin-table {
+        min-width: 600px;
+        font-size: 11px;
+    }
+
+    .admin-table thead th {
+        padding: 8px 10px;
+        font-size: 9px;
+    }
+
+    .admin-table tbody td {
+        padding: 10px;
+        font-size: 11px;
+    }
+
+    .admin-table tbody td span[style*="font-size: 24px"] {
+        font-size: 18px !important;
+    }
+}
+
+/* Large Desktop (≥1600px) */
+@media (min-width: 1600px) {
+    .section-header {
+        margin-bottom: 32px;
+    }
+
+    .section-title {
+        font-size: 24px;
+    }
+
+    .section-controls .admin-btn {
+        padding: 12px 24px !important;
+        font-size: 15px !important;
+    }
+
+    .admin-table thead th {
+        padding: 18px 24px;
+        font-size: 14px;
+    }
+
+    .admin-table tbody td {
+        padding: 20px 24px;
+        font-size: 16px;
+    }
+
+    .admin-table tbody td span[style*="font-size: 24px"] {
+        font-size: 28px !important;
+    }
+
+    .admin-table .badge {
+        padding: 6px 14px;
+        font-size: 13px;
+    }
+
+    .admin-table .admin-btn {
+        padding: 10px 16px !important;
+    }
+}
+</style>
 @endsection
 
 @section('content')

@@ -46,12 +46,13 @@ class KitchenStation extends Model
     }
 
     /**
-     * Get active/pending kitchen loads
+     * Get active/pending kitchen loads (TODAY ONLY)
      */
     public function activeLoads()
     {
         return $this->kitchenLoads()
-            ->whereIn('status', ['pending', 'in_progress']);
+            ->whereIn('status', ['pending', 'in_progress'])
+            ->whereDate('created_at', today());
     }
 
     /**
@@ -71,12 +72,15 @@ class KitchenStation extends Model
     }
 
     /**
-     * Get pending assignments
+     * Get pending assignments (TODAY ONLY)
      */
     public function pendingAssignments()
     {
         return $this->stationAssignments()
-            ->whereIn('status', ['assigned', 'started']);
+            ->whereIn('status', ['assigned', 'started'])
+            ->whereHas('order', function ($q) {
+                $q->whereDate('order_time', today());
+            });
     }
 
     /**
@@ -88,18 +92,36 @@ class KitchenStation extends Model
     }
 
     /**
-     * Get load percentage
+     * Get load percentage (TODAY ONLY - calculated from today's active loads)
      */
     public function getLoadPercentageAttribute()
     {
         if ($this->max_capacity == 0) {
             return 0;
         }
-        return round(($this->current_load / $this->max_capacity) * 100, 2);
+        
+        // Calculate today's load from active kitchen loads instead of current_load field
+        $todayLoad = $this->kitchenLoads()
+            ->whereIn('status', ['pending', 'in_progress'])
+            ->whereDate('created_at', today())
+            ->sum('load_points');
+        
+        return round(($todayLoad / $this->max_capacity) * 100, 2);
     }
 
     /**
-     * Check if station is overloaded (>= 85%)
+     * Get today's current load (calculated from active loads)
+     */
+    public function getTodayLoadAttribute()
+    {
+        return $this->kitchenLoads()
+            ->whereIn('status', ['pending', 'in_progress'])
+            ->whereDate('created_at', today())
+            ->sum('load_points');
+    }
+
+    /**
+     * Check if station is overloaded (>= 85%) based on today's load
      */
     public function isOverloaded()
     {
@@ -107,7 +129,7 @@ class KitchenStation extends Model
     }
 
     /**
-     * Check if station is approaching capacity (>= 70%)
+     * Check if station is approaching capacity (>= 70%) based on today's load
      */
     public function isApproachingCapacity()
     {

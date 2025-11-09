@@ -378,20 +378,417 @@
             font-size: 1rem;
         }
 
-        @media (max-width: 640px) {
+        /* ===== Responsive Design - 4-Tier Breakpoint System ===== */
+        
+        /* Tablet (769px - 1199px) - 20-25% reduction */
+        @media (min-width: 769px) and (max-width: 1199px) {
+            body {
+                padding: 16px;
+            }
+            
+            .container {
+                max-width: 720px;
+            }
+            
+            .header {
+                padding: 24px;
+                margin-bottom: 24px;
+                border-radius: 16px;
+            }
+            
+            .header h1 {
+                font-size: 1.65rem;
+                margin-bottom: 8px;
+            }
+            
+            .header h1 i {
+                font-size: 1.5rem;
+            }
+            
+            .header p {
+                font-size: 0.9rem;
+            }
+            
+            .loading {
+                padding: 48px 16px;
+            }
+            
+            .loading i {
+                font-size: 2.5rem;
+            }
+            
+            .error-message {
+                padding: 48px 16px;
+            }
+            
+            .error-message i {
+                font-size: 3.3rem;
+                margin-bottom: 16px;
+            }
+            
+            .error-message h2 {
+                font-size: 1.25rem;
+                margin-bottom: 8px;
+            }
+            
+            .order-card {
+                padding: 20px;
+                margin-bottom: 16px;
+                border-radius: 16px;
+            }
+            
+            .order-header {
+                margin-bottom: 16px;
+                padding-bottom: 14px;
+            }
+            
+            .order-info h3 {
+                font-size: 1.1rem;
+                margin-bottom: 6px;
+            }
+            
+            .order-date {
+                font-size: 0.8rem;
+                gap: 5px;
+            }
+            
+            .order-statuses {
+                gap: 7px;
+            }
+            
+            .order-status,
+            .payment-status {
+                padding: 7px 14px;
+                border-radius: 16px;
+                font-size: 0.78rem;
+                gap: 5px;
+            }
+            
+            .order-items {
+                margin: 16px 0;
+            }
+            
+            .order-items h4 {
+                font-size: 0.9rem;
+                margin-bottom: 10px;
+            }
+            
+            .item-list {
+                gap: 8px;
+            }
+            
+            .item {
+                padding: 10px 14px;
+                border-radius: 10px;
+            }
+            
+            .item-details {
+                gap: 3px;
+            }
+            
+            .item-name {
+                font-size: 0.95rem;
+            }
+            
+            .item-qty {
+                font-size: 0.78rem;
+            }
+            
+            .item-price {
+                font-size: 0.95rem;
+            }
+            
+            .order-total {
+                padding: 16px 0;
+                margin-top: 16px;
+            }
+            
+            .total-label {
+                font-size: 1rem;
+            }
+            
+            .total-amount {
+                font-size: 1.35rem;
+            }
+            
+            .estimated-time-card {
+                padding: 16px;
+                margin: 16px 0;
+                border-radius: 14px;
+            }
+            
+            .estimated-time-card i {
+                font-size: 2.1rem;
+                margin-bottom: 10px;
+            }
+            
+            .estimated-time-label {
+                font-size: 0.9rem;
+                margin-bottom: 7px;
+            }
+            
+            .estimated-time-value {
+                font-size: 1.2rem;
+            }
+            
+            .table-info-card {
+                padding: 16px;
+                margin: 16px 0;
+                border-radius: 14px;
+                gap: 14px;
+            }
+            
+            .table-info-card i {
+                font-size: 2.1rem;
+            }
+            
+            .table-info-label {
+                font-size: 0.8rem;
+            }
+            
+            .table-info-value {
+                font-size: 1.25rem;
+            }
+            
+            .refresh-btn {
+                padding: 14px;
+                border-radius: 10px;
+                font-size: 0.9rem;
+                gap: 9px;
+                margin-top: 16px;
+            }
+            
+            .back-btn {
+                top: 16px;
+                left: 16px;
+                padding: 9px 14px;
+                border-radius: 9px;
+                font-size: 0.8rem;
+                gap: 7px;
+            }
+            
+            .back-btn i {
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Mobile (max-width: 768px) - 35-40% reduction */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+            
+            .container {
+                max-width: 100%;
+            }
+            
+            .header {
+                padding: 20px;
+                margin-bottom: 20px;
+                border-radius: 14px;
+            }
+            
+            .header h1 {
+                font-size: 1.3rem;
+                margin-bottom: 6px;
+            }
+            
+            .header h1 i {
+                font-size: 1.2rem;
+            }
+            
+            .header p {
+                font-size: 0.85rem;
+            }
+            
+            .loading {
+                padding: 40px 12px;
+            }
+            
+            .loading i {
+                font-size: 2rem;
+            }
+            
+            .loading p {
+                margin-top: 16px;
+                font-size: 0.9rem;
+            }
+            
+            .error-message {
+                padding: 40px 12px;
+            }
+            
+            .error-message i {
+                font-size: 2.6rem;
+                margin-bottom: 12px;
+            }
+            
+            .error-message h2 {
+                font-size: 1.1rem;
+                margin-bottom: 6px;
+            }
+            
+            .error-message p {
+                font-size: 0.9rem;
+            }
+            
+            .order-card {
+                padding: 16px;
+                margin-bottom: 12px;
+                border-radius: 14px;
+            }
+            
             .order-header {
                 flex-direction: column;
-                gap: 12px;
+                gap: 10px;
+                margin-bottom: 14px;
+                padding-bottom: 12px;
             }
-
+            
+            .order-info h3 {
+                font-size: 1rem;
+                margin-bottom: 5px;
+            }
+            
+            .order-date {
+                font-size: 0.75rem;
+                gap: 4px;
+            }
+            
             .order-statuses {
                 align-items: flex-start;
+                gap: 6px;
+                width: 100%;
             }
-
+            
+            .order-status,
+            .payment-status {
+                padding: 6px 12px;
+                border-radius: 14px;
+                font-size: 0.7rem;
+                gap: 4px;
+            }
+            
+            .order-items {
+                margin: 14px 0;
+            }
+            
+            .order-items h4 {
+                font-size: 0.85rem;
+                margin-bottom: 8px;
+            }
+            
+            .item-list {
+                gap: 7px;
+            }
+            
             .item {
                 flex-direction: column;
                 align-items: flex-start;
+                gap: 6px;
+                padding: 10px 12px;
+                border-radius: 9px;
+            }
+            
+            .item-details {
+                gap: 2px;
+                width: 100%;
+            }
+            
+            .item-name {
+                font-size: 0.9rem;
+            }
+            
+            .item-qty {
+                font-size: 0.75rem;
+            }
+            
+            .item-price {
+                font-size: 0.95rem;
+                align-self: flex-end;
+            }
+            
+            .order-total {
+                padding: 14px 0;
+                margin-top: 14px;
+                flex-direction: column;
+                align-items: flex-start;
                 gap: 8px;
+            }
+            
+            .total-label {
+                font-size: 0.9rem;
+            }
+            
+            .total-amount {
+                font-size: 1.2rem;
+                align-self: flex-end;
+            }
+            
+            .estimated-time-card {
+                padding: 14px;
+                margin: 14px 0;
+                border-radius: 12px;
+            }
+            
+            .estimated-time-card i {
+                font-size: 1.8rem;
+                margin-bottom: 8px;
+            }
+            
+            .estimated-time-label {
+                font-size: 0.8rem;
+                margin-bottom: 6px;
+            }
+            
+            .estimated-time-value {
+                font-size: 1.05rem;
+            }
+            
+            .table-info-card {
+                padding: 14px;
+                margin: 14px 0;
+                border-radius: 12px;
+                gap: 12px;
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .table-info-card i {
+                font-size: 1.8rem;
+            }
+            
+            .table-info-text {
+                text-align: center;
+            }
+            
+            .table-info-label {
+                font-size: 0.75rem;
+            }
+            
+            .table-info-value {
+                font-size: 1.1rem;
+            }
+            
+            .refresh-btn {
+                padding: 12px;
+                border-radius: 9px;
+                font-size: 0.85rem;
+                gap: 8px;
+                margin-top: 14px;
+            }
+            
+            .back-btn {
+                top: 12px;
+                left: 12px;
+                padding: 8px 12px;
+                border-radius: 8px;
+                font-size: 0.75rem;
+                gap: 6px;
+            }
+            
+            .back-btn i {
+                font-size: 0.85rem;
             }
         }
     </style>
