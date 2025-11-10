@@ -363,6 +363,8 @@ Route::prefix('menu-items')->group(function () {
             })
         ]);
     });
+});
+
 // FCM Notification Routes - Support both web session and API token auth
 Route::prefix('fcm')->middleware('auth:sanctum,web')->group(function () {
     Route::post('/register', [\App\Http\Controllers\NotificationController::class, 'registerDevice']);
