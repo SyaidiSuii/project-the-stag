@@ -145,6 +145,10 @@ class MenuController extends Controller
             'session_code' => 'required|exists:table_qrcodes,session_code',
             'menu_item_id' => 'required|exists:menu_items,id',
             'quantity' => 'required|integer|min:1|max:999',
+            'selectedAddons' => 'nullable|array',
+            'selectedAddons.*.id' => 'required|exists:menu_item_addons,id',
+            'selectedAddons.*.name' => 'required|string',
+            'selectedAddons.*.price' => 'required|numeric|min:0',
         ]);
 
         $session = TableQrcode::where('session_code', $request->session_code)
@@ -175,6 +179,7 @@ class MenuController extends Controller
                 'price' => $menuItem->price,
                 'quantity' => $request->quantity,
                 'image' => $menuItem->image,
+                'selectedAddons' => $request->selectedAddons ?? [], // Store selected add-ons
             ];
         }
 
@@ -187,6 +192,7 @@ class MenuController extends Controller
             'message' => 'Item added to cart',
             'cart_count' => array_sum(array_column($cart, 'quantity')),
             'cart_total' => $cartTotal,
+            'cartCount' => array_sum(array_column($cart, 'quantity')), // Also return camelCase for JS
         ]);
     }
 
@@ -418,7 +424,7 @@ class MenuController extends Controller
 
         // Create order items
         foreach ($cart as $item) {
-            OrderItem::create([
+            $orderItem = OrderItem::create([
                 'order_id' => $order->id,
                 'menu_item_id' => $item['id'],
                 'quantity' => $item['quantity'],
@@ -427,6 +433,18 @@ class MenuController extends Controller
                 'total_price' => $item['price'] * $item['quantity'],
                 'item_status' => 'pending', // Use item_status instead of status
             ]);
+
+            // Save selected add-ons for this order item
+            if (isset($item['selectedAddons']) && is_array($item['selectedAddons'])) {
+                foreach ($item['selectedAddons'] as $addon) {
+                    \App\Models\MenuCustomization::create([
+                        'order_item_id' => $orderItem->id,
+                        'customization_type' => 'addon',
+                        'customization_value' => $addon['name'],
+                        'additional_price' => $addon['price'],
+                    ]);
+                }
+            }
         }
 
         // Distribute order to kitchen stations automatically
@@ -566,7 +584,16 @@ class MenuController extends Controller
     private function calculateCartTotal($cart)
     {
         $total = array_sum(array_map(function ($item) {
-            return $item['price'] * $item['quantity'];
+            $itemPrice = $item['price'];
+
+            // Add add-ons prices if present
+            if (isset($item['selectedAddons']) && is_array($item['selectedAddons'])) {
+                foreach ($item['selectedAddons'] as $addon) {
+                    $itemPrice += $addon['price'];
+                }
+            }
+
+            return $itemPrice * $item['quantity'];
         }, $cart));
 
         // Round to 2 decimal places for currency

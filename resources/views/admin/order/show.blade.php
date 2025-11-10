@@ -1053,6 +1053,20 @@
                                             </div>
                                         </div>
                                     @endif
+                                    @php
+                                        $addons = $item->customizations()->where('customization_type', 'addon')->get();
+                                    @endphp
+                                    @if($addons->count() > 0)
+                                        <div style="margin-top: 12px; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 12px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                                            <div style="display: flex; align-items: start; gap: 8px;">
+                                                <i class="fas fa-puzzle-piece" style="color: #2563eb; font-size: 14px; margin-top: 2px;"></i>
+                                                <div style="flex: 1;">
+                                                    <div style="color: #1e40af; font-weight: 600; font-size: 13px; margin-bottom: 4px;">Add-ons:</div>
+                                                    <span style="color: #1e3a8a; font-size: 14px;">{{ $addons->pluck('customization_value')->join(', ') }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
                                 <div style="text-align: right; min-width: 120px;">
                                     <div style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px;">SUBTOTAL</div>

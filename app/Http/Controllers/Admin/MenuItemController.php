@@ -191,7 +191,9 @@ class MenuItemController extends Controller
             ->orderBy('name')
             ->get();
 
-        $menuItem->load('category');
+        $menuItem->load(['category', 'addons' => function($query) {
+            $query->orderBy('sort_order')->orderBy('name');
+        }]);
         $selectedCategoryId = $menuItem->category_id;
 
         return view('admin.menu-items.form', compact('menuItem', 'categories', 'selectedCategoryId'));
@@ -251,8 +253,47 @@ class MenuItemController extends Controller
 
         $menuItem->update($validated);
 
+        // Handle add-ons
+        if ($request->has('addons')) {
+            $this->syncAddons($menuItem, $request->input('addons', []), $request->input('delete_addons', []));
+        }
+
         return redirect()->route('admin.menu-items.index')
                         ->with('message', 'Menu item updated successfully');
+    }
+
+    /**
+     * Sync add-ons for a menu item
+     */
+    private function syncAddons(MenuItem $menuItem, array $addons, array $deleteAddonIds = [])
+    {
+        // Delete marked add-ons
+        if (!empty($deleteAddonIds)) {
+            \App\Models\MenuItemAddon::whereIn('id', $deleteAddonIds)
+                ->where('menu_item_id', $menuItem->id)
+                ->delete();
+        }
+
+        // Update or create add-ons
+        foreach ($addons as $addonData) {
+            $addonId = $addonData['id'] ?? null;
+            $data = [
+                'name' => $addonData['name'],
+                'price' => $addonData['price'] ?? 0.00,
+                'sort_order' => $addonData['sort_order'] ?? 0,
+                'is_available' => isset($addonData['is_available']) ? true : false,
+            ];
+
+            if ($addonId) {
+                // Update existing addon
+                \App\Models\MenuItemAddon::where('id', $addonId)
+                    ->where('menu_item_id', $menuItem->id)
+                    ->update($data);
+            } else {
+                // Create new addon
+                $menuItem->addons()->create($data);
+            }
+        }
     }
 
     /**

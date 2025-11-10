@@ -109,6 +109,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Enable booking buttons
             updateBookingButtonsState();
+
+            // Automatically show booking sidebar when table is selected
+            const sidebar = document.getElementById("bookingSidebar");
+            const overlay = document.getElementById("sidebarOverlay");
+            const floatingBtn = document.getElementById("floatingBookingBtn");
+            const floatingBtnText = document.getElementById("floatingButtonText");
+
+            if (sidebar && overlay) {
+                sidebar.classList.add("active");
+                overlay.classList.add("active");
+                document.body.style.overflow = "hidden";
+
+                // Update floating button text to show selected table
+                if (floatingBtn && floatingBtnText) {
+                    floatingBtnText.textContent = `Table ${tableId}`;
+                }
+            }
         });
     });
 
@@ -827,9 +844,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (isActive) {
             bookingSidebar.classList.remove("active");
             sidebarOverlay.classList.remove("active");
+            // Restore body scrolling when sidebar closes
+            document.body.style.overflow = "";
         } else {
             bookingSidebar.classList.add("active");
             sidebarOverlay.classList.add("active");
+            // Prevent body scrolling when sidebar opens
+            document.body.style.overflow = "hidden";
         }
     }
 

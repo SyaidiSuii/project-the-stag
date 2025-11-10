@@ -429,6 +429,15 @@
                             </div>
                             @endif
 
+                            @php
+                                $addons = $item->customizations()->where('customization_type', 'addon')->get();
+                            @endphp
+                            @if($addons->count() > 0)
+                            <div style="font-size: 12px; color: #3b82f6; margin-top: 6px; font-style: italic;">
+                                <i class="fas fa-puzzle-piece"></i> {{ $addons->pluck('customization_value')->join(', ') }}
+                            </div>
+                            @endif
+
                             {{-- Show which station this item is assigned to (only in All Stations view) --}}
                             @if(!$stationId)
                                 @php

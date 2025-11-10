@@ -297,6 +297,79 @@
         </div>
         @endif
 
+        {{-- Add-ons Management Section --}}
+        @if($menuItem->id)
+        <div class="form-section mt-4">
+            <div class="section-header-addon">
+                <h3 class="section-title-addon">
+                    <i class="fas fa-puzzle-piece"></i>
+                    Menu Item Add-ons
+                </h3>
+                <p class="section-description">Define optional add-ons that customers can select when ordering this item.</p>
+            </div>
+
+            <div id="addons-container">
+                @foreach($menuItem->addons as $index => $addon)
+                <div class="addon-item" data-index="{{ $index }}">
+                    <input type="hidden" name="addons[{{ $index }}][id]" value="{{ $addon->id }}">
+                    <div class="addon-row">
+                        <div class="addon-field">
+                            <label class="addon-label">Add-on Name *</label>
+                            <input
+                                type="text"
+                                name="addons[{{ $index }}][name]"
+                                class="form-control"
+                                value="{{ old("addons.{$index}.name", $addon->name) }}"
+                                placeholder="e.g., Extra Rice, Add Egg"
+                                required>
+                        </div>
+                        <div class="addon-field">
+                            <label class="addon-label">Price (RM)</label>
+                            <input
+                                type="number"
+                                name="addons[{{ $index }}][price]"
+                                class="form-control"
+                                value="{{ old("addons.{$index}.price", $addon->price) }}"
+                                step="0.01"
+                                min="0"
+                                placeholder="0.00">
+                        </div>
+                        <div class="addon-field">
+                            <label class="addon-label">Sort Order</label>
+                            <input
+                                type="number"
+                                name="addons[{{ $index }}][sort_order]"
+                                class="form-control"
+                                value="{{ old("addons.{$index}.sort_order", $addon->sort_order) }}"
+                                min="0"
+                                placeholder="0">
+                        </div>
+                        <div class="addon-field-checkbox">
+                            <label class="checkbox-label-addon">
+                                <input
+                                    type="checkbox"
+                                    name="addons[{{ $index }}][is_available]"
+                                    value="1"
+                                    {{ old("addons.{$index}.is_available", $addon->is_available) ? 'checked' : '' }}>
+                                <span>Available</span>
+                            </label>
+                        </div>
+                        <div class="addon-actions">
+                            <button type="button" class="btn-remove-addon" onclick="removeAddon(this)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            <button type="button" class="btn-add-addon" onclick="addNewAddon()">
+                <i class="fas fa-plus"></i> Add New Add-on
+            </button>
+        </div>
+        @endif
+
         <div class="form-actions">
             <button type="submit" class="btn-save">
                 <i class="fas fa-save"></i>
@@ -327,5 +400,221 @@
         };
         reader.readAsDataURL(event.target.files[0]);
     }
+
+    // Add-ons Management Functions
+    let addonIndex = {{ $menuItem->addons->count() ?? 0 }};
+
+    function addNewAddon() {
+        const container = document.getElementById('addons-container');
+        const newAddon = document.createElement('div');
+        newAddon.className = 'addon-item';
+        newAddon.dataset.index = addonIndex;
+        newAddon.innerHTML = `
+            <div class="addon-row">
+                <div class="addon-field">
+                    <label class="addon-label">Add-on Name *</label>
+                    <input
+                        type="text"
+                        name="addons[${addonIndex}][name]"
+                        class="form-control"
+                        placeholder="e.g., Extra Rice, Add Egg"
+                        required>
+                </div>
+                <div class="addon-field">
+                    <label class="addon-label">Price (RM)</label>
+                    <input
+                        type="number"
+                        name="addons[${addonIndex}][price]"
+                        class="form-control"
+                        step="0.01"
+                        min="0"
+                        value="0.00"
+                        placeholder="0.00">
+                </div>
+                <div class="addon-field">
+                    <label class="addon-label">Sort Order</label>
+                    <input
+                        type="number"
+                        name="addons[${addonIndex}][sort_order]"
+                        class="form-control"
+                        min="0"
+                        value="0"
+                        placeholder="0">
+                </div>
+                <div class="addon-field-checkbox">
+                    <label class="checkbox-label-addon">
+                        <input
+                            type="checkbox"
+                            name="addons[${addonIndex}][is_available]"
+                            value="1"
+                            checked>
+                        <span>Available</span>
+                    </label>
+                </div>
+                <div class="addon-actions">
+                    <button type="button" class="btn-remove-addon" onclick="removeAddon(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        container.appendChild(newAddon);
+        addonIndex++;
+    }
+
+    function removeAddon(button) {
+        const addonItem = button.closest('.addon-item');
+        const addonId = addonItem.querySelector('input[name*="[id]"]');
+
+        if (addonId && addonId.value) {
+            // If addon has an ID (exists in database), mark for deletion
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'delete_addons[]';
+            input.value = addonId.value;
+            document.querySelector('form').appendChild(input);
+        }
+
+        // Remove the addon row
+        addonItem.remove();
+    }
 </script>
+
+<style>
+    .form-section {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 24px;
+        margin-top: 24px;
+    }
+
+    .section-header-addon {
+        margin-bottom: 20px;
+    }
+
+    .section-title-addon {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-description {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    #addons-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .addon-item {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 16px;
+    }
+
+    .addon-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr auto auto;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .addon-field {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .addon-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 6px;
+    }
+
+    .addon-field-checkbox {
+        display: flex;
+        align-items: center;
+        padding-bottom: 8px;
+    }
+
+    .checkbox-label-addon {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        color: #374151;
+    }
+
+    .checkbox-label-addon input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .addon-actions {
+        display: flex;
+        align-items: center;
+        padding-bottom: 8px;
+    }
+
+    .btn-remove-addon {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-remove-addon:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+    }
+
+    .btn-add-addon {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-add-addon:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+
+    @media (max-width: 768px) {
+        .addon-row {
+            grid-template-columns: 1fr;
+        }
+
+        .addon-actions {
+            padding-bottom: 0;
+            padding-top: 8px;
+        }
+    }
+</style>
 @endsection
