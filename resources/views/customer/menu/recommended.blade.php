@@ -6,22 +6,22 @@
 <link rel="stylesheet" href="{{ asset('css/customer/food.css') }}">
 <link rel="stylesheet" href="{{ asset('css/customer/promotion-cart.css') }}">
 <style>
-/* Back Button - Fixed position, vertically centered in banner */
+/* Back Button - Fixed position at top left corner (like order-type-fab) */
 .back-button {
     position: fixed;
-    top: 75px;
-    left: 140px;
+    top: 85px; /* Below sidebar navbar on desktop */
+    left: 115px; /* Aligned with main content area */
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
+    gap: 6px;
+    padding: 10px 18px;
     background: rgba(255, 255, 255, 0.95);
     border: 2px solid rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(10px);
-    border-radius: 12px;
+    border-radius: 24px;
     color: #000000;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     transition: all 0.3s;
     z-index: 1000;
@@ -33,6 +33,10 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
     color: #000000;
+}
+
+.back-button i {
+    font-size: 16px;
 }
 
 /* AI Pick Badge */
@@ -83,6 +87,99 @@
 
 .food-card .food-actions {
     margin-top: 12px;
+}
+
+/* Responsive Styles */
+/* Tablet (769px - 1199px) - 2 columns grid */
+@media (max-width: 1199px) {
+    .main-content {
+        padding: 15px;
+    }
+
+    .food-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    /* Back Button - Tablet */
+    .back-button {
+        padding: 9px 16px;
+        font-size: 12px;
+        border-radius: 22px;
+        top: 28px;
+        left: 28px;
+    }
+    .back-button i {
+        font-size: 15px;
+    }
+}
+
+/* Mobile (481px - 768px) - 2 columns grid */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 10px;
+    }
+
+    .food-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    /* Back Button - Mobile */
+    .back-button {
+        padding: 8px 14px;
+        font-size: 11px;
+        border-radius: 20px;
+        top: 18px;
+        left: 18px;
+        gap: 5px;
+    }
+    .back-button i {
+        font-size: 14px;
+    }
+}
+
+/* Small Mobile (< 480px) - 2 columns grid */
+@media (max-width: 480px) {
+    .main-content {
+        padding: 10px;
+    }
+
+    .food-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    /* Back Button - Small Mobile */
+    .back-button {
+        padding: 7px 13px;
+        font-size: 10.5px;
+        border-radius: 19px;
+        top: 16px;
+        left: 16px;
+        gap: 4px;
+    }
+    .back-button i {
+        font-size: 13px;
+    }
+}
+
+/* Order Type FAB - Mobile: Make smaller */
+@media (max-width: 768px) {
+  .ordertype-fab {
+    top: 10px !important;
+    right: 10px !important;
+    min-width: 95px !important;
+    height: 36px !important;
+    border-radius: 18px !important;
+    font-size: 10px !important;
+    gap: 4px !important;
+    padding: 0 10px !important;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25) !important;
+  }
+  .ordertype-fab i {
+    font-size: 11px !important;
+  }
 }
 </style>
 @endsection
@@ -408,11 +505,14 @@
         </div>
       </div>
 
-      <!-- Add-ons Section (Placeholder) -->
-      <div style="margin-bottom: 24px;">
-        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Add-ons:</label>
-        <div style="padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; background: #f9fafb;">
-          <p style="font-size: 13px; color: #6b7280; margin: 0;">No add-ons available for this item</p>
+      <!-- Add-ons Section -->
+      <div id="addtocart-addons-section" style="margin-bottom: 24px; display: none;">
+        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">
+          <i class="fas fa-puzzle-piece" style="margin-right: 6px; color: #6366f1;"></i>
+          Add-ons (Optional)
+        </label>
+        <div id="addtocart-addons-container" style="padding: 16px; border: 2px solid #e5e7eb; border-radius: 12px; background: #f9fafb; display: grid; gap: 10px;">
+          <!-- Add-ons checkboxes will be inserted here by JavaScript -->
         </div>
       </div>
 

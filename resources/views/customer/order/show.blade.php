@@ -1659,6 +1659,14 @@
                                     <span class="original-price">RM {{ number_format($item->original_price, 2) }}</span>
                                     @endif
                                 </div>
+                                @php
+                                    $addons = $item->customizations()->where('customization_type', 'addon')->get();
+                                @endphp
+                                @if($addons->count() > 0)
+                                <div style="margin-top: 6px; font-size: 12px; color: #3b82f6; font-style: italic;">
+                                    <i class="fas fa-puzzle-piece"></i> {{ $addons->pluck('customization_value')->join(', ') }}
+                                </div>
+                                @endif
                             </div>
                             <div class="item-price">RM {{ number_format($item->total_price, 2) }}</div>
                         </div>
@@ -1717,6 +1725,14 @@
                                     @if($item->promotion)
                                     <div class="item-notes">
                                         <i class="fas fa-tag"></i> {{ $item->promotion->name }}
+                                    </div>
+                                    @endif
+                                    @php
+                                        $addons = $item->customizations()->where('customization_type', 'addon')->get();
+                                    @endphp
+                                    @if($addons->count() > 0)
+                                    <div style="margin-top: 6px; font-size: 12px; color: #3b82f6; font-style: italic;">
+                                        <i class="fas fa-puzzle-piece"></i> {{ $addons->pluck('customization_value')->join(', ') }}
                                     </div>
                                     @endif
                                 </div>
@@ -1852,6 +1868,14 @@
                         @if($item->special_note)
                         <div class="item-notes">
                             <i class="fas fa-comment"></i> {{ $item->special_note }}
+                        </div>
+                        @endif
+                        @php
+                            $addons = $item->customizations()->where('customization_type', 'addon')->get();
+                        @endphp
+                        @if($addons->count() > 0)
+                        <div style="margin-top: 6px; font-size: 12px; color: #3b82f6; font-style: italic;">
+                            <i class="fas fa-puzzle-piece"></i> {{ $addons->pluck('customization_value')->join(', ') }}
                         </div>
                         @endif
                     </div>

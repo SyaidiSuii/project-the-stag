@@ -1372,10 +1372,13 @@
       </div>
 
       <!-- Add-ons Section -->
-      <div style="margin-bottom: 24px;">
-        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Add-ons:</label>
-        <div style="padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; background: #f9fafb;">
-          <p style="font-size: 13px; color: #6b7280; margin: 0;">No add-ons available for this item</p>
+      <div id="qr-addons-section" style="margin-bottom: 24px; display: none;">
+        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">
+          <i class="fas fa-puzzle-piece" style="margin-right: 6px; color: #6366f1;"></i>
+          Add-ons (Optional)
+        </label>
+        <div id="qr-addons-container" style="padding: 16px; border: 2px solid #e5e7eb; border-radius: 12px; background: #f9fafb; display: grid; gap: 10px;">
+          <!-- Add-ons checkboxes will be inserted here by JavaScript -->
         </div>
       </div>
 
@@ -1537,7 +1540,7 @@
   let currentItemData = {};
 
   // Function for menu item cards with quantity selector
-  function showAddModal(itemId, itemName, itemPrice, itemImage, itemDescription, button) {
+  async function showAddModal(itemId, itemName, itemPrice, itemImage, itemDescription, button) {
     const input = button.parentElement.parentElement.querySelector('.quantity-input');
     const quantity = parseInt(input.value);
 
@@ -1549,7 +1552,8 @@
       image: itemImage,
       description: itemDescription,
       quantity: quantity,
-      inputElement: input
+      inputElement: input,
+      selectedAddons: [] // Track selected add-ons
     };
 
     // Fill modal
@@ -1577,10 +1581,100 @@
       }
     }
 
+    // Load add-ons for this item
+    await loadQRAddons(itemId);
+
     // Show modal
     const modal = document.getElementById('add-to-cart-modal');
     modal.style.display = 'flex';
     // Don't prevent body scroll
+  }
+
+  // Load add-ons for QR menu
+  async function loadQRAddons(itemId) {
+    const addonsSection = document.getElementById('qr-addons-section');
+    const addonsContainer = document.getElementById('qr-addons-container');
+
+    if (!addonsSection || !addonsContainer) return;
+
+    try {
+      const response = await fetch(`/api/menu-items/${itemId}/addons`);
+      const data = await response.json();
+
+      if (data.status && data.addons && data.addons.length > 0) {
+        addonsContainer.innerHTML = '';
+
+        data.addons.forEach(addon => {
+          const addonDiv = document.createElement('div');
+          addonDiv.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 8px; border: 2px solid #e5e7eb; transition: all 0.2s;';
+
+          addonDiv.innerHTML = `
+            <input
+              type="checkbox"
+              id="qr-addon-${addon.id}"
+              value="${addon.id}"
+              data-price="${addon.price}"
+              data-name="${addon.name}"
+              style="width: 20px; height: 20px; cursor: pointer; accent-color: #6366f1;">
+            <label for="qr-addon-${addon.id}" style="flex: 1; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #1f2937;">
+              <span style="font-weight: 600;">${addon.name}</span>
+              <span style="color: #6366f1; font-weight: 700;">${addon.formatted_price}</span>
+            </label>
+          `;
+
+          addonDiv.addEventListener('mouseenter', function() {
+            this.style.borderColor = '#6366f1';
+            this.style.background = '#f0f9ff';
+          });
+          addonDiv.addEventListener('mouseleave', function() {
+            const checkbox = this.querySelector('input[type="checkbox"]');
+            this.style.borderColor = checkbox.checked ? '#6366f1' : '#e5e7eb';
+            this.style.background = checkbox.checked ? '#f0f9ff' : 'white';
+          });
+
+          const checkbox = addonDiv.querySelector('input[type="checkbox"]');
+          checkbox.addEventListener('change', function() {
+            updateQRSelectedAddons();
+            updateQRModalTotal();
+            addonDiv.style.borderColor = this.checked ? '#6366f1' : '#e5e7eb';
+            addonDiv.style.background = this.checked ? '#f0f9ff' : 'white';
+          });
+
+          addonsContainer.appendChild(addonDiv);
+        });
+
+        addonsSection.style.display = 'block';
+      } else {
+        addonsSection.style.display = 'none';
+      }
+    } catch (error) {
+      console.error('Error loading add-ons:', error);
+      addonsSection.style.display = 'none';
+    }
+  }
+
+  // Update selected add-ons
+  function updateQRSelectedAddons() {
+    if (!currentItemData) return;
+
+    const checkboxes = document.querySelectorAll('#qr-addons-container input[type="checkbox"]:checked');
+    currentItemData.selectedAddons = Array.from(checkboxes).map(cb => ({
+      id: parseInt(cb.value),
+      name: cb.dataset.name,
+      price: parseFloat(cb.dataset.price)
+    }));
+  }
+
+  // Update modal total with add-ons
+  function updateQRModalTotal() {
+    if (!currentItemData) return;
+
+    const addonsTotal = currentItemData.selectedAddons
+      ? currentItemData.selectedAddons.reduce((sum, addon) => sum + addon.price, 0)
+      : 0;
+
+    const total = (currentItemData.price + addonsTotal) * currentItemData.quantity;
+    document.getElementById('modal-total-amount').textContent = 'RM ' + total.toFixed(2);
   }
 
   // Function for recommendation cards (without quantity selector)
@@ -1664,11 +1758,7 @@
     if (currentItemData.quantity > 1) {
       currentItemData.quantity--;
       document.getElementById('modal-quantity-display').textContent = currentItemData.quantity;
-
-      // Update total price
-      const itemPrice = parseFloat(currentItemData.price);
-      const total = itemPrice * currentItemData.quantity;
-      document.getElementById('modal-total-amount').textContent = `RM ${total.toFixed(2)}`;
+      updateQRModalTotal();
     }
   });
 
@@ -1676,11 +1766,7 @@
     if (currentItemData.quantity < 999) { // Max 999 items
       currentItemData.quantity++;
       document.getElementById('modal-quantity-display').textContent = currentItemData.quantity;
-
-      // Update total price
-      const itemPrice = parseFloat(currentItemData.price);
-      const total = itemPrice * currentItemData.quantity;
-      document.getElementById('modal-total-amount').textContent = `RM ${total.toFixed(2)}`;
+      updateQRModalTotal();
     }
   });
 
@@ -1698,7 +1784,8 @@
         session_code: sessionCode,
         menu_item_id: currentItemData.id,
         quantity: currentItemData.quantity,
-        notes: notes
+        notes: notes,
+        selectedAddons: currentItemData.selectedAddons || [] // Include selected add-ons
       })
     })
     .then(response => {

@@ -392,6 +392,22 @@ class MenuItem extends Model
     }
 
     /**
+     * Get all add-ons for this menu item
+     */
+    public function addons()
+    {
+        return $this->hasMany(MenuItemAddon::class);
+    }
+
+    /**
+     * Get available add-ons for this menu item
+     */
+    public function availableAddons()
+    {
+        return $this->addons()->available()->ordered();
+    }
+
+    /**
      * Recalculate rating average based on all reviews
      * More accurate than incremental addRating method
      */

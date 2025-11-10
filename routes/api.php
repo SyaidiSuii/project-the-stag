@@ -336,6 +336,35 @@ Route::prefix('kitchen')->group(function () {
     Route::get('/status/{stationId}', [\App\Http\Controllers\Api\KitchenStatusController::class, 'show']);
 });
 
+// Menu Item Add-ons API Routes
+Route::prefix('menu-items')->group(function () {
+    // Get add-ons for a specific menu item
+    Route::get('/{menuItem}/addons', function ($menuItemId) {
+        $menuItem = \App\Models\MenuItem::find($menuItemId);
+
+        if (!$menuItem) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Menu item not found'
+            ], 404);
+        }
+
+        $addons = $menuItem->availableAddons()->get();
+
+        return response()->json([
+            'status' => true,
+            'addons' => $addons->map(function ($addon) {
+                return [
+                    'id' => $addon->id,
+                    'name' => $addon->name,
+                    'price' => (float) $addon->price,
+                    'formatted_price' => $addon->formatted_price,
+                ];
+            })
+        ]);
+    });
+});
+
 // FCM Notification Routes - Support both web session and API token auth
 Route::prefix('fcm')->middleware('auth:sanctum,web')->group(function () {
     Route::post('/register', [\App\Http\Controllers\NotificationController::class, 'registerDevice']);

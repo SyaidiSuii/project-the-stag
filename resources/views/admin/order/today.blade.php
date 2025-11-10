@@ -191,7 +191,17 @@
                     <div class="order-items-preview">
                         <strong>Items ({{ $order->items->count() }}):</strong>
                         @foreach($order->items as $item)
-                            <div class="item-preview">{{ $item->quantity ?? 1 }}x {{ $item->menuItem->name ?? 'Item' }}</div>
+                            <div class="item-preview">
+                                {{ $item->quantity ?? 1 }}x {{ $item->menuItem->name ?? 'Item' }}
+                                @php
+                                    $addons = $item->customizations()->where('customization_type', 'addon')->get();
+                                @endphp
+                                @if($addons->count() > 0)
+                                    <span style="color: #3b82f6; font-style: italic; font-size: 0.9em;">
+                                        ({{ $addons->pluck('customization_value')->join(', ') }})
+                                    </span>
+                                @endif
+                            </div>
                         @endforeach
                     </div>
                     @endif

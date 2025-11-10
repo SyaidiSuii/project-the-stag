@@ -854,6 +854,14 @@
                                 @if($item->special_note)
                                     <span style="color: #fbbf24; font-style: italic;"> ({{ $item->special_note }})</span>
                                 @endif
+                                @php
+                                    $addons = $item->customizations()->where('customization_type', 'addon')->get();
+                                @endphp
+                                @if($addons->count() > 0)
+                                    <span style="color: #93c5fd; font-style: italic;">
+                                        ({{ $addons->pluck('customization_value')->join(', ') }})
+                                    </span>
+                                @endif
                             </div>
                             @endforeach
                         </div>
