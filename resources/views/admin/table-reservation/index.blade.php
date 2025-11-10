@@ -154,13 +154,39 @@
                     </td>
                     <td data-label="Actions" class="cell-center">
                         <div class="table-actions">
-                            <!-- Status Update Buttons -->
-                            @if($reservation->status === 'pending')
-                            <button class="action-btn confirm-btn" title="Confirm Booking" onclick="updateBookingStatus({{ $reservation->id }}, 'confirmed')">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            </form>
-                            @endif
+                            @switch($reservation->status)
+                                @case('pending')
+                                    <button class="action-btn confirm-btn" title="Confirm Booking" onclick="updateBookingStatus({{ $reservation->id }}, 'confirmed')">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="action-btn cancel-btn" title="Cancel Booking" onclick="updateBookingStatus({{ $reservation->id }}, 'cancelled')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    @break
+
+                                @case('confirmed')
+                                    <button class="action-btn seat-btn" title="Seat Customer" onclick="updateBookingStatus({{ $reservation->id }}, 'seated')">
+                                        <i class="fas fa-chair"></i>
+                                    </button>
+                                    <button class="action-btn cancel-btn" title="Mark as No Show" onclick="updateBookingStatus({{ $reservation->id }}, 'no_show')">
+                                        <i class="fas fa-user-slash"></i>
+                                    </button>
+                                    <button class="action-btn cancel-btn" title="Cancel Booking" onclick="updateBookingStatus({{ $reservation->id }}, 'cancelled')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    @break
+
+                                @case('seated')
+                                    <button class="action-btn complete-btn" title="Complete Booking" onclick="updateBookingStatus({{ $reservation->id }}, 'completed')">
+                                        <i class="fas fa-flag-checkered"></i>
+                                    </button>
+                                    @break
+
+                                @default
+                                    <a href="{{ route('admin.table-reservation.show', $reservation->id) }}" class="action-btn view-btn" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                            @endswitch
                         </div>
                     </td>
                 </tr>
@@ -236,43 +262,18 @@
 
 @section('scripts')
 <script>
-    // Notification function
-    function showNotification(message, type) {
-        // Create a simple notification
-        const notification = document.createElement('div');
-        notification.className = 'notification ' + type;
-        notification.textContent = message;
-        notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 10px 20px;
-        border-radius: 5px;
-        color: white;
-        font-weight: bold;
-        z-index: 9999;
-        ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
-    `;
-
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    }
-
-    // Check for session messages on page load
+    // Check for session messages on page load using the global Toast object
     document.addEventListener('DOMContentLoaded', function() {
         @if(session('message'))
-        showNotification('{{ session('message') }}', 'success');
+            Toast.success('Success', '{{ session('message') }}');
         @endif
 
         @if(session('success'))
-        showNotification('{{ session('success') }}', 'success');
+            Toast.success('Success', '{{ session('success') }}');
         @endif
 
         @if(session('error'))
-        showNotification('{{ session('error') }}', 'error');
+            Toast.error('Error', '{{ session('error') }}');
         @endif
     });
 
@@ -283,25 +284,31 @@
 
         // Function to apply filters
         function applyFilters() {
-            const params = new URLSearchParams();
+            const params = new URLSearchParams(window.location.search);
 
-            // Add search parameter
+            // Update or remove search parameter
             if (searchInput.value.trim()) {
-                params.append('search', searchInput.value.trim());
+                params.set('search', searchInput.value.trim());
+            } else {
+                params.delete('search');
             }
 
-            // Add status filter
+            // Update or remove status filter
             if (statusFilter.value) {
-                params.append('status', statusFilter.value);
+                params.set('status', statusFilter.value);
+            } else {
+                params.delete('status');
             }
 
-            // Add date filter
+            // Update or remove date filter
             if (dateFilter.value) {
-                params.append('date', dateFilter.value);
+                params.set('date', dateFilter.value);
+            } else {
+                params.delete('date');
             }
 
             // Redirect with parameters
-            const url = '{{ route("admin.table-reservation.index") }}' + (params.toString() ? '?' + params.toString() : '');
+            const url = '{{ route("admin.table-reservation.index") }}' + '?' + params.toString();
             window.location.href = url;
         }
 
@@ -317,47 +324,47 @@
 
         // Date filter change handler
         dateFilter.addEventListener('change', applyFilters);
-
-        // Clear filters function
-        window.clearFilters = function() {
-            searchInput.value = '';
-            statusFilter.value = '';
-            dateFilter.value = '';
-            window.location.href = '{{ route("admin.table-reservation.index") }}';
-        };
     });
 
     // Function to update booking status
     function updateBookingStatus(bookingId, status) {
-        if (!confirm(`Are you sure you want to mark this booking as ${status.replace('_', ' ')}?`)) {
-            return;
-        }
+        const messages = {
+            'confirmed': 'Are you sure you want to confirm this booking?',
+            'seated': 'Are you sure you want to mark this customer as seated?',
+            'completed': 'Are you sure you want to complete this booking?',
+            'cancelled': 'Are you sure you want to cancel this booking?',
+            'no_show': 'Are you sure you want to mark this as a no-show?',
+        };
 
-        // Create a form and submit it
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/admin/table-reservation/${bookingId}/update-status`;
+        const message = messages[status] || `Are you sure you want to mark this booking as ${status.replace('_', ' ')}?`;
 
-        // Add CSRF token
-        const csrfToken = document.createElement('input');
-        csrfToken.type = 'hidden';
-        csrfToken.name = '_token';
-        csrfToken.value = '{{ csrf_token() }}';
-        form.appendChild(csrfToken);
+        showConfirm('Confirm Action', message, 'warning', 'Yes, Proceed', 'Cancel')
+            .then((confirmed) => {
+                if (confirmed) {
+                    // Create a form and submit it
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/admin/table-reservation/${bookingId}/update-status`;
 
-        // Using POST method as defined in routes
-        // No method override needed since route expects POST
+                    // Add CSRF token
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
 
-        // Add status
-        const statusInput = document.createElement('input');
-        statusInput.type = 'hidden';
-        statusInput.name = 'status';
-        statusInput.value = status;
-        form.appendChild(statusInput);
+                    // Add status
+                    const statusInput = document.createElement('input');
+                    statusInput.type = 'hidden';
+                    statusInput.name = 'status';
+                    statusInput.value = status;
+                    form.appendChild(statusInput);
 
-        // Submit form
-        document.body.appendChild(form);
-        form.submit();
+                    // Submit form
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
     }
 </script>
 @endsection

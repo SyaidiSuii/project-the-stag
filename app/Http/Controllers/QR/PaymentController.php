@@ -73,13 +73,15 @@ class PaymentController extends Controller
         try {
             $validated = $request->validate([
                 'session_code' => 'required|exists:table_qrcodes,session_code',
-                'payment_method' => 'required|string|in:cash',
+                'payment_method' => 'required|string|in:cash,card',
                 'receipt_email' => 'nullable|email',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
+            // Flatten errors to a single string for a simple message
+            $errorMessages = collect($e->errors())->flatten()->implode(' ');
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed: ' . implode(', ', $e->errors())
+                'message' => 'Validation failed: ' . $errorMessages
             ], 422);
         } catch (\Exception $e) {
             \Log::error('QR Payment validation error: ' . $e->getMessage(), [
@@ -93,13 +95,13 @@ class PaymentController extends Controller
             ], 422);
         }
 
-        // Enforce: QR guest orders can only use cash payment
-        if ($validated['payment_method'] !== 'cash') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Online payment is not available for table orders. Please pay at the restaurant.'
-            ], 400);
-        }
+        // Allow online payment for QR guest orders. This was previously disabled.
+        // if ($validated['payment_method'] !== 'cash') {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Online payment is not available for table orders. Please pay at the restaurant.'
+        //     ], 400);
+        // }
 
         $session = TableQrcode::where('session_code', $validated['session_code'])
             ->with(['table'])
@@ -173,7 +175,7 @@ class PaymentController extends Controller
         }
 
         // Fire OrderCreatedEvent to notify admin
-        event(new OrderCreatedEvent($order->fresh(['user', 'orderItems']));
+        event(new OrderCreatedEvent($order->fresh(['user', 'items'])));
 
         // Clear cart
         session()->forget($cartKey);
@@ -377,7 +379,7 @@ class PaymentController extends Controller
             }
 
             // Fire OrderCreatedEvent to notify admin
-            event(new OrderCreatedEvent($order->fresh(['user', 'orderItems'])));
+            event(new OrderCreatedEvent($order->fresh(['user', 'items'])));
 
             // Redirect to confirmation with actual order ID
             return redirect()->route('qr.payment.confirmation', [

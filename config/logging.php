@@ -58,11 +58,20 @@ return [
             'ignore_exceptions' => false,
         ],
 
+        'analytics' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/analytics.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 7,
+            'replace_placeholders' => true,
+        ],
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            'formatter' => \App\Logging\CustomLineFormatter::class,
         ],
 
         'daily' => [

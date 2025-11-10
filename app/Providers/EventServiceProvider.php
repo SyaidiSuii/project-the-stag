@@ -21,6 +21,8 @@ use App\Listeners\SendOrderStatusNotification;
 use App\Listeners\SendNewOrderNotification;
 use App\Listeners\SendReservationNotification;
 use App\Listeners\SendNewReservationNotificationToAdmin;
+use App\Events\TableBookingConfirmedEvent;
+use App\Listeners\SendBookingConfirmationNotification;
 
 // PHASE 5: Loyalty Events and Listeners
 use App\Events\Loyalty\PointsAwarded;
@@ -63,8 +65,10 @@ class EventServiceProvider extends ServiceProvider
         ],
         TableBookingCreatedEvent::class => [
             UpdateAnalyticsOnTableBooking::class,
-            SendReservationNotification::class,
             SendNewReservationNotificationToAdmin::class,
+        ],
+        TableBookingConfirmedEvent::class => [
+            SendBookingConfirmationNotification::class,
         ],
         // 🔥 GENERIC ANALYTICS REFRESH EVENT - handles all revenue-affecting scenarios
         AnalyticsRefreshEvent::class => [

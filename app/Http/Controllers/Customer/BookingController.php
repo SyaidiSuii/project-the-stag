@@ -534,4 +534,39 @@ class BookingController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get the dynamic status of all tables for a given date.
+     */
+    public function getTableStatusesForDate(Request $request)
+    {
+        $request->validate(['date' => 'required|date_format:Y-m-d']);
+        $date = $request->query('date');
+
+        $tables = Table::where('is_active', true)->get();
+        
+        // Get all pending or confirmed reservations for the selected date
+        $reservations = TableReservation::where('booking_date', $date)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->get()
+            ->keyBy('table_id'); // Key by table_id for easy lookup
+
+        $dynamicStatuses = [];
+        foreach ($tables as $table) {
+            // Start with the table's persistent status (e.g., 'available', 'maintenance')
+            $status = $table->status;
+
+            // A table is 'reserved' on the map if it has a booking at any time on that day.
+            // The specific time slot availability is checked separately.
+            // We only override if the base status is 'available'. 'occupied' and 'maintenance' take precedence.
+            if ($status === 'available' && isset($reservations[$table->id])) {
+                $status = 'reserved';
+            }
+            
+            // The key is the table_number (e.g., 'T-01') which is used in the frontend data-id
+            $dynamicStatuses[$table->table_number] = $status;
+        }
+
+        return response()->json(['statuses' => $dynamicStatuses]);
+    }
 }

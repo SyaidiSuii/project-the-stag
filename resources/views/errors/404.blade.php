@@ -16,7 +16,7 @@
         }
         
         body {
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
             background: linear-gradient(
                 135deg,
                 rgba(99, 102, 241, 0.95) 0%,
@@ -31,13 +31,50 @@
             overflow: hidden;
         }
         
+        /* Animated background pattern */
         body::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><pattern id="food-pattern" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse"><g fill="white" opacity="0.08"><text x="20" y="60" font-family="Arial" font-size="32">🥩🍝🥗</text><text x="20" y="120" font-family="Arial" font-size="32">🍔🍟🥘</text><text x="20" y="180" font-family="Arial" font-size="32">🍲🥪🍌</text></g></pattern></defs><rect width="1200" height="800" fill="url(%23food-pattern)"/></svg>') center/cover;
-            animation: float 20s ease-in-out infinite;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+            animation: backgroundMove 15s ease-in-out infinite alternate;
             z-index: 0;
+        }
+        
+        /* Floating decorative elements */
+        .decoration {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .decoration:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: -100px;
+            left: -100px;
+            animation: float1 20s ease-in-out infinite;
+        }
+        
+        .decoration:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            bottom: -50px;
+            right: -50px;
+            animation: float2 15s ease-in-out infinite;
+        }
+        
+        .decoration:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            top: 50%;
+            right: 10%;
+            animation: float3 18s ease-in-out infinite;
         }
         
         .error-container {
@@ -48,177 +85,240 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 3rem 2rem;
-            background: rgba(255, 255, 255, 0.1);
+            padding: 4rem 3rem;
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
-            border-radius: 40px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
-            max-width: 900px;
+            border-radius: 32px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+            max-width: 700px;
+            width: 90%;
             margin: 2rem;
-            animation: slideUp 0.6s ease-out;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
-        .error-illustration {
-            width: 200px;
-            height: 200px;
+        .logo-container {
+            width: 140px;
+            height: 140px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 2rem;
-            background: rgb(255, 255, 255);
+            background: white;
             border-radius: 50%;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);s
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            animation: float 3s ease-in-out infinite;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.2),
+                0 0 0 8px rgba(255, 255, 255, 1);
             position: relative;
-            overflow: hidden;
-            padding: 2rem;
+            animation: logoFloat 3s ease-in-out infinite;
+            padding: 20px;
         }
         
-        .error-illustration::before {
+        .logo-container::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transform: rotate(45deg);
-            animation: shine 3s infinite;
+            inset: -12px;
+            border-radius: 50%;
+            padding: 4px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(255, 107, 53, 0.95));
+            -webkit-mask: 
+                linear-gradient(#fff 0 0) content-box, 
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.8;
+        }
+        
+        .logo-container img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
         }
         
         .error-code {
-            font-size: 8rem;
-            font-weight: 900;
-            color: white;
+            font-size: 7rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(88, 86, 235, 0.9), rgba(255, 107, 53, 0.95));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin: 0;
             line-height: 1;
-            text-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-            animation: pulse 2s infinite;
+            letter-spacing: -0.02em;
+            animation: gradientShift 3s ease infinite;
         }
         
         .error-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin: 1.5rem 0;
-            color: white;
-            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            position: relative;
-        }
-        
-        .error-title::after {
-            content: '';
-            display: block;
-            width: 100px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.5);
-            margin: 1rem auto;
-            border-radius: 2px;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 1.5rem 0 1rem;
+            color: #1f2937;
+            letter-spacing: -0.01em;
         }
         
         .error-message {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.95);
-            max-width: 600px;
+            font-size: 1.1rem;
+            color: #6b7280;
+            max-width: 500px;
             margin: 0 auto 2.5rem;
             line-height: 1.7;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            font-weight: 400;
         }
         
-        .btn-home {
-            padding: 1.2rem 2.5rem;
-            background: linear-gradient(135deg, #fff, #f8f9fa);
-            color: #6366f1;
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
             border: none;
-            border-radius: 15px;
-            font-weight: 800;
+            border-radius: 12px;
+            font-weight: 600;
             cursor: pointer;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 0.8rem;
-            transition: all 0.4s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            margin-top: 1rem;
+            gap: 0.6rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1rem;
             position: relative;
             overflow: hidden;
-            font-size: 1rem;
         }
         
-        .btn-home::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.2), transparent);
-            transition: left 0.6s ease;
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(255, 107, 53, 0.95));
+            color: white;
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
         }
         
-        .btn-home:hover::before {
-            left: 100%;
-        }
-        
-        .btn-home:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-        }
-        
-        .btn-home:active {
+        .btn-primary:hover {
             transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4);
         }
         
-        @keyframes float {
-            0%, 100% { 
-                transform: translateY(0) rotate(0deg); 
-            }
-            50% { 
-                transform: translateY(-20px) rotate(5deg); 
-            }
+        .btn-primary:active {
+            transform: translateY(0);
         }
         
-        @keyframes pulse {
-            0%, 100% { 
-                transform: scale(1); 
-                opacity: 1;
-            }
-            50% { 
-                transform: scale(1.05); 
-                opacity: 0.9;
-            }
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #6b7280;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
-        @keyframes shine {
-            0% { 
-                transform: translateX(-100%) translateY(-100%) rotate(45deg); 
-            }
-            100% { 
-                transform: translateX(100%) translateY(100%) rotate(45deg); 
-            }
+        .btn-secondary:hover {
+            background: #e5e7eb;
+            color: #4b5563;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn i {
+            font-size: 1.1em;
+        }
+        
+        .divider {
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
+            margin: 2rem auto;
+        }
+        
+        .help-text {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            margin-top: 2rem;
+        }
+        
+        .help-text a {
+            color: rgba(99, 102, 241, 0.95);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        
+        .help-text a:hover {
+            color: rgba(255, 107, 53, 0.95);
+            text-decoration: underline;
         }
         
         @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(40px) scale(0.95);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @keyframes logoFloat {
+            0%, 100% { 
+                transform: translateY(0); 
+            }
+            50% { 
+                transform: translateY(-10px); 
+            }
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+        
+        @keyframes backgroundMove {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(50px, 50px);
+            }
+        }
+        
+        @keyframes float1 {
+            0%, 100% { 
+                transform: translate(0, 0) scale(1); 
+            }
+            50% { 
+                transform: translate(50px, 50px) scale(1.1); 
+            }
+        }
+        
+        @keyframes float2 {
+            0%, 100% { 
+                transform: translate(0, 0) scale(1); 
+            }
+            50% { 
+                transform: translate(-30px, -30px) scale(0.9); 
+            }
+        }
+        
+        @keyframes float3 {
+            0%, 100% { 
+                transform: translate(0, 0) rotate(0deg); 
+            }
+            50% { 
+                transform: translate(20px, -20px) rotate(180deg); 
             }
         }
         
         @media (max-width: 768px) {
             .error-code {
-                font-size: 6rem;
+                font-size: 5rem;
             }
             
             .error-title {
-                font-size: 2rem;
+                font-size: 1.5rem;
             }
             
             .error-message {
@@ -226,38 +326,77 @@
             }
             
             .error-container {
+                padding: 3rem 2rem;
                 margin: 1rem;
-                padding: 2rem 1rem;
             }
             
-            .error-illustration {
-                width: 150px;
-                height: 150px;
-                padding: 1.5rem;
+            .logo-container {
+                width: 120px;
+                height: 120px;
             }
             
-            .btn-home {
-                padding: 1rem 2rem;
-                font-size: 0.9rem;
+            .logo-container img {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+                padding: 0.9rem 1.5rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .error-code {
+                font-size: 4rem;
+            }
+            
+            .error-container {
+                padding: 2.5rem 1.5rem;
             }
         }
     </style>
 </head>
 <body>
+    <div class="decoration"></div>
+    <div class="decoration"></div>
+    <div class="decoration"></div>
+    
     <div class="error-container">
-        <div class="error-illustration">
-            <img src="{{ asset('images/logo.png') }}" alt="The Stag Logo" style="width: 100%; height: 100%; object-fit: contain;">
+        <div class="logo-container">
+            <img src="{{ asset('images/logo.png') }}" alt="The Stag Logo">
         </div>
+        
         <h1 class="error-code">404</h1>
         <h2 class="error-title">Page Not Found</h2>
+        
         <p class="error-message">
-            Sorry, the page you're looking for seems to have wandered off into the forest. 
-            Even our smart deer can't find it! Let's get you back on track.
+            Oops! The page you're looking for seems to have wandered off. 
+            Don't worry, even our smart deer can't find it. Let's get you back on track.
         </p>
-        <a href="{{ route('customer.index') }}" class="btn-home">
-            <i class="fas fa-home"></i>
-            <span>Return to Home</span>
-        </a>
+        
+        <div class="button-group">
+            <a href="{{ route('customer.index') }}" class="btn btn-primary">
+                <i class="fas fa-home"></i>
+                <span>Back to Home</span>
+            </a>
+            <button onclick="window.history.back()" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Go Back</span>
+            </button>
+        </div>
+        
+        <div class="divider"></div>
+        
+        {{-- <p class="help-text">
+            Need help? <a href="{{ route('customer.contact') ?? '#' }}">Contact Support</a>
+        </p> --}}
     </div>
 </body>
 </html>

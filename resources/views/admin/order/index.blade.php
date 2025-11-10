@@ -23,14 +23,14 @@
         <div class="admin-card-value">{{ $totalOrders ?? 0 }}</div>
         <div class="admin-card-desc">All orders</div>
     </div>
-    <div class="admin-card">
+    {{-- <div class="admin-card">
         <div class="admin-card-header">
             <div class="admin-card-title">Total Revenue</div>
             <div class="admin-card-icon icon-green"><i class="fas fa-dollar-sign"></i></div>
         </div>
         <div class="admin-card-value">RM {{ number_format($totalRevenue ?? 0, 2) }}</div>
         <div class="admin-card-desc">From completed & served orders</div>
-    </div>
+    </div> --}}
     <div class="admin-card">
         <div class="admin-card-header">
             <div class="admin-card-title">Pending Orders</div>

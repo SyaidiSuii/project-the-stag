@@ -9,6 +9,42 @@
 
 @section('content')
 
+<!-- Stats Cards -->
+<div class="admin-cards">
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Active Sessions</div>
+            <div class="admin-card-icon icon-green"><i class="fas fa-qrcode"></i></div>
+        </div>
+        <div class="admin-card-value">{{ $stats['active'] ?? 0 }}</div>
+        <div class="admin-card-desc">Currently in use</div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Sessions Today</div>
+            <div class="admin-card-icon icon-blue"><i class="fas fa-calendar-day"></i></div>
+        </div>
+        <div class="admin-card-value">{{ $stats['today'] ?? 0 }}</div>
+        <div class="admin-card-desc">Total sessions created today</div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Completed Today</div>
+            <div class="admin-card-icon icon-orange"><i class="fas fa-check-circle"></i></div>
+        </div>
+        <div class="admin-card-value">{{ $stats['completed'] ?? 0 }}</div>
+        <div class="admin-card-desc">Sessions finished today</div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <div class="admin-card-title">Expired Today</div>
+            <div class="admin-card-icon icon-red"><i class="fas fa-clock"></i></div>
+        </div>
+        <div class="admin-card-value">{{ $stats['expired'] ?? 0 }}</div>
+        <div class="admin-card-desc">Sessions expired today</div>
+    </div>
+</div>
+
 <!-- Search and Filter Section -->
 <div class="admin-section">
     <div class="section-header">

@@ -181,4 +181,20 @@ document.addEventListener("DOMContentLoaded", () => {
             roleSubmenu.classList.toggle("expanded");
         });
     }
+
+    // User Management Menu
+    const userManagementMenu = document.getElementById("userManagementMenu");
+    const userManagementSubmenu = document.getElementById("userManagementSubmenu");
+
+    if (userManagementMenu && userManagementSubmenu) {
+        if (userManagementMenu.classList.contains("active")) {
+            userManagementMenu.classList.add("expanded");
+            userManagementSubmenu.classList.add("expanded");
+        }
+
+        userManagementMenu.addEventListener("click", () => {
+            userManagementMenu.classList.toggle("expanded");
+            userManagementSubmenu.classList.toggle("expanded");
+        });
+    }
 });

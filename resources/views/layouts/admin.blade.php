@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="{{ asset('css/confirm-modal.css') }}">
 
     @yield('styles')
+    @stack('styles')
 </head>
 
 <body>
@@ -27,39 +28,67 @@
             <div class="admin-logo-text">The Stag</div>
         </div>
         <nav class="admin-nav">
+            @can('view-dashboard')
             <a href="{{ route('admin.dashboard') }}"
                 class="admin-nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <div class="admin-nav-icon"><i class="fas fa-chart-line"></i></div>
                 <div class="admin-nav-text">Dashboard</div>
             </a>
+            @endcan
 
             <!-- Reports Menu -->
-            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}" id="reportsMenu">
+            @can('view-reports')
+            <a href="{{ route('admin.reports.enhanced-monthly') }}"
+                class="admin-nav-item {{ request()->routeIs('admin.reports.enhanced-monthly') ? 'active' : '' }}">
+                <div class="admin-nav-icon"><i class="fas fa-chart-pie"></i></div>
+                <div class="admin-nav-text">Reports</div>
+            </a>
+            {{-- <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}" id="reportsMenu">
                 <div class="admin-nav-icon"><i class="fas fa-chart-pie"></i></div>
                 <div class="admin-nav-text">Reports</div>
                 <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
             </div>
             <div class="admin-nav-submenu" id="reportsSubmenu">
-                <a href="{{ route('admin.reports.monthly') }}" class="admin-nav-subitem {{ request()->routeIs('admin.reports.monthly') || request()->routeIs('admin.reports.index') ? 'active' : '' }}">
+                <a href="{{ route('admin.reports.enhanced-monthly') }}" class="admin-nav-subitem {{ request()->routeIs('admin.reports.enhanced-monthly') ? 'active' : '' }}">
+                    <div class="admin-nav-text">
+                        <i class="fas fa-chart-line text-success"></i> Enhanced Analytics
+                        <span class="badge badge-success badge-sm ml-1">New</span>
+                    </div>
+                </a>
+                {{-- <a href="{{ route('admin.reports.monthly') }}" class="admin-nav-subitem {{ request()->routeIs('admin.reports.monthly') || request()->routeIs('admin.reports.index') ? 'active' : '' }}">
                     <div class="admin-nav-text">Monthly Report</div>
                 </a>
                 <a href="{{ route('admin.reports.all-time') }}" class="admin-nav-subitem {{ request()->routeIs('admin.reports.all-time') ? 'active' : '' }}">
                     <div class="admin-nav-text">All-Time Report</div>
                 </a>
+            </div> --}}
+            @endcan
+
+            @can('view-users')
+            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.user.*') || request()->routeIs('admin.employees.*') ? 'active' : '' }}" id="userManagementMenu">
+                <div class="admin-nav-icon"><i class="fas fa-users-cog"></i></div>
+                <div class="admin-nav-text">User Management</div>
+                <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
             </div>
+            <div class="admin-nav-submenu" id="userManagementSubmenu">
+                <a href="{{ route('admin.user.index') }}" class="admin-nav-subitem {{ request()->routeIs('admin.user.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">All Users</div>
+                </a>
+                <a href="{{ route('admin.employees.index') }}" class="admin-nav-subitem {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}">
+                    <div class="admin-nav-text">Employees</div>
+                </a>
+            </div>
+            @endcan
 
-            <a href="{{ route('admin.user.index') }}"
-                class="admin-nav-item {{ request()->routeIs('admin.user.*') ? 'active' : '' }}">
-                <div class="admin-nav-icon"><i class="fas fa-users"></i></div>
-                <div class="admin-nav-text">Users Management</div>
-            </a>
-
+            @can('view-homepage-content')
             <a href="{{ route('admin.homepage.index') }}"
                 class="admin-nav-item {{ request()->routeIs('admin.homepage.*') ? 'active' : '' }}">
                 <div class="admin-nav-icon"><i class="fas fa-home"></i></div>
                 <div class="admin-nav-text">Homepage Content</div>
             </a>
+            @endcan
             <!-- Kitchen Management Menu -->
+            @can('view-kitchen-dashboard')
             <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.kitchen.*') ? 'active' : '' }}" id="kitchenMenu">
                 <div class="admin-nav-icon"><i class="fas fa-fire"></i></div>
                 <div class="admin-nav-text">Kitchen Management</div>
@@ -88,7 +117,9 @@
                     <div class="admin-nav-text">Analytics</div>
                 </a>
             </div>
+            @endcan
             <!-- Menu Managements Menu -->
+            @can('view-menu-items')
             <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.menu-items.*') || request()->routeIs('admin.categories.*') ? 'active' : '' }}" id="menuMenu">
                 <div class="admin-nav-icon"><i class="fas fa-utensils"></i></div>
                 <div class="admin-nav-text">Menu Management</div>
@@ -104,7 +135,9 @@
                     <div class="admin-nav-text">Categories</div>
                 </a>
             </div>
+            @endcan
             <!-- Order Managements Menu -->
+            @can('view-orders')
             <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.order.*') || request()->routeIs('admin.menu-customizations.*') || request()->routeIs('admin.reports.activity-logs') ? 'active' : '' }}" id="orderMenu">
                 <div class="admin-nav-icon"><i class="fas fa-shopping-bag"></i></div>
                 <div class="admin-nav-text">Order Managements</div>
@@ -119,55 +152,75 @@
                     class="admin-nav-subitem {{ request()->routeIs('admin.reports.activity-logs') ? 'active' : '' }}">
                     <div class="admin-nav-text">Order Activity Logs</div>
                 </a> --}}
+                @can('view-menu-customizations')
                 <a href="{{ route('admin.menu-customizations.index') }}"
                     class="admin-nav-subitem {{ request()->routeIs('admin.menu-customizations.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">Order Customizations</div>
                 </a>
+                @endcan
             </div>
+            @endcan
 
             <!-- Bookings Menu -->
+            @canany(['view-tables', 'view-table-reservations'])
             <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.table-reservation.*') || request()->routeIs('admin.table.*') || request()->routeIs('admin.table-layout-config.*') || request()->routeIs('admin.table-qrcodes.*') ? 'active' : '' }}" id="bookingsMenu">
                 <div class="admin-nav-icon"><i class="fas fa-calendar-alt"></i></div>
                 <div class="admin-nav-text">Bookings</div>
                 <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
             </div>
             <div class="admin-nav-submenu" id="bookingsSubmenu">
+                @can('view-table-reservations')
                 <a href="{{ route('admin.table-reservation.index') }}"
                     class="admin-nav-subitem {{ request()->routeIs('admin.table-reservation.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">All Bookings</div>
                 </a>
+                @endcan
+                @can('view-table-qrcodes')
                 <a href="{{ route('admin.table-qrcodes.index') }}"
                     class="admin-nav-subitem {{ request()->routeIs('admin.table-qrcodes.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">QR Codes Generate</div>
                 </a>
+                @endcan
+                @can('view-tables')
                 <a href="{{ route('admin.table.index') }}"
                     class="admin-nav-subitem {{ request()->routeIs('admin.table.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">All Table</div>
                 </a>
+                @endcan
+                @can('view-table-layout-config')
                 <a href="{{ route('admin.table-layout-config.index') }}"
                     class="admin-nav-subitem {{ request()->routeIs('admin.table-layout-config.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">Table Layout</div>
                 </a>
+                @endcan
             </div>
+            @endcanany
 
             <!-- Rewards Menu -->
+            @canany(['view-rewards-dashboard', 'view-redemptions', 'manage-redemptions', 'view-loyalty-members', 'view-promotions'])
             <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.rewards.*') || request()->routeIs('admin.promotions.*') ? 'active' : '' }}" id="rewardsMenu">
                 <div class="admin-nav-icon"><i class="fas fa-gift"></i></div>
                 <div class="admin-nav-text">Rewards & Promotions</div>
                 <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
             </div>
             <div class="admin-nav-submenu" id="rewardsSubmenu">
+                @can('view-promotions')
                 <a href="{{ route('admin.promotions.index') }}"
                     class="admin-nav-subitem {{ request()->routeIs('admin.promotions.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">Promotions</div>
                 </a>
+                @endcan
+                @can('view-rewards-dashboard')
                 <a href="{{ route('admin.rewards.index') }}"
                     class="admin-nav-subitem {{ request()->routeIs('admin.rewards.*') ? 'active' : '' }}">
                     <div class="admin-nav-text">Rewards</div>
                 </a>
+                @endcan
             </div>
+            @endcanany
 
             <!-- Stock Management Menu -->
+            @can('view-stock-dashboard')
             {{-- <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.stock.*') ? 'active' : '' }}" id="stockMenu">
                 <div class="admin-nav-icon"><i class="fas fa-boxes"></i></div>
                 <div class="admin-nav-text">Stock Management</div>
@@ -191,8 +244,10 @@
                     <div class="admin-nav-text">Purchase Orders</div>
                 </a>
             </div> --}}
+            @endcan
 
             <!-- Role & Permission -->
+            @canany(['view-roles', 'view-permissions'])
             <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.roles.*') || request()->routeIs('admin.permissions.*') ? 'active' : '' }}" id="roleMenu">
                 <div class="admin-nav-icon"><i class="fas fa-calendar-alt"></i></div>
                 <div class="admin-nav-text">Role & Permission</div>
@@ -208,13 +263,16 @@
                     <div class="admin-nav-text">Roles</div>
                 </a>
             </div>
+            @endcanany
 
 
+            @can('view-settings')
             <a href="{{ route('admin.settings.index') }}"
                 class="admin-nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                 <div class="admin-nav-icon"><i class="fas fa-cog"></i></div>
                 <div class="admin-nav-text">Settings</div>
             </a>
+            @endcan
         </nav>
         <div class="admin-account">
             <div class="admin-user">
@@ -531,6 +589,7 @@
     </script>
 
     @yield('scripts')
+    @stack('scripts')
 </body>
 
 </html>

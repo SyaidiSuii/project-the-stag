@@ -119,6 +119,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::post('/booking/check-availability', [CustomerBookingController::class, 'checkAvailability'])->name('booking.check-availability');
     Route::get('/booking/history', [CustomerBookingController::class, 'history'])->name('booking.history');
     Route::post('/booking/{reservationId}/cancel', [CustomerBookingController::class, 'cancel'])->name('booking.cancel');
+    Route::get('/booking/table-statuses', [CustomerBookingController::class, 'getTableStatusesForDate'])->name('booking.table-statuses');
     Route::get('/booking/{orderId}/payment', [CustomerBookingPaymentController::class, 'index'])->name('booking.payment.index');
     Route::post('/booking/{orderId}/payment', [CustomerBookingPaymentController::class, 'processPayment'])->name('booking.payment.process');
     Route::get('/account', [CustomerAccountController::class, 'index'])->name('account.index');
@@ -271,6 +272,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Admin User Management (Full Access)
         Route::resource('user', UserController::class);
+        Route::resource('employees', \App\Http\Controllers\Admin\EmployeeController::class);
 
         // ---------------------------------------------
         // PERMISSIONS & ROLES MANAGEMENT
@@ -319,6 +321,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             // Analytics - Admin/Manager only
             Route::get('/analytics', [\App\Http\Controllers\Admin\KitchenController::class, 'analytics'])->name('analytics');
+
+            // API for kitchen status
+            Route::get('/api/status', [\App\Http\Controllers\Admin\KitchenController::class, 'getApiStatus'])->name('api.status');
 
             // Kitchen Stations
             Route::prefix('stations')->name('stations.')->group(function () {
@@ -605,6 +610,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('reports/chart-data', [\App\Http\Controllers\Admin\ReportController::class, 'getChartData'])->name('reports.chart-data');
         Route::get('reports/analytics/all-time', [\App\Http\Controllers\Admin\ReportController::class, 'getAllTimeAnalytics'])->name('reports.analytics.all-time');
         Route::get('reports/activity-logs', [\App\Http\Controllers\Admin\ReportController::class, 'orderActivityLogs'])->name('reports.activity-logs');
+
+        // Enhanced Analytics Endpoints (NEW)
+        Route::get('reports/enhanced-monthly', [\App\Http\Controllers\Admin\ReportController::class, 'enhancedMonthly'])->name('reports.enhanced-monthly');
+        Route::get('reports/business-intelligence', [\App\Http\Controllers\Admin\ReportController::class, 'getBusinessIntelligence'])->name('reports.business-intelligence');
+        Route::get('reports/menu-intelligence', [\App\Http\Controllers\Admin\ReportController::class, 'getMenuIntelligence'])->name('reports.menu-intelligence');
+        Route::get('reports/menu-recommendations', [\App\Http\Controllers\Admin\ReportController::class, 'getMenuRecommendations'])->name('reports.menu-recommendations');
+        Route::get('reports/business-insights', [\App\Http\Controllers\Admin\ReportController::class, 'getBusinessInsights'])->name('reports.business-insights');
+        Route::get('reports/executive-summary', [\App\Http\Controllers\Admin\ReportController::class, 'getExecutiveSummary'])->name('reports.executive-summary');
+        Route::get('reports/data-quality', [\App\Http\Controllers\Admin\ReportController::class, 'getDataQualityReport'])->name('reports.data-quality');
 
         Route::prefix('sale-analytics')->name('sale-analytics.')->group(function () {
             Route::get('dashboard-stats', [SaleAnalyticsController::class, 'getDashboardStats'])->name('dashboard-stats');

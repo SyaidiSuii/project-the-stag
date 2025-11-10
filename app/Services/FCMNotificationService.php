@@ -405,6 +405,52 @@ class FCMNotificationService
     }
 
     /**
+     * Send booking confirmed notification to the customer.
+     * This is a wrapper for clarity.
+     */
+    public function sendBookingConfirmedNotificationToCustomer(TableReservation $reservation): bool
+    {
+        return $this->sendReservationNotification($reservation, 'confirmed');
+    }
+
+    /**
+     * Send a notification to admins to confirm that a booking has been successfully confirmed by them.
+     */
+    public function sendBookingConfirmedNotificationToAdmin(TableReservation $reservation): bool
+    {
+        try {
+            $adminUsers = User::whereHas('roles', fn($q) => $q->whereIn('name', ['admin', 'manager']))
+                              ->where('is_active', true)->get();
+
+            if ($adminUsers->isEmpty()) return false;
+
+            $reservationCode = $reservation->confirmation_code ?? "BK-{$reservation->id}";
+            $customerName = $reservation->guest_name;
+
+            $notificationData = [
+                'title' => '✅ Reservation Confirmed',
+                'body' => "You have confirmed booking {$reservationCode} for {$customerName}.",
+                'data' => [
+                    'type' => 'reservation_confirmed_admin',
+                    'reservation_id' => (string) $reservation->id,
+                    'click_action' => '/admin/table-reservation/' . $reservation->id,
+                ],
+            ];
+
+            $successCount = 0;
+            foreach ($adminUsers as $admin) {
+                if ($this->sendToUser($admin->id, $notificationData, null, $reservation->id)) {
+                    $successCount++;
+                }
+            }
+            return $successCount > 0;
+        } catch (\Exception $e) {
+            Log::error(__FUNCTION__, ['error' => $e->getMessage(), 'reservation_id' => $reservation->id]);
+            return false;
+        }
+    }
+
+    /**
      * Send reservation notification
      */
     public function sendReservationNotification(TableReservation $reservation, string $type = 'confirmed'): bool

@@ -4,6 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\SalesAnalyticsService;
+use App\Services\BusinessIntelligenceService;
+use App\Services\MenuIntelligenceService;
+use App\Services\MenuRecommendationService;
+use App\Services\BusinessInsightGenerator;
+use App\Services\DataQualityCheckService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -16,10 +21,26 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class ReportController extends Controller
 {
     protected $salesAnalyticsService;
+    protected $biService;
+    protected $menuIntelligenceService;
+    protected $menuRecommendationService;
+    protected $insightGenerator;
+    protected $qualityService;
 
-    public function __construct(SalesAnalyticsService $salesAnalyticsService)
-    {
+    public function __construct(
+        SalesAnalyticsService $salesAnalyticsService,
+        BusinessIntelligenceService $biService,
+        MenuIntelligenceService $menuIntelligenceService,
+        MenuRecommendationService $menuRecommendationService,
+        BusinessInsightGenerator $insightGenerator,
+        DataQualityCheckService $qualityService
+    ) {
         $this->salesAnalyticsService = $salesAnalyticsService;
+        $this->biService = $biService;
+        $this->menuIntelligenceService = $menuIntelligenceService;
+        $this->menuRecommendationService = $menuRecommendationService;
+        $this->insightGenerator = $insightGenerator;
+        $this->qualityService = $qualityService;
     }
 
     /**
@@ -657,5 +678,278 @@ class ReportController extends Controller
             return $current > 0 ? 100 : 0;
         }
         return round((($current - $previous) / $previous) * 100, 1);
+    }
+
+    // ==========================================
+    // NEW ENHANCED ANALYTICS ENDPOINTS
+    // ==========================================
+
+    /**
+     * Get business intelligence insights
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getBusinessIntelligence(Request $request): JsonResponse
+    {
+        $days = $request->input('days', 30);
+        $endDate = Carbon::today();
+        $startDate = $endDate->copy()->subDays($days - 1);
+
+        $data = [
+            'trends' => $this->biService->getTrendAnalysis($startDate, $endDate),
+            'mom_comparison' => $this->biService->getMonthOverMonthComparison(Carbon::today()),
+            'yoy_comparison' => $this->biService->getYearOverYearComparison(Carbon::today()),
+            'forecast' => $this->biService->forecastRevenue(7, $days),
+            'peak_hours' => $this->biService->getPeakHoursAnalysis($startDate, $endDate),
+            'anomalies' => $this->biService->detectAnomalies(Carbon::today(), $days),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+            'period' => [
+                'start' => $startDate->toDateString(),
+                'end' => $endDate->toDateString(),
+                'days' => $days,
+            ],
+        ]);
+    }
+
+    /**
+     * Get menu intelligence analysis
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getMenuIntelligence(Request $request): JsonResponse
+    {
+        $days = $request->input('days', 30);
+        $endDate = Carbon::today();
+        $startDate = $endDate->copy()->subDays($days - 1);
+
+        $data = [
+            'performance_analysis' => $this->menuIntelligenceService->getMenuPerformanceAnalysis($startDate, $endDate),
+            'underperformers' => $this->menuIntelligenceService->getUnderperformingItems($startDate, $endDate, 10),
+            'pricing_opportunities' => $this->menuIntelligenceService->getPricingOpportunities($startDate, $endDate),
+            'bundle_opportunities' => $this->menuIntelligenceService->getBundleOpportunities($startDate, $endDate),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+            'period' => [
+                'start' => $startDate->toDateString(),
+                'end' => $endDate->toDateString(),
+            ],
+        ]);
+    }
+
+    /**
+     * Get menu recommendations and improvements
+     *
+     * @return JsonResponse
+     */
+    public function getMenuRecommendations(): JsonResponse
+    {
+        $data = [
+            'improvements' => $this->menuRecommendationService->getMenuImprovementSuggestions(),
+            'trending_items' => $this->menuRecommendationService->getTrendingItems(7, 10),
+            'seasonal' => $this->menuRecommendationService->getSeasonalRecommendations(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+        ]);
+    }
+
+    /**
+     * Get automated business insights with executive summary
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getBusinessInsights(Request $request): JsonResponse
+    {
+        $date = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
+
+        $insights = $this->insightGenerator->generateInsights($date);
+        $recommendations = $this->insightGenerator->getActionableRecommendations($insights);
+
+        return response()->json([
+            'success' => true,
+            'insights' => $insights,
+            'recommendations' => $recommendations,
+        ]);
+    }
+
+    /**
+     * Get executive summary
+     *
+     * @return JsonResponse
+     */
+    public function getExecutiveSummary(): JsonResponse
+    {
+        $insights = $this->insightGenerator->generateInsights();
+        $mom = $this->biService->getMonthOverMonthComparison(Carbon::today());
+
+        $endDate = Carbon::today();
+        $startDate = $endDate->copy()->subDays(30);
+        $menuAnalysis = $this->menuIntelligenceService->getMenuPerformanceAnalysis($startDate, $endDate);
+
+        $summary = [
+            'executive_summary' => $insights['insights']['executive_summary'],
+            'key_metrics' => [
+                'revenue' => [
+                    'current' => $mom['current_month']['revenue'],
+                    'previous' => $mom['previous_month']['revenue'],
+                    'change_percentage' => $mom['changes']['revenue']['percentage'],
+                    'direction' => $mom['changes']['revenue']['direction'],
+                ],
+                'orders' => [
+                    'current' => $mom['current_month']['orders'],
+                    'previous' => $mom['previous_month']['orders'],
+                    'change_percentage' => $mom['changes']['orders']['percentage'],
+                ],
+                'aov' => [
+                    'current' => $mom['current_month']['avg_order_value'],
+                    'previous' => $mom['previous_month']['avg_order_value'],
+                    'change_percentage' => $mom['changes']['avg_order_value']['percentage'],
+                ],
+            ],
+            'menu_health' => [
+                'total_items' => $menuAnalysis['total_items_analyzed'],
+                'average_score' => $menuAnalysis['summary']['average_score'],
+                'items_needing_attention' => $menuAnalysis['summary']['items_needing_attention'],
+            ],
+            'top_insights' => $insights['insights']['executive_summary']['top_priority_insights'],
+            'health_score' => $insights['insights']['executive_summary']['health_score'],
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $summary,
+            'generated_at' => now()->toDateTimeString(),
+        ]);
+    }
+
+    /**
+     * Get data quality report
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getDataQualityReport(Request $request): JsonResponse
+    {
+        $date = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
+
+        $qualityCheck = $this->qualityService->runQualityChecks($date, false);
+
+        return response()->json([
+            'success' => true,
+            'data' => $qualityCheck,
+        ]);
+    }
+
+    /**
+     * Enhanced monthly view with new analytics
+     *
+     * @return View
+     */
+    public function enhancedMonthly(): View
+    {
+        // Get existing monthly data
+        $monthlyData = $this->getMonthlyData();
+
+        // Get enhanced analytics
+        $endDate = Carbon::today();
+        $startDate = $endDate->copy()->subDays(30);
+
+        $enhancedData = [
+            'business_intelligence' => [
+                'trends' => $this->biService->getTrendAnalysis($startDate, $endDate),
+                'mom' => $this->biService->getMonthOverMonthComparison(Carbon::today()),
+                'forecast' => $this->biService->forecastRevenue(7, 30),
+                'peak_hours' => $this->biService->getPeakHoursAnalysis($startDate, $endDate),
+            ],
+            'menu_intelligence' => $this->menuIntelligenceService->getMenuPerformanceAnalysis($startDate, $endDate),
+            'insights' => $this->insightGenerator->generateInsights(),
+            'recommendations' => $this->menuRecommendationService->getMenuImprovementSuggestions(),
+        ];
+
+        return view('admin.reports.enhanced-monthly', array_merge($monthlyData, $enhancedData));
+    }
+
+    /**
+     * Helper: Get monthly data (extracted from existing monthly method)
+     *
+     * @return array
+     */
+    private function getMonthlyData(): array
+    {
+        $salesSummary = $this->salesAnalyticsService->getSalesSummary(30);
+        $topSellingProducts = $this->salesAnalyticsService->getTopSellingProducts(10);
+        $salesByCategory = $this->salesAnalyticsService->getSalesByCategory();
+
+        $startOfCurrentMonth = Carbon::now()->startOfMonth();
+        $endOfCurrentMonth = Carbon::now()->endOfMonth();
+        $startOfPreviousMonth = Carbon::now()->subMonth()->startOfMonth();
+        $endOfPreviousMonth = Carbon::now()->subMonth()->endOfMonth();
+
+        $currentMonthAnalytics = $this->salesAnalyticsService->getComprehensiveAnalytics(
+            $startOfCurrentMonth,
+            $endOfCurrentMonth
+        );
+        $previousMonthAnalytics = $this->salesAnalyticsService->getComprehensiveAnalytics(
+            $startOfPreviousMonth,
+            $endOfPreviousMonth
+        );
+
+        $currentMonthRevenue = $currentMonthAnalytics['total_revenue'];
+        $previousMonthRevenue = $previousMonthAnalytics['total_revenue'];
+        $revenueChangePercentage = $this->calculateChangePercentage($currentMonthRevenue, $previousMonthRevenue);
+
+        $currentMonthOrders = $currentMonthAnalytics['total_orders'];
+        $previousMonthOrders = $previousMonthAnalytics['total_orders'];
+        $ordersChangePercentage = $this->calculateChangePercentage($currentMonthOrders, $previousMonthOrders);
+
+        $currentMonthAvgOrderValue = $currentMonthAnalytics['avg_order_value'];
+        $previousMonthAvgOrderValue = $previousMonthAnalytics['avg_order_value'];
+        $avgOrderValueChangePercentage = $this->calculateChangePercentage($currentMonthAvgOrderValue, $previousMonthAvgOrderValue);
+
+        $customerRetention = $this->salesAnalyticsService->getCustomerRetention(30);
+        $orderTypeBreakdown = $this->salesAnalyticsService->getOrderTypeBreakdown(30);
+        $qrVsWeb = $this->salesAnalyticsService->getQrVsWebOrders(30);
+        $promotionStats = $this->salesAnalyticsService->getPromotionEffectiveness(30);
+
+        $activeItems = MenuItem::where('is_available', 1)->count();
+        $newItemsThisMonth = MenuItem::whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])->count();
+
+        return [
+            'salesSummary' => $salesSummary,
+            'topSellingProducts' => $topSellingProducts,
+            'salesByCategory' => $salesByCategory,
+            'orderTypeBreakdown' => $orderTypeBreakdown,
+            'qrVsWeb' => $qrVsWeb,
+            'currentMonthRevenue' => $currentMonthRevenue,
+            'revenueChangePercentage' => $revenueChangePercentage,
+            'currentMonthOrders' => $currentMonthOrders,
+            'ordersChangePercentage' => $ordersChangePercentage,
+            'currentMonthAvgOrderValue' => $currentMonthAvgOrderValue,
+            'avgOrderValueChangePercentage' => $avgOrderValueChangePercentage,
+            'customerRetention' => $customerRetention,
+            'newCustomers' => $currentMonthAnalytics['new_customers'],
+            'returningCustomers' => $currentMonthAnalytics['returning_customers'],
+            'activeItems' => $activeItems,
+            'newItemsThisMonth' => $newItemsThisMonth,
+            'qrOrders' => $currentMonthAnalytics['qr_orders'],
+            'qrRevenue' => $currentMonthAnalytics['qr_revenue'],
+            'tableBookings' => $currentMonthAnalytics['table_bookings'],
+            'promotionsUsed' => $currentMonthAnalytics['promotions_used'],
+            'promotionDiscounts' => $currentMonthAnalytics['promotion_discounts'],
+            'rewardsRedeemed' => $currentMonthAnalytics['rewards_redeemed'],
+            'promotionStats' => $promotionStats,
+        ];
     }
 }

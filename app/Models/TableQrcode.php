@@ -268,8 +268,12 @@ class TableQrcode extends Model
 
     public function extend($hours = 2)
     {
+        // If expires_at is somehow null, extend from the current time.
+        // Otherwise, extend from the existing expiry time.
+        $newExpiry = ($this->expires_at ?? now())->addHours($hours);
+
         $this->update([
-            'expires_at' => $this->expires_at->addHours($hours),
+            'expires_at' => $newExpiry,
         ]);
     }
 

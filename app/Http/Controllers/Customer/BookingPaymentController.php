@@ -141,9 +141,12 @@ class BookingPaymentController extends Controller
 
             } else {
                 // Manual payment (cash at restaurant)
+                // Ensure amount is a float, removing any currency symbols or spaces
+                $numericAmount = (float) str_replace(['RM', ' '], '', $order->total_amount);
+
                 $paymentData = [
                     'payment_method' => $paymentMethod,
-                    'amount' => $order->total_amount,
+                    'amount' => $numericAmount,
                     'currency' => 'MYR',
                     'payment_status' => 'pending',
                     'gateway' => 'manual',

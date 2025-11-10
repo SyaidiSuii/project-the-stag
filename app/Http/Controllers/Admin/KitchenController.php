@@ -479,4 +479,28 @@ class KitchenController extends Controller
             'analytics'
         ));
     }
+
+    /**
+     * API endpoint to get current kitchen station statuses.
+     */
+    public function getApiStatus()
+    {
+        $stations = KitchenStation::where('is_active', true)
+            ->get()
+            ->map(function ($station) {
+                return [
+                    'id' => $station->id,
+                    'name' => $station->name,
+                    'load_percentage' => $station->load_percentage,
+                    'current_load' => $station->today_load,
+                    'max_capacity' => $station->max_capacity,
+                    'is_overloaded' => $station->isOverloaded(),
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'stations' => $stations,
+        ]);
+    }
 }

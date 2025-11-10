@@ -127,7 +127,7 @@
         <h2 class="section-title">Sales Over Last 7 Days</h2>
     </div>
     <div class="chart-container" style="position: relative;">
-        <canvas id="salesChart"></canvas>
+        <div id="salesChart"></div>
     </div>
 </div>
 
@@ -205,33 +205,49 @@
 @endsection
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const ctx = document.getElementById('salesChart').getContext('2d');
-        const salesChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: {!! json_encode($chartLabels) !!},
-                datasets: [{
-                    label: 'Sales (RM)',
-                    data: {!! json_encode($chartData) !!},
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1,
-                    tension: 0.1
-                }]
+        var options = {
+            chart: {
+                type: 'area',
+                height: 350,
+                toolbar: {
+                    show: false
+                }
             },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+            series: [{
+                name: 'Sales (RM)',
+                data: {!! json_encode($chartData) !!}
+            }],
+            xaxis: {
+                categories: {!! json_encode($chartLabels) !!}
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth'
+            },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.7,
+                    opacityTo: 0.9,
+                    stops: [0, 90, 100]
+                }
+            },
+            tooltip: {
+                x: {
+                    format: 'dd/MM/yy HH:mm'
                 },
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
+            },
+            colors: ['#6366f1']
+        };
+
+        var chart = new ApexCharts(document.querySelector("#salesChart"), options);
+        chart.render();
     });
 </script>
 @endsection

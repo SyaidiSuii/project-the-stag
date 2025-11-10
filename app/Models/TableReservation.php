@@ -123,6 +123,7 @@ class TableReservation extends Model
                         
                     case 'completed':
                     case 'cancelled':
+                    case 'no_show':
                         // Complete table session when reservation is completed or cancelled
                         $activeSession = $table->currentSession;
                         if ($activeSession && $activeSession->reservation_id == $reservation->id) {

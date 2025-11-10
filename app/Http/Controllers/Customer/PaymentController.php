@@ -342,7 +342,7 @@ class PaymentController extends Controller
                 }
 
                 // Fire OrderCreatedEvent to notify admin
-                event(new OrderCreatedEvent($order->fresh(['user', 'orderItems'])));
+                event(new OrderCreatedEvent($order->fresh(['user', 'items'])));
 
                 // Create counter payment record
                 $paymentData = [
@@ -355,16 +355,24 @@ class PaymentController extends Controller
 
                 $payment = $this->paymentService->savePaymentData($paymentData, $order->id);
 
-                // Update customer profile total_spent for counter orders (even if payment pending)
-                // Restaurant will mark as paid at counter
-                if ($user && $user->customerProfile) {
-                    $user->customerProfile->addSpending($finalTotal);
-                    logger()->info('Customer profile total_spent updated (counter order)', [
-                        'user_id' => $user->id,
-                        'order_id' => $order->id,
-                        'amount' => $finalTotal,
-                        'new_total_spent' => $user->customerProfile->fresh()->total_spent
-                    ]);
+                // Award points to user if authenticated (1 point per RM1 spent)
+                // AND update customer profile total_spent
+                if ($user) { // Check if user is authenticated
+                    // Calculate points (e.g., 1 point per RM1 spent)
+                    $points = floor($finalTotal);
+
+                    // Add points to user
+                    $user->addPoints($points, 'Order #' . $order->confirmation_code . ' (Counter Payment)');
+
+                    if ($user->customerProfile) {
+                        $user->customerProfile->addSpending($finalTotal);
+                        logger()->info('Customer profile total_spent updated (counter order)', [
+                            'user_id' => $user->id,
+                            'order_id' => $order->id,
+                            'amount' => $finalTotal,
+                            'new_total_spent' => $user->customerProfile->fresh()->total_spent
+                        ]);
+                    }
                 }
 
                 // Only clear user's cart if this order came from cart checkout

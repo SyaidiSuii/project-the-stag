@@ -27,7 +27,7 @@ class OrderCreatedEvent implements ShouldBroadcast
         $this->orderId = $order->id;
         $this->confirmationCode = $order->confirmation_code;
         $this->customerName = $order->user ? $order->user->name : 'Guest';
-        $this->itemCount = $order->orderItems->count();
+        $this->itemCount = $order->items->count();
         $this->total = $order->final_total;
     }
 

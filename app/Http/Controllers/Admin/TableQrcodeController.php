@@ -52,7 +52,15 @@ class TableQrcodeController extends Controller
         $tables = Table::where('is_active', true)->get();
         $statuses = ['active', 'completed', 'expired'];
 
-        return view('admin.table-qr_code.index', compact('sessions', 'tables', 'statuses'));
+        // Calculate stats for the cards
+        $stats = [
+            'active' => TableQrcode::where('status', 'active')->count(),
+            'today' => TableQrcode::whereDate('started_at', today())->count(),
+            'completed' => TableQrcode::where('status', 'completed')->whereDate('updated_at', today())->count(),
+            'expired' => TableQrcode::where('status', 'expired')->whereDate('expires_at', today())->count(),
+        ];
+
+        return view('admin.table-qr_code.index', compact('sessions', 'tables', 'statuses', 'stats'));
     }
 
     /**

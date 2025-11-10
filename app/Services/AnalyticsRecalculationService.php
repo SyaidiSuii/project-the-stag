@@ -16,6 +16,12 @@ use Illuminate\Support\Facades\Log;
 
 class AnalyticsRecalculationService
 {
+    protected $auditService;
+
+    public function __construct(ReportAuditService $auditService = null)
+    {
+        $this->auditService = $auditService ?? app(ReportAuditService::class);
+    }
     /**
      * Recalculate analytics for a specific date
      * Returns calculated data (does NOT save to database)
@@ -149,13 +155,27 @@ class AnalyticsRecalculationService
     public function recalculateAndSave($date): SaleAnalytics
     {
         $date = $date instanceof Carbon ? $date : Carbon::parse($date);
+
+        // Get old data for audit trail
+        $oldAnalytics = SaleAnalytics::whereDate('date', $date)->first();
+        $oldData = $oldAnalytics ? $oldAnalytics->toArray() : [];
+
+        // Calculate new analytics
         $analyticsData = $this->calculateForDate($date);
+
+        // Log calculation
+        $this->auditService->logCalculation($date, $analyticsData, 'recalculation');
 
         // Save to database
         $analytics = SaleAnalytics::updateOrCreate(
             ['date' => $date->toDateString()],
             $analyticsData
         );
+
+        // Log update if there were changes
+        if (!empty($oldData)) {
+            $this->auditService->logUpdate($date, $oldData, $analyticsData, 'recalculation');
+        }
 
         Log::info('Analytics recalculated', [
             'date' => $date->toDateString(),

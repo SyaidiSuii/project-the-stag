@@ -35,6 +35,7 @@ return [
         'secret_key' => env('TOYYIBPAY_SECRET_KEY'),
         'category_code' => env('TOYYIBPAY_CATEGORY_CODE'),
         'base_url' => env('TOYYIBPAY_BASE_URL', 'https://dev-toyyibpay.com/index.php/api'),
+        'payment_portal_url' => env('TOYYIBPAY_PAYMENT_PORTAL_URL', 'https://dev-toyyibpay.com'),
     ],
 
      /*

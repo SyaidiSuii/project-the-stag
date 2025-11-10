@@ -54,8 +54,16 @@ class TableReservationController extends Controller
             });
         }
 
-        $reservations = $query->orderBy('booking_date', 'desc')
-                          ->orderBy('booking_time', 'desc')
+        $reservations = $query->orderByRaw("
+            CASE
+                WHEN status = 'pending' THEN 1
+                WHEN status = 'confirmed' THEN 2
+                WHEN status = 'seated' THEN 3
+                ELSE 4
+            END
+        ")
+                          ->orderBy('booking_date', 'asc')
+                          ->orderBy('booking_time', 'asc')
                           ->paginate(15);
 
         // Get statistics for dashboard cards
@@ -66,7 +74,7 @@ class TableReservationController extends Controller
         $confirmedTables = TableReservation::where('status', 'confirmed')->count();
         $todayBooking = TableReservation::whereDate('created_at', now())->count();
 
-        return view('admin.table-reservation.index', compact('reservations', 'tables', 'statuses','totalTables'));
+        return view('admin.table-reservation.index', compact('reservations', 'tables', 'statuses', 'totalTables', 'pendingTables', 'confirmedTables', 'todayBooking'));
     }
 
     /**
@@ -242,9 +250,9 @@ class TableReservationController extends Controller
 
         // Fire event to send FCM notification when admin confirms reservation
         if ($oldStatus !== 'confirmed' && $request->status === 'confirmed') {
-            event(new TableBookingCreatedEvent($tableReservation->fresh(['user', 'table'])));
+            event(new \App\Events\TableBookingConfirmedEvent($tableReservation->fresh(['user', 'table'])));
 
-            \Log::info('Reservation confirmed - notification event fired', [
+            \Log::info('Reservation confirmed - confirmation event fired', [
                 'reservation_id' => $tableReservation->id,
                 'user_id' => $tableReservation->user_id,
                 'old_status' => $oldStatus,

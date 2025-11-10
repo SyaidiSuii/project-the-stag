@@ -7,6 +7,42 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'The Stag - SmartDine')</title>
 
+    <!-- Preloader Styles -->
+    <style>
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff; /* Or your desired background color */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+            opacity: 1;
+        }
+
+        #preloader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #6366f1; /* Primary color */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+
     <!-- Firebase Configuration -->
     <script>
         window.FIREBASE_CONFIG = {
@@ -35,6 +71,10 @@
 </head>
 
 <body>
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="spinner"></div>
+    </div>
     <!-- Sidebar Navigation -->
     <div class="sidebar" aria-label="Primary">
         <div aria-hidden="true">
@@ -154,6 +194,18 @@
 
     <!-- Page Specific Scripts -->
     @yield('scripts')
+
+    <script>
+        window.addEventListener('load', function() {
+            const preloader = document.getElementById('preloader');
+            if (preloader) {
+                // Ensure a minimum display time of 1 second (1000ms)
+                setTimeout(function() {
+                    preloader.classList.add('hidden');
+                }, 300); // Adjust this duration as needed
+            }
+        });
+    </script>
 </body>
 
 </html>

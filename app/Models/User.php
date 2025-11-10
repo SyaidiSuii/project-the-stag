@@ -150,6 +150,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(CustomerProfile::class);
     }
 
+    /**
+     * Get the employee profile associated with the user.
+     */
+    public function employee()
+    {
+        return $this->hasOne(Employee::class);
+    }
+
     public function loyaltyTier()
     {
         return $this->belongsTo(LoyaltyTier::class, 'loyalty_tier_id');

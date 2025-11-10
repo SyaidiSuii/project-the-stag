@@ -183,7 +183,7 @@ class OrderController extends Controller
 
         // Get statistics for dashboard cards
         $totalOrders = Order::count();
-        $totalRevenue = Order::where('order_status', 'completed')
+        $totalRevenue = Order::whereIn('order_status', ['completed', 'served'])
             ->where('payment_status', 'paid')
             ->sum('total_amount');
         $pendingOrders = Order::where('order_status', 'pending')->count();
@@ -728,11 +728,21 @@ class OrderController extends Controller
         $order->payment_status = $request->payment_status;
         $order->save();
 
-        // Update loyalty tier if payment is marked as paid
-        if ($request->payment_status === 'paid' && $order->user_id) {
-            $customerProfile = \App\Models\CustomerProfile::where('user_id', $order->user_id)->first();
-            if ($customerProfile) {
-                $customerProfile->updateLoyaltyTier();
+        // Award points to user if payment status changed to 'paid' and was previously unpaid
+        if ($request->payment_status === 'paid' && $oldPaymentStatus !== 'paid' && $order->user_id) {
+            $user = User::find($order->user_id);
+            if ($user) {
+                // Calculate points (e.g., 1 point per RM1 spent)
+                $points = floor($order->total_amount);
+
+                // Add points to user
+                $user->addPoints($points, 'Order #' . $order->confirmation_code . ' (Admin Marked Paid)');
+
+                // Update customer profile total_spent and loyalty tier
+                if ($user->customerProfile) {
+                    $user->customerProfile->addSpending($order->total_amount);
+                    $user->customerProfile->updateLoyaltyTier();
+                }
             }
         }
 

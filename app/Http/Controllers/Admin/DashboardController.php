@@ -19,9 +19,11 @@ class DashboardController extends Controller
         $totalOrders = Order::count();
         $todayOrders = Order::whereDate('created_at', today())->count();
         
-        // Revenue Data from SaleAnalytics
-        $todayRevenue = SaleAnalytics::whereDate('date', today())
-            ->sum('total_sales');
+        // Revenue Data from Order table (based on completed/served and paid orders)
+        $todayRevenue = Order::whereDate('created_at', today())
+            ->whereIn('order_status', ['completed', 'served'])
+            ->where('payment_status', 'paid')
+            ->sum('total_amount');
         $revenueGrowth = $this->calculateRevenueGrowth();
 
         // Customer Feedback Data - Count from sessions since we don't have dedicated feedback table

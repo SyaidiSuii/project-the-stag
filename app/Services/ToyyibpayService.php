@@ -10,12 +10,14 @@ class ToyyibpayService
     private $secretKey;
     private $categoryCode;
     private $baseUrl;
+    private $paymentPortalUrl;
 
     public function __construct()
     {
         $this->secretKey = config('services.toyyibpay.secret_key');
         $this->categoryCode = config('services.toyyibpay.category_code');
         $this->baseUrl = config('services.toyyibpay.base_url');
+        $this->paymentPortalUrl = config('services.toyyibpay.payment_portal_url');
     }
 
     /**
@@ -61,7 +63,7 @@ class ToyyibpayService
                 return [
                     'success' => true,
                     'bill_code' => $result[0]['BillCode'],
-                    'bill_url' => "https://dev.toyyibpay.com/{$result[0]['BillCode']}",
+                    'bill_url' => "{$this->paymentPortalUrl}/{$result[0]['BillCode']}",
                     'response' => $result[0]
                 ];
             }

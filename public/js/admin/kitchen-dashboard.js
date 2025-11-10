@@ -18,7 +18,7 @@ class KitchenDashboard {
 
     async fetchKitchenStatus() {
         try {
-            const response = await fetch('/admin/kitchen-loads/api/status');
+            const response = await fetch('/admin/kitchen/api/status');
             const data = await response.json();
 
             if (data.success) {

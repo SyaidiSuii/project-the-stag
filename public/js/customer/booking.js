@@ -1,4 +1,75 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // --- NEW DYNAMIC STATUS LOGIC ---
+    async function updateTableStatuses(dateString) {
+        const floorGrid = document.getElementById('floorGrid');
+        // Simple loading indicator by adding a class
+        floorGrid.style.opacity = '0.5';
+
+        try {
+            const response = await fetch(`/customer/booking/table-statuses?date=${dateString}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            const statuses = data.statuses;
+
+            const allTables = document.querySelectorAll('.table-tile');
+            allTables.forEach(table => {
+                const tableId = table.dataset.id;
+                // Use the dynamic status if available, otherwise fallback to the original static status
+                const newStatus = statuses[tableId] || table.dataset.originalStatus; 
+
+                // Remove old status classes
+                table.classList.remove('available', 'occupied', 'reserved', 'pending', 'maintenance', 'selected');
+                
+                // Add new status class
+                table.classList.add(newStatus);
+                
+                // Update data attribute and badge text
+                table.dataset.status = newStatus;
+                const statusBadge = table.querySelector('.table-status-badge');
+                if (statusBadge) {
+                    statusBadge.textContent = newStatus.toUpperCase();
+                }
+
+                // Update disabled state
+                const isDisabled = ['occupied', 'maintenance', 'reserved', 'pending'].includes(newStatus);
+                table.disabled = isDisabled;
+            });
+
+        } catch (error) {
+            console.error('Failed to update table statuses:', error);
+            if (typeof Toast !== "undefined") {
+                Toast.error("Error", "Could not load table availability for the selected date.");
+            }
+        } finally {
+            floorGrid.style.opacity = '1';
+        }
+    }
+
+    function resetSelection() {
+        if (selectedTable) {
+            const selectedTile = document.querySelector('.table-tile.selected');
+            if (selectedTile) {
+                selectedTile.classList.remove('selected');
+                const statusBadge = selectedTile.querySelector('.table-status-badge');
+                if (statusBadge) {
+                    // Revert to the dynamic status for the current date, not just a static 'available'
+                    statusBadge.textContent = selectedTile.dataset.status.toUpperCase();
+                }
+            }
+        }
+        selectedTable = null;
+        selectedTableEl.textContent = 'No table selected';
+        selectedCapacityEl.textContent = 'Select a table to begin';
+        selectionInfoEl.classList.remove('has-selection', 'vvip-selection');
+        bookingTimeInput.value = '';
+        updateBookingButtonsState(false);
+        updateFloatingBadge();
+    }
+    // --- END OF NEW DYNAMIC STATUS LOGIC ---
+
+
     // Get all table tiles
     const tableTiles = document.querySelectorAll(".table-tile");
     const selectedTableEl = document.getElementById("selectedTable");
@@ -13,48 +84,45 @@ document.addEventListener("DOMContentLoaded", function () {
     let selectedTable = null;
     let availabilityCheckTimeout = null;
 
+    // Store original status for fallback
+    tableTiles.forEach(tile => {
+        tile.dataset.originalStatus = tile.dataset.status;
+    });
+
+    // Initial status load for today's date
+    if (bookingDateInput.value) {
+        updateTableStatuses(bookingDateInput.value);
+    }
+
     // Add click event to each table tile
     tableTiles.forEach((tile) => {
         tile.addEventListener("click", function () {
             const status = this.dataset.status;
 
-            // Don't allow selection if table is not available
-            // (reserved, pending, occupied, or in maintenance)
             if (
-                status === "reserved" ||
-                status === "pending" ||
                 status === "occupied" ||
                 status === "maintenance"
             ) {
-                // Show tooltip why it's not available
                 if (typeof Toast !== "undefined") {
-                    let message = "";
-                    switch (status) {
-                        case "reserved":
-                            message = "This table is already reserved";
-                            break;
-                        case "pending":
-                            message = "This table has a pending reservation";
-                            break;
-                        case "occupied":
-                            message = "This table is currently occupied";
-                            break;
-                        case "maintenance":
-                            message = "This table is under maintenance";
-                            break;
-                    }
-                    Toast.warning("Table Unavailable", message);
+                    Toast.warning("Table Unavailable", `This table is currently ${status}.`);
                 }
                 return;
+            }
+            
+            if (status === "reserved" || status === "pending") {
+                 if (typeof Toast !== "undefined") {
+                    Toast.info("Table Reserved", `This table has reservations today. Click 'Check Availability' to see open time slots.`);
+                }
             }
 
             // Remove previous selection
             tableTiles.forEach((t) => {
-                t.classList.remove("selected");
-                // Restore original status text
-                const statusBadge = t.querySelector(".table-status-badge");
-                if (statusBadge) {
-                    statusBadge.textContent = t.dataset.status.toUpperCase();
+                if (t.classList.contains('selected')) {
+                    t.classList.remove("selected");
+                    const statusBadge = t.querySelector(".table-status-badge");
+                    if (statusBadge) {
+                        statusBadge.textContent = t.dataset.status.toUpperCase();
+                    }
                 }
             });
 
@@ -138,7 +206,9 @@ document.addEventListener("DOMContentLoaded", function () {
     if (bookingDateInput) {
         bookingDateInput.addEventListener("change", function () {
             validateBookingDate();
-            checkAvailabilityIfReady();
+            // NEW: Update table statuses and reset selection when date changes
+            updateTableStatuses(this.value);
+            resetSelection();
         });
     }
 
