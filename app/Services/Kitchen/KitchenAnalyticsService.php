@@ -88,7 +88,7 @@ class KitchenAnalyticsService
 
                 return [
                     'station_name' => $station->name,
-                    'station_type' => $station->station_type,
+                    'icon' => $station->icon,
                     'orders_completed' => $loads->unique('order_id')->count(),
                     'avg_completion_time' => round($loads->avg('duration') ?? 0, 1),
                     'total_load_points' => round($loads->sum('load_points'), 2),

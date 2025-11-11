@@ -223,11 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 1500);
             } else {
                 console.error('Failed to add item to cart');
-                if (typeof Toast !== 'undefined') {
-                    Toast.error('Cart Error', 'Failed to add item to cart. Please try again.');
-                } else {
-                    alert('Failed to add item to cart. Please try again.');
-                }
+                Toast.error('Cart Error', 'Failed to add item to cart. Please try again.');
             }
         }
         
@@ -390,11 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 sessionStorage.setItem('checkoutCart', JSON.stringify(cartItems));
                 window.location.href = '/customer/payment';
             } else {
-                if (typeof Toast !== 'undefined') {
-                    Toast.warning('Cart Empty', 'Your cart is empty!');
-                } else {
-                    alert('Your cart is empty!');
-                }
+                Toast.warning('Cart Empty', 'Your cart is empty!');
             }
         }
     });

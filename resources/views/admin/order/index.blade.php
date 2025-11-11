@@ -9,8 +9,8 @@
 
 @section('content')
 @php
-    $preparingCount = \App\Models\Order::where('order_status', 'preparing')->count();
-    $readyCount = \App\Models\Order::where('order_status', 'ready')->count();
+$preparingCount = \App\Models\Order::where('order_status', 'preparing')->count();
+$readyCount = \App\Models\Order::where('order_status', 'ready')->count();
 @endphp
 
 <!-- Stats Cards -->
@@ -28,33 +28,34 @@
             <div class="admin-card-title">Total Revenue</div>
             <div class="admin-card-icon icon-green"><i class="fas fa-dollar-sign"></i></div>
         </div>
-        <div class="admin-card-value">RM {{ number_format($totalRevenue ?? 0, 2) }}</div>
-        <div class="admin-card-desc">From completed & served orders</div>
-    </div> --}}
-    <div class="admin-card">
-        <div class="admin-card-header">
-            <div class="admin-card-title">Pending Orders</div>
-            <div class="admin-card-icon icon-orange"><i class="fas fa-clock"></i></div>
-        </div>
-        <div class="admin-card-value">{{ $pendingOrders ?? 0 }}</div>
-        <div class="admin-card-desc">Awaiting confirmation</div>
+        <div class="admin-card-value">RM {{ number_format($totalRevenue ?? 0, 2) }}
+</div>
+<div class="admin-card-desc">From completed & served orders</div>
+</div> --}}
+<div class="admin-card">
+    <div class="admin-card-header">
+        <div class="admin-card-title">Pending Orders</div>
+        <div class="admin-card-icon icon-orange"><i class="fas fa-clock"></i></div>
     </div>
-    <div class="admin-card">
-        <div class="admin-card-header">
-            <div class="admin-card-title">In Progress</div>
-            <div class="admin-card-icon icon-red"><i class="fas fa-utensils"></i></div>
-        </div>
-        <div class="admin-card-value">{{ $preparingCount + $readyCount }}</div>
-        <div class="admin-card-desc">Preparing + Ready</div>
+    <div class="admin-card-value">{{ $pendingOrders ?? 0 }}</div>
+    <div class="admin-card-desc">Awaiting confirmation</div>
+</div>
+<div class="admin-card">
+    <div class="admin-card-header">
+        <div class="admin-card-title">In Progress</div>
+        <div class="admin-card-icon icon-red"><i class="fas fa-utensils"></i></div>
     </div>
-    <div class="admin-card">
-        <div class="admin-card-header">
-            <div class="admin-card-title">Completed</div>
-            <div class="admin-card-icon icon-teal"><i class="fas fa-flag-checkered"></i></div>
-        </div>
-        <div class="admin-card-value">{{ $completedOrders ?? 0 }}</div>
-        <div class="admin-card-desc">Finished orders</div>
+    <div class="admin-card-value">{{ $preparingCount + $readyCount }}</div>
+    <div class="admin-card-desc">Preparing + Ready</div>
+</div>
+<div class="admin-card">
+    <div class="admin-card-header">
+        <div class="admin-card-title">Completed</div>
+        <div class="admin-card-icon icon-teal"><i class="fas fa-flag-checkered"></i></div>
     </div>
+    <div class="admin-card-value">{{ $completedOrders ?? 0 }}</div>
+    <div class="admin-card-desc">Finished orders</div>
+</div>
 </div>
 
 <!-- Search and Filter Section -->
@@ -68,7 +69,7 @@
             </a>
         </div>
     </div>
-    
+
 
     <div class="search-filter">
         <div class="search-box">
@@ -121,256 +122,257 @@
     @if($orders->count() > 0)
     <div class="table-container">
         <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th class="th-order" style="text-align: center;">Order Details</th>
-                        <th class="th-customer" style="text-align: center;">Customer</th>
-                        <th class="th-type" style="text-align: center;">Type/Table</th>
-                        <th class="th-amount" style="text-align: center;">Amount</th>
-                        <th class="th-status" style="min-width: 180px; text-align: center;">Status</th>
-                        <th class="th-time" style="text-align: center;">Order Time</th>
-                        <th class="th-eta" style="min-width: 100px; text-align: center;">ETA</th>
-                        <th class="th-actions" style="min-width: 130px; width: 130px; text-align: center;">Actions</th>
-                    </tr>
-                </thead>
+            <thead>
+                <tr>
+                    <th class="th-order" style="text-align: center;">Order Details</th>
+                    <th class="th-customer" style="text-align: center;">Customer</th>
+                    <th class="th-type" style="text-align: center;">Type/Table</th>
+                    <th class="th-amount" style="text-align: center;">Amount</th>
+                    <th class="th-status" style="min-width: 180px; text-align: center;">Status</th>
+                    <th class="th-time" style="text-align: center;">Order Time</th>
+                    <th class="th-eta" style="min-width: 100px; text-align: center;">ETA</th>
+                    <th class="th-actions" style="min-width: 130px; width: 130px; text-align: center;">Actions</th>
+                </tr>
+            </thead>
             <tbody>
                 @foreach($orders as $order)
                 <tr>
-                    <td class="cell-center">
+                    <td class="cell-center" data-label="Order Details">
                         <div class="order-info">
-                            {{-- <div class="order-id">#{{ $order->id }}</div> --}}
-                            @if($order->id)
-                                <div class="confirmation-code">ORD-{{ $order->id }}</div>
-                            @endif
-                            @if($order->is_rush_order)
-                                <span class="status status-rush">
-                                    <i class="fas fa-bolt"></i> RUSH
-                                </span>
-                            @endif
-                            @if($order->items_count)
-                                <div class="order-meta">{{ $order->items_count }} items</div>
-                            @endif
-                        </div>
-                    </td>
-                    <td class="cell-center">
-                        <div class="customer-info">
-                            <div class="customer-name">{{ $order->user->name ?? 'Unknown' }}</div>
-                        </div>
-                    </td>
-                    <td class="cell-center">
-                        <div class="type-table-info">
-                            <span class="status status-type status-{{ str_replace('_', '-', $order->order_type) }}">
-                                {{ str_replace('_', ' ', ucfirst($order->order_type)) }}
-                            </span>
-                            @if($order->order_source)
-                                <div class="order-source" style="font-size: 10px; color: #64748b; margin-top: 2px;">
-                                    {{ ucfirst(str_replace('_', ' ', $order->order_source)) }}
-                                </div>
-                            @endif
-                            @if($order->table)
-                                <div class="table-info">
-                                    <strong>{{ $order->table->table_number }}</strong>
-                                </div>
-                            @elseif($order->table_number)
-                                <div class="table-info">
-                                    <strong>{{ $order->table_number }}</strong>
-                                </div>
-                            @endif
-                        </div>
-                    </td>
-                    <td class="cell-center">
-                        <div class="amount">RM {{ number_format($order->total_amount, 2) }}</div>
-                    </td>
-                    <td class="cell-center">
-                        <div class="status-group-vertical" style="display: flex; flex-direction: column; align-items: center;">
-                            <!-- Payment Status (Top) -->
-                            <span class="status status-payment status-payment-{{ str_replace('_', '-', $order->payment_status) }}" style="margin-bottom: 4px;">
-                                <i class="fas fa-{{ $order->payment_status === 'paid' ? 'check-circle' : ($order->payment_status === 'unpaid' ? 'clock' : 'info-circle') }}"></i>
-                                {{ ucfirst($order->payment_status) }}
-                            </span>
+                            {{-- <div class="order-id">#{{ $order->id }}
+                        </div> --}}
+                        @if($order->id)
+                        <div class="confirmation-code">ORD-{{ $order->id }}</div>
+                        @endif
+                        @if($order->is_rush_order)
+                        <span class="status status-rush">
+                            <i class="fas fa-bolt"></i> RUSH
+                        </span>
+                        @endif
+                        @if($order->items_count)
+                        <div class="order-meta">{{ $order->items_count }} items</div>
+                        @endif
+    </div>
+    </td>
+    <td class="cell-center" data-label="Customer">
+        <div class="customer-info">
+            <div class="customer-name">{{ $order->user->name ?? 'Unknown' }}</div>
+        </div>
+    </td>
+    <td class="cell-center" data-label="Type/Table">
+        <div class="type-table-info">
+            <span class="status status-type status-{{ str_replace('_', '-', $order->order_type) }}">
+                {{ str_replace('_', ' ', ucfirst($order->order_type)) }}
+            </span>
+            @if($order->order_source)
+            <div class="order-source" style="font-size: 10px; color: #64748b; margin-top: 2px;">
+                {{ ucfirst(str_replace('_', ' ', $order->order_source)) }}
+            </div>
+            @endif
+            @if($order->table)
+            <div class="table-info">
+                <strong>{{ $order->table->table_number }}</strong>
+            </div>
+            @elseif($order->table_number)
+            <div class="table-info">
+                <strong>{{ $order->table_number }}</strong>
+            </div>
+            @endif
+        </div>
+    </td>
+    <td class="cell-center" data-label="Amount">
+        <div class="amount">RM {{ number_format($order->total_amount, 2) }}</div>
+    </td>
+    <td class="cell-center" data-label="Status">
+        <div class="status-group-vertical" style="display: flex; flex-direction: column; align-items: center;">
+            <!-- Payment Status (Top) -->
+            <span class="status status-payment status-payment-{{ str_replace('_', '-', $order->payment_status) }}" style="margin-bottom: 4px;">
+                <i class="fas fa-{{ $order->payment_status === 'paid' ? 'check-circle' : ($order->payment_status === 'unpaid' ? 'clock' : 'info-circle') }}"></i>
+                {{ ucfirst($order->payment_status) }}
+            </span>
 
-                            <!-- Order Source (Middle) -->
-                            @if($order->order_source)
-                                <span class="status status-method" style="font-size: 9px; background: #e0e7ff; color: #4c51bf; padding: 3px 6px; margin-bottom: 4px;">
-                                    {{ ucfirst(str_replace('_', ' ', $order->order_source)) }}
-                                </span>
-                            @endif
+            <!-- Order Source (Middle) -->
+            @if($order->order_source)
+            <span class="status status-method" style="font-size: 9px; background: #e0e7ff; color: #4c51bf; padding: 3px 6px; margin-bottom: 4px;">
+                {{ ucfirst(str_replace('_', ' ', $order->order_source)) }}
+            </span>
+            @endif
 
-                            <!-- Order Status (Bottom) -->
-                            <span class="status status-order status-order-{{ str_replace('_', '-', $order->order_status) }}">
-                                <i class="fas fa-{{
+            <!-- Order Status (Bottom) -->
+            <span class="status status-order status-order-{{ str_replace('_', '-', $order->order_status) }}">
+                <i class="fas fa-{{
                                     $order->order_status === 'pending' ? 'clock' :
                                     ($order->order_status === 'preparing' ? 'utensils' :
                                     ($order->order_status === 'ready' ? 'bell' :
                                     ($order->order_status === 'completed' ? 'check-double' : 'times')))
                                 }}"></i>
-                                {{ str_replace('_', ' ', ucfirst($order->order_status)) }}
-                            </span>
-                        </div>
-                    </td>
-                    <td class="cell-center">
-                        <div class="time-info">
-                            <div class="order-date">{{ $order->order_time->format('M d') }}</div>
-                            <div class="order-time">{{ $order->order_time->format('g:i A') }}</div>
-                        </div>
-                    </td>
-                    <td class="cell-center">
-                        <div class="eta-info">
-                            @if($order->etas && $order->etas->count() > 0)
-                                @php
-                                    $latestEta = $order->etas->sortByDesc('created_at')->first();
-                                    $estimatedCompletionTime = $order->order_time ? $order->order_time->addMinutes($latestEta->current_estimate) : null;
-                                    $now = now();
-                                    $isOverdue = $estimatedCompletionTime && $estimatedCompletionTime < $now && !in_array($order->order_status, ['completed', 'cancelled']);
-                                @endphp
-                                @if($estimatedCompletionTime && !in_array($order->order_status, ['completed', 'cancelled']))
-                                    <div class="eta-time" style="font-size: 14px; font-weight: 600; color: {{ $isOverdue ? '#ef4444' : '#10b981' }};">
-                                        {{ $estimatedCompletionTime->format('g:i A') }}
-                                    </div>
-                                    @if($isOverdue)
-                                        <div style="font-size: 9px; color: #ef4444; font-weight: 600;">OVERDUE</div>
-                                    @elseif($latestEta->is_delayed)
-                                        <div style="font-size: 9px; color: #f59e0b; font-weight: 600;">DELAYED</div>
-                                    @endif
-                                @elseif(in_array($order->order_status, ['completed', 'cancelled']))
-                                    <span style="color: #6b7280; font-size: 12px;">{{ ucfirst($order->order_status) }}</span>
-                                @else
-                                    <span class="text-muted" style="font-size: 12px;">No ETA</span>
-                                @endif
-                            @else
-                                <span class="text-muted" style="font-size: 12px;">No ETA</span>
-                            @endif
-                        </div>
-                    </td>
-                    <td class="cell-center">
-                        <div class="table-actions" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 100%; max-width: 120px;">
-                            <!-- Status Update Buttons (Top Row) -->
-                            @if($order->order_status === 'pending')
-                                <button class="action-btn confirm-btn" title="Confirm Order" onclick="updateOrderStatus({{ $order->id }}, 'preparing')">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button class="action-btn cancel-btn" title="Cancel Order" onclick="updateOrderStatus({{ $order->id }}, 'cancelled')">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            @elseif($order->order_status === 'preparing')
-                                <button class="action-btn ready-btn" title="Mark as Ready" onclick="updateOrderStatus({{ $order->id }}, 'ready')" style="grid-column: span 2;">
-                                    <i class="fas fa-bell"></i>
-                                </button>
-                            @elseif($order->order_status === 'ready')
-                                <button class="action-btn complete-btn" title="Mark as Completed" onclick="updateOrderStatus({{ $order->id }}, 'completed')" style="grid-column: span 2;">
-                                    <i class="fas fa-check-circle"></i>
-                                </button>
-                            @endif
-
-                            <!-- Payment Status Button (if needed) -->
-                            @if(($order->payment_method === 'counter' && $order->payment_status === 'unpaid') || ($order->order_status === 'completed' && $order->payment_method === 'counter' && $order->payment_status === 'unpaid'))
-                                <button class="action-btn" title="Mark as Paid"
-                                        onclick="updatePaymentStatus({{ $order->id }}, 'paid')"
-                                        style="background: #10b981; color: white; grid-column: span 2;">
-                                    <i class="fas fa-dollar-sign"></i>
-                                </button>
-                            @endif
-
-                            <!-- Default Action Buttons (Bottom Row) -->
-                            <a href="{{ route('admin.order.show', $order->id) }}"
-                               class="action-btn view-btn" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{{ route('admin.order.edit', $order->id) }}"
-                               class="action-btn edit-btn" title="Edit Order">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            @if(!in_array($order->order_status, ['completed', 'cancelled']))
-                                <form method="POST" action="{{ route('admin.order.destroy', $order->id) }}" style="display: contents;"
-                                      onsubmit="return confirm('Are you sure you want to delete this order?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="action-btn delete-btn" title="Delete Order">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            @endif
-                        </div>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-    @else
-        <div class="empty-state">
-            <div class="empty-state-icon">
-                <i class="fas fa-shopping-cart"></i>
-            </div>
-            <div class="empty-state-title">No orders found</div>
-            <div class="empty-state-text">
-                @if(request()->hasAny(['search', 'order_status', 'order_type', 'payment_status', 'date']))
-                    No orders match your current filters. Try adjusting your search criteria.
-                @else
-                    No orders have been placed yet.
-                @endif
-            </div>
-            @if(!request()->hasAny(['search', 'order_status', 'order_type', 'payment_status', 'date']))
-                <div style="margin-top: 20px;">
-                    <a href="{{ route('admin.order.create') }}" class="admin-btn btn-primary">
-                        <i class="fas fa-plus"></i> Create First Order
-                    </a>
+                {{ str_replace('_', ' ', ucfirst($order->order_status)) }}
+            </span>
+        </div>
+    </td>
+    <td class="cell-center" data-label="Order Time">
+        <div class="time-info">
+            <div class="order-date">{{ $order->order_time->format('M d') }}</div>
+            <div class="order-time">{{ $order->order_time->format('g:i A') }}</div>
+        </div>
+    </td>
+    <td class="cell-center" data-label="ETA">
+        <div class="eta-info">
+            @if($order->etas && $order->etas->count() > 0)
+            @php
+            $latestEta = $order->etas->sortByDesc('created_at')->first();
+            $estimatedCompletionTime = $order->order_time ? $order->order_time->addMinutes($latestEta->current_estimate) : null;
+            $now = now();
+            $isOverdue = $estimatedCompletionTime && $estimatedCompletionTime < $now && !in_array($order->order_status, ['completed', 'cancelled']);
+                @endphp
+                @if($estimatedCompletionTime && !in_array($order->order_status, ['completed', 'cancelled']))
+                <div class="eta-time" style="font-size: 14px; font-weight: 600; color: {{ $isOverdue ? '#ef4444' : '#10b981' }};">
+                    {{ $estimatedCompletionTime->format('g:i A') }}
                 </div>
-            @endif
-        </div>
-    @endif
-
-    <!-- Pagination -->
-    @if($orders->hasPages())
-        <div class="pagination">
-            <div style="display: flex; align-items: center; gap: 16px; margin-right: auto;">
-                <span style="font-size: 14px; color: var(--text-2);">
-                    Showing {{ $orders->firstItem() }} to {{ $orders->lastItem() }} of {{ $orders->total() }} results
-                </span>
-            </div>
-            
-            @if($orders->onFirstPage())
-                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
-                    <i class="fas fa-chevron-left"></i>
-                </span>
-            @else
-                <a href="{{ $orders->previousPageUrl() }}" class="pagination-btn">
-                    <i class="fas fa-chevron-left"></i>
-                </a>
-            @endif
-
-            @foreach($orders->getUrlRange(1, $orders->lastPage()) as $page => $url)
-                @if($page == $orders->currentPage())
-                    <span class="pagination-btn active">{{ $page }}</span>
-                @else
-                    <a href="{{ $url }}" class="pagination-btn">{{ $page }}</a>
+                @if($isOverdue)
+                <div style="font-size: 9px; color: #ef4444; font-weight: 600;">OVERDUE</div>
+                @elseif($latestEta->is_delayed)
+                <div style="font-size: 9px; color: #f59e0b; font-weight: 600;">DELAYED</div>
                 @endif
-            @endforeach
+                @elseif(in_array($order->order_status, ['completed', 'cancelled']))
+                <span style="color: #6b7280; font-size: 12px;">{{ ucfirst($order->order_status) }}</span>
+                @else
+                <span class="text-muted" style="font-size: 12px;">No ETA</span>
+                @endif
+                @else
+                <span class="text-muted" style="font-size: 12px;">No ETA</span>
+                @endif
+        </div>
+    </td>
+    <td class="cell-center" data-label="Actions">
+        <div class="table-actions" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; width: 100%; max-width: 120px;">
+            <!-- Status Update Buttons (Top Row) -->
+            @if($order->order_status === 'pending')
+            <button class="action-btn confirm-btn" title="Confirm Order" onclick="updateOrderStatus({{ $order->id }}, 'preparing')">
+                <i class="fas fa-check"></i>
+            </button>
+            <button class="action-btn cancel-btn" title="Cancel Order" onclick="updateOrderStatus({{ $order->id }}, 'cancelled')">
+                <i class="fas fa-times"></i>
+            </button>
+            @elseif($order->order_status === 'preparing')
+            <button class="action-btn ready-btn" title="Mark as Ready" onclick="updateOrderStatus({{ $order->id }}, 'ready')" style="grid-column: span 2;">
+                <i class="fas fa-bell"></i>
+            </button>
+            @elseif($order->order_status === 'ready')
+            <button class="action-btn complete-btn" title="Mark as Completed" onclick="updateOrderStatus({{ $order->id }}, 'completed')" style="grid-column: span 2;">
+                <i class="fas fa-check-circle"></i>
+            </button>
+            @endif
 
-            @if($orders->hasMorePages())
-                <a href="{{ $orders->nextPageUrl() }}" class="pagination-btn">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-            @else
-                <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
-                    <i class="fas fa-chevron-right"></i>
-                </span>
+            <!-- Payment Status Button (if needed) -->
+            @if(($order->payment_method === 'counter' && $order->payment_status === 'unpaid') || ($order->order_status === 'completed' && $order->payment_method === 'counter' && $order->payment_status === 'unpaid'))
+            <button class="action-btn" title="Mark as Paid"
+                onclick="updatePaymentStatus({{ $order->id }}, 'paid')"
+                style="background: #10b981; color: white; grid-column: span 2;">
+                <i class="fas fa-dollar-sign"></i>
+            </button>
+            @endif
+
+            <!-- Default Action Buttons (Bottom Row) -->
+            <a href="{{ route('admin.order.show', $order->id) }}"
+                class="action-btn view-btn" title="View Details">
+                <i class="fas fa-eye"></i>
+            </a>
+            <a href="{{ route('admin.order.edit', $order->id) }}"
+                class="action-btn edit-btn" title="Edit Order">
+                <i class="fas fa-edit"></i>
+            </a>
+            @if(!in_array($order->order_status, ['completed', 'cancelled']))
+            <form method="POST" action="{{ route('admin.order.destroy', $order->id) }}" style="display: contents;"
+                onsubmit="return confirm('Are you sure you want to delete this order?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="action-btn delete-btn" title="Delete Order">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </form>
             @endif
         </div>
+    </td>
+    </tr>
+    @endforeach
+    </tbody>
+    </table>
+</div>
+@else
+<div class="empty-state">
+    <div class="empty-state-icon">
+        <i class="fas fa-shopping-cart"></i>
+    </div>
+    <div class="empty-state-title">No orders found</div>
+    <div class="empty-state-text">
+        @if(request()->hasAny(['search', 'order_status', 'order_type', 'payment_status', 'date']))
+        No orders match your current filters. Try adjusting your search criteria.
+        @else
+        No orders have been placed yet.
+        @endif
+    </div>
+    @if(!request()->hasAny(['search', 'order_status', 'order_type', 'payment_status', 'date']))
+    <div style="margin-top: 20px;">
+        <a href="{{ route('admin.order.create') }}" class="admin-btn btn-primary">
+            <i class="fas fa-plus"></i> Create First Order
+        </a>
+    </div>
     @endif
+</div>
+@endif
+
+<!-- Pagination -->
+@if($orders->hasPages())
+<div class="pagination">
+    <div style="display: flex; align-items: center; gap: 16px; margin-right: auto;">
+        <span style="font-size: 14px; color: var(--text-2);">
+            Showing {{ $orders->firstItem() }} to {{ $orders->lastItem() }} of {{ $orders->total() }} results
+        </span>
+    </div>
+
+    @if($orders->onFirstPage())
+    <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
+        <i class="fas fa-chevron-left"></i>
+    </span>
+    @else
+    <a href="{{ $orders->previousPageUrl() }}" class="pagination-btn">
+        <i class="fas fa-chevron-left"></i>
+    </a>
+    @endif
+
+    @foreach($orders->getUrlRange(1, $orders->lastPage()) as $page => $url)
+    @if($page == $orders->currentPage())
+    <span class="pagination-btn active">{{ $page }}</span>
+    @else
+    <a href="{{ $url }}" class="pagination-btn">{{ $page }}</a>
+    @endif
+    @endforeach
+
+    @if($orders->hasMorePages())
+    <a href="{{ $orders->nextPageUrl() }}" class="pagination-btn">
+        <i class="fas fa-chevron-right"></i>
+    </a>
+    @else
+    <span class="pagination-btn" style="opacity: 0.5; cursor: not-allowed;">
+        <i class="fas fa-chevron-right"></i>
+    </span>
+    @endif
+</div>
+@endif
 </div>
 @endsection
 
 @section('scripts')
 <script src="{{ asset('js/admin/order-management.js') }}"></script>
 <script>
-// Notification function
-function showNotification(message, type) {
-    // Create a simple notification
-    const notification = document.createElement('div');
-    notification.className = 'notification ' + type;
-    notification.textContent = message;
-    notification.style.cssText = `
+    // Notification function
+    function showNotification(message, type) {
+        // Create a simple notification
+        const notification = document.createElement('div');
+        notification.className = 'notification ' + type;
+        notification.textContent = message;
+        notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
@@ -381,116 +383,136 @@ function showNotification(message, type) {
         z-index: 9999;
         ${type === 'success' ? 'background-color: #28a745;' : 'background-color: #dc3545;'}
     `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
 
-// Check for session messages on page load
-document.addEventListener('DOMContentLoaded', function() {
-    @if(session('message'))
-        showNotification('{{ session('message') }}', 'success');
-    @endif
-    
-    @if(session('success'))
-        showNotification('{{ session('success') }}', 'success');
-    @endif
-    
-    @if(session('error'))
-        showNotification('{{ session('error') }}', 'error');
-    @endif
-});
+        document.body.appendChild(notification);
 
-// Auto-refresh page every 3 minutes to update ETA status
-setInterval(() => {
-    if (document.visibilityState === 'visible') {
-        // Only refresh if no modals or forms are open
-        if (!document.querySelector('.modal.show') && !document.querySelector('form:focus-within')) {
-            location.reload();
-        }
-    }
-}, 180000); // 3 minutes
-
-// Function to update order status
-function updateOrderStatus(orderId, newStatus) {
-    // Status transition validation
-    const statusTransitions = {
-        'pending': ['preparing', 'cancelled'],
-        'preparing': ['ready', 'cancelled'],
-        'ready': ['completed', 'cancelled']
-    };
-
-    // Confirmation messages
-    const confirmMessages = {
-        'preparing': 'Start preparing this order?',
-        'ready': 'Mark this order as ready?',
-        'completed': 'Mark this order as completed?',
-        'cancelled': 'Cancel this order? This action cannot be undone.'
-    };
-
-    if (!confirm(confirmMessages[newStatus] || 'Update order status?')) {
-        return;
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
     }
 
-    // Use fetch API instead of form submit to handle JSON response
-    fetch(`/admin/order/${orderId}/update-status`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            order_status: newStatus
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Show success message and reload page
-            console.log('Order status updated successfully');
-            location.reload();
-        } else {
-            alert('Error updating order status: ' + (data.message || 'Unknown error'));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error updating order status. Please try again.');
+    // Check for session messages on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(session('message'))
+        showNotification('{{ session('
+            message ') }}', 'success');
+        @endif
+
+        @if(session('success'))
+        showNotification('{{ session('
+            success ') }}', 'success');
+        @endif
+
+        @if(session('error'))
+        showNotification('{{ session('
+            error ') }}', 'error');
+        @endif
     });
-}
 
-// Function to update payment status
-function updatePaymentStatus(orderId, newStatus) {
-    if (!confirm('Mark this order as paid?')) {
-        return;
+    // Auto-refresh page every 3 minutes to update ETA status
+    setInterval(() => {
+        if (document.visibilityState === 'visible') {
+            // Only refresh if no modals or forms are open
+            if (!document.querySelector('.modal.show') && !document.querySelector('form:focus-within')) {
+                location.reload();
+            }
+        }
+    }, 180000); // 3 minutes
+
+    // Function to update order status
+    async function updateOrderStatus(orderId, newStatus) {
+        // Status transition validation
+        const statusTransitions = {
+            'pending': ['preparing', 'cancelled'],
+            'preparing': ['ready', 'cancelled'],
+            'ready': ['completed', 'cancelled']
+        };
+
+        // Confirmation messages
+        const confirmMessages = {
+            'preparing': 'Start preparing this order?',
+            'ready': 'Mark this order as ready?',
+            'completed': 'Mark this order as completed?',
+            'cancelled': 'Cancel this order? This action cannot be undone.'
+        };
+
+        const confirmed = await showConfirm(
+            'Update Order Status?',
+            confirmMessages[newStatus] || 'Update order status?',
+            newStatus === 'cancelled' ? 'danger' : 'warning',
+            newStatus === 'cancelled' ? 'Cancel Order' : 'Update',
+            'Keep Current'
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        // Use fetch API instead of form submit to handle JSON response
+        fetch(`/admin/order/${orderId}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    order_status: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message and reload page
+                    console.log('Order status updated successfully');
+                    location.reload();
+                } else {
+                    Toast.error('Error', 'Error updating order status: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Toast.error('Error', 'Error updating order status. Please try again.');
+            });
     }
 
-    fetch(`/admin/order/${orderId}/update-payment-status`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            payment_status: newStatus
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            console.log('Payment status updated successfully');
-            location.reload();
-        } else {
-            alert('Error updating payment status: ' + (data.message || 'Unknown error'));
+    // Function to update payment status
+    async function updatePaymentStatus(orderId, newStatus) {
+        const confirmed = await showConfirm(
+            'Update Payment Status?',
+            'Mark this order as paid?',
+            'info',
+            'Mark Paid',
+            'Keep Unpaid'
+        );
+
+        if (!confirmed) {
+            return;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error updating payment status. Please try again.');
-    });
-}
+
+        fetch(`/admin/order/${orderId}/update-payment-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    payment_status: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Payment status updated successfully');
+                    Toast.success('Success', 'Payment status updated');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    Toast.error('Error', 'Error updating payment status: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Toast.error('Error', 'Error updating payment status. Please try again.');
+            });
+    }
 </script>
 @endsection

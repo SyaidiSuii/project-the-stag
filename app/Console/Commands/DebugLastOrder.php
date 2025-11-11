@@ -35,14 +35,11 @@ class DebugLastOrder extends Command
         $this->info("\n🍽️ ORDER ITEMS:");
         foreach ($order->items as $item) {
             $categoryName = $item->menuItem->category->name ?? 'N/A';
-            $categoryStationType = $item->menuItem->category->default_station_type ?? 'NULL';
             $categoryStationId = $item->menuItem->category->default_station_id ?? 'NULL';
             
             $this->line("  ✓ {$item->menuItem->name}");
             $this->line("    - Category: {$categoryName}");
-            $this->line("    - Category Station Type: {$categoryStationType}");
             $this->line("    - Category Station ID: {$categoryStationId}");
-            $this->line("    - Item Station Type: " . ($item->menuItem->station_type ?? 'NULL'));
             $this->line("    - Item Override ID: " . ($item->menuItem->station_override_id ?? 'NULL'));
             
             // Check effective station

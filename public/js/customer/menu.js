@@ -448,11 +448,7 @@ document.addEventListener('click', async function(e) {
 
     if (!itemId || isNaN(itemId)) {
       console.error('Error: Menu item ID is missing! Cannot proceed with order.');
-      if (typeof Toast !== 'undefined') {
-        Toast.error('Item Error', 'Sorry, there was an error loading this item. Please refresh the page and try again.');
-      } else {
-        alert('Sorry, there was an error loading this item. Please refresh the page and try again.');
-      }
+      Toast.error('Item Error', 'Sorry, there was an error loading this item. Please refresh the page and try again.');
       return;
     }
 
@@ -820,6 +816,25 @@ function renderRegularCartItem(item, index) {
     </div>
   `;
 
+  // Build add-ons display if item has add-ons
+  let addonsDisplay = '';
+  if (item.selectedAddons && item.selectedAddons.length > 0) {
+    const addonsList = item.selectedAddons.map(addon => `${addon.name} (+RM${addon.price.toFixed(2)})`).join(', ');
+    addonsDisplay = `<div class="cart-item-addons" style="font-size: 0.85em; color: #6b7280; margin-top: 4px;">
+      <i class="fas fa-puzzle-piece" style="margin-right: 4px; color: #6366f1;"></i>
+      ${addonsList}
+    </div>`;
+  }
+
+  // Build notes display if item has notes
+  let notesDisplay = '';
+  if (item.notes && item.notes.trim()) {
+    notesDisplay = `<div class="cart-item-notes" style="font-size: 0.85em; color: #6b7280; margin-top: 4px; font-style: italic;">
+      <i class="fas fa-sticky-note" style="margin-right: 4px;"></i>
+      ${item.notes}
+    </div>`;
+  }
+
   return `
     <div class="cart-item${unavailableClass}${freeItemClass}">
       <div class="cart-item-image">
@@ -831,6 +846,8 @@ function renderRegularCartItem(item, index) {
           ${isFreeItem && item.free_item_title ? `<div style="font-size: 0.75em; color: #10b981; margin-top: 4px;">🎁 ${item.free_item_title}</div>` : ''}
         </div>
         <div class="cart-item-price">${priceDisplay}</div>
+        ${addonsDisplay}
+        ${notesDisplay}
       </div>
       ${quantityControls}
       ${unavailableBadge}
@@ -1040,7 +1057,8 @@ function showOrderModal(itemId, itemName, itemPrice, itemDescription, itemImage,
     price: itemPrice, // Display string (e.g., "RM 15.00")
     unit_price: unitPrice, // Numeric value for calculations (e.g., 15.00)
     description: itemDescription,
-    image: itemImage
+    image: itemImage,
+    selectedAddons: [] // Track selected add-ons
   };
 
   // Update modal content
@@ -1059,11 +1077,93 @@ function showOrderModal(itemId, itemName, itemPrice, itemDescription, itemImage,
     }
   }
 
-  // Update total price
+  // Fetch and display add-ons
+  loadOrderAddons(itemId);
+
+  // Update total
   updateOrderTotal();
 
   // Show modal
   if (modal) modal.style.display = 'flex';
+}
+
+// Load add-ons for Order Now modal
+async function loadOrderAddons(itemId) {
+  const addonsSection = document.getElementById('order-addons-section');
+  const addonsContainer = document.getElementById('order-addons-container');
+
+  if (!addonsSection || !addonsContainer) return;
+
+  try {
+    const response = await fetch(`/api/menu-items/${itemId}/addons`);
+    const data = await response.json();
+
+    if (data.status && data.addons && data.addons.length > 0) {
+      // Clear previous add-ons
+      addonsContainer.innerHTML = '';
+
+      // Create checkbox for each add-on
+      data.addons.forEach(addon => {
+        const addonDiv = document.createElement('div');
+        addonDiv.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 8px; border: 2px solid #e5e7eb; transition: all 0.2s;';
+
+        addonDiv.innerHTML = `
+          <input
+            type="checkbox"
+            id="order-addon-${addon.id}"
+            value="${addon.id}"
+            data-price="${addon.price}"
+            data-name="${addon.name}"
+            style="width: 20px; height: 20px; cursor: pointer; accent-color: #6366f1;">
+          <label for="order-addon-${addon.id}" style="flex: 1; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #1f2937;">
+            <span style="font-weight: 600;">${addon.name}</span>
+            <span style="color: #6366f1; font-weight: 700;">${addon.formatted_price}</span>
+          </label>
+        `;
+
+        // Add hover effect
+        addonDiv.addEventListener('mouseenter', function() {
+          this.style.borderColor = '#6366f1';
+          this.style.background = '#f0f9ff';
+        });
+        addonDiv.addEventListener('mouseleave', function() {
+          const checkbox = this.querySelector('input[type="checkbox"]');
+          this.style.borderColor = checkbox.checked ? '#6366f1' : '#e5e7eb';
+          this.style.background = checkbox.checked ? '#f0f9ff' : 'white';
+        });
+
+        // Add change event to checkbox
+        const checkbox = addonDiv.querySelector('input[type="checkbox"]');
+        checkbox.addEventListener('change', function() {
+          updateOrderSelectedAddons();
+          updateOrderTotal();
+          // Update border color
+          addonDiv.style.borderColor = this.checked ? '#6366f1' : '#e5e7eb';
+          addonDiv.style.background = this.checked ? '#f0f9ff' : 'white';
+        });
+
+        addonsContainer.appendChild(addonDiv);
+      });
+
+      addonsSection.style.display = 'block';
+    } else {
+      addonsSection.style.display = 'none';
+    }
+  } catch (error) {
+    console.error('Error loading add-ons for order modal:', error);
+    addonsSection.style.display = 'none';
+  }
+}
+
+function updateOrderSelectedAddons() {
+  if (!currentOrderItem) return;
+
+  const checkboxes = document.querySelectorAll('#order-addons-container input[type="checkbox"]:checked');
+  currentOrderItem.selectedAddons = Array.from(checkboxes).map(cb => ({
+    id: parseInt(cb.value),
+    name: cb.dataset.name,
+    price: parseFloat(cb.dataset.price)
+  }));
 }
 
 // Close order modal
@@ -1137,6 +1237,7 @@ document.addEventListener('click', function(e) {
         unit_price: currentOrderItem.unit_price, // IMPORTANT: Numeric value for backend (includes discount)
         quantity: orderQuantity,
         notes: specialNotes,
+        selectedAddons: currentOrderItem.selectedAddons || [], // Include selected add-ons
         // Remove payment_method - let user choose on payment page
         order_type: orderType,
         total_amount: `RM ${totalAmount.toFixed(2)}`
@@ -1176,7 +1277,14 @@ function updateOrderTotal() {
   const totalElement = document.getElementById('order-total-amount');
   if (totalElement) {
     const price = parseFloat(currentOrderItem.price.replace(/[^\d.]/g, '')) || 0;
-    const total = price * orderQuantity;
+
+    // Calculate add-ons total
+    const addonsTotal = currentOrderItem.selectedAddons
+      ? currentOrderItem.selectedAddons.reduce((sum, addon) => sum + addon.price, 0)
+      : 0;
+
+    // Calculate final total
+    const total = (price + addonsTotal) * orderQuantity;
     totalElement.textContent = `RM ${total.toFixed(2)}`;
   }
 }
@@ -1717,11 +1825,7 @@ function initPromoCodeListeners() {
           await updateCart();
         }
       } catch (error) {
-        if (typeof Toast !== 'undefined') {
-          Toast.error('Error', 'An error occurred while removing promo');
-        } else {
-          alert('An error occurred');
-        }
+        Toast.error('Error', 'An error occurred while removing promo');
       } finally {
         removeBtn.disabled = false;
       }

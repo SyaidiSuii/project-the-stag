@@ -37,16 +37,10 @@ class AssignDefaultStationsToCategories extends Command
             return 1;
         }
 
-        // Create a mapping of station types to station IDs
-        $stationMap = [];
-        foreach ($stations as $station) {
-            $stationMap[$station->station_type] = $station->id;
-        }
-
         // Display available stations
         $this->info("\n📋 Available Stations:");
         foreach ($stations as $station) {
-            $this->line("  - {$station->name} ({$station->station_type})");
+            $this->line("  - {$station->name}");
         }
 
         // Get categories without default stations
@@ -63,8 +57,8 @@ class AssignDefaultStationsToCategories extends Command
         $skipped = 0;
 
         foreach ($categories as $category) {
-            // Try to match category name/type to station type
-            $stationId = $this->guessStationForCategory($category, $stationMap, $stations->first()->id);
+            // Assign first active station for now
+            $stationId = $stations->first()->id;
 
             if ($stationId) {
                 $category->default_station_id = $stationId;
@@ -94,34 +88,6 @@ class AssignDefaultStationsToCategories extends Command
      */
     protected function guessStationForCategory($category, $stationMap, $fallbackStationId)
     {
-        $name = strtolower($category->name);
-
-        // Check for drinks/beverages
-        if (preg_match('/(drink|beverage|juice|coffee|tea|smoothie|shake|soda)/i', $name)) {
-            return $stationMap['drinks'] ?? $fallbackStationId;
-        }
-
-        // Check for desserts/sweets
-        if (preg_match('/(dessert|sweet|ice cream|cake|pastry|pudding)/i', $name)) {
-            return $stationMap['desserts'] ?? $stationMap['pastry'] ?? $fallbackStationId;
-        }
-
-        // Check for salads/cold items
-        if (preg_match('/(salad|cold|fresh)/i', $name)) {
-            return $stationMap['salad_bar'] ?? $stationMap['cold_kitchen'] ?? $fallbackStationId;
-        }
-
-        // Check for grilled items
-        if (preg_match('/(grill|bbq|barbecue|steak|burger)/i', $name)) {
-            return $stationMap['grill'] ?? $fallbackStationId;
-        }
-
-        // Check for baked items
-        if (preg_match('/(bake|bread|pizza|pastry)/i', $name)) {
-            return $stationMap['bakery'] ?? $stationMap['pastry'] ?? $fallbackStationId;
-        }
-
-        // Default to hot kitchen for most food items
-        return $stationMap['hot_kitchen'] ?? $fallbackStationId;
+        return $fallbackStationId;
     }
 }

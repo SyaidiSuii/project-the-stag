@@ -346,25 +346,8 @@
                     @endphp
 
                     @forelse($uniqueStations as $assignment)
-                        @php
-                            $stationType = $assignment->station->station_type ?? 'general';
-                            $badgeClass = match($stationType) {
-                                'hot_kitchen' => 'hot',
-                                'cold_kitchen' => 'cold',
-                                'drinks' => 'drinks',
-                                'desserts' => 'desserts',
-                                default => ''
-                            };
-                            $icon = match($stationType) {
-                                'hot_kitchen' => 'fire',
-                                'cold_kitchen' => 'leaf',
-                                'drinks' => 'glass-martini',
-                                'desserts' => 'birthday-cake',
-                                default => 'utensils'
-                            };
-                        @endphp
-                        <div class="station-badge {{ $badgeClass }}">
-                            <i class="fas fa-{{ $icon }}"></i>
+                        <div class="station-badge">
+                            {!! $assignment->station->icon ?? '🍽️' !!}
                             {{ $assignment->station->name }}
                             <span class="badge badge-{{ $assignment->status == 'started' ? 'warning' : 'secondary' }}" style="font-size: 10px; margin-left: 4px;">
                                 {{ ucfirst($assignment->status) }}
@@ -446,17 +429,8 @@
                                 @if($itemStations->isNotEmpty())
                                 <div style="margin-top: 8px;">
                                     @foreach($itemStations as $assignment)
-                                        @php
-                                            $stationType = $assignment->station->station_type ?? 'general';
-                                            $badgeClass = match($stationType) {
-                                                'hot_kitchen' => 'hot',
-                                                'cold_kitchen' => 'cold',
-                                                'drinks' => 'drinks',
-                                                'desserts' => 'desserts',
-                                                default => ''
-                                            };
-                                        @endphp
-                                        <span class="station-badge {{ $badgeClass }}" style="font-size: 11px; padding: 4px 8px;">
+                                        <span class="station-badge" style="font-size: 11px; padding: 4px 8px;">
+                                            {!! $assignment->station->icon ?? '🍽️' !!}
                                             {{ $assignment->station->name }}
                                         </span>
                                     @endforeach

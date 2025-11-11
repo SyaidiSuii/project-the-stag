@@ -189,9 +189,8 @@ class KitchenLoadService
      */
     protected function suggestAction(KitchenStation $station)
     {
-        // Find alternative stations of same type with lower load
-        $alternatives = KitchenStation::where('station_type', $station->station_type)
-            ->where('is_active', true)
+        // Find alternative stations with lower load
+        $alternatives = KitchenStation::where('is_active', true)
             ->where('id', '!=', $station->id)
             ->get()
             ->filter(function ($alt) {
@@ -227,7 +226,7 @@ class KitchenLoadService
                     return [
                         'id' => $station->id,
                         'name' => $station->name,
-                        'station_type' => $station->station_type,
+                        'icon' => $station->icon,
                         'current_load' => $todayLoad,
                         'max_capacity' => $station->max_capacity,
                         'load_percentage' => $loadPercentage,
