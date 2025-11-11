@@ -430,11 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         paymentMethodModal.style.display = 'flex';
                     }
                 } else {
-                    if (typeof Toast !== 'undefined') {
-                        Toast.warning('Cart Empty', 'Please add items to your cart before checkout');
-                    } else {
-                        alert('Cart Empty: Please add items to your cart before checkout');
-                    }
+                    Toast.warning('Cart Empty', 'Please add items to your cart before checkout');
                 }
             });
         }

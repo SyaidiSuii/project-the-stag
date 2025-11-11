@@ -166,6 +166,11 @@ class MenuItemController extends Controller
 
         $menuItem = MenuItem::create($validated);
 
+        // Handle add-ons if provided
+        if ($request->has('addons')) {
+            $this->syncAddons($menuItem, $request->input('addons', []));
+        }
+
         return redirect()->route('admin.menu-items.index')
                         ->with('message', 'Menu item created successfully');
     }

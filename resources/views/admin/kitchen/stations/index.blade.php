@@ -807,9 +807,6 @@
             <a href="{{ route('admin.kitchen.index') }}" class="header-btn">
                 <i class="fas fa-arrow-left"></i> Back to Dashboard
             </a>
-            <a href="{{ route('admin.kitchen.station-types.index') }}" class="header-btn">
-                <i class="fas fa-layer-group"></i> Manage Station Types
-            </a>
             <a href="{{ route('admin.kitchen.stations.form') }}" class="header-btn btn-primary">
                 <i class="fas fa-plus-circle"></i> Add New Station
             </a>
@@ -858,7 +855,7 @@
                 <tr>
                     <th>Status</th>
                     <th>Station Name</th>
-                    <th>Type</th>
+                    <th>Icon</th>
                     <th style="text-align: center;">Current Load</th>
                     <th style="text-align: center;">Capacity</th>
                     <th>Load Percentage</th>
@@ -883,22 +880,12 @@
                     </td>
                     <td>
                         <div class="station-type-cell">
-                            <span class="station-type-icon">
-                                @if($station->station_type == 'general_kitchen')
-                                    &#x1F374;
-                                @elseif($station->station_type == 'drinks')
-                                    &#x1F379;
-                                @elseif($station->station_type == 'desserts')
-                                    &#x1F370;
-                                @else
-                                    &#x1F3E0;
-                                @endif
-                            </span>
-                            <span>{{ ucfirst(str_replace('_', ' ', $station->station_type)) }}</span>
+                            <span class="station-type-icon">{!! $station->icon ?? '🍽️' !!}</span>
+
                         </div>
                     </td>
                     <td style="text-align: center;">
-                        <strong>{{ $station->current_load }}</strong>
+                        <strong>{{ $station->today_load }}</strong>
                     </td>
                     <td style="text-align: center;">
                         <strong>{{ $station->max_capacity }}</strong>

@@ -67,12 +67,12 @@ class OrderController extends Controller
             'table',
             'reservation',
             'items.menuItem.category',
-            'stationAssignments.station.stationType',
+            'stationAssignments.station',
             'stationAssignments.orderItem.menuItem',
             'kitchenLoads.station'
         ])
-        ->whereIn('order_status', ['pending', 'confirmed', 'preparing', 'ready'])
-        ->orderBy('order_time', 'asc');
+            ->whereIn('order_status', ['pending', 'confirmed', 'preparing', 'ready'])
+            ->orderBy('order_time', 'asc');
 
         // Filter by station if specified or auto-assigned
         if ($stationId) {
@@ -168,11 +168,11 @@ class OrderController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('id', 'LIKE', "%{$search}%")
-                  ->orWhere('confirmation_code', 'LIKE', "%{$search}%")
-                  ->orWhereHas('user', function ($userQuery) use ($search) {
-                      $userQuery->where('name', 'LIKE', "%{$search}%")
-                               ->orWhere('email', 'LIKE', "%{$search}%");
-                  });
+                    ->orWhere('confirmation_code', 'LIKE', "%{$search}%")
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'LIKE', "%{$search}%")
+                            ->orWhere('email', 'LIKE', "%{$search}%");
+                    });
             });
         }
 
@@ -206,9 +206,9 @@ class OrderController extends Controller
         $order = new Order;
 
         // Separate customers from staff
-        $customers = User::whereDoesntHave('roles', function($query) {
-                $query->whereIn('name', ['admin', 'manager', 'kitchen_staff']);
-            })
+        $customers = User::whereDoesntHave('roles', function ($query) {
+            $query->whereIn('name', ['admin', 'manager', 'kitchen_staff']);
+        })
             ->select('id', 'name', 'email')
             ->orderBy('name')
             ->get();
@@ -227,7 +227,7 @@ class OrderController extends Controller
             ->get();
 
         // Group menu items by category
-        $menuItemsByCategory = $menuItems->groupBy(function($item) {
+        $menuItemsByCategory = $menuItems->groupBy(function ($item) {
             return $item->category->name ?? 'Uncategorized';
         });
 
@@ -294,9 +294,25 @@ class OrderController extends Controller
         // Handle order items creation
         if ($request->has('items') && is_array($request->items)) {
             foreach ($request->items as $itemData) {
-                if (!empty($itemData['menu_item_id']) && !empty($itemData['price'])) {
+                if (!empty($itemData['menu_item_id'])) {
                     $quantity = $itemData['quantity'] ?? 1;
-                    $unitPrice = $itemData['price'];
+
+                    // Fetch unit price from MenuItem if not provided in form (server-side fallback)
+                    if (!empty($itemData['price'])) {
+                        $unitPrice = $itemData['price'];
+                    } else {
+                        $menuItem = MenuItem::find($itemData['menu_item_id']);
+                        $unitPrice = $menuItem ? $menuItem->price : 0;
+
+                        if (!$menuItem) {
+                            \Log::warning('Menu item not found when creating order item', [
+                                'menu_item_id' => $itemData['menu_item_id'],
+                                'order_id' => $order->id
+                            ]);
+                            continue; // Skip this item
+                        }
+                    }
+
                     $totalPrice = $unitPrice * $quantity;
 
                     $order->items()->create([
@@ -308,6 +324,18 @@ class OrderController extends Controller
                     ]);
                 }
             }
+        }
+
+        // Recalculate total_amount from actual saved items (server-side validation)
+        $actualTotal = $order->items()->sum('total_price');
+        if ($actualTotal != $order->total_amount) {
+            \Log::warning('Total amount mismatch - recalculating from saved items', [
+                'order_id' => $order->id,
+                'form_total' => $order->total_amount,
+                'calculated_total' => $actualTotal,
+                'items_count' => $order->items()->count()
+            ]);
+            $order->update(['total_amount' => $actualTotal]);
         }
 
         // Auto-create ETA based on order items
@@ -364,9 +392,9 @@ class OrderController extends Controller
     public function edit(Order $order)
     {
         // Separate customers from staff
-        $customers = User::whereDoesntHave('roles', function($query) {
-                $query->whereIn('name', ['admin', 'manager', 'kitchen_staff']);
-            })
+        $customers = User::whereDoesntHave('roles', function ($query) {
+            $query->whereIn('name', ['admin', 'manager', 'kitchen_staff']);
+        })
             ->select('id', 'name', 'email')
             ->orderBy('name')
             ->get();
@@ -385,7 +413,7 @@ class OrderController extends Controller
             ->get();
 
         // Group menu items by category
-        $menuItemsByCategory = $menuItems->groupBy(function($item) {
+        $menuItemsByCategory = $menuItems->groupBy(function ($item) {
             return $item->category->name ?? 'Uncategorized';
         });
 
@@ -489,14 +517,30 @@ class OrderController extends Controller
         if ($request->has('items') && is_array($request->items)) {
             // Delete existing items
             $order->items()->delete();
-            
+
             // Create new items
             foreach ($request->items as $itemData) {
-                if (!empty($itemData['menu_item_id']) && !empty($itemData['price'])) {
+                if (!empty($itemData['menu_item_id'])) {
                     $quantity = $itemData['quantity'] ?? 1;
-                    $unitPrice = $itemData['price'];
+
+                    // Fetch unit price from MenuItem if not provided in form (server-side fallback)
+                    if (!empty($itemData['price'])) {
+                        $unitPrice = $itemData['price'];
+                    } else {
+                        $menuItem = MenuItem::find($itemData['menu_item_id']);
+                        $unitPrice = $menuItem ? $menuItem->price : 0;
+
+                        if (!$menuItem) {
+                            \Log::warning('Menu item not found when updating order item', [
+                                'menu_item_id' => $itemData['menu_item_id'],
+                                'order_id' => $order->id
+                            ]);
+                            continue; // Skip this item
+                        }
+                    }
+
                     $totalPrice = $unitPrice * $quantity;
-                    
+
                     $order->items()->create([
                         'menu_item_id' => $itemData['menu_item_id'],
                         'quantity' => $quantity,
@@ -506,7 +550,19 @@ class OrderController extends Controller
                     ]);
                 }
             }
-            
+
+            // Recalculate total_amount from actual saved items (server-side validation)
+            $actualTotal = $order->items()->sum('total_price');
+            if ($actualTotal != $order->total_amount) {
+                \Log::warning('Total amount mismatch on update - recalculating from saved items', [
+                    'order_id' => $order->id,
+                    'form_total' => $order->total_amount,
+                    'calculated_total' => $actualTotal,
+                    'items_count' => $order->items()->count()
+                ]);
+                $order->update(['total_amount' => $actualTotal]);
+            }
+
             // Recalculate ETA if items changed
             $order->load('items.menuItem');
             if ($order->items->count() > 0) {
@@ -838,7 +894,7 @@ class OrderController extends Controller
     public function getByStatus(Request $request)
     {
         $status = $request->get('status');
-        
+
         $orders = Order::with(['user', 'table', 'items'])
             ->when($status, function ($query) use ($status) {
                 return $query->where('order_status', $status);
@@ -888,7 +944,7 @@ class OrderController extends Controller
         $newOrder->actual_completion_time = null;
         $newOrder->created_at = now();
         $newOrder->updated_at = now();
-        
+
         $newOrder->save();
 
         // Copy order items if they exist
@@ -913,7 +969,7 @@ class OrderController extends Controller
         ]);
 
         $totalPrepTime = 0;
-        
+
         foreach ($request->items as $item) {
             $menuItem = MenuItem::find($item['menu_item_id']);
             if ($menuItem) {
@@ -921,13 +977,13 @@ class OrderController extends Controller
                 $totalPrepTime += ($prepTime * $item['quantity']);
             }
         }
-        
+
         // Add buffer time (10% or minimum 5 minutes)
         $bufferTime = max(5, round($totalPrepTime * 0.1));
         $totalTime = $totalPrepTime + $bufferTime;
-        
+
         $estimatedTime = now()->addMinutes($totalTime);
-        
+
         return response()->json([
             'success' => true,
             'total_prep_time' => $totalTime,
@@ -947,7 +1003,7 @@ class OrderController extends Controller
         ]);
 
         $menuItem = MenuItem::find($request->menu_item_id);
-        
+
         return response()->json([
             'success' => true,
             'preparation_time' => $menuItem->preparation_time ?? 15,

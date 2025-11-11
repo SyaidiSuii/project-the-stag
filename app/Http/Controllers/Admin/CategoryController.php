@@ -61,14 +61,6 @@ class CategoryController extends Controller
             'sort_order' => 'nullable|integer|min:0'
         ]);
 
-        // Auto-set station_type based on selected station
-        if (!empty($validated['default_station_id'])) {
-            $station = \App\Models\KitchenStation::find($validated['default_station_id']);
-            if ($station) {
-                $validated['default_station_type'] = $station->station_type;
-            }
-        }
-
         // Set default sort_order if not provided
         if (empty($validated['sort_order'])) {
             $query = Category::where('type', $validated['type']);
@@ -128,18 +120,6 @@ class CategoryController extends Controller
             'default_load_factor' => 'nullable|numeric|min:0.1|max:5.0',
             'sort_order' => 'nullable|integer|min:0'
         ]);
-
-        // Auto-set station_type based on selected station
-        if (!empty($validated['default_station_id'])) {
-            $station = \App\Models\KitchenStation::find($validated['default_station_id']);
-            if ($station) {
-                $validated['default_station_type'] = $station->station_type;
-            }
-        } else {
-            // If station_id is cleared, also clear station_type
-            $validated['default_station_id'] = null;
-            $validated['default_station_type'] = null;
-        }
 
         // Type and parent_id cannot be changed
         $category->update($validated);

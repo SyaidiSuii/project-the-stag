@@ -489,15 +489,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 const cartCount = cartCountEl ? parseInt(cartCountEl.textContent) || 0 : 0;
 
                 if (cartCount === 0) {
-                    // Show modern toast notification that cart is empty
-                    if (typeof Toast !== "undefined") {
-                        Toast.warning(
-                            "Cart is Empty",
-                            "Please add menu items before booking with menu."
-                        );
-                    } else {
-                        alert("Your cart is empty! Please add menu items before booking with menu.");
-                    }
+                    Toast.warning(
+                        "Cart is Empty",
+                        "Please add menu items before booking with menu."
+                    );
                     return;
                 }
 
@@ -545,14 +540,10 @@ document.addEventListener("DOMContentLoaded", function () {
             !guestEmail ||
             !guestPhone
         ) {
-            if (typeof Toast !== "undefined") {
-                Toast.warning(
-                    "Incomplete Details",
-                    "Please fill in all booking details first."
-                );
-            } else {
-                alert("Please fill in all booking details first.");
-            }
+            Toast.warning(
+                "Incomplete Details",
+                "Please fill in all booking details first."
+            );
             return;
         }
 
@@ -787,44 +778,22 @@ document.addEventListener("DOMContentLoaded", function () {
                         window.location.href = data.redirect_url;
                     }, 1500);
                 } else {
-                    // Show error message
-                    if (typeof Toast !== "undefined") {
-                        Toast.error(
-                            "Booking Failed",
-                            data.message ||
-                                "Failed to create booking. Please try again."
-                        );
-                    } else {
-                        alert(
-                            "Booking Failed: " +
-                                (data.message ||
-                                    "Failed to create booking. Please try again.")
-                        );
-                    }
-
-                    // Re-enable confirm button
+                    Toast.error(
+                        "Booking Failed",
+                        data.message ||
+                            "Failed to create booking. Please try again."
+                    );
                     confirmBookingBtn.disabled = false;
                     confirmBookingBtn.textContent = "Confirm Booking";
                 }
             })
             .catch((error) => {
                 console.error("Booking submission error:", error);
-
-                if (typeof Toast !== "undefined") {
-                    Toast.error(
-                        "Booking Failed",
-                        error.message ||
-                            "Network error. Please check your connection and try again."
-                    );
-                } else {
-                    alert(
-                        "Booking Failed: " +
-                            (error.message ||
-                                "Network error. Please try again.")
-                    );
-                }
-
-                // Re-enable confirm button
+                Toast.error(
+                    "Booking Failed",
+                    error.message ||
+                        "Network error. Please check your connection and try again."
+                );
                 confirmBookingBtn.disabled = false;
                 confirmBookingBtn.textContent = "Confirm Booking";
             });

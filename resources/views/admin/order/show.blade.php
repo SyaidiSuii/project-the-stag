@@ -511,8 +511,8 @@
         @if(!in_array($order->order_status, ['completed', 'cancelled']))
             <form action="{{ route('admin.order.cancel', $order->id) }}" method="POST" style="margin: 0;">
                 @csrf
-                <button type="submit"
-                        onclick="return confirm('Are you sure you want to cancel this order?')"
+                <button type="button"
+                        onclick="confirmCancelOrder({{ $order->id }})"
                         class="action-btn danger">
                     <i class="fas fa-times action-btn-icon"></i>
                     <span class="action-btn-text">Cancel Order</span>
@@ -1102,8 +1102,16 @@
 
 @section('scripts')
 <script>
-function updateOrderStatus(status) {
-    if (!confirm(`Are you sure you want to change the order status to '${status}'?`)) {
+async function updateOrderStatus(status) {
+    const confirmed = await showConfirm(
+        'Update Order Status?',
+        `Are you sure you want to change the order status to '${status}'?`,
+        'warning',
+        'Update',
+        'Cancel'
+    );
+
+    if (!confirmed) {
         return;
     }
 
@@ -1122,12 +1130,12 @@ function updateOrderStatus(status) {
         if (data.success) {
             location.reload();
         } else {
-            alert('Error updating order status: ' + (data.message || 'Unknown error'));
+            Toast.error('Error', 'Error updating order status: ' + (data.message || 'Unknown error'));
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error updating order status');
+        Toast.error('Error', 'Error updating order status');
     });
 }
 
@@ -1147,12 +1155,47 @@ function updatePaymentStatus(status) {
         if (data.success) {
             location.reload();
         } else {
-            alert('Error updating payment status: ' + (data.message || 'Unknown error'));
+            Toast.error('Error', 'Error updating payment status: ' + (data.message || 'Unknown error'));
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error updating payment status');
+        Toast.error('Error', 'Error updating payment status');
+    });
+}
+
+async function confirmCancelOrder(orderId) {
+    const confirmed = await showConfirm(
+        'Cancel Order?',
+        'Are you sure you want to cancel this order? This action cannot be undone.',
+        'danger',
+        'Cancel Order',
+        'Keep Order'
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    fetch(`{{ route('admin.order.cancel', $order->id) }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Toast.success('Success', 'Order cancelled successfully');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            Toast.error('Error', data.message || 'Failed to cancel order');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Toast.error('Error', 'Failed to cancel order');
     });
 }
 </script>

@@ -106,22 +106,10 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="station_type">Station Type <span class="text-danger">*</span></label>
-                        <select id="station_type" name="station_type" required {{ $station ? 'disabled' : '' }}>
-                            <option value="">-- Select Type --</option>
-                            <option value="hot_kitchen" {{ old('station_type', $station->station_type ?? '') == 'hot_kitchen' ? 'selected' : '' }}>&#x1F525; Hot Kitchen</option>
-                            <option value="cold_kitchen" {{ old('station_type', $station->station_type ?? '') == 'cold_kitchen' ? 'selected' : '' }}>&#x1F957; Cold Kitchen</option>
-                            <option value="drinks" {{ old('station_type', $station->station_type ?? '') == 'drinks' ? 'selected' : '' }}>&#x1F379; Beverages & Drinks</option>
-                            <option value="desserts" {{ old('station_type', $station->station_type ?? '') == 'desserts' ? 'selected' : '' }}>&#x1F370; Desserts</option>
-                            <option value="grill" {{ old('station_type', $station->station_type ?? '') == 'grill' ? 'selected' : '' }}>&#x1F969; Grill Station</option>
-                            <option value="bakery" {{ old('station_type', $station->station_type ?? '') == 'bakery' ? 'selected' : '' }}>&#x1F956; Bakery</option>
-                            <option value="salad_bar" {{ old('station_type', $station->station_type ?? '') == 'salad_bar' ? 'selected' : '' }}>&#x1F96D; Salad Bar</option>
-                            <option value="pastry" {{ old('station_type', $station->station_type ?? '') == 'pastry' ? 'selected' : '' }}>&#x1F9C1; Pastry</option>
-                        </select>
-                        @if($station)
-                            <small class="text-muted">Station type cannot be changed</small>
-                        @endif
-                        @error('station_type')
+                        <label for="icon">Icon / Emoji <span class="text-danger">*</span></label>
+                        <input type="text" id="icon" name="icon" value="{{ old('icon', $station->icon ?? '') }}" placeholder="e.g., 🔥 or &#x1F525;" required>
+                        <small>Enter emoji or HTML entity (e.g., 🔥, 🥗, 🍰, or &#x1F525; for 🔥)</small>
+                        @error('icon')
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
