@@ -327,24 +327,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             // Kitchen Stations
             Route::prefix('stations')->name('stations.')->group(function () {
-                Route::get('/', [\App\Http\Controllers\Admin\StationTypeController::class, 'index'])->name('index');
-                Route::get('/create', [\App\Http\Controllers\Admin\StationTypeController::class, 'create'])->name('form');
-                Route::get('/{station}/edit', [\App\Http\Controllers\Admin\StationTypeController::class, 'edit'])->name('edit');
-                Route::get('/{station}', [\App\Http\Controllers\Admin\StationTypeController::class, 'show'])->name('detail');
-                Route::post('/', [\App\Http\Controllers\Admin\StationTypeController::class, 'store'])->name('store');
-                Route::patch('/{station}/toggle-status', [\App\Http\Controllers\Admin\StationTypeController::class, 'toggleStatus'])->name('toggleStatus');
-                Route::put('/{station}', [\App\Http\Controllers\Admin\StationTypeController::class, 'update'])->name('update');
-                Route::delete('/{station}', [\App\Http\Controllers\Admin\StationTypeController::class, 'destroy'])->name('destroy');
-            });
-
-            // Station Types Management
-            Route::prefix('station-types')->name('station-types.')->group(function () {
-                Route::get('/', [\App\Http\Controllers\Admin\StationTypeController::class, 'index'])->name('index');
-                Route::get('/create', [\App\Http\Controllers\Admin\StationTypeController::class, 'create'])->name('create');
-                Route::post('/', [\App\Http\Controllers\Admin\StationTypeController::class, 'store'])->name('store');
-                Route::get('/{stationType}/edit', [\App\Http\Controllers\Admin\StationTypeController::class, 'edit'])->name('edit');
-                Route::put('/{stationType}', [\App\Http\Controllers\Admin\StationTypeController::class, 'update'])->name('update');
-                Route::delete('/{stationType}', [\App\Http\Controllers\Admin\StationTypeController::class, 'destroy'])->name('destroy');
+                Route::get('/', [
+ App\Http\Controllers\Admin\KitchenStationController::class, 'index'])->name('index');
+                Route::get('/create', [
+ App\Http\Controllers\Admin\KitchenStationController::class, 'create'])->name('form');
+                Route::post('/', [
+ App\Http\Controllers\Admin\KitchenStationController::class, 'store'])->name('store');
+                Route::get('/{station}/edit', [
+ App\Http\Controllers\Admin\KitchenStationController::class, 'edit'])->name('edit');
+                Route::get('/{station}', [
+ App\Http\Controllers\Admin\KitchenStationController::class, 'show'])->name('detail');
+                Route::put('/{station}', [
+ App\Http\Controllers\Admin\KitchenStationController::class, 'update'])->name('update');
+                Route::patch('/{station}/toggle-status', [
+ App\Http\Controllers\Admin\KitchenStationController::class, 'toggleStatus'])->name('toggleStatus');
+                Route::delete('/{station}', [
+ App\Http\Controllers\Admin\KitchenStationController::class, 'destroy'])->name('destroy');
             });
         });
 

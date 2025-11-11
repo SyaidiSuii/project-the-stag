@@ -6,552 +6,553 @@
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/admin/kitchen-dashboard.css') }}">
 <style>
-.order-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border-left: 4px solid #6366f1;
-    transition: all 0.3s ease;
-}
-
-.order-card:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    transform: translateX(2px);
-}
-
-.order-card.priority-high {
-    border-left-color: #ef4444;
-    background: #fef2f2;
-}
-
-.order-card.priority-medium {
-    border-left-color: #f59e0b;
-}
-
-.order-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.order-info {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-}
-
-.order-items-list {
-    margin: 16px 0;
-    padding-left: 0;
-    list-style: none;
-}
-
-.order-items-list li {
-    padding: 8px 0;
-    border-bottom: 1px solid #f1f5f9;
-    display: flex;
-    justify-content: space-between;
-}
-
-.station-filter-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-}
-
-.station-tab {
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: 2px solid #e5e7eb;
-    background: white;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-weight: 500;
-    text-decoration: none;
-    color: #64748b;
-}
-
-.station-tab:hover {
-    border-color: #6366f1;
-    color: #6366f1;
-    text-decoration: none;
-}
-
-.station-tab.active {
-    background: #6366f1;
-    border-color: #6366f1;
-    color: white;
-}
-
-/* Pagination Styles */
-.pagination {
-    display: flex;
-    gap: 4px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.page-item {
-    display: inline-block;
-}
-
-.page-link {
-    position: relative;
-    display: block;
-    padding: 8px 12px;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #475569;
-    text-decoration: none;
-    background-color: #fff;
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
-    transition: all 0.15s ease-in-out;
-}
-
-.page-link:hover {
-    z-index: 2;
-    color: #6366f1;
-    background-color: #f8fafc;
-    border-color: #dee2e6;
-}
-
-.page-item.active .page-link {
-    z-index: 3;
-    color: #fff;
-    background-color: #6366f1;
-    border-color: #6366f1;
-}
-
-.page-item.disabled .page-link {
-    color: #cbd5e1;
-    pointer-events: none;
-    background-color: #fff;
-    border-color: #dee2e6;
-}
-
-.page-link svg {
-    width: 14px;
-    height: 14px;
-    vertical-align: middle;
-}
-
-/* Badge Styles */
-.badge {
-    display: inline-block;
-    padding: 6px 12px;
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1;
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: baseline;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-}
-
-.badge-primary {
-    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
-    color: white;
-    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
-}
-
-.badge-secondary {
-    background: #fbbf24;
-    color: white;
-    box-shadow: 0 2px 6px rgba(251, 191, 36, 0.2);
-}
-
-.badge-warning {
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-    color: white;
-    box-shadow: 0 2px 6px rgba(251, 191, 36, 0.2);
-}
-
-.badge-success {
-    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-    color: white;
-    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
-}
-
-.badge-danger {
-    background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
-    color: white;
-    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);
-}
-
-.badge-info {
-    background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
-    color: white;
-    box-shadow: 0 2px 6px rgba(6, 182, 212, 0.2);
-}
-
-/* Text Color Utilities */
-.text-muted {
-    color: #64748b !important;
-}
-
-.text-danger {
-    color: #f87171 !important;
-    font-weight: 600;
-}
-
-.text-success {
-    color: #34d399 !important;
-    font-weight: 600;
-}
-
-/* ===== RESPONSIVE DESIGN ===== */
-
-/* Tablet View (769px - 1199px) */
-@media (max-width: 1199px) and (min-width: 769px) {
     .order-card {
-        padding: 16px;
-        margin-bottom: 14px;
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border-left: 4px solid #6366f1;
+        transition: all 0.3s ease;
+    }
+
+    .order-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        transform: translateX(2px);
+    }
+
+    .order-card.priority-high {
+        border-left-color: #ef4444;
+        background: #fef2f2;
+    }
+
+    .order-card.priority-medium {
+        border-left-color: #f59e0b;
     }
 
     .order-header {
-        gap: 10px;
-    }
-
-    .order-info strong {
-        font-size: 16px !important;
-    }
-
-    .order-info small {
-        font-size: 12px;
-    }
-
-    .station-filter-tabs {
-        gap: 6px;
-    }
-
-    .station-tab {
-        padding: 8px 16px;
-        font-size: 13px;
-    }
-
-    .badge {
-        padding: 5px 10px;
-        font-size: 12px;
-    }
-}
-
-/* Mobile View (≤768px) */
-@media (max-width: 768px) {
-    /* Order Cards */
-    .order-card {
-        padding: 14px;
-        margin-bottom: 12px;
-        border-left-width: 3px;
-    }
-
-    .order-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 12px;
     }
 
     .order-info {
-        width: 100%;
-        flex-direction: column;
-        gap: 8px;
+        display: flex;
+        gap: 16px;
+        align-items: center;
     }
 
-    .order-info strong {
-        font-size: 16px !important;
-    }
-
-    .order-info small {
-        font-size: 11px;
-    }
-
-    .order-header > div:last-child {
-        width: 100%;
-        text-align: left !important;
-    }
-
-    /* Station Filter Tabs - Scrollable */
-    .station-filter-tabs {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        flex-wrap: nowrap;
-        padding-bottom: 8px;
-        gap: 6px;
-        margin-bottom: 16px;
-    }
-
-    .station-tab {
-        padding: 8px 14px;
-        font-size: 12px;
-        white-space: nowrap;
-        flex-shrink: 0;
-    }
-
-    .station-tab i {
-        font-size: 11px;
-    }
-
-    /* Order Items List */
     .order-items-list {
-        margin: 12px 0;
+        margin: 16px 0;
+        padding-left: 0;
+        list-style: none;
     }
 
     .order-items-list li {
-        padding: 6px 0;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
+        padding: 8px 0;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
     }
 
-    .order-items-list li strong {
-        font-size: 13px;
-    }
-
-    .order-items-list li small {
-        font-size: 11px;
-    }
-
-    .order-items-list li > div:last-child {
-        width: 100%;
-        text-align: left !important;
-        margin-top: 4px;
-    }
-
-    .order-items-list li span {
-        font-size: 16px !important;
-    }
-
-    /* Station Assignments */
-    .order-card > div[style*="background: #f8fafc"] {
-        padding: 10px !important;
-        margin: 10px 0 !important;
-    }
-
-    .order-card > div[style*="background: #f8fafc"] strong {
-        font-size: 11px !important;
-    }
-
-    .order-card > div[style*="background: #f8fafc"] > div {
-        margin-top: 6px !important;
-    }
-
-    .order-card > div[style*="background: #f8fafc"] > div > div {
-        padding: 5px 10px !important;
-        font-size: 11px !important;
-    }
-
-    .order-card > div[style*="background: #f8fafc"] i {
-        font-size: 12px !important;
-    }
-
-    .order-card > div[style*="background: #f8fafc"] .badge {
-        font-size: 9px !important;
-        padding: 2px 6px !important;
-    }
-
-    /* Order Footer */
-    .order-card > div[style*="border-top"] {
-        flex-direction: column;
-        align-items: flex-start !important;
-        gap: 12px;
-        margin-top: 12px !important;
-        padding-top: 12px !important;
-    }
-
-    .order-card > div[style*="border-top"] > div:first-child strong {
-        font-size: 14px !important;
-    }
-
-    .order-card > div[style*="border-top"] > div:first-child small {
-        font-size: 11px !important;
-    }
-
-    .order-card > div[style*="border-top"] > div:last-child {
-        width: 100%;
-        flex-direction: column;
-        gap: 6px !important;
-    }
-
-    .order-card > div[style*="border-top"] > div:last-child form,
-    .order-card > div[style*="border-top"] > div:last-child a {
-        width: 100%;
-    }
-
-    .order-card > div[style*="border-top"] > div:last-child button,
-    .order-card > div[style*="border-top"] > div:last-child .admin-btn {
-        width: 100%;
-        justify-content: center;
-        font-size: 12px !important;
-        padding: 8px 12px !important;
-    }
-
-    /* Load Information */
-    .order-card > div[style*="background: #eff6ff"] {
-        margin-top: 10px !important;
-        padding: 6px 10px !important;
-        font-size: 11px !important;
-    }
-
-    /* Badges */
-    .badge {
-        padding: 4px 8px;
-        font-size: 11px;
-    }
-
-    .badge i {
-        font-size: 10px;
-    }
-
-    .badge.badge-danger,
-    .badge.badge-warning,
-    .badge.badge-success,
-    .badge.badge-primary,
-    .badge.badge-secondary {
-        font-size: 11px !important;
-        padding: 6px 10px !important;
-    }
-
-    /* Pagination */
-    .pagination {
+    .station-filter-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
         flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .page-link {
-        padding: 6px 10px;
-        font-size: 12px;
-    }
-
-    /* Empty State */
-    .order-card + div[style*="text-align: center"] {
-        padding: 50px 16px !important;
-    }
-
-    .order-card + div[style*="text-align: center"] i {
-        font-size: 48px !important;
-        margin-bottom: 12px !important;
-    }
-
-    .order-card + div[style*="text-align: center"] h3 {
-        font-size: 16px !important;
-        margin-bottom: 6px !important;
-    }
-
-    .order-card + div[style*="text-align: center"] p {
-        font-size: 12px !important;
-    }
-
-    /* Section controls */
-    .section-controls {
-        width: 100%;
-    }
-
-    .section-controls .admin-btn {
-        width: 100%;
-        justify-content: center;
-        font-size: 13px !important;
-        padding: 8px 16px !important;
-    }
-
-    /* Section header */
-    .section-header {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 12px;
-        margin-bottom: 16px !important;
-    }
-
-    .section-header > div:first-child h2 {
-        font-size: 18px !important;
-        margin-bottom: 3px !important;
-    }
-
-    .section-header > div:first-child p {
-        font-size: 12px !important;
-    }
-}
-
-/* Small Mobile (≤480px) */
-@media (max-width: 480px) {
-    .order-card {
-        padding: 12px;
-    }
-
-    .order-info strong {
-        font-size: 15px !important;
-    }
-
-    .order-items-list li strong {
-        font-size: 12px;
     }
 
     .station-tab {
-        padding: 6px 12px;
-        font-size: 11px;
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: 2px solid #e5e7eb;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 500;
+        text-decoration: none;
+        color: #64748b;
     }
 
-    .badge {
-        padding: 3px 6px;
-        font-size: 10px;
+    .station-tab:hover {
+        border-color: #6366f1;
+        color: #6366f1;
+        text-decoration: none;
+    }
+
+    .station-tab.active {
+        background: #6366f1;
+        border-color: #6366f1;
+        color: white;
+    }
+
+    /* Pagination Styles */
+    .pagination {
+        display: flex;
+        gap: 4px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .page-item {
+        display: inline-block;
     }
 
     .page-link {
-        padding: 5px 8px;
-        font-size: 11px;
-    }
-}
-
-/* Large Desktop (≥1600px) */
-@media (min-width: 1600px) {
-    .order-card {
-        padding: 28px;
-        margin-bottom: 20px;
-    }
-
-    .order-header {
-        margin-bottom: 20px;
-    }
-
-    .order-info strong {
-        font-size: 20px !important;
-    }
-
-    .order-info small {
-        font-size: 15px;
-    }
-
-    .order-items-list li {
-        padding: 10px 0;
-    }
-
-    .order-items-list li strong {
-        font-size: 16px;
-    }
-
-    .station-tab {
-        padding: 12px 24px;
-        font-size: 15px;
-    }
-
-    .badge {
-        padding: 8px 14px;
+        position: relative;
+        display: block;
+        padding: 8px 12px;
         font-size: 14px;
+        line-height: 1.5;
+        color: #475569;
+        text-decoration: none;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        transition: all 0.15s ease-in-out;
     }
 
-    .page-link {
-        padding: 10px 14px;
-        font-size: 15px;
+    .page-link:hover {
+        z-index: 2;
+        color: #6366f1;
+        background-color: #f8fafc;
+        border-color: #dee2e6;
     }
-}
+
+    .page-item.active .page-link {
+        z-index: 3;
+        color: #fff;
+        background-color: #6366f1;
+        border-color: #6366f1;
+    }
+
+    .page-item.disabled .page-link {
+        color: #cbd5e1;
+        pointer-events: none;
+        background-color: #fff;
+        border-color: #dee2e6;
+    }
+
+    .page-link svg {
+        width: 14px;
+        height: 14px;
+        vertical-align: middle;
+    }
+
+    /* Badge Styles */
+    .badge {
+        display: inline-block;
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .badge-primary {
+        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        color: white;
+        box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
+    }
+
+    .badge-secondary {
+        background: #fbbf24;
+        color: white;
+        box-shadow: 0 2px 6px rgba(251, 191, 36, 0.2);
+    }
+
+    .badge-warning {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: white;
+        box-shadow: 0 2px 6px rgba(251, 191, 36, 0.2);
+    }
+
+    .badge-success {
+        background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+        color: white;
+        box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
+    }
+
+    .badge-danger {
+        background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+        color: white;
+        box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);
+    }
+
+    .badge-info {
+        background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+        color: white;
+        box-shadow: 0 2px 6px rgba(6, 182, 212, 0.2);
+    }
+
+    /* Text Color Utilities */
+    .text-muted {
+        color: #64748b !important;
+    }
+
+    .text-danger {
+        color: #f87171 !important;
+        font-weight: 600;
+    }
+
+    .text-success {
+        color: #34d399 !important;
+        font-weight: 600;
+    }
+
+    /* ===== RESPONSIVE DESIGN ===== */
+
+    /* Tablet View (769px - 1199px) */
+    @media (max-width: 1199px) and (min-width: 769px) {
+        .order-card {
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+
+        .order-header {
+            gap: 10px;
+        }
+
+        .order-info strong {
+            font-size: 16px !important;
+        }
+
+        .order-info small {
+            font-size: 12px;
+        }
+
+        .station-filter-tabs {
+            gap: 6px;
+        }
+
+        .station-tab {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+    }
+
+    /* Mobile View (≤768px) */
+    @media (max-width: 768px) {
+
+        /* Order Cards */
+        .order-card {
+            padding: 14px;
+            margin-bottom: 12px;
+            border-left-width: 3px;
+        }
+
+        .order-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .order-info {
+            width: 100%;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .order-info strong {
+            font-size: 16px !important;
+        }
+
+        .order-info small {
+            font-size: 11px;
+        }
+
+        .order-header>div:last-child {
+            width: 100%;
+            text-align: left !important;
+        }
+
+        /* Station Filter Tabs - Scrollable */
+        .station-filter-tabs {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            flex-wrap: nowrap;
+            padding-bottom: 8px;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .station-tab {
+            padding: 8px 14px;
+            font-size: 12px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .station-tab i {
+            font-size: 11px;
+        }
+
+        /* Order Items List */
+        .order-items-list {
+            margin: 12px 0;
+        }
+
+        .order-items-list li {
+            padding: 6px 0;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .order-items-list li strong {
+            font-size: 13px;
+        }
+
+        .order-items-list li small {
+            font-size: 11px;
+        }
+
+        .order-items-list li>div:last-child {
+            width: 100%;
+            text-align: left !important;
+            margin-top: 4px;
+        }
+
+        .order-items-list li span {
+            font-size: 16px !important;
+        }
+
+        /* Station Assignments */
+        .order-card>div[style*="background: #f8fafc"] {
+            padding: 10px !important;
+            margin: 10px 0 !important;
+        }
+
+        .order-card>div[style*="background: #f8fafc"] strong {
+            font-size: 11px !important;
+        }
+
+        .order-card>div[style*="background: #f8fafc"]>div {
+            margin-top: 6px !important;
+        }
+
+        .order-card>div[style*="background: #f8fafc"]>div>div {
+            padding: 5px 10px !important;
+            font-size: 11px !important;
+        }
+
+        .order-card>div[style*="background: #f8fafc"] i {
+            font-size: 12px !important;
+        }
+
+        .order-card>div[style*="background: #f8fafc"] .badge {
+            font-size: 9px !important;
+            padding: 2px 6px !important;
+        }
+
+        /* Order Footer */
+        .order-card>div[style*="border-top"] {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 12px;
+            margin-top: 12px !important;
+            padding-top: 12px !important;
+        }
+
+        .order-card>div[style*="border-top"]>div:first-child strong {
+            font-size: 14px !important;
+        }
+
+        .order-card>div[style*="border-top"]>div:first-child small {
+            font-size: 11px !important;
+        }
+
+        .order-card>div[style*="border-top"]>div:last-child {
+            width: 100%;
+            flex-direction: column;
+            gap: 6px !important;
+        }
+
+        .order-card>div[style*="border-top"]>div:last-child form,
+        .order-card>div[style*="border-top"]>div:last-child a {
+            width: 100%;
+        }
+
+        .order-card>div[style*="border-top"]>div:last-child button,
+        .order-card>div[style*="border-top"]>div:last-child .admin-btn {
+            width: 100%;
+            justify-content: center;
+            font-size: 12px !important;
+            padding: 8px 12px !important;
+        }
+
+        /* Load Information */
+        .order-card>div[style*="background: #eff6ff"] {
+            margin-top: 10px !important;
+            padding: 6px 10px !important;
+            font-size: 11px !important;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+
+        .badge i {
+            font-size: 10px;
+        }
+
+        .badge.badge-danger,
+        .badge.badge-warning,
+        .badge.badge-success,
+        .badge.badge-primary,
+        .badge.badge-secondary {
+            font-size: 11px !important;
+            padding: 6px 10px !important;
+        }
+
+        /* Pagination */
+        .pagination {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .page-link {
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+
+        /* Empty State */
+        .order-card+div[style*="text-align: center"] {
+            padding: 50px 16px !important;
+        }
+
+        .order-card+div[style*="text-align: center"] i {
+            font-size: 48px !important;
+            margin-bottom: 12px !important;
+        }
+
+        .order-card+div[style*="text-align: center"] h3 {
+            font-size: 16px !important;
+            margin-bottom: 6px !important;
+        }
+
+        .order-card+div[style*="text-align: center"] p {
+            font-size: 12px !important;
+        }
+
+        /* Section controls */
+        .section-controls {
+            width: 100%;
+        }
+
+        .section-controls .admin-btn {
+            width: 100%;
+            justify-content: center;
+            font-size: 13px !important;
+            padding: 8px 16px !important;
+        }
+
+        /* Section header */
+        .section-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px;
+            margin-bottom: 16px !important;
+        }
+
+        .section-header>div:first-child h2 {
+            font-size: 18px !important;
+            margin-bottom: 3px !important;
+        }
+
+        .section-header>div:first-child p {
+            font-size: 12px !important;
+        }
+    }
+
+    /* Small Mobile (≤480px) */
+    @media (max-width: 480px) {
+        .order-card {
+            padding: 12px;
+        }
+
+        .order-info strong {
+            font-size: 15px !important;
+        }
+
+        .order-items-list li strong {
+            font-size: 12px;
+        }
+
+        .station-tab {
+            padding: 6px 12px;
+            font-size: 11px;
+        }
+
+        .badge {
+            padding: 3px 6px;
+            font-size: 10px;
+        }
+
+        .page-link {
+            padding: 5px 8px;
+            font-size: 11px;
+        }
+    }
+
+    /* Large Desktop (≥1600px) */
+    @media (min-width: 1600px) {
+        .order-card {
+            padding: 28px;
+            margin-bottom: 20px;
+        }
+
+        .order-header {
+            margin-bottom: 20px;
+        }
+
+        .order-info strong {
+            font-size: 20px !important;
+        }
+
+        .order-info small {
+            font-size: 15px;
+        }
+
+        .order-items-list li {
+            padding: 10px 0;
+        }
+
+        .order-items-list li strong {
+            font-size: 16px;
+        }
+
+        .station-tab {
+            padding: 12px 24px;
+            font-size: 15px;
+        }
+
+        .badge {
+            padding: 8px 14px;
+            font-size: 14px;
+        }
+
+        .page-link {
+            padding: 10px 14px;
+            font-size: 15px;
+        }
+    }
 </style>
 @endsection
 
@@ -601,7 +602,7 @@
         </div>
     </div>
     @endif
-    
+
     {{-- Header Actions --}}
     <div class="kitchen-section">
         <div class="admin-section" style="margin-bottom: 0;">
@@ -622,280 +623,282 @@
     {{-- Station Filter Tabs --}}
     <div class="kitchen-section">
         <div class="admin-section" style="margin-bottom: 0;">
-    <div class="station-filter-tabs">
-        <a href="{{ route('admin.kitchen.orders') }}"
-           class="station-tab {{ !request('station_id') ? 'active' : '' }}">
-            <i class="fas fa-th-large"></i> All Stations ({{ $totalOrdersCount ?? $orders->count() }})
-        </a>
-        @foreach($stations as $station)
-        <a href="{{ route('admin.kitchen.orders', ['station_id' => $station->id]) }}"
-           class="station-tab {{ request('station_id') == $station->id ? 'active' : '' }}">
-            @if($station->station_type == 'hot_kitchen')
-                <i class="fas fa-fire"></i>
-            @elseif($station->station_type == 'cold_kitchen')
-                <i class="fas fa-leaf"></i>
-            @elseif($station->station_type == 'drinks')
-                <i class="fas fa-glass-martini"></i>
-            @else
-                <i class="fas fa-birthday-cake"></i>
-            @endif
-            {{ $station->name }}
-            ({{ $station->active_loads_count ?? 0 }})
-        </a>
-        @endforeach
-    </div>
-</div>
-
-{{-- Orders List --}}
-<div class="admin-section">
-    @forelse($orders as $order)
-    <div class="order-card {{ $order->is_rush_order ? 'priority-high' : '' }}">
-        {{-- Order Header --}}
-        <div class="order-header">
-            <div class="order-info">
-                <div>
-                    <strong style="font-size: 18px;">Order #{{ $order->confirmation_code }}</strong>
-                    @if($order->is_rush_order)
-                        <span class="badge badge-danger" style="margin-left: 8px;"><i class="fas fa-fire"></i> RUSH</span>
-                    @endif
-                    <br>
-                    <small class="text-muted">
-                        <i class="fas fa-clock"></i> {{ $order->order_time->format('h:i A') }}
-                        @if($order->table_number)
-                            | <i class="fas fa-chair"></i> Table {{ $order->table_number }}
-                        @endif
-                        | <i class="fas fa-user"></i> {{ $order->customer_name }}
-                    </small>
-                </div>
+            <div class="station-filter-tabs">
+                <a href="{{ route('admin.kitchen.orders') }}"
+                    class="station-tab {{ !request('station_id') ? 'active' : '' }}">
+                    <i class="fas fa-th-large"></i> All Stations ({{ $totalOrdersCount ?? $orders->count() }})
+                </a>
+                @foreach($stations as $station)
+                <a href="{{ route('admin.kitchen.orders', ['station_id' => $station->id]) }}"
+                    class="station-tab {{ request('station_id') == $station->id ? 'active' : '' }}">
+                    {!! $station->icon ?? '🍴' !!}
+                    {{ $station->name }}
+                    ({{ $station->active_loads_count ?? 0 }})
+                </a>
+                @endforeach
             </div>
+        </div>
 
-            <div style="text-align: right;">
-                @php
-                    $statusColor = match($order->order_status) {
+        {{-- Orders List --}}
+        <div class="admin-section">
+            @forelse($orders as $order)
+            <div class="order-card {{ $order->is_rush_order ? 'priority-high' : '' }}">
+                {{-- Order Header --}}
+                <div class="order-header">
+                    <div class="order-info">
+                        <div>
+                            <strong style="font-size: 18px;">Order #{{ $order->confirmation_code }}</strong>
+                            @if($order->is_rush_order)
+                            <span class="badge badge-danger" style="margin-left: 8px;"><i class="fas fa-fire"></i> RUSH</span>
+                            @endif
+                            <br>
+                            <small class="text-muted">
+                                <i class="fas fa-clock"></i> {{ $order->order_time->format('h:i A') }}
+                                @if($order->table_number)
+                                | <i class="fas fa-chair"></i> Table {{ $order->table_number }}
+                                @endif
+                                | <i class="fas fa-user"></i> {{ $order->customer_name }}
+                            </small>
+                        </div>
+                    </div>
+
+                    <div style="text-align: right;">
+                        @php
+                        $statusColor = match($order->order_status) {
                         'pending' => 'secondary',
                         'confirmed' => 'primary',
                         'preparing' => 'warning',
                         'ready' => 'success',
                         default => 'info'
-                    };
+                        };
 
-                    // Softer background colors
-                    $statusBg = match($order->order_status) {
+                        // Softer background colors
+                        $statusBg = match($order->order_status) {
                         'pending' => 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
                         'confirmed' => 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
                         'preparing' => 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
                         'ready' => 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
                         default => 'linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%)'
-                    };
-                @endphp
-                <div class="badge badge-{{ $statusColor }}" style="font-size: 13px; padding: 8px 12px; background: {{ $statusBg }} !important; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;">
-                    {{ ucfirst($order->order_status) }}
-                </div>
-                @if($order->estimated_completion_time)
-                    <br>
-                    <small class="text-muted">
-                        ETA: {{ $order->estimated_completion_time->format('h:i A') }}
-                        @php
-                            $minutesRemaining = now()->diffInMinutes($order->estimated_completion_time, false);
+                        };
                         @endphp
-                        @if($minutesRemaining > 0)
+                        <div class="badge badge-{{ $statusColor }}" style="font-size: 13px; padding: 8px 12px; background: {{ $statusBg }} !important; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;">
+                            {{ ucfirst($order->order_status) }}
+                        </div>
+                        @if($order->estimated_completion_time)
+                        <br>
+                        <small class="text-muted">
+                            ETA: {{ $order->estimated_completion_time->format('h:i A') }}
+                            @php
+                            $minutesRemaining = now()->diffInMinutes($order->estimated_completion_time, false);
+                            @endphp
+                            @if($minutesRemaining > 0)
                             ({{ $minutesRemaining }} min)
-                        @else
+                            @else
                             <span class="text-danger" style="color: #f87171 !important; font-weight: 600;">(Overdue)</span>
+                            @endif
+                        </small>
                         @endif
-                    </small>
-                @endif
-            </div>
-        </div>
-
-        {{-- Station Assignments --}}
-        @if($order->stationAssignments->isNotEmpty())
-        <div style="margin: 12px 0; padding: 12px; background: #f8fafc; border-radius: 8px;">
-            <strong style="font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">
-                Assigned Stations:
-            </strong>
-            <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
-                @foreach($order->stationAssignments->unique('station_id') as $assignment)
-                <div style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: white; border-radius: 6px; font-size: 13px;">
-                    @if($assignment->station->station_type == 'hot_kitchen')
-                        <i class="fas fa-fire" style="color: #ef4444;"></i>
-                    @elseif($assignment->station->station_type == 'cold_kitchen')
-                        <i class="fas fa-leaf" style="color: #10b981;"></i>
-                    @elseif($assignment->station->station_type == 'drinks')
-                        <i class="fas fa-glass-martini" style="color: #f59e0b;"></i>
-                    @else
-                        <i class="fas fa-birthday-cake" style="color: #a855f7;"></i>
-                    @endif
-                    <span style="font-weight: 500;">{{ $assignment->station->name }}</span>
-                    <span class="badge badge-{{ $assignment->status == 'started' ? 'warning' : 'secondary' }}" style="font-size: 11px;">
-                        {{ ucfirst($assignment->status) }}
-                    </span>
+                    </div>
                 </div>
-                @endforeach
-            </div>
-        </div>
-        @endif
 
-        {{-- Order Items --}}
-        <ul class="order-items-list">
-            @foreach($order->items as $item)
-                @php
+                {{-- Station Assignments --}}
+                @if($order->stationAssignments->isNotEmpty())
+                <div style="margin: 12px 0; padding: 12px; background: #f8fafc; border-radius: 8px;">
+                    <strong style="font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Assigned Stations:
+                    </strong>
+                    <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+                        @php
+                        // Filter station assignments based on current station filter
+                        $filteredAssignments = $stationId
+                        ? $order->stationAssignments->where('station_id', $stationId)->unique('station_id')
+                        : $order->stationAssignments->unique('station_id');
+                        @endphp
+                        @foreach($filteredAssignments as $assignment)
+                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: white; border-radius: 6px; font-size: 13px;">
+                            {!! $assignment->station->icon ?? '🍴' !!}
+                            <span style="font-weight: 500;">{{ $assignment->station->name }}</span>
+                            <span class="badge badge-{{ $assignment->status == 'started' ? 'warning' : 'secondary' }}" style="font-size: 11px;">
+                                {{ ucfirst($assignment->status) }}
+                            </span>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                {{-- Order Items --}}
+                <ul class="order-items-list">
+                    @foreach($order->items as $item)
+                    @php
                     // If filtering by station, only show items assigned to that station
                     if ($stationId) {
-                        $isAssignedToStation = $order->stationAssignments
-                            ->where('order_item_id', $item->id)
-                            ->where('station_id', $stationId)
-                            ->isNotEmpty();
+                    $isAssignedToStation = $order->stationAssignments
+                    ->where('order_item_id', $item->id)
+                    ->where('station_id', $stationId)
+                    ->isNotEmpty();
 
-                        if (!$isAssignedToStation) {
-                            continue; // Skip this item
-                        }
+                    if (!$isAssignedToStation) {
+                    continue; // Skip this item
                     }
-                @endphp
-            <li>
-                <div>
-                    <strong>{{ $item->quantity }}x {{ $item->menuItem->name ?? 'Unknown Item' }}</strong>
-                    @if($item->menuItem)
-                        <span style="margin-left: 8px; font-size: 20px;">
-                            {{ $item->menuItem->station_icon }}
-                        </span>
-                        <span style="margin-left: 4px; font-size: 12px; color: #94a3b8;">
-                            ({{ $item->menuItem->station_display_name }})
-                        </span>
-                    @endif
-                    @if($item->special_note)
-                        <br>
-                        <small style="color: #f59e0b;">
-                            <i class="fas fa-sticky-note"></i> {{ $item->special_note }}
-                        </small>
-                    @endif
-                </div>
-                <div style="text-align: right;">
-                    @php
-                        // Use current menu price for kitchen display
-                        $displayPrice = $item->menuItem ? ($item->menuItem->price * $item->quantity) : $item->total_price;
+                    }
                     @endphp
-                    <span style="font-weight: 600; color: #64748b;">RM {{ number_format($displayPrice, 2) }}</span>
-                    @if($item->menuItem && $item->menuItem->preparation_time)
-                        <br>
-                        <small class="text-muted"><i class="fas fa-clock"></i> {{ $item->menuItem->preparation_time }} min</small>
-                    @endif
-                </div>
-            </li>
-            @endforeach
-        </ul>
+                    <li>
+                        <div>
+                            <strong>{{ $item->quantity }}x {{ $item->menuItem->name ?? 'Unknown Item' }}</strong>
+                            @php
+                            // Get the actual assigned station for this item
+                            $itemStation = $order->stationAssignments
+                            ->where('order_item_id', $item->id)
+                            ->first();
+                            @endphp
+                            @if($itemStation && $itemStation->station)
+                            <span style="margin-left: 8px; font-size: 20px;">
+                                {!! $itemStation->station->icon ?? '🍴' !!}
+                            </span>
+                            <span style="margin-left: 4px; font-size: 12px; color: #94a3b8;">
+                                ({{ $itemStation->station->name }})
+                            </span>
+                            @endif
+                            @if($item->special_note)
+                            <br>
+                            <small style="color: #f59e0b;">
+                                <i class="fas fa-sticky-note"></i> {{ $item->special_note }}
+                            </small>
+                            @endif
+                        </div>
+                        <div style="text-align: right;">
+                            @php
+                            // Use current menu price for kitchen display
+                            $displayPrice = $item->menuItem ? ($item->menuItem->price * $item->quantity) : $item->total_price;
+                            @endphp
+                            <span style="font-weight: 600; color: #64748b;">RM {{ number_format($displayPrice, 2) }}</span>
+                            @if($item->menuItem && $item->menuItem->preparation_time)
+                            <br>
+                            <small class="text-muted"><i class="fas fa-clock"></i> {{ $item->menuItem->preparation_time }} min</small>
+                            @endif
+                        </div>
+                    </li>
+                    @endforeach
+                </ul>
 
-        {{-- Order Footer --}}
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 2px solid #e5e7eb;">
-            <div>
-                @php
-                    // Calculate station-specific total if filtering using CURRENT menu prices
-                    $displayTotal = 0;
-                    $fullOrderTotal = 0;
+                {{-- Order Footer --}}
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 2px solid #e5e7eb;">
+                    <div>
+                        @php
+                        // Calculate station-specific total if filtering using CURRENT menu prices
+                        $displayTotal = 0;
+                        $fullOrderTotal = 0;
 
-                    foreach ($order->items as $item) {
+                        foreach ($order->items as $item) {
                         $itemPrice = $item->menuItem ? ($item->menuItem->price * $item->quantity) : $item->total_price;
                         $fullOrderTotal += $itemPrice;
 
                         if ($stationId) {
-                            $isAssignedToStation = $order->stationAssignments
-                                ->where('order_item_id', $item->id)
-                                ->where('station_id', $stationId)
-                                ->isNotEmpty();
+                        $isAssignedToStation = $order->stationAssignments
+                        ->where('order_item_id', $item->id)
+                        ->where('station_id', $stationId)
+                        ->isNotEmpty();
 
-                            if ($isAssignedToStation) {
-                                $displayTotal += $itemPrice;
-                            }
+                        if ($isAssignedToStation) {
+                        $displayTotal += $itemPrice;
                         }
-                    }
+                        }
+                        }
 
-                    // If not filtering by station, show full order total
-                    if (!$stationId) {
+                        // If not filtering by station, show full order total
+                        if (!$stationId) {
                         $displayTotal = $fullOrderTotal;
-                    }
-                @endphp
-                <strong style="font-size: 16px;">
-                    @if($stationId)
-                        Station Total: RM {{ number_format($displayTotal, 2) }}
-                        <small style="font-size: 12px; color: #64748b; font-weight: normal;">(Full Order: RM {{ number_format($fullOrderTotal, 2) }})</small>
-                    @else
-                        Total: RM {{ number_format($displayTotal, 2) }}
-                    @endif
-                </strong>
-                @if($order->special_instructions)
-                    <br>
-                    <small style="color: #ef4444;">
-                        <i class="fas fa-comment-dots"></i> <strong>Note:</strong> {{ $order->special_instructions }}
-                    </small>
-                @endif
-            </div>
+                        }
+                        @endphp
+                        <strong style="font-size: 16px;">
+                            @if($stationId)
+                            Station Total: RM {{ number_format($displayTotal, 2) }}
+                            <small style="font-size: 12px; color: #64748b; font-weight: normal;">(Full Order: RM {{ number_format($fullOrderTotal, 2) }})</small>
+                            @else
+                            Total: RM {{ number_format($displayTotal, 2) }}
+                            @endif
+                        </strong>
+                        @if($order->special_instructions)
+                        <br>
+                        <small style="color: #ef4444;">
+                            <i class="fas fa-comment-dots"></i> <strong>Note:</strong> {{ $order->special_instructions }}
+                        </small>
+                        @endif
+                    </div>
 
-            <div style="display: flex; gap: 8px;">
-                @if($order->order_status == 'confirmed')
-                <form action="{{ route('admin.order.updateStatus', $order->id) }}" method="POST" style="display: inline;">
-                    @csrf
-                    <input type="hidden" name="order_status" value="preparing">
-                    <button type="submit" class="admin-btn btn-sm btn-warning">
-                        <i class="fas fa-play"></i> Start Preparing
-                    </button>
-                </form>
-                @endif
+                    <div style="display: flex; gap: 8px;">
+                        @if($order->order_status == 'confirmed')
+                        <form action="{{ route('admin.order.updateStatus', $order->id) }}" method="POST" style="display: inline;">
+                            @csrf
+                            <input type="hidden" name="order_status" value="preparing">
+                            <button type="submit" class="admin-btn btn-sm btn-warning">
+                                <i class="fas fa-play"></i> Start Preparing
+                            </button>
+                        </form>
+                        @endif
 
-                @if($order->order_status == 'preparing')
-                <form action="{{ route('admin.order.updateStatus', $order->id) }}" method="POST" style="display: inline;">
-                    @csrf
-                    <input type="hidden" name="order_status" value="ready">
-                    <button type="submit" class="admin-btn btn-sm btn-success">
-                        <i class="fas fa-check"></i> Mark Ready
-                    </button>
-                </form>
-                @endif
+                        @if($order->order_status == 'preparing')
+                        <form action="{{ route('admin.order.updateStatus', $order->id) }}" method="POST" style="display: inline;">
+                            @csrf
+                            <input type="hidden" name="order_status" value="ready">
+                            <button type="submit" class="admin-btn btn-sm btn-success">
+                                <i class="fas fa-check"></i> Mark Ready
+                            </button>
+                        </form>
+                        @endif
 
-                <a href="{{ route('admin.kitchen.orders.detail', ['order' => $order->id, 'station_id' => $stationId]) }}" class="admin-btn btn-sm btn-secondary">
-                    <i class="fas fa-eye"></i> View Details
-                </a>
-            </div>
-        </div>
+                        <a href="{{ route('admin.kitchen.orders.detail', ['order' => $order->id, 'station_id' => $stationId]) }}" class="admin-btn btn-sm btn-secondary">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                    </div>
+                </div>
 
-        {{-- Load Information --}}
-        @if($order->kitchenLoads->isNotEmpty())
-        <div style="margin-top: 12px; padding: 8px 12px; background: #eff6ff; border-radius: 6px; font-size: 12px;">
-            <strong>Load Info:</strong>
-            @foreach($order->kitchenLoads as $load)
-                {{ $load->station->name }}: {{ $load->load_points }} points
-                @if($load->estimated_completion_time)
+                {{-- Load Information --}}
+                @if($order->kitchenLoads->isNotEmpty())
+                <div style="margin-top: 12px; padding: 8px 12px; background: #eff6ff; border-radius: 6px; font-size: 12px;">
+                    <strong>Load Info:</strong>
+                    @php
+                    // Filter kitchen loads based on current station filter
+                    $filteredLoads = $stationId
+                    ? $order->kitchenLoads->where('station_id', $stationId)
+                    : $order->kitchenLoads;
+                    @endphp
+                    @foreach($filteredLoads as $load)
+                    {{ $load->station->name }}: {{ $load->load_points }} points
+                    @if($load->estimated_completion_time)
                     (Est: {{ $load->estimated_completion_time->format('h:i A') }})
+                    @endif
+                    @if(!$loop->last) | @endif
+                    @endforeach
+                </div>
                 @endif
-                @if(!$loop->last) | @endif
-            @endforeach
-        </div>
-        @endif
-    </div>
-    @empty
-    <div style="text-align: center; padding: 80px 20px; background: white; border-radius: 12px;">
-        <i class="fas fa-clipboard-list" style="font-size: 64px; color: #cbd5e1; margin-bottom: 16px;"></i>
-        <h3 style="color: #64748b; margin-bottom: 8px;">No Active Orders</h3>
-        <p style="color: #94a3b8;">
-            @if(request('station_id'))
-                No orders currently assigned to this station.
-            @else
-                All orders have been completed! Kitchen is clear.
+            </div>
+            @empty
+            <div style="text-align: center; padding: 80px 20px; background: white; border-radius: 12px;">
+                <i class="fas fa-clipboard-list" style="font-size: 64px; color: #cbd5e1; margin-bottom: 16px;"></i>
+                <h3 style="color: #64748b; margin-bottom: 8px;">No Active Orders</h3>
+                <p style="color: #94a3b8;">
+                    @if(request('station_id'))
+                    No orders currently assigned to this station.
+                    @else
+                    All orders have been completed! Kitchen is clear.
+                    @endif
+                </p>
+            </div>
+            @endforelse
+
+            {{-- Pagination Links --}}
+            @if($orders->hasPages())
+            <div style="margin-top: 24px; display: flex; justify-content: center;">
+                {{ $orders->onEachSide(1)->links('pagination::bootstrap-4') }}
+            </div>
             @endif
-        </p>
-    </div>
-    @endforelse
+        </div>
 
-    {{-- Pagination Links --}}
-    @if($orders->hasPages())
-    <div style="margin-top: 24px; display: flex; justify-content: center;">
-        {{ $orders->onEachSide(1)->links('pagination::bootstrap-4') }}
     </div>
-    @endif
 </div>
-
 </div>
-    </div>
-    </div>
 </div>
 {{-- End kitchen-page --}}
 
@@ -903,17 +906,17 @@
 
 @section('scripts')
 <script>
-// Auto-refresh every 30 seconds
-setInterval(() => {
-    location.reload();
-}, 30000);
+    // Auto-refresh every 30 seconds
+    setInterval(() => {
+        location.reload();
+    }, 30000);
 
-// Show notification for overdue orders
-document.addEventListener('DOMContentLoaded', () => {
-    const overdueOrders = document.querySelectorAll('.text-danger');
-    if (overdueOrders.length > 0) {
-        console.log(`� ${overdueOrders.length} overdue order(s) detected`);
-    }
-});
+    // Show notification for overdue orders
+    document.addEventListener('DOMContentLoaded', () => {
+        const overdueOrders = document.querySelectorAll('.text-danger');
+        if (overdueOrders.length > 0) {
+            console.log(`� ${overdueOrders.length} overdue order(s) detected`);
+        }
+    });
 </script>
 @endsection

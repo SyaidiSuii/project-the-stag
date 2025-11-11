@@ -71,26 +71,11 @@
             <div class="station-header">
                 <div class="station-icon-wrapper">
                     <span class="station-icon">
-                        @if($station->stationType && $station->stationType->icon)
-                            {!! $station->stationType->icon !!}
-                        @elseif(stripos($station->name, 'hot') !== false || stripos($station->name, 'cooking') !== false)
-                            &#x1F525;
-                        @elseif(stripos($station->name, 'cold') !== false || stripos($station->name, 'salad') !== false || stripos($station->name, 'prep') !== false)
-                            &#x1F957;
-                        @elseif($station->station_type == 'general_kitchen')
-                            &#x1F374;
-                        @elseif($station->station_type == 'drinks')
-                            &#x1F379;
-                        @elseif($station->station_type == 'desserts')
-                            &#x1F370;
-                        @else
-                            &#x1F3E0;
-                        @endif
+                        {!! $station->icon ?? '🍽️' !!}
                     </span>
                 </div>
                 <div class="station-info">
                     <h3 class="station-name">{{ $station->name }}</h3>
-                    <p class="station-type">{{ ucfirst(str_replace('_', ' ', $station->station_type)) }}</p>
                 </div>
                 @if($station->isOverloaded())
                     <span class="station-badge badge-danger">Overloaded</span>

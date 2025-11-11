@@ -112,10 +112,10 @@
                     class="admin-nav-subitem {{ request()->routeIs('admin.kitchen.orders') ? 'active' : '' }}">
                     <div class="admin-nav-text">Active Orders</div>
                 </a>
-                <a href="{{ route('admin.kitchen.analytics') }}"
+                {{-- <a href="{{ route('admin.kitchen.analytics') }}"
                     class="admin-nav-subitem {{ request()->routeIs('admin.kitchen.analytics') ? 'active' : '' }}">
                     <div class="admin-nav-text">Analytics</div>
-                </a>
+                </a> --}}
             </div>
             @endcan
             <!-- Menu Managements Menu -->

@@ -83,7 +83,7 @@ class TestOrderDistribution extends Command
             foreach ($order->stationAssignments as $assignment) {
                 $item = $assignment->orderItem;
                 $station = $assignment->station;
-                $this->line("  ✓ {$item->menuItem->name} → {$station->name} ({$station->station_type})");
+                $this->line("  ✓ {$item->menuItem->name} → {$station->name}");
             }
 
         } catch (\Exception $e) {

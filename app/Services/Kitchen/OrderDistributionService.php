@@ -94,14 +94,13 @@ class OrderDistributionService
     }
 
     /**
-     * Find the optimal station for given station type and items
+     * Find the optimal station for given items (load balancing)
      * Uses intelligent load balancing algorithm
      */
-    protected function findOptimalStation($stationType, $items)
+    protected function findOptimalStation($items)
     {
-        // Get all active stations of this type
-        $stations = KitchenStation::where('station_type', $stationType)
-            ->where('is_active', true)
+        // Get all active stations
+        $stations = KitchenStation::where('is_active', true)
             ->get();
 
         if ($stations->isEmpty()) {

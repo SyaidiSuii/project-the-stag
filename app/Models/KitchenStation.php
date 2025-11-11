@@ -13,7 +13,7 @@ class KitchenStation extends Model
     protected $fillable = [
         'name',
         'station_type',
-        'station_type_id',
+        'icon',
         'max_capacity',
         'current_load',
         'is_active',
@@ -29,13 +29,7 @@ class KitchenStation extends Model
         'sort_order' => 'integer',
     ];
 
-    /**
-     * Get the station type
-     */
-    public function stationType()
-    {
-        return $this->belongsTo(StationType::class, 'station_type_id');
-    }
+
 
     /**
      * Get kitchen loads for this station

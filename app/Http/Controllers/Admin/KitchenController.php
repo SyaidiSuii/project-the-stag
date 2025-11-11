@@ -19,7 +19,6 @@ class KitchenController extends Controller
     {
         // Get all kitchen stations (not mapped, return full models for blade methods)
         $stations = KitchenStation::where('is_active', true)
-            ->with('stationType')
             ->get()
             ->map(function ($station) {
                 // Add today's load as attribute for display
@@ -140,7 +139,6 @@ class KitchenController extends Controller
 
         // Get all stations for filter
         $stations = KitchenStation::where('is_active', true)
-            ->with('stationType')
             ->get()
             ->map(function ($station) {
                 // Count active orders assigned to this station (distinct orders only, today only)
@@ -161,7 +159,7 @@ class KitchenController extends Controller
             'items.menuItem',
             'table',
             'user',
-            'stationAssignments.station.stationType',
+            'stationAssignments.station',
             'stationAssignments.orderItem.menuItem'
         ])
             ->whereIn('order_status', ['pending', 'confirmed', 'preparing', 'ready', 'completed'])
@@ -301,7 +299,7 @@ class KitchenController extends Controller
         // Sort by oldest first so kitchen processes orders in FIFO order
         $ordersQuery = Order::whereIn('order_status', ['pending', 'preparing', 'ready'])
             ->whereDate('order_time', Carbon::today())
-            ->with(['items.menuItem', 'table', 'user', 'stationAssignments.station.stationType'])
+            ->with(['items.menuItem', 'table', 'user', 'stationAssignments.station'])
             ->orderBy('order_time', 'asc');
 
         // Filter by station if specified
@@ -315,7 +313,6 @@ class KitchenController extends Controller
 
         // Get all stations for filter
         $stations = KitchenStation::where('is_active', true)
-            ->with('stationType')
             ->get()
             ->map(function ($station) {
                 // Count active orders assigned to this station (distinct orders only, today only)
@@ -345,7 +342,7 @@ class KitchenController extends Controller
             'items.menuItem.category',
             'table',
             'user',
-            'stationAssignments.station.stationType',
+            'stationAssignments.station',
             'stationAssignments.orderItem.menuItem'
         ])->findOrFail($orderId);
 

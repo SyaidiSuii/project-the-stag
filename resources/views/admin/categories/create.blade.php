@@ -58,14 +58,8 @@
                     <option value="">-- Inherit from parent --</option>
                     @foreach(\App\Models\KitchenStation::where('is_active', true)->orderBy('name')->get() as $station)
                         <option value="{{ $station->id }}" {{ old('default_station_id') == $station->id ? 'selected' : '' }}>
-                            @if($station->station_type == 'general_kitchen')
-                                🍴
-                            @elseif($station->station_type == 'drinks')
-                                🍹
-                            @elseif($station->station_type == 'desserts')
-                                🍰
-                            @endif
-                            {{ $station->name }} ({{ ucfirst(str_replace('_', ' ', $station->station_type)) }})
+                            {!! $station->icon ?? '🍴' !!}
+                            {{ $station->name }}
                         </option>
                     @endforeach
                 </select>

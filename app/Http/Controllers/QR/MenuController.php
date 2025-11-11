@@ -615,8 +615,7 @@ class MenuController extends Controller
     private function getKitchenLoadStatus()
     {
         $stations = \App\Models\KitchenStation::where('is_active', true)
-            ->with('stationType')
-            ->select('id', 'name', 'station_type', 'station_type_id', 'current_load', 'max_capacity')
+            ->select('id', 'name', 'current_load', 'max_capacity')
             ->get();
 
         $stationStatus = [];
@@ -634,7 +633,6 @@ class MenuController extends Controller
             if ($loadPercentage >= 85) {
                 $status = 'very_busy';
                 $estimatedWait = 25;
-                $busyStations[] = $station->station_type;
             } elseif ($loadPercentage >= 70) {
                 $status = 'busy';
                 $estimatedWait = 15;
@@ -644,7 +642,7 @@ class MenuController extends Controller
                 $fastStationTypes[] = $station->id;
             }
 
-            $stationStatus[$station->station_type] = [
+            $stationStatus[$station->id] = [
                 'name' => $station->name,
                 'load_percentage' => $loadPercentage,
                 'status' => $status,

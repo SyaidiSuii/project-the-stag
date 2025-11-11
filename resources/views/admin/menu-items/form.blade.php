@@ -298,7 +298,6 @@
         @endif
 
         {{-- Add-ons Management Section --}}
-        @if($menuItem->id)
         <div class="form-section mt-4">
             <div class="section-header-addon">
                 <h3 class="section-title-addon">
@@ -309,6 +308,7 @@
             </div>
 
             <div id="addons-container">
+                @if($menuItem->id)
                 @foreach($menuItem->addons as $index => $addon)
                 <div class="addon-item" data-index="{{ $index }}">
                     <input type="hidden" name="addons[{{ $index }}][id]" value="{{ $addon->id }}">
@@ -362,13 +362,13 @@
                     </div>
                 </div>
                 @endforeach
+                @endif
             </div>
 
             <button type="button" class="btn-add-addon" onclick="addNewAddon()">
                 <i class="fas fa-plus"></i> Add New Add-on
             </button>
         </div>
-        @endif
 
         <div class="form-actions">
             <button type="submit" class="btn-save">
@@ -402,7 +402,7 @@
     }
 
     // Add-ons Management Functions
-    let addonIndex = {{ $menuItem->addons->count() ?? 0 }};
+    let addonIndex = {{ $menuItem->id ? $menuItem->addons->count() : 0 }};
 
     function addNewAddon() {
         const container = document.getElementById('addons-container');

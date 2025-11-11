@@ -700,9 +700,6 @@
                 <i class="fas fa-arrow-left"></i> Back to Dashboard
             </a>
             @else
-            <a href="{{ route('profile.edit') }}" onclick="pauseCountdown()" class="kds-btn" style="background: #6366f1; text-decoration: none; margin-right: 10px;">
-                <i class="fas fa-user"></i> Profile
-            </a>
             <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: inline;">
                 @csrf
                 <button type="button" onclick="confirmLogout()" class="kds-btn" style="border: none;">
@@ -725,7 +722,7 @@
             @foreach($stations as $station)
             <button class="station-filter-btn {{ $stationId == $station->id ? 'active' : '' }}"
                     onclick="window.location.href='{{ route('admin.kitchen.kds', ['station_id' => $station->id]) }}'">
-                <span>{!! $station->stationType->icon ?? '&#x1F372;' !!}</span>
+                <span>{!! $station->icon ?? '🍽️' !!}</span>
                 {{ $station->name }}
                 <span class="station-badge">{{ $station->active_loads_count }}</span>
             </button>
@@ -773,7 +770,7 @@
                                 // When filtering by specific station, calculate only that station's items total
                                 $stationItemsForTotal = $order->stationAssignments
                                     ->where('station_id', $stationId)
-                                    ->pluck('orderItem')
+                                    ->map(fn($assignment) => $assignment->orderItem)
                                     ->filter();
                                 $stationTotal = $stationItemsForTotal->sum('total_price');
                             } else {
@@ -817,7 +814,7 @@
                         <div class="order-station-tags">
                             @foreach($order->stationAssignments->unique('station_id') as $assignment)
                                 <span class="station-tag">
-                                    {!! $assignment->station->stationType->icon ?? '&#x1F372;' !!}
+                                    {!! $assignment->station->icon ?? '🍽️' !!}
                                     {{ $assignment->station->name }}
                                 </span>
                             @endforeach
@@ -828,9 +825,10 @@
                             // Filter items for current station only (reuse items for display)
                             if ($stationId && $order->stationAssignments && $order->stationAssignments->count() > 0) {
                                 // When filtering by specific station, show only that station's items
+                                // Get station assignments for this station and their related order items
                                 $stationItems = $order->stationAssignments
                                     ->where('station_id', $stationId)
-                                    ->pluck('orderItem')
+                                    ->map(fn($assignment) => $assignment->orderItem)
                                     ->filter();
                             } else {
                                 // When viewing all stations, show all order items
@@ -902,9 +900,18 @@
                                 </button>
                                 @endif
                             @elseif($status == 'ready')
-                                <button onclick="updateOrderStatus({{ $order->id }}, 'completed')" class="action-btn btn-complete">
-                                    <i class="fas fa-check"></i> Mark Complete
-                                </button>
+                                <div class="action-btn" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; cursor: default;">
+                                    <i class="fas fa-check-circle"></i> Ready for Service
+                                </div>
+                                <script>
+                                    (function() {
+                                        const orderId = {{ $order->id }};
+                                        // Auto-complete after 5 minutes (300000 milliseconds)
+                                        setTimeout(() => {
+                                            autoCompleteOrder(orderId);
+                                        }, 300000);
+                                    })();
+                                </script>
                             @endif
                         </div>
                     </div>
@@ -1221,6 +1228,30 @@
         }
         setInterval(updateTime, 1000);
         updateTime();
+
+        // Auto-complete order (silent, no confirmation)
+        async function autoCompleteOrder(orderId) {
+            try {
+                const response = await fetch(`/admin/order/${orderId}/update-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        order_status: 'completed',
+                        station_id: {{ $stationId ?? 'null' }}
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    console.log(`✅ Order #${orderId} auto-completed successfully`);
+                }
+            } catch (error) {
+                console.error(`Error auto-completing order #${orderId}:`, error);
+            }
+        }
 
         // Update order status
         async function updateOrderStatus(orderId, status) {

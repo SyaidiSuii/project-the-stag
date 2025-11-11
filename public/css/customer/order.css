@@ -450,6 +450,35 @@
       letter-spacing: 0.3px;
     }
 
+    /* Order Table Info */
+    .order-table-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08));
+      border-left: 4px solid var(--brand);
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+
+    .table-icon {
+      font-size: 1.2rem;
+    }
+
+    .table-text {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .table-location {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-2);
+      margin-left: 4px;
+    }
+
     .item-list {
       list-style: none;
       max-height: 150px;

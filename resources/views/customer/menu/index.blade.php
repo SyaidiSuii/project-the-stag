@@ -980,6 +980,17 @@ document.addEventListener('DOMContentLoaded', function() {
           <button class="qty-btn" id="order-qty-plus" style="width: 40px; height: 40px; border-radius: 12px; border: 2px solid #e5e7eb; background: white; font-size: 20px; font-weight: 600; color: #6b7280; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">+</button>
         </div>
       </div>
+      
+      <!-- Add-ons Section -->
+      <div id="order-addons-section" style="margin-bottom: 24px; display: none;">
+        <label style="display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">
+          <i class="fas fa-puzzle-piece" style="margin-right: 6px; color: #6366f1;"></i>
+          Add-ons (Optional)
+        </label>
+        <div id="order-addons-container" style="padding: 16px; border: 2px solid #e5e7eb; border-radius: 12px; background: #f9fafb; display: grid; gap: 10px;">
+          <!-- Add-ons checkboxes will be inserted here by JavaScript -->
+        </div>
+      </div>
 
       <!-- Add-ons Section -->
       <div id="order-addons-section" style="margin-bottom: 24px; display: none;">

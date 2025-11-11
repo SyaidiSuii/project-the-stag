@@ -574,30 +574,11 @@
             <div class="hero-top">
                 <div class="hero-left">
                     <div class="station-icon-large">
-                        @if($station->station_type == 'hot_kitchen')
-                            &#x1F525;
-                        @elseif($station->station_type == 'cold_kitchen')
-                            &#x1F957;
-                        @elseif($station->station_type == 'drinks')
-                            &#x1F379;
-                        @elseif($station->station_type == 'desserts')
-                            &#x1F370;
-                        @elseif($station->station_type == 'grill')
-                            &#x1F969;
-                        @elseif($station->station_type == 'bakery')
-                            &#x1F956;
-                        @elseif($station->station_type == 'salad_bar')
-                            &#x1F96D;
-                        @elseif($station->station_type == 'pastry')
-                            &#x1F9C1;
-                        @else
-                            &#x1F3E0;
-                        @endif
+                        {!! $station->icon ?? '🍴' !!}
                     </div>
                     <div class="hero-info">
                         <h1>{{ $station->name }}</h1>
                         <div class="hero-type">
-                            <span>{{ ucfirst(str_replace('_', ' ', $station->station_type)) }}</span>
                             <span class="status-badge-large {{ $station->is_active ? 'active' : 'inactive' }}">
                                 {{ $station->is_active ? 'Active' : 'Inactive' }}
                             </span>

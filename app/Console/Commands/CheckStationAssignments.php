@@ -13,17 +13,16 @@ class CheckStationAssignments extends Command
     public function handle()
     {
         $this->info('=== KITCHEN STATIONS ===');
-        $stations = DB::table('kitchen_stations')->select('id', 'name', 'station_type')->get();
+        $stations = DB::table('kitchen_stations')->select('id', 'name', 'icon')->get();
         foreach ($stations as $station) {
-            $this->line("ID: {$station->id} | Name: {$station->name} | Type: {$station->station_type}");
+            $this->line("ID: {$station->id} | Name: {$station->name} | Icon: {$station->icon}");
         }
 
         $this->info("\n=== CATEGORIES ===");
-        $categories = DB::table('categories')->select('id', 'name', 'default_station_type', 'default_station_id')->get();
+        $categories = DB::table('categories')->select('id', 'name', 'default_station_id')->get();
         foreach ($categories as $cat) {
-            $type = $cat->default_station_type ?? 'NULL';
             $stationId = $cat->default_station_id ?? 'NULL';
-            $this->line("ID: {$cat->id} | Name: {$cat->name} | Type: {$type} | StationID: {$stationId}");
+            $this->line("ID: {$cat->id} | Name: {$cat->name} | StationID: {$stationId}");
         }
 
         $this->info("\n=== MENU ITEMS (First 10) ===");

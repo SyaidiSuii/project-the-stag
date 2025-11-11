@@ -228,30 +228,11 @@
         <div class="detail-header">
             <div class="detail-header-top">
                 <div class="detail-icon">
-                    @if($station->station_type == 'hot_kitchen')
-                        &#x1F525;
-                    @elseif($station->station_type == 'cold_kitchen')
-                        &#x1F957;
-                    @elseif($station->station_type == 'drinks')
-                        &#x1F379;
-                    @elseif($station->station_type == 'desserts')
-                        &#x1F370;
-                    @elseif($station->station_type == 'grill')
-                        &#x1F969;
-                    @elseif($station->station_type == 'bakery')
-                        &#x1F956;
-                    @elseif($station->station_type == 'salad_bar')
-                        &#x1F96D;
-                    @elseif($station->station_type == 'pastry')
-                        &#x1F9C1;
-                    @else
-                        &#x1F3E0;
-                    @endif
+                    {!! $station->icon ?? '🍽️' !!}
                 </div>
                 <div class="detail-info">
                     <h1>{{ $station->name }}</h1>
                     <div class="station-type-label">
-                        {{ ucfirst(str_replace('_', ' ', $station->station_type)) }}
                         @if($station->is_active)
                             <span class="status-badge badge-success">Active</span>
                         @else
