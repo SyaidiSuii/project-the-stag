@@ -130,8 +130,13 @@ class FCMNotificationService
 
                     // If token is invalid, deactivate device
                     if (str_contains($e->getMessage(), 'invalid-registration-token') ||
-                        str_contains($e->getMessage(), 'registration-token-not-registered')) {
+                        str_contains($e->getMessage(), 'registration-token-not-registered') ||
+                        str_contains($e->getMessage(), 'Requested entity was not found')) {
                         $device->deactivate();
+                        Log::info('FCM: Device deactivated due to invalid token', [
+                            'user_id' => $userId,
+                            'device_id' => $device->id
+                        ]);
                     }
                 }
             }
@@ -276,7 +281,7 @@ class FCMNotificationService
         try {
             // Get all admin users (admin and manager roles)
             $adminUsers = User::whereHas('roles', function ($query) {
-                $query->whereIn('name', ['admin', 'manager']);
+                $query->whereIn('name', ['admin', 'manager', 'super-admin']);
             })->where('is_active', true)->get();
 
             if ($adminUsers->isEmpty()) {
@@ -293,19 +298,19 @@ class FCMNotificationService
             // Prepare notification data
             $orderNumber = $order->confirmation_code ?? "ORD-{$order->id}";
             $customerName = $order->user ? $order->user->name : 'Guest';
-            $itemCount = $order->orderItems->count();
-            $total = 'RM ' . number_format($order->final_total, 2);
+            $itemCount = $order->items->count();
+            $total = 'RM ' . number_format($order->total_amount, 2);
 
             $notificationData = [
                 'title' => '🔔 New Order Received!',
-                'body' => "{$customerName} placed a new order ({$orderNumber}) - {$itemCount} items | Total: {$total}",
+                'body' => "{$customerName} placed a new order ({$orderNumber}) - {$itemCount} items, Total: {$total}",
                 'data' => [
                     'type' => 'new_order',
                     'order_id' => (string) $order->id,
                     'order_number' => $orderNumber,
                     'customer_name' => $customerName,
                     'item_count' => (string) $itemCount,
-                    'total' => $total,
+                    'total_amount' => $total,
                     'click_action' => '/admin/orders/' . $order->id,
                 ],
             ];

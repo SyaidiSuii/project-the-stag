@@ -9,23 +9,23 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class OrderStatusUpdatedEvent implements ShouldBroadcast
+class PaymentStatusUpdatedEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public Order $order;
-    public string $oldStatus;
-    public string $newStatus;
+    public string $oldPaymentStatus;
+    public string $newPaymentStatus;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(Order $order, string $oldStatus, string $updatedBy = 'system')
+    public function __construct(Order $order, string $oldPaymentStatus, string $updatedBy = 'system')
     {
         // Load necessary relationships for the broadcast
         $this->order = $order->load(['items.menuItem', 'table']);
-        $this->oldStatus = $oldStatus;
-        $this->newStatus = $order->order_status;
+        $this->oldPaymentStatus = $oldPaymentStatus;
+        $this->newPaymentStatus = $order->payment_status;
     }
 
     /**
@@ -50,7 +50,7 @@ class OrderStatusUpdatedEvent implements ShouldBroadcast
      */
     public function broadcastAs(): string
     {
-        return 'order.status.updated';
+        return 'payment.status.updated';
     }
 
     /**
@@ -61,16 +61,16 @@ class OrderStatusUpdatedEvent implements ShouldBroadcast
     public function broadcastWith(): array
     {
         // Broadcast the entire order object with its relationships
-        // Plus status change data for frontend listeners
+        // Plus payment status change data for frontend listeners
         return [
             'order' => $this->order->toArray(),
             'table_number' => $this->order->table ? $this->order->table->table_number : null,
             'total_amount' => $this->order->total_amount,
             'estimated_time' => $this->order->estimated_ready_time,
             'items' => $this->order->items,
-            // Status change tracking for frontend
-            'old_status' => $this->oldStatus,
-            'new_status' => $this->newStatus,
+            // Payment status change tracking for frontend
+            'old_payment_status' => $this->oldPaymentStatus,
+            'new_payment_status' => $this->newPaymentStatus,
             'order_id' => $this->order->id, // Also add at root level for easier access
         ];
     }

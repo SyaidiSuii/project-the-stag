@@ -26,37 +26,40 @@ class SendNewOrderNotification implements ShouldQueue
     /**
      * Handle the event.
      */
-    public function handle(OrderCreatedEvent $event): void
-    {
-        try {
-            Log::info('SendNewOrderNotification: Processing new order notification', [
-                'order_id' => $event->orderId,
-                'confirmation_code' => $event->confirmationCode
-            ]);
-
-            // Find the order
-            $order = Order::with(['user', 'orderItems'])->find($event->orderId);
-
-            if (!$order) {
-                Log::warning('SendNewOrderNotification: Order not found', [
-                    'order_id' => $event->orderId
-                ]);
-                return;
-            }
-
-            // Send FCM notification to admin users
-            $this->fcmService->sendNewOrderNotificationToAdmin($order);
-
-            Log::info('SendNewOrderNotification: Notification sent successfully', [
-                'order_id' => $event->orderId
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('SendNewOrderNotification: Failed to send notification', [
-                'order_id' => $event->orderId ?? null,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-        }
-    }
-}
+            public function handle(OrderCreatedEvent $event): void
+            {
+                try {
+                    // Get the order model from the event.
+                    // It might be a "hollow" model after being unserialized from the queue.
+                    $order = $event->order;
+        
+                    if (!$order || !$order->id) {
+                        Log::warning('SendNewOrderNotification: Event was fired without a valid order object.');
+                        return;
+                    }
+        
+                    // Eager load the relationships we need, just in case they were lost during queueing.
+                    $order->load(['user', 'items']);
+        
+                    Log::info('SendNewOrderNotification: Processing new order notification', [
+                        'order_id' => $order->id,
+                        'confirmation_code' => $order->confirmation_code
+                    ]);
+        
+                    // Send FCM notification to admin users
+                    $this->fcmService->sendNewOrderNotificationToAdmin($order);
+        
+                    Log::info('SendNewOrderNotification: Notification sent successfully', [
+                        'order_id' => $order->id
+                    ]);
+        
+                } catch (\Exception $e) {
+                    Log::error('SendNewOrderNotification: Failed to send notification', [
+                        'order_id' => $event->order->id ?? 'unknown',
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    // Re-throw the exception to ensure the job is marked as failed
+                    throw $e;
+                }
+            }}

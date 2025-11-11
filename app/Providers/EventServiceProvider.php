@@ -9,6 +9,7 @@ use App\Events\PromotionUsedEvent;
 use App\Events\RewardRedeemedEvent;
 use App\Events\TableBookingCreatedEvent;
 use App\Events\OrderStatusUpdatedEvent;
+use App\Events\PaymentStatusUpdatedEvent;
 use App\Events\OrderCreatedEvent;
 use App\Events\AnalyticsRefreshEvent;
 use App\Events\QRSessionCompletedEvent;
@@ -66,6 +67,7 @@ class EventServiceProvider extends ServiceProvider
         TableBookingCreatedEvent::class => [
             UpdateAnalyticsOnTableBooking::class,
             SendNewReservationNotificationToAdmin::class,
+            \App\Listeners\CreateBookingNotificationListener::class,
         ],
         TableBookingConfirmedEvent::class => [
             SendBookingConfirmationNotification::class,
@@ -79,8 +81,12 @@ class EventServiceProvider extends ServiceProvider
         OrderStatusUpdatedEvent::class => [
             SendOrderStatusNotification::class,
         ],
+        PaymentStatusUpdatedEvent::class => [
+            // Add listeners if needed for FCM/email notifications
+        ],
         OrderCreatedEvent::class => [
             SendNewOrderNotification::class,
+            \App\Listeners\CreateOrderNotificationListener::class,
         ],
 
         // PHASE 5: Loyalty Program Events

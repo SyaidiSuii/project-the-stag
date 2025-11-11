@@ -8,15 +8,35 @@ use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\SaleAnalytics;
+use App\Models\AdminNotification;
+use App\Models\CustomerFeedback;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    public function getNotifications()
+    {
+        $notifications = AdminNotification::latest()->take(15)->get();
+        $unreadCount = AdminNotification::whereNull('read_at')->count();
+
+        return response()->json([
+            'notifications' => $notifications,
+            'unread_count' => $unreadCount,
+        ]);
+    }
+
+    public function markNotificationsAsRead()
+    {
+        AdminNotification::whereNull('read_at')->update(['read_at' => now()]);
+
+        return response()->json(['success' => true]);
+    }
+
     public function index()
     {
-        // Total Orders
-        $totalOrders = Order::count();
+        // Order metrics
+        $yesterdayOrders = Order::whereDate('created_at', today()->subDay())->count();
         $todayOrders = Order::whereDate('created_at', today())->count();
         
         // Revenue Data from Order table (based on completed/served and paid orders)
@@ -24,9 +44,9 @@ class DashboardController extends Controller
             ->whereIn('order_status', ['completed', 'served'])
             ->where('payment_status', 'paid')
             ->sum('total_amount');
-        $revenueGrowth = $this->calculateRevenueGrowth();
+        $revenueGrowth = $this->calculateDailyRevenueGrowth($todayRevenue);
 
-        // Customer Feedback Data - Count from sessions since we don't have dedicated feedback table
+        // Customer Feedback Data
         $customerFeedbackCount = $this->getCustomerFeedbackCount();
         $feedbackGrowth = $this->calculateFeedbackGrowth();
 
@@ -73,7 +93,7 @@ class DashboardController extends Controller
             ->get();
 
         return view('admin.dashboard.index', compact(
-            'totalOrders',
+            'yesterdayOrders',
             'todayOrders',
             'todayRevenue',
             'revenueGrowth',
@@ -90,56 +110,41 @@ class DashboardController extends Controller
     }
 
     /**
-     * Calculate revenue growth by comparing current week with previous week
+     * Calculate revenue growth by comparing today with yesterday.
      */
-    /**
-     * Calculate revenue growth by comparing current week with previous week
-     */
-    private function calculateRevenueGrowth()
+    private function calculateDailyRevenueGrowth($todayRevenue)
     {
-        $currentWeekRevenue = SaleAnalytics::whereBetween('date', [
-            Carbon::now()->startOfWeek(),
-            Carbon::now()->endOfWeek()
-        ])->sum('total_sales');
+        $yesterdayRevenue = Order::whereDate('created_at', today()->subDay())
+            ->whereIn('order_status', ['completed', 'served'])
+            ->where('payment_status', 'paid')
+            ->sum('total_amount');
 
-        $previousWeekRevenue = SaleAnalytics::whereBetween('date', [
-            Carbon::now()->subWeek()->startOfWeek(),
-            Carbon::now()->subWeek()->endOfWeek()
-        ])->sum('total_sales');
-
-        if ($previousWeekRevenue == 0) {
-            return $currentWeekRevenue > 0 ? 100 : 0;
+        if ($yesterdayRevenue == 0) {
+            return $todayRevenue > 0 ? 100 : 0; // Or handle as infinite growth
         }
 
-        return round((($currentWeekRevenue - $previousWeekRevenue) / $previousWeekRevenue) * 100, 2);
+        return round((($todayRevenue - $yesterdayRevenue) / $yesterdayRevenue) * 100, 2);
     }
 
     /**
-     * Get customer feedback count (placeholder - would need real feedback table)
-     * For now, we can count the number of orders that might have feedback
+     * Get total customer feedback count.
      */
     private function getCustomerFeedbackCount()
     {
-        // This is a placeholder - we'll need to implement real feedback storage
-        // For now, we'll count completed orders as potential feedback sources
-        return Order::where('order_status', 'completed')
-            ->where('created_at', '>=', Carbon::now()->subWeek())
-            ->count();
+        return CustomerFeedback::count();
     }
 
     /**
-     * Calculate feedback growth by comparing current week with previous week
+     * Calculate feedback growth by comparing current week with previous week.
      */
     private function calculateFeedbackGrowth()
     {
-        $currentWeekFeedback = Order::where('order_status', 'completed')
-            ->whereBetween('created_at', [
+        $currentWeekFeedback = CustomerFeedback::whereBetween('created_at', [
                 Carbon::now()->startOfWeek(),
                 Carbon::now()->endOfWeek()
             ])->count();
 
-        $previousWeekFeedback = Order::where('order_status', 'completed')
-            ->whereBetween('created_at', [
+        $previousWeekFeedback = CustomerFeedback::whereBetween('created_at', [
                 Carbon::now()->subWeek()->startOfWeek(),
                 Carbon::now()->subWeek()->endOfWeek()
             ])->count();
@@ -148,6 +153,6 @@ class DashboardController extends Controller
             return $currentWeekFeedback > 0 ? 100 : 0;
         }
 
-        return round((($currentWeekFeedback - $previousWeekFeedback) / $previousWeekFeedback) * 100, 2);
+        return round((($currentWeekFeedback - $previousWeekFeedback) / $previousWeekFeedback) * 100);
     }
 }

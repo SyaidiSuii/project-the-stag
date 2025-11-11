@@ -368,121 +368,31 @@ class PaymentController extends Controller
                     }
                 }
 
-                // Fire OrderCreatedEvent to notify admin
-                event(new OrderCreatedEvent($order->fresh(['user', 'items'])));
-
-                // Create counter payment record
-                $paymentData = [
-                    'payment_method' => 'counter',
-                    'amount' => $finalTotal, // Use final total after discount
-                    'currency' => 'MYR',
-                    'payment_status' => 'pending',
-                    'gateway' => 'manual',
-                ];
-
-                $payment = $this->paymentService->savePaymentData($paymentData, $order->id);
-
-                // Award points to user if authenticated (1 point per RM1 spent)
-                // AND update customer profile total_spent
-                if ($user) { // Check if user is authenticated
-                    // Calculate points (e.g., 1 point per RM1 spent)
-                    $points = floor($finalTotal);
-
-                    // Add points to user
-                    $user->addPoints($points, 'Order #' . $order->confirmation_code . ' (Counter Payment)');
-
-                    if ($user->customerProfile) {
-                        $user->customerProfile->addSpending($finalTotal);
-                        logger()->info('Customer profile total_spent updated (counter order)', [
-                            'user_id' => $user->id,
-                            'order_id' => $order->id,
-                            'amount' => $finalTotal,
-                            'new_total_spent' => $user->customerProfile->fresh()->total_spent
-                        ]);
-                    }
-                }
-
-                // Only clear user's cart if this order came from cart checkout
-                $isFromCart = $validated['is_from_cart'] ?? false;
-                if ($user && $isFromCart) {
-                    UserCart::where('user_id', $user->id)->delete();
-                }
-
-                // Mark voucher as redeemed if used
-                if ($user && $voucherDiscount > 0) {
-                    $appliedVoucher = session('applied_voucher');
-                    if ($appliedVoucher && isset($appliedVoucher['id'])) {
-                        $voucher = \App\Models\CustomerVoucher::with('voucherTemplate')->find($appliedVoucher['id']);
-                        if ($voucher) {
-                            $voucher->status = 'redeemed';
-                            $voucher->used_at = now();
-                            $voucher->order_id = $order->id;
-                            $voucher->save();
-
-                            logger()->info('Voucher marked as redeemed', [
-                                'voucher_id' => $voucher->id,
-                                'order_id' => $order->id,
-                                'discount' => $voucherDiscount,
-                                'source' => $voucher->source
-                            ]);
-
-                            // If voucher came from reward redemption, mark the CustomerReward as redeemed too
-                            if ($voucher->source === 'reward' && $voucher->voucherTemplate) {
-                                $customerReward = \App\Models\CustomerReward::where('customer_profile_id', $voucher->customer_profile_id)
-                                    ->whereHas('reward', function($query) use ($voucher) {
-                                        $query->where('voucher_template_id', $voucher->voucher_template_id);
-                                    })
-                                    ->where('status', 'active')
-                                    ->orderBy('created_at', 'desc')
-                                    ->first();
-
-                                if ($customerReward) {
-                                    $customerReward->status = 'redeemed';
-                                    $customerReward->redeemed_at = now();
-                                    $customerReward->save();
-
-                                    logger()->info('CustomerReward marked as redeemed via voucher usage', [
-                                        'customer_reward_id' => $customerReward->id,
-                                        'voucher_id' => $voucher->id,
-                                        'order_id' => $order->id
-                                    ]);
-                                }
-                            }
-
-                            // Clear applied voucher from session
-                            session()->forget('applied_voucher');
-                        }
-                    }
-                }
-
-                // Mark free item rewards as redeemed (product type rewards) - COUNTER ORDERS
-                if ($user) {
-                    // Load order items to check for free rewards
-                    $order->load('items');
-                    foreach ($order->items as $orderItem) {
-                        // Check if this order item is linked to a reward redemption
-                        if ($orderItem->customer_reward_id) {
-                            $customerReward = \App\Models\CustomerReward::find($orderItem->customer_reward_id);
-                            if ($customerReward && $customerReward->status !== 'redeemed') {
-                                $customerReward->markAsRedeemed();
-
-                                logger()->info('Free item reward marked as redeemed (counter order)', [
-                                    'customer_reward_id' => $customerReward->id,
-                                    'order_id' => $order->id,
-                                    'menu_item_id' => $orderItem->menu_item_id,
-                                    'reward_title' => $customerReward->reward->title ?? 'Unknown'
-                                ]);
-                            }
-                        }
-                    }
-                }
-
-                // Clear promo code from session if guest
+                // Clear cart after successful order placement
                 if (!$user) {
+                    // Guest users - clear session cart
+                    session()->forget('guest_cart');
                     session()->forget(['guest_promo_code', 'guest_promo_discount']);
+                    session()->forget('applied_voucher');
+
+                    logger()->info('Guest cart cleared after counter payment', [
+                        'order_id' => $order->id,
+                        'guest_session_id' => session()->getId()
+                    ]);
+                } else {
+                    // Logged in users - clear database cart
+                    UserCart::where('user_id', $user->id)->delete();
+
+                    logger()->info('User cart cleared after counter payment', [
+                        'order_id' => $order->id,
+                        'user_id' => $user->id
+                    ]);
                 }
 
                 DB::commit();
+
+                // Fire OrderCreatedEvent to notify admin AFTER transaction is committed
+                event(new OrderCreatedEvent($order));
 
                 // Generate a unique order ID for display
                 $displayOrderId = 'STG-' . $order->created_at->format('Ymd') . '-' . $order->id;

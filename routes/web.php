@@ -619,6 +619,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('reports/business-insights', [\App\Http\Controllers\Admin\ReportController::class, 'getBusinessInsights'])->name('reports.business-insights');
         Route::get('reports/executive-summary', [\App\Http\Controllers\Admin\ReportController::class, 'getExecutiveSummary'])->name('reports.executive-summary');
         Route::get('reports/data-quality', [\App\Http\Controllers\Admin\ReportController::class, 'getDataQualityReport'])->name('reports.data-quality');
+        Route::get('reports/feedback', [\App\Http\Controllers\Admin\FeedbackController::class, 'index'])->name('reports.feedback');
 
         Route::prefix('sale-analytics')->name('sale-analytics.')->group(function () {
             Route::get('dashboard-stats', [SaleAnalyticsController::class, 'getDashboardStats'])->name('dashboard-stats');
@@ -649,6 +650,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{promotion}/analytics', [AdminPromotionController::class, 'analytics'])->name('analytics');
             Route::post('/{promotion}/duplicate', [AdminPromotionController::class, 'duplicate'])->name('duplicate');
         });
+
+        // Notifications API
+        Route::get('notifications', [\App\Http\Controllers\Admin\DashboardController::class, 'getNotifications'])->name('notifications.index');
+        Route::post('notifications/mark-as-read', [\App\Http\Controllers\Admin\DashboardController::class, 'markNotificationsAsRead'])->name('notifications.mark-as-read');
 
         // ---------------------------------------------
         // STOCK MANAGEMENT - TEMPORARILY DISABLED

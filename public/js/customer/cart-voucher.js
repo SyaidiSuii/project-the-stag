@@ -233,7 +233,7 @@ function openVoucherModal() {
 
 function fetchAvailableVouchers() {
     const container = document.getElementById('voucherListContainer');
-    container.innerHTML = '<div style="text-align: center; padding: 40px 20px; color: #9ca3af;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 12px; display: block;"></i><p>Loading vouchers...</p></div>';
+    container.innerHTML = '<div style="text-align: center; padding: 40px 20px; color: #9ca3af;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 12px; display: inline-block;"></i><p>Loading vouchers...</p></div>';
 
     fetch('/customer/cart/available-vouchers')
         .then(response => response.json())
@@ -244,7 +244,7 @@ function fetchAvailableVouchers() {
             } else {
                 container.innerHTML = `
                     <div style="text-align: center; padding: 40px 20px; color: #9ca3af;">
-                        <i class="fas fa-ticket-alt" style="font-size: 3rem; margin-bottom: 12px; display: block; opacity: 0.3;"></i>
+                        <i class="fas fa-ticket-alt" style="font-size: 3rem; margin-bottom: 12px; display: inline-block; opacity: 0.3;"></i>
                         <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">No Rewards Available</p>
                         <p style="font-size: 0.9rem;">Redeem rewards from the Rewards page!</p>
                     </div>
@@ -282,29 +282,34 @@ function renderVoucherList(vouchers) {
         voucherCard.style.cssText = `background: ${bgGradient}; border: 2px solid ${borderColor}; border-radius: 12px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;`;
 
         voucherCard.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-                <div style="flex: 1;">
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                        <div style="font-size: 1rem; font-weight: 700; color: ${textColor};">
-                            ${voucher.name}
-                        </div>
-                        ${isReward ? `<span style="background: #3b82f6; color: white; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600;">REWARD</span>` : ''}
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                    <div style="width: 60px; height: 60px; background: #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: ${textColor}; flex-shrink: 0;">
+                        <i class="fas fa-ticket-alt"></i>
                     </div>
-                    <div style="font-size: 0.85rem; color: ${descColor}; margin-bottom: 8px;">
-                        ${voucher.description}
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <div style="font-size: 1rem; font-weight: 700; color: ${textColor};">
+                                ${voucher.name}
+                            </div>
+                            ${isReward ? `<span style="background: #3b82f6; color: white; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600;">REWARD</span>` : ''}
+                        </div>
+                        <div style="font-size: 0.85rem; color: ${descColor}; margin-bottom: 8px;">
+                            ${voucher.description}
+                        </div>
+                        ${voucher.minimum_spend > 0 ? `
+                            <div style="font-size: 0.75rem; color: ${textColor};">
+                                <i class="fas fa-info-circle"></i> Min. spend: RM${parseFloat(voucher.minimum_spend).toFixed(2)}
+                            </div>
+                        ` : ''}
+                        ${voucher.expiry_date ? `
+                            <div style="font-size: 0.75rem; color: ${textColor};">
+                                <i class="fas fa-clock"></i> Valid until: ${voucher.expiry_date}
+                            </div>
+                        ` : ''}
                     </div>
-                    ${voucher.minimum_spend > 0 ? `
-                        <div style="font-size: 0.75rem; color: ${textColor};">
-                            <i class="fas fa-info-circle"></i> Min. spend: RM${parseFloat(voucher.minimum_spend).toFixed(2)}
-                        </div>
-                    ` : ''}
-                    ${voucher.expiry_date ? `
-                        <div style="font-size: 0.75rem; color: ${textColor};">
-                            <i class="fas fa-clock"></i> Valid until: ${voucher.expiry_date}
-                        </div>
-                    ` : ''}
                 </div>
-                <button class="apply-voucher-btn" data-voucher-id="${voucher.id}" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                <button class="apply-voucher-btn" data-voucher-id="${voucher.id}" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; margin-left: 16px;">
                     Apply
                 </button>
             </div>

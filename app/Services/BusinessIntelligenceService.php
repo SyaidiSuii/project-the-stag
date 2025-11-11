@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\SaleAnalytics;
+use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -32,11 +33,18 @@ class BusinessIntelligenceService
             ];
         }
 
+        $orderStatusDistribution = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->select('order_status', DB::raw('count(*) as total'))
+            ->groupBy('order_status')
+            ->get()
+            ->pluck('total', 'order_status');
+
         return [
             'revenue_trend' => $this->calculateTrend($analytics->pluck('total_sales')->toArray()),
             'orders_trend' => $this->calculateTrend($analytics->pluck('total_orders')->toArray()),
             'avg_order_value_trend' => $this->calculateTrend($analytics->pluck('average_order_value')->toArray()),
             'customer_trend' => $this->calculateTrend($analytics->pluck('unique_customers')->toArray()),
+            'order_status_distribution' => $orderStatusDistribution,
             'period' => [
                 'start' => $startDate->toDateString(),
                 'end' => $endDate->toDateString(),
@@ -189,9 +197,17 @@ class BusinessIntelligenceService
             }
         }
 
-        arsort($allPeakHours);
+        // Filter for operating hours (4 PM to 12 AM)
+        $operatingHours = [16, 17, 18, 19, 20, 21, 22, 23, 0];
+        $filteredPeakHours = array_filter(
+            $allPeakHours,
+            fn($hour) => in_array($hour, $operatingHours),
+            ARRAY_FILTER_USE_KEY
+        );
 
-        $topPeakHours = array_slice($allPeakHours, 0, 5, true);
+        arsort($filteredPeakHours);
+
+        $topPeakHours = array_slice($filteredPeakHours, 0, 5, true);
 
         return [
             'peak_hours' => $topPeakHours,
@@ -298,12 +314,20 @@ class BusinessIntelligenceService
             $sumX2 += $i * $i;
         }
 
-        $slope = ($n * $sumXY - $sumX * $sumY) / ($n * $sumX2 - $sumX * $sumX);
+        // Avoid division by zero if all X values are the same (highly unlikely with range)
+        $denominator = ($n * $sumX2 - $sumX * $sumX);
+        if ($denominator == 0) {
+            return ['direction' => 'stable', 'strength' => 0, 'percentage' => 0];
+        }
+
+        $slope = $denominator != 0 ? ($n * $sumXY - $sumX * $sumY) / $denominator : 0;
         $intercept = ($sumY - $slope * $sumX) / $n;
 
-        $firstValue = $values[0];
-        $lastValue = end($values);
-        $percentageChange = $firstValue != 0 ? (($lastValue - $firstValue) / $firstValue) * 100 : 0;
+        // Calculate percentage change based on the trend line's start and end points
+        $trendStartValue = $intercept;
+        $trendEndValue = $slope * ($n - 1) + $intercept;
+
+        $percentageChange = $trendStartValue != 0 ? (($trendEndValue - $trendStartValue) / abs($trendStartValue)) * 100 : ($trendEndValue > 0 ? 100 : 0);
 
         $direction = $slope > 0.1 ? 'increasing' : ($slope < -0.1 ? 'decreasing' : 'stable');
         $strength = abs($slope);
@@ -313,8 +337,8 @@ class BusinessIntelligenceService
             'slope' => round($slope, 4),
             'strength' => round($strength, 4),
             'percentage' => round($percentageChange, 2),
-            'first_value' => round($firstValue, 2),
-            'last_value' => round($lastValue, 2),
+            'first_value' => round($values[0], 2),
+            'last_value' => round(end($values), 2),
         ];
     }
 
@@ -550,5 +574,25 @@ class BusinessIntelligenceService
         } else {
             return 'low';
         }
+    }
+
+    /**
+     * Get the most frequently booked tables.
+     *
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @param int $limit
+     * @return \Illuminate\Support\Collection
+     */
+    public function getMostBookedTables(Carbon $startDate, Carbon $endDate, int $limit = 5)
+    {
+        return DB::table('table_reservations')
+            ->join('tables', 'table_reservations.table_id', '=', 'tables.id')
+            ->whereBetween('table_reservations.created_at', [$startDate, $endDate])
+            ->select('tables.table_number', DB::raw('count(table_reservations.id) as booking_count'))
+            ->groupBy('tables.table_number')
+            ->orderByDesc('booking_count')
+            ->limit($limit)
+            ->get();
     }
 }

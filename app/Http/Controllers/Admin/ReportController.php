@@ -14,9 +14,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use App\Models\MenuItem;
 use App\Models\OrderActivityLog;
+use App\Models\Order; // Import the Order model
 use Carbon\Carbon;
 use Illuminate\Http\Response;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB; // Import DB facade
 
 class ReportController extends Controller
 {
@@ -354,108 +356,59 @@ class ReportController extends Controller
      */
     public function downloadPDF(): Response
     {
-        // === CHARTS DATA ===
-        $salesSummary = $this->salesAnalyticsService->getSalesSummary(30);
-        $topSellingProducts = $this->salesAnalyticsService->getTopSellingProducts(10);
-        $salesByCategory = $this->salesAnalyticsService->getSalesByCategory();
+        // Use the same logic as the executive summary for consistency
+        $mom = $this->biService->getMonthOverMonthComparison(Carbon::today());
 
-        // === DATE RANGES ===
-        $startOfCurrentMonth = Carbon::now()->startOfMonth();
-        $endOfCurrentMonth = Carbon::now()->endOfMonth();
-        $startOfPreviousMonth = Carbon::now()->subMonth()->startOfMonth();
-        $endOfPreviousMonth = Carbon::now()->subMonth()->endOfMonth();
+        // Core Metrics
+        $currentMonthRevenue = $mom['current_month']['revenue'];
+        $currentMonthOrders = $mom['current_month']['orders'];
+        $currentMonthAvgOrderValue = $mom['current_month']['avg_order_value'];
 
-        // === CURRENT MONTH ANALYTICS ===
-        $currentMonthAnalytics = $this->salesAnalyticsService->getComprehensiveAnalytics(
-            $startOfCurrentMonth,
-            $endOfCurrentMonth
-        );
-        $previousMonthAnalytics = $this->salesAnalyticsService->getComprehensiveAnalytics(
-            $startOfPreviousMonth,
-            $endOfPreviousMonth
-        );
+        // --- Additional Data for PDF ---
+        $days = 30;
+        $endDate = Carbon::today();
+        $startDate = $endDate->copy()->subDays($days - 1);
 
-        // === REVENUE METRICS ===
-        $currentMonthRevenue = $currentMonthAnalytics['total_revenue'];
-        $previousMonthRevenue = $previousMonthAnalytics['total_revenue'];
-        $revenueChangePercentage = $this->calculateChangePercentage($currentMonthRevenue, $previousMonthRevenue);
+        // Order Distribution
+        $trends = $this->biService->getTrendAnalysis($startDate, $endDate);
+        $orderDistribution = $trends['order_status_distribution'];
 
-        // === ORDER METRICS ===
-        $currentMonthOrders = $currentMonthAnalytics['total_orders'];
-        $previousMonthOrders = $previousMonthAnalytics['total_orders'];
-        $ordersChangePercentage = $this->calculateChangePercentage($currentMonthOrders, $previousMonthOrders);
+        // Menu Performance
+        $menuPerformance = $this->menuIntelligenceService->getMenuPerformanceAnalysis($startDate, $endDate);
+        $top10Items = array_slice($menuPerformance['top_performers'] ?? [], 0, 10);
+        
+        // Sort by revenue for Top 5 Revenue Generators
+        $topPerformers = $menuPerformance['top_performers'] ?? [];
+        usort($topPerformers, function ($a, $b) {
+            return ($b['metrics']['total_revenue'] ?? 0) <=> ($a['metrics']['total_revenue'] ?? 0);
+        });
+        $top5Revenue = array_slice($topPerformers, 0, 5);
 
-        // === AVG ORDER VALUE ===
-        $currentMonthAvgOrderValue = $currentMonthAnalytics['avg_order_value'];
-        $previousMonthAvgOrderValue = $previousMonthAnalytics['avg_order_value'];
-        $avgOrderValueChangePercentage = $this->calculateChangePercentage($currentMonthAvgOrderValue, $previousMonthAvgOrderValue);
+        // Most Booked Tables
+        $mostBookedTables = $this->biService->getMostBookedTables($startDate, $endDate);
 
-        // === CUSTOMER METRICS ===
-        $customerRetention = $this->salesAnalyticsService->getCustomerRetention(30);
-
-        // === ORDER TYPE BREAKDOWN ===
-        $orderTypeBreakdown = $this->salesAnalyticsService->getOrderTypeBreakdown(30);
-
-        // === QR VS WEB COMPARISON ===
-        $qrVsWeb = $this->salesAnalyticsService->getQrVsWebOrders(30);
-
-        // === PROMOTION EFFECTIVENESS ===
-        $promotionStats = $this->salesAnalyticsService->getPromotionEffectiveness(30);
-
-        // === MENU ITEMS ===
-        $activeItems = MenuItem::where('is_available', 1)->count();
-        $newItemsThisMonth = MenuItem::whereBetween('created_at', [$startOfCurrentMonth, $endOfCurrentMonth])->count();
-
-        // === QR & TABLE STATS ===
-        $qrOrders = $currentMonthAnalytics['qr_orders'];
-        $qrRevenue = $currentMonthAnalytics['qr_revenue'];
-        $tableBookings = $currentMonthAnalytics['table_bookings'];
-
-        // === PROMOTIONS & REWARDS ===
-        $promotionsUsed = $currentMonthAnalytics['promotions_used'];
-        $promotionDiscounts = $currentMonthAnalytics['promotion_discounts'];
-        $rewardsRedeemed = $currentMonthAnalytics['rewards_redeemed'];
+        // Peak Hours
+        $peakHoursData = $this->biService->getPeakHoursAnalysis($startDate, $endDate);
+        $peakHours = $peakHoursData['peak_hours'] ?? [];
+        arsort($peakHours); // Sort by order count descending
 
         // Prepare data for PDF
         $data = [
-            // Charts
-            'salesSummary' => $salesSummary,
-            'topSellingProducts' => $topSellingProducts,
-            'salesByCategory' => $salesByCategory,
-            'orderTypeBreakdown' => $orderTypeBreakdown,
-            'qrVsWeb' => $qrVsWeb,
-
             // Core Metrics
             'currentMonthRevenue' => $currentMonthRevenue,
-            'revenueChangePercentage' => $revenueChangePercentage,
             'currentMonthOrders' => $currentMonthOrders,
-            'ordersChangePercentage' => $ordersChangePercentage,
             'currentMonthAvgOrderValue' => $currentMonthAvgOrderValue,
-            'avgOrderValueChangePercentage' => $avgOrderValueChangePercentage,
-
-            // Customer Metrics
-            'customerRetention' => $customerRetention,
-            'newCustomers' => $currentMonthAnalytics['new_customers'],
-            'returningCustomers' => $currentMonthAnalytics['returning_customers'],
-
-            // Menu Items
-            'activeItems' => $activeItems,
-            'newItemsThisMonth' => $newItemsThisMonth,
-
-            // QR & Table Analytics
-            'qrOrders' => $qrOrders,
-            'qrRevenue' => $qrRevenue,
-            'tableBookings' => $tableBookings,
-
-            // Promotions & Rewards
-            'promotionsUsed' => $promotionsUsed,
-            'promotionDiscounts' => $promotionDiscounts,
-            'rewardsRedeemed' => $rewardsRedeemed,
-            'promotionStats' => $promotionStats,
             
+            // Additional Analytics
+            'orderDistribution' => $orderDistribution,
+            'top10Items' => $top10Items,
+            'top5Revenue' => $top5Revenue,
+            'mostBookedTables' => $mostBookedTables,
+            'peakHours' => $peakHours,
+
             // Report metadata
             'reportDate' => now()->format('F j, Y'),
-            'reportPeriod' => 'Last 30 Days'
+            'reportPeriod' => 'Current Month (' . now()->format('F') . ')'
         ];
 
         // Load the PDF view with data
@@ -465,7 +418,7 @@ class ReportController extends Controller
         $pdf->setPaper('A4', 'portrait');
         
         // Return the PDF as a download
-        return $pdf->download('analytics-report-' . now()->format('Y-m-d') . '.pdf');
+        return $pdf->download('full-analytics-report-' . now()->format('Y-m-d') . '.pdf');
     }
 
     /**
@@ -703,6 +656,7 @@ class ReportController extends Controller
             'forecast' => $this->biService->forecastRevenue(7, $days),
             'peak_hours' => $this->biService->getPeakHoursAnalysis($startDate, $endDate),
             'anomalies' => $this->biService->detectAnomalies(Carbon::today(), $days),
+            'most_booked_tables' => $this->biService->getMostBookedTables($startDate, $endDate),
         ];
 
         return response()->json([

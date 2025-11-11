@@ -160,7 +160,7 @@ class ProblemAlertService
                 [
                     'failure_reason' => $failureReason,
                     'payment_method' => $order->payment_method,
-                    'total_amount' => $order->final_total,
+                    'total_amount' => $order->total_amount,
                 ]
             );
 
@@ -174,7 +174,7 @@ class ProblemAlertService
                     'order_id' => (string) $order->id,
                     'order_number' => $orderNumber,
                     'failure_reason' => $failureReason,
-                    'amount' => number_format($order->final_total, 2),
+                    'amount' => number_format($order->total_amount, 2),
                     'click_action' => '/customer/orders/' . $order->id,
                 ],
             ];
@@ -376,7 +376,7 @@ class ProblemAlertService
 
             $orderNumber = $order->confirmation_code ?? "ORD-{$order->id}";
             $customerName = $order->user ? $order->user->name : 'Guest';
-            $total = 'RM ' . number_format($order->final_total, 2);
+            $total = 'RM ' . number_format($order->total_amount, 2);
 
             $adminNotification = [
                 'title' => '💳 Payment Failed Alert',

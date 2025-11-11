@@ -2041,7 +2041,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Pusher event received:', data);
 
             // Filter: Only process if this is OUR order
-            if (data.order_id === currentOrderId) {
+            // Fix: order_id is inside data.order.id, not at root level
+            const eventOrderId = data.order?.id || data.order_id;
+            if (eventOrderId === currentOrderId) {
                 console.log('Order status changed:', data.old_status, '→', data.new_status);
 
                 // Show toast notification
@@ -2056,6 +2058,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // Reload page after 2 seconds to show updated status
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            }
+        });
+
+        // Listen for payment status updates
+        channel.bind('payment.status.updated', function(data) {
+            console.log('Pusher payment event received:', data);
+
+            // Filter: Only process if this is OUR order
+            const eventOrderId = data.order?.id || data.order_id;
+            if (eventOrderId === currentOrderId) {
+                console.log('Payment status changed:', data.old_payment_status, '→', data.new_payment_status);
+
+                // Show toast notification for payment status
+                if (typeof Toastify !== 'undefined') {
+                    const bgColor = data.new_payment_status === 'paid' ? '#10b981' : '#6366f1';
+                    Toastify({
+                        text: `Payment status updated: ${data.new_payment_status}`,
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: bgColor,
+                    }).showToast();
+                }
+
+                // Reload page after 2 seconds to show updated payment status
                 setTimeout(() => {
                     location.reload();
                 }, 2000);

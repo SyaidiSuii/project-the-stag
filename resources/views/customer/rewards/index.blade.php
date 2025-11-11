@@ -4,6 +4,74 @@
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/customer/rewards.css') }}?v={{ time() }}">
+<style>
+.tiers-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.tier-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 2px solid #e5e7eb;
+    position: relative;
+    transition: all 0.2s ease-in-out;
+}
+.tier-card.current {
+    border-color: var(--brand, #6366f1);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+    transform: scale(1.02);
+}
+.tier-card.achieved {
+    background: #f0f9ff;
+}
+.tier-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+.tier-name {
+    font-weight: 700;
+    font-size: 1.2rem;
+    flex-grow: 1;
+}
+.tier-requirement {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--brand, #6366f1);
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+.tier-benefits {
+    font-size: 0.9rem;
+    color: var(--text-2);
+}
+.current-tier-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--brand, #6366f1);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+</style>
 @endsection
 
 @section('content')
@@ -234,7 +302,7 @@
     </div>
 
     <!-- Loyalty Levels -->
-    <div class="card">
+    <div class="card" id="loyaltyStatusCard" style="cursor: pointer;" title="Click to see all loyalty tiers">
         <h2>👑 Loyalty Status</h2>
         @php
             // Use TierService to calculate eligible tier based on current points
@@ -469,6 +537,53 @@
     </div>
 </div>
 
+<!-- Loyalty Tiers Modal -->
+@if(isset($allTiers))
+<div id="loyaltyTiersModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>👑 Loyalty Tiers</h2>
+            <button class="close-btn" onclick="closeTiersModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p style="text-align: center; color: var(--text-2); margin-bottom: 2rem;">
+                Climb the ranks by earning points to unlock exclusive benefits!
+            </p>
+            <div class="tiers-container">
+                @foreach($allTiers as $tier)
+                    @php
+                        $isCurrent = ($currentTier && $currentTier->id == $tier->id);
+                        $isAchieved = ($user->points_balance ?? 0) >= $tier->points_threshold;
+                    @endphp
+                    <div class="tier-card {{ $isCurrent ? 'current' : '' }} {{ $isAchieved ? 'achieved' : '' }}">
+                        @if($isCurrent)
+                            <div class="current-tier-badge">Your Tier</div>
+                        @endif
+                        <div class="tier-icon" style="background-color: {{ $tier->color ?? '#ccc' }};">
+                            {!! $tier->icon ?? '<i class="fas fa-question"></i>' !!}
+                        </div>
+                        <div style="flex-grow: 1;">
+                            <div class="tier-name">{{ $tier->name }}</div>
+                            <div class="tier-benefits">
+                                Earn points <strong>{{ $tier->points_multiplier }}x</strong> faster
+                            </div>
+                        </div>
+                        <div class="tier-requirement">
+                            <div>{{ number_format($tier->points_threshold) }} pts</div>
+                            @if($tier->minimum_spending > 0)
+                                <div style="font-size: 0.8rem; color: var(--text-2); font-weight: 500;">or RM{{ number_format($tier->minimum_spending, 0) }} spent</div>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 @endsection
 
 @section('scripts')
@@ -631,6 +746,24 @@
         const modal = document.getElementById('barcodeModal');
         if (modal) {
             modal.remove();
+        }
+    }
+
+    // Loyalty Tiers Modal
+    const loyaltyStatusCard = document.getElementById('loyaltyStatusCard');
+    if (loyaltyStatusCard) {
+        loyaltyStatusCard.addEventListener('click', function() {
+            const modal = document.getElementById('loyaltyTiersModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        });
+    }
+
+    function closeTiersModal() {
+        const modal = document.getElementById('loyaltyTiersModal');
+        if (modal) {
+            modal.style.display = 'none';
         }
     }
 </script>

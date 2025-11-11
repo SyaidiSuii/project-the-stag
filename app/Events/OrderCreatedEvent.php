@@ -13,22 +13,14 @@ class OrderCreatedEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $orderId;
-    public $confirmationCode;
-    public $customerName;
-    public $itemCount;
-    public $total;
+    public Order $order;
 
     /**
      * Create a new event instance.
      */
     public function __construct(Order $order)
     {
-        $this->orderId = $order->id;
-        $this->confirmationCode = $order->confirmation_code;
-        $this->customerName = $order->user ? $order->user->name : 'Guest';
-        $this->itemCount = $order->items->count();
-        $this->total = $order->final_total;
+        $this->order = $order;
     }
 
     /**
@@ -57,11 +49,11 @@ class OrderCreatedEvent implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'order_id' => $this->orderId,
-            'confirmation_code' => $this->confirmationCode,
-            'customer_name' => $this->customerName,
-            'item_count' => $this->itemCount,
-            'total' => $this->total,
+            'order_id' => $this->order->id,
+            'confirmation_code' => $this->order->confirmation_code,
+            'customer_name' => $this->order->user ? $this->order->user->name : 'Guest',
+            'item_count' => $this->order->items->count(),
+            'total' => $this->order->total_amount,
             'timestamp' => now()->toDateTimeString(),
         ];
     }

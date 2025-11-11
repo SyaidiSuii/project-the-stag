@@ -1059,6 +1059,9 @@ function showOrderModal(itemId, itemName, itemPrice, itemDescription, itemImage,
     }
   }
 
+  // Update total price
+  updateOrderTotal();
+
   // Show modal
   if (modal) modal.style.display = 'flex';
 }

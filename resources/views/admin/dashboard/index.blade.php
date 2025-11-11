@@ -11,20 +11,19 @@
 <div class="admin-cards">
     <div class="admin-card">
         <div class="admin-card-header">
-            <div class="admin-card-title">Total Orders</div>
+            <div class="admin-card-title">Today's Orders</div>
             <div class="admin-card-icon icon-blue"><i class="fas fa-shopping-bag"></i></div>
         </div>
-        <div class="admin-card-value">{{ $totalOrders ?? 0 }}</div>
-        <div class="admin-card-desc">{{ $todayOrders ?? 0 }} orders today</div>
+        <div class="admin-card-value">{{ $todayOrders ?? 0 }}</div>
+        <div class="admin-card-desc">{{ $yesterdayOrders ?? 0 }} orders yesterday</div>
     </div>
-
     <div class="admin-card">
         <div class="admin-card-header">
             <div class="admin-card-title">Revenue</div>
             <div class="admin-card-icon icon-green"><i class="fas fa-dollar-sign"></i></div>
         </div>
         <div class="admin-card-value">RM {{ number_format($todayRevenue ?? 0, 2) }}</div>
-        <div class="admin-card-desc">{{ $revenueGrowth ?? 0 }}% from last week</div>
+        <div class="admin-card-desc">{{ $revenueGrowth ?? 0 }}% from yesterday</div>
     </div>
 
     <div class="admin-card">
@@ -33,17 +32,17 @@
           <div class="admin-card-icon icon-orange"><i class="fas fa-comments"></i></div>
         </div>
         <div class="admin-card-value">{{ $customerFeedbackCount ?? 0 }}</div>
-        <div class="admin-card-desc">{{ $feedbackGrowth ?? 0 }}% new this week</div>
+        {{-- <div class="admin-card-desc">{{ $feedbackGrowth ?? 0 }}% new this week</div> --}}
     </div>
 
-    <div class="admin-card">
+    {{-- <div class="admin-card">
         <div class="admin-card-header">
           <div class="admin-card-title">Avg. Rating</div>
           <div class="admin-card-icon icon-red"><i class="fas fa-star"></i></div>
         </div>
         <div class="admin-card-value">{{ number_format($averageRating ?? 0, 1) }}/5</div>
         <div class="admin-card-desc">From {{ $totalReviews ?? 0 }} reviews</div>
-    </div>
+    </div> --}}
 </div>
 
 <!-- Unpaid Orders Alert Section -->
@@ -144,7 +143,7 @@
         <thead>
             <tr>
                 <th>User</th>
-                <th>Activity</th>
+                {{-- <th>Activity</th> --}}
                 <th>Time</th>
                 <th>Details</th>
             </tr>
@@ -153,7 +152,7 @@
             @forelse($recentActivity ?? [] as $user)
             <tr>
                 <td data-label="User">{{ $user->name }}</td>
-                <td data-label="Activity">Profile Update</td>
+                {{-- <td data-label="Activity">Profile Update</td> --}}
                 <td data-label="Time">{{ $user->updated_at ? $user->updated_at->diffForHumans() : 'Never' }}</td>
                 <td data-label="Details">{{ $user->email }}</td>
             </tr>
@@ -167,7 +166,7 @@
 </div>
 
 <!-- Popular Items Section -->
-    <div class="admin-section">
+    {{-- <div class="admin-section">
       <div class="section-header">
         <h2 class="section-title">Popular Menu Items</h2>
         <button class="admin-btn btn-secondary">
@@ -201,7 +200,7 @@
           @endforelse
         </tbody>
       </table>
-    </div>
+    </div> --}}
 @endsection
 
 @section('scripts')

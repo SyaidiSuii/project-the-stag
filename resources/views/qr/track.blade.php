@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Track Order - The Stag SmartDine</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
@@ -811,6 +812,8 @@
     </div>
 
     <script src="{{ asset('js/toast.js') }}"></script>
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.15.0/dist/echo.iife.js"></script>
     <script>
         // Get order details from URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -821,6 +824,8 @@
         // Clean up empty string values
         const cleanPhone = phone && phone.trim() !== '' ? phone : null;
         const cleanToken = token && token.trim() !== '' ? token : null;
+
+        let echoInitialized = false;
 
         if (!orderCode) {
             document.getElementById('order-content').innerHTML = `
@@ -836,12 +841,66 @@
             loadOrderDetails();
         }
 
+        function initializeEcho(sessionToken) {
+            if (echoInitialized || !sessionToken) return;
+
+            try {
+                const pusherScheme = '{{ config('broadcasting.connections.pusher.options.scheme', 'http') }}';
+                const useTLS = pusherScheme === 'https';
+
+                window.Echo = new Echo({
+                    broadcaster: 'pusher',
+                    key: '{{ config('broadcasting.connections.pusher.key') }}',
+                    cluster: '{{ config('broadcasting.connections.pusher.options.cluster', 'mt1') }}',
+                    forceTLS: useTLS
+                });
+
+                const channelName = `order-track.${sessionToken}`;
+                window.Echo.channel(channelName)
+                    .listen('.order.status.updated', (event) => {
+                        console.log('Real-time event received (Order Status):', event);
+                        if (typeof Toast !== 'undefined') {
+                            Toast.success('Status Updated', `Order is now ${event.order.order_status}`);
+                        }
+                        displayOrder(event);
+                    })
+                    .listen('.payment.status.updated', (event) => {
+                        console.log('Real-time event received (Payment Status):', event);
+                        if (typeof Toast !== 'undefined') {
+                            Toast.success('Payment Updated', `Payment status is now ${event.order.payment_status}`);
+                        }
+                        displayOrder(event);
+                    });
+                
+                echoInitialized = true;
+                console.log(`Listening for real-time updates on channel: ${channelName}`);
+
+                // Hide refresh button if Echo is connected
+                const refreshBtn = document.querySelector('.refresh-btn');
+                if(refreshBtn) {
+                    refreshBtn.style.display = 'none';
+                }
+
+            } catch (e) {
+                console.error("Could not initialize Laravel Echo:", e);
+                if (typeof Toast !== 'undefined') {
+                    Toast.error('Error', 'Could not connect to real-time server.');
+                }
+            }
+        }
+
         function loadOrderDetails() {
-            fetch('{{ secure_url(route("qr.api.track-order", [], false)) }}', {
+            const refreshBtn = document.querySelector('.refresh-btn');
+            if(refreshBtn) {
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Refreshing...';
+                refreshBtn.disabled = true;
+            }
+
+            fetch('{{ route("qr.api.track-order") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
                 body: JSON.stringify({
                     order_code: orderCode,
@@ -863,6 +922,10 @@
                     `;
                 } else {
                     displayOrder(data);
+                    // Initialize Echo with the session token from the order
+                    if (data.order && data.order.session_token) {
+                        initializeEcho(data.order.session_token);
+                    }
                 }
             })
             .catch(error => {
@@ -882,12 +945,19 @@
                         </div>
                     </div>
                 `;
+            })
+            .finally(() => {
+                const finalRefreshBtn = document.querySelector('.refresh-btn');
+                 if(finalRefreshBtn) {
+                    finalRefreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Status';
+                    finalRefreshBtn.disabled = false;
+                }
             });
         }
 
         function displayOrder(data) {
             const order = data.order;
-            const statusClass = `status-${order.order_status.toLowerCase()}`;
+            const statusClass = `status-${order.order_status.toLowerCase().replace(' ', '-')}`;
             const paymentStatusClass = `status-payment-${order.payment_status ? order.payment_status.toLowerCase() : 'pending'}`;
 
             let itemsHtml = '';
@@ -898,7 +968,7 @@
                             <div class="item-name">${item.menu_item ? item.menu_item.name : 'Item'}</div>
                             <div class="item-qty">Quantity: ${item.quantity}</div>
                         </div>
-                        <div class="item-price">RM ${parseFloat(item.total_price || item.subtotal || 0).toFixed(2)}</div>
+                        <div class="item-price">RM ${parseFloat(item.total_price || 0).toFixed(2)}</div>
                     </div>
                 `).join('');
             }
@@ -966,13 +1036,6 @@
                 </div>
             `;
         }
-
-        // Auto-refresh every 30 seconds
-        setInterval(() => {
-            if (orderCode) {
-                loadOrderDetails();
-            }
-        }, 30000);
 
         // Disable back button navigation
         history.pushState(null, null, location.href);

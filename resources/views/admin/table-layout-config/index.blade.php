@@ -12,7 +12,7 @@
       <div class="section-header">
         <h2 class="section-title">Table Layout Editor</h2>
         <div class="admin-actions">
-            <button class="admin-btn btn-secondary" id="add-vvip-room-btn" aria-label="Add VVIP room">
+            {{-- <button class="admin-btn btn-secondary" id="add-vvip-room-btn" aria-label="Add VVIP room">
               <i class="fas fa-crown" aria-hidden="true"></i> Add VVIP Room
             </button>
             <button class="admin-btn btn-secondary" id="add-square-table-btn" aria-label="Add square table">
@@ -20,7 +20,7 @@
             </button>
             <button class="admin-btn btn-secondary" id="add-rectangle-table-btn" aria-label="Add rectangle table">
               <i class="fas fa-plus" aria-hidden="true"></i> Add Rectangle Table
-            </button>
+            </button> --}}
             <button class="admin-btn btn-danger" id="reset-layout-btn" aria-label="Reset layout">
               <i class="fas fa-undo" aria-hidden="true"></i> Reset
             </button>

@@ -37,7 +37,8 @@ return new class extends Migration
                 'reservation_reminder',
                 'reservation_confirmed',
                 'issue_alert',
-                'eta_update'
+                'eta_update',
+                'new_order'
             ]);
 
             $table->json('data')->nullable();

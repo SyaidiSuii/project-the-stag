@@ -34,14 +34,14 @@
         <div class="admin-card-value">{{ number_format($stats['avg_points'] ?? 0, 0) }}</div>
         <div class="admin-card-desc">Per member</div>
     </div>
-    <div class="admin-card">
+    {{-- <div class="admin-card">
         <div class="admin-card-header">
             <div class="admin-card-title">Total Spending</div>
             <div class="admin-card-icon icon-red"><i class="fas fa-dollar-sign"></i></div>
         </div>
         <div class="admin-card-value">RM {{ number_format($stats['total_spending'] ?? 0, 2) }}</div>
         <div class="admin-card-desc">All time revenue</div>
-    </div>
+    </div> --}}
 </div>
 
 <!-- Main Section -->
@@ -49,6 +49,10 @@
     <div class="section-header">
         <h2 class="section-title">Loyalty Program Members</h2>
         <div class="section-controls">
+            <a href="{{ route('admin.rewards.index') }}" class="admin-btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </a>
             <a href="{{ route('admin.rewards.members.export') }}" class="admin-btn btn-secondary">
                 <i class="fas fa-download"></i>
                 Export CSV
@@ -111,8 +115,8 @@
                         <th>Member</th>
                         <th class="cell-center">Loyalty Tier</th>
                         <th class="cell-center">Points Balance</th>
-                        <th class="cell-center">Total Spent</th>
-                        <th class="cell-center">Visit Count</th>
+                        {{-- <th class="cell-center">Total Spent</th> --}}
+                        {{-- <th class="cell-center">Visit Count</th> --}}
                         <th>Join Date</th>
                         <th class="th-actions">Actions</th>
                     </tr>
@@ -151,14 +155,14 @@
                                 {{ number_format($member->points_balance ?? 0) }}
                             </span>
                         </td>
-                        <td class="cell-center">
+                        {{-- <td class="cell-center">
                             <span style="font-weight: 600;">
                                 RM {{ number_format($member->customerProfile->total_spent ?? 0, 2) }}
                             </span>
                         </td>
                         <td class="cell-center">
                             {{ $member->customerProfile->visit_count ?? 0 }}
-                        </td>
+                        </td> --}}
                         <td>
                             {{ $member->created_at->format('d M Y') }}
                             <br><span style="font-size: 11px; color: var(--text-3);">{{ $member->created_at->diffForHumans() }}</span>

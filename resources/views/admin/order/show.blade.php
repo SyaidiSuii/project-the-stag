@@ -490,7 +490,7 @@
                 <span class="action-btn-text">Mark Ready</span>
             </button>
         @elseif($order->order_status == 'ready')
-            @if($order->order_type === 'dine_in')
+            @if($order->order_type === 'dine_in' && $order->order_source !== 'qr_scan')
                 <button onclick="updateOrderStatus('served')" class="action-btn indigo">
                     <i class="fas fa-utensils action-btn-icon"></i>
                     <span class="action-btn-text">Mark Served</span>

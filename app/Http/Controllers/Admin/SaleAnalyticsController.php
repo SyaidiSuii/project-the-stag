@@ -292,7 +292,7 @@ class SaleAnalyticsController extends Controller
             'total_sales' => $totalSales,
             'total_orders' => $totalOrders,
             'average_order_value' => round($averageOrderValue, 2),
-            'peak_hours' => $peakHours,
+            'peak_hours' => $hourlyOrders->toArray(),
             'popular_items' => $popularItems->toArray(),
             'unique_customers' => $uniqueCustomers,
             'new_customers' => 0, // This would need additional logic to determine

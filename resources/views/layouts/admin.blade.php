@@ -13,6 +13,7 @@
     <!-- Toast & Confirm Modal CSS -->
     <link rel="stylesheet" href="{{ asset('css/toast.css') }}">
     <link rel="stylesheet" href="{{ asset('css/confirm-modal.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/notifications.css') }}?v={{ time() }}">
 
     @yield('styles')
     @stack('styles')
@@ -38,12 +39,7 @@
 
             <!-- Reports Menu -->
             @can('view-reports')
-            <a href="{{ route('admin.reports.enhanced-monthly') }}"
-                class="admin-nav-item {{ request()->routeIs('admin.reports.enhanced-monthly') ? 'active' : '' }}">
-                <div class="admin-nav-icon"><i class="fas fa-chart-pie"></i></div>
-                <div class="admin-nav-text">Reports</div>
-            </a>
-            {{-- <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}" id="reportsMenu">
+            <div class="admin-nav-item admin-nav-parent {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}" id="reportsMenu">
                 <div class="admin-nav-icon"><i class="fas fa-chart-pie"></i></div>
                 <div class="admin-nav-text">Reports</div>
                 <div class="admin-nav-arrow"><i class="fas fa-chevron-down"></i></div>
@@ -52,16 +48,14 @@
                 <a href="{{ route('admin.reports.enhanced-monthly') }}" class="admin-nav-subitem {{ request()->routeIs('admin.reports.enhanced-monthly') ? 'active' : '' }}">
                     <div class="admin-nav-text">
                         <i class="fas fa-chart-line text-success"></i> Enhanced Analytics
-                        <span class="badge badge-success badge-sm ml-1">New</span>
                     </div>
                 </a>
-                {{-- <a href="{{ route('admin.reports.monthly') }}" class="admin-nav-subitem {{ request()->routeIs('admin.reports.monthly') || request()->routeIs('admin.reports.index') ? 'active' : '' }}">
-                    <div class="admin-nav-text">Monthly Report</div>
+                <a href="{{ route('admin.reports.feedback') }}" class="admin-nav-subitem {{ request()->routeIs('admin.reports.feedback') ? 'active' : '' }}">
+                    <div class="admin-nav-text">
+                        <i class="fas fa-comments text-info"></i> Customer Feedback
+                    </div>
                 </a>
-                <a href="{{ route('admin.reports.all-time') }}" class="admin-nav-subitem {{ request()->routeIs('admin.reports.all-time') ? 'active' : '' }}">
-                    <div class="admin-nav-text">All-Time Report</div>
-                </a>
-            </div> --}}
+            </div>
             @endcan
 
             @can('view-users')
@@ -298,6 +292,25 @@
             <button class="admin-hamburger" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
             <h1 class="admin-title">@yield('page-title', 'Dashboard')</h1>
             <div class="admin-actions">
+                <div class="notification-container">
+                    <button class="admin-btn btn-icon" id="notificationBtn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationBadge"></span>
+                    </button>
+                    <div class="notification-dropdown" id="notificationDropdown">
+                        <div class="notification-header">
+                            <h3>Notifications</h3>
+                            <button class="mark-read-btn" id="markAllReadBtn">Mark all as read</button>
+                        </div>
+                        <div class="notification-list" id="notificationList">
+                            <!-- Notifications will be dynamically inserted here -->
+                        </div>
+                        <div class="notification-footer">
+                            <a href="#" class="view-all-btn">View all notifications</a>
+                        </div>
+                    </div>
+                </div>
+
                 <button class="admin-btn btn-secondary">
                     <div class="admin-nav-icon"><i class="fas fa-calendar"></i></div>
                     Today: <span id="currentDate"></span>
@@ -587,6 +600,17 @@
             }, 100);
         });
     </script>
+
+    @auth
+    <script>
+        window.notificationConfig = {
+            fetchUrl: "{{ route('admin.notifications.index') }}",
+            markReadUrl: "{{ route('admin.notifications.mark-as-read') }}",
+            userId: {{ auth()->id() }}
+        };
+    </script>
+    <script src="{{ asset('js/admin/notifications.js') }}?v={{ time() }}"></script>
+    @endauth
 
     @yield('scripts')
     @stack('scripts')

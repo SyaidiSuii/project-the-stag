@@ -135,6 +135,9 @@ class RewardsController extends Controller
                     ->get();
             }
 
+            // Get all tiers for the modal
+            $allTiers = LoyaltyTier::active()->ordered()->get();
+
             return view('customer.rewards.index', compact(
                 'user',
                 'availableRewards',
@@ -150,7 +153,8 @@ class RewardsController extends Controller
                 'specialEvents',
                 'achievements',
                 'bonusChallenges',
-                'userVouchers'
+                'userVouchers',
+                'allTiers'
             ));
         } else {
             // For visitors, show login prompt like orders page

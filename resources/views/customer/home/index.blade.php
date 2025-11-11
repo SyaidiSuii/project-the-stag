@@ -56,7 +56,7 @@
     <p class="muted" id="promotionSubtitle">{{ $promotionHeader['subtitle'] ?? 'Dishes specially selected for you' }}</p>
     <div class="cards" id="promotionGrid" role="list" aria-label="Recommended dishes">
         @if(isset($recommendedItems) && count($recommendedItems) > 0)
-            @foreach($recommendedItems->take(5) as $index => $item)
+            @foreach($recommendedItems->take(6) as $index => $item)
                 <article class="card" role="listitem" style="animation-delay: {{ $index * 0.1 }}s">
                     @if($item->image)
                         <div class="card-img" style="background-image: url('{{ asset('storage/' . $item->image) }}'); background-size: cover; background-position: center; height: 200px; border-radius: 12px 12px 0 0;"></div>

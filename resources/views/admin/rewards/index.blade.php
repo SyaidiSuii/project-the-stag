@@ -657,9 +657,9 @@
         {{-- <button class="tab-nav-item" data-tab="voucher-collections">
             <i class="fas fa-layer-group"></i> Voucher Collections
         </button> --}}
-        <button class="tab-nav-item" data-tab="bonus-challenges">
+        {{-- <button class="tab-nav-item" data-tab="bonus-challenges">
             <i class="fas fa-star"></i> Bonus Challenges
-        </button>
+        </button> --}}
         <button class="tab-nav-item" data-tab="checkin-settings">
             <i class="fas fa-calendar-check"></i> Check-in Settings
         </button>

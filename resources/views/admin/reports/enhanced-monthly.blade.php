@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'Enhanced Analytics Dashboard')
+@section('title', 'Analytics Dashboard')
+@section('page-title', 'Analytics Dashboard')
 
 @section('content')
 <div class="analytics-container">
@@ -8,7 +9,7 @@
     <div class="dashboard-header">
         <div class="dashboard-header-left">
             <h1>
-                <i class="fas fa-chart-line"></i> Enhanced Analytics Dashboard
+                <i class="fas fa-chart-line"></i> Analytics Dashboard
                 <span id="new-alerts-badge" class="badge badge-danger" style="display: none;">
                     <i class="fas fa-bell"></i> <span id="new-alerts-count">0</span>
                 </span>
@@ -21,14 +22,14 @@
             </small>
         </div>
         <div class="dashboard-header-right">
-            <button class="admin-btn btn-secondary" onclick="toggleAutoRefresh()" id="auto-refresh-btn">
+            {{-- <button class="admin-btn btn-secondary" onclick="toggleAutoRefresh()" id="auto-refresh-btn">
                 <i class="fas fa-pause"></i> <span id="auto-refresh-text">Pause</span>
-            </button>
+            </button> --}}
             <button class="admin-btn btn-primary" onclick="manualRefresh()" id="refresh-btn">
                 <i class="fas fa-sync-alt"></i> Refresh
             </button>
-            <button class="admin-btn btn-primary" onclick="exportToExcel()">
-                <i class="fas fa-file-excel"></i> Export
+            <button class="admin-btn btn-primary" onclick="downloadPdfReport()">
+                <i class="fas fa-file-pdf"></i> Export PDF
             </button>
         </div>
     </div>
@@ -48,7 +49,7 @@
     </div>
 
     <!-- Business Health Score Card -->
-    <div class="analytics-section">
+    <div class="analytics-section" style="display: none;">
         <div style="display: flex; align-items: center; gap: 24px;">
             <div style="flex: 0 0 auto;">
                 <div style="font-size: 48px; font-weight: 800; line-height: 1;">
@@ -147,11 +148,17 @@
                 </div>
                 <div id="pricing-opportunities"></div>
             </div>
-            <div>
+            <div style="display: none;">
                 <div class="analytics-section-title" style="margin-bottom: 16px;">
                     <i class="fas fa-gift"></i> Bundle Opportunities
                 </div>
                 <div id="bundle-opportunities"></div>
+            </div>
+            <div>
+                <div class="analytics-section-title" style="margin-bottom: 16px;">
+                    <i class="fas fa-chair"></i> Most Booked Tables
+                </div>
+                <div id="most-booked-tables-chart"></div>
             </div>
         </div>
     </div>
@@ -584,7 +591,7 @@
 
 <script>
 // Global chart instances
-let revenueTrendChart, orderDistributionChart, menuPerformanceChart, topPerformersChart, peakHoursChart;
+let revenueTrendChart, orderDistributionChart, menuPerformanceChart, topPerformersChart, peakHoursChart, mostBookedTablesChart;
 
 // Real-time configuration
 let autoRefreshInterval = null;
@@ -653,6 +660,7 @@ function loadBusinessIntelligence() {
                 renderRevenueTrendChart(data.data.trends, data.data.forecast);
                 renderOrderDistributionChart(data.data);
                 renderPeakHoursHeatmap(data.data.peak_hours);
+                renderMostBookedTablesChart(data.data.most_booked_tables);
             }
         })
         .catch(console.error);
@@ -784,12 +792,11 @@ function renderRevenueTrendChart(trends, forecast) {
 // Render Order Distribution Chart
 function renderOrderDistributionChart(data) {
     const distribution = data.trends?.order_status_distribution || {};
-    const labels = ['Completed', 'Pending', 'Cancelled', 'Processing'];
+    const labels = ['Completed', 'Pending', 'Cancelled'];
     const series = [
         distribution.completed || 0,
         distribution.pending || 0,
         distribution.cancelled || 0,
-        distribution.processing || 0,
     ];
 
     const options = {
@@ -1050,6 +1057,62 @@ function renderPeakHoursHeatmap(peakHours) {
     peakHoursChart.render();
 }
 
+// Render Most Booked Tables Chart
+function renderMostBookedTablesChart(tablesData) {
+    const container = document.querySelector("#most-booked-tables-chart");
+    if (!tablesData || tablesData.length === 0) {
+        container.innerHTML = '<p class="text-muted"><i class="fas fa-info-circle"></i> No booking data available for this period</p>';
+        return;
+    }
+
+    const tableNumbers = tablesData.map(t => `Table ${t.table_number}`);
+    const bookingCounts = tablesData.map(t => t.booking_count);
+
+    const options = {
+        series: [{
+            name: 'Total Bookings',
+            data: bookingCounts
+        }],
+        chart: {
+            type: 'bar',
+            height: 350,
+            toolbar: { show: false }
+        },
+        plotOptions: {
+            bar: {
+                horizontal: true,
+                barHeight: '50%',
+                distributed: true,
+            }
+        },
+        colors: ['#8b5cf6', '#6366f1', '#3b82f6', '#10b981', '#f59e0b'],
+        xaxis: {
+            categories: tableNumbers,
+            title: { text: 'Number of Bookings' }
+        },
+        yaxis: {
+            labels: {
+                style: {
+                    fontWeight: 700,
+                }
+            }
+        },
+        title: {
+            text: 'Top 5 Most Booked Tables',
+            align: 'center'
+        },
+        legend: {
+            show: false
+        }
+    };
+
+    if (mostBookedTablesChart) {
+        mostBookedTablesChart.destroy();
+    }
+    mostBookedTablesChart = new ApexCharts(container, options);
+    mostBookedTablesChart.render();
+}
+
 // Render Pricing Opportunities
 function renderPricingOpportunities(pricingData) {
     const container = document.getElementById('pricing-opportunities');
@@ -1297,6 +1360,10 @@ function monitorHealthScore(healthScore) {
 
 function exportToExcel() {
     alert('Excel export functionality will be implemented next. This will download a comprehensive report with pivot tables.');
+}
+
+function downloadPdfReport() {
+    window.location.href = '{{ route("admin.reports.download-pdf") }}';
 }
 </script>
 @endpush

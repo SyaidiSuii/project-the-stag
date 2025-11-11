@@ -775,6 +775,13 @@ class OrderController extends Controller
                 [],
                 "payment_status_ajax:{$oldPaymentStatus}→{$request->payment_status}"
             ));
+
+            // 🔥 BROADCAST PAYMENT STATUS UPDATE FOR REAL-TIME TRACKING
+            event(new \App\Events\PaymentStatusUpdatedEvent(
+                $order,
+                $oldPaymentStatus,
+                auth()->user()->name ?? 'System'
+            ));
         }
 
         return response()->json([

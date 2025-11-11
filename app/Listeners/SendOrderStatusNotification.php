@@ -27,11 +27,12 @@ class SendOrderStatusNotification implements ShouldQueue
     public function handle(OrderStatusUpdatedEvent $event): void
     {
         try {
-            // Get the order
-            $order = Order::find($event->orderId);
+            // Get the order from the event
+            $order = $event->order;
 
             if (!$order) {
-                Log::error('Order not found for notification', ['order_id' => $event->orderId]);
+                // This case should ideally not happen if the event is constructed correctly
+                Log::error('Order object not found in OrderStatusUpdatedEvent');
                 return;
             }
 
@@ -75,7 +76,7 @@ class SendOrderStatusNotification implements ShouldQueue
 
         } catch (\Exception $e) {
             Log::error('Failed to send order status notification', [
-                'order_id' => $event->orderId,
+                'order_id' => $event->order->id ?? 'N/A',
                 'error' => $e->getMessage(),
             ]);
         }

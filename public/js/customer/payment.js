@@ -1,4 +1,39 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Check for payment gateway redirect status
+    const urlParams = new URLSearchParams(window.location.search);
+    const statusId = urlParams.get('status_id');
+    const orderId = urlParams.get('order_id');
+
+    // ToyyibPay status_id: 1 = success, 2 = pending, 3 = fail
+    if (statusId === '1' && orderId) {
+        const successModal = document.getElementById('success-modal');
+        if (successModal) {
+            const successTitle = successModal.querySelector('h2');
+            const successDetails = document.getElementById('success-details');
+
+            if (successTitle) {
+                successTitle.textContent = 'Payment Successful!';
+            }
+            if (successDetails) {
+                successDetails.innerHTML = `<p><strong>Order ID:</strong> ${orderId}</p>`;
+            }
+
+            successModal.style.display = 'flex';
+
+            // Clean the URL to prevent the modal from showing on refresh
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    } else if (statusId === '3' && orderId) {
+        // Optional: Handle failed payment
+        if (typeof Toast !== 'undefined') {
+            Toast.error('Payment Failed', 'Your payment was not successful. Please try again.');
+        } else {
+            alert('Your payment was not successful. Please try again.');
+        }
+        // Clean the URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     console.log('Debug: Payment page loaded');
 
     // Add browser back button confirmation
@@ -558,10 +593,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // Show success modal
                         if (successModal) {
+                            const successTitle = successModal.querySelector('h2');
                             const successDetails = document.getElementById('success-details');
+
                             if (successDetails && data.order_id) {
                                 successDetails.innerHTML = `<p><strong>Order ID:</strong> ${data.order_id}</p>`;
                             }
+
+                            // Dynamically set the title based on the payment method
+                            if (successTitle) {
+                                if (selectedMethod === 'cash') {
+                                    successTitle.textContent = 'Order Successful!';
+                                } else {
+                                    successTitle.textContent = 'Payment Successful!';
+                                }
+                            }
+
                             successModal.style.display = 'flex';
                             console.log('Debug: Success modal displayed');
                         }
